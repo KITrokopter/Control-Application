@@ -16,7 +16,7 @@ public:
 
 private:
 	OrientedPostion targetPosition[], currentPosition[];
-	//Brauchen wir Formation hier ueberhaupt. Wo ist die gewaehlte Formation gespeichert? Wo sind die Qudcopter-Objekte gespeichert? Wo die Kameras?
+	//Brauchen wir Formation hier ueberhaupt. Wo ist die gewaehlte Formation gespeichert? Wo sind die Qudcopter-Objekte gespeichert? Wo die Kameras? Gamepad?
 	Formation formation;
 	int amount;
 };
