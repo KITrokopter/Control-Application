@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>Control-Application</name>
+  <name>control_application</name>
   <version>0.0.0</version>
-  <description>The Control-Application package</description>
+  <description>The control_application package</description>
 
   <maintainer email="kitrokopter@isibboi.de">KITrokopter Team</maintainer>
 
