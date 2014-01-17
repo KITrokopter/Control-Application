@@ -102,16 +102,17 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-# add_executable(Control-Application_node src/Control-Application_node.cpp)
+add_executable(Control-Application_node src/Matlab.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(Control-Application_node Control-Application_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(Control-Application_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(Control-Application_node
+   ${catkin_LIBRARIES}
+	libeng.so libmx.so libmat.so
+)
 
 #############
 ## Install ##
