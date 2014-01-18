@@ -13,32 +13,210 @@
 #include "engine.h"
 #define  BUFSIZE 256
 
+struct vector {
+    double v1;
+    double v2;
+    double v3;
+};
 
+void enterVariablesOneLine(struct vector a, struct vector u, struct vector b, Engine *ep) {
+     mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3;
+
+     double dataa1[1] = {a.v1};
+     double dataa2[1] = {a.v2};
+     double dataa3[1] = {a.v3};
+
+     double datau1[1] = {u.v1};
+     double datau2[1] = {u.v2};
+     double datau3[1] = {u.v3};
+
+     double datab1[1] = {b.v1};
+     double datab2[1] = {b.v2};
+     double datab3[1] = {b.v3};
+
+     a1 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(a1), (void *)dataa1, sizeof(dataa1));
+     engPutVariable(ep, "a1", a1);
+     a2 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(a2), (void *)dataa2, sizeof(dataa2));
+     engPutVariable(ep, "a2", a2);
+     a3 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(a3), (void *)dataa3, sizeof(dataa3));
+     engPutVariable(ep, "a3", a3);
+
+     u1 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(u1), (void *)datau1, sizeof(datau1));
+     engPutVariable(ep, "u1", u1);
+     u2 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(u2), (void *)datau2, sizeof(datau2));
+     engPutVariable(ep, "u2", u2);
+     u3 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(u3), (void *)datau3, sizeof(datau3));
+     engPutVariable(ep, "u3", u3);
+
+     b1 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(b1), (void *)datab1, sizeof(datab1));
+     engPutVariable(ep, "b1", b1);
+     b2 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(b2), (void *)datab2, sizeof(datab2));
+     engPutVariable(ep, "b2", b2);
+     b3 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(b3), (void *)datab3, sizeof(datab3));
+     engPutVariable(ep, "b3", b3);
+
+     mxDestroyArray(a1);
+     mxDestroyArray(a2);
+     mxDestroyArray(a3);
+     mxDestroyArray(u1);
+     mxDestroyArray(u2);
+     mxDestroyArray(u3);
+     mxDestroyArray(b1);
+     mxDestroyArray(b2);
+     mxDestroyArray(b3);
+
+}
+
+void enterVariablesTwoLines(struct vector a, struct vector u, struct vector b, struct vector v, Engine *ep) {
+     mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3, *v1, *v2, *v3;
+
+     double dataa1[1] = {a.v1};
+     double dataa2[1] = {a.v2};
+     double dataa3[1] = {a.v3};
+
+     double datau1[1] = {u.v1};
+     double datau2[1] = {u.v2};
+     double datau3[1] = {u.v3};
+
+     double datab1[1] = {b.v1};
+     double datab2[1] = {b.v2};
+     double datab3[1] = {b.v3};
+
+     double datav1[1] = {v.v1};
+     double datav2[1] = {v.v2};
+     double datav3[1] = {v.v3};
+
+     a1 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(a1), (void *)dataa1, sizeof(dataa1));
+     engPutVariable(ep, "a1", a1);
+     a2 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(a2), (void *)dataa2, sizeof(dataa2));
+     engPutVariable(ep, "a2", a2);
+     a3 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(a3), (void *)dataa3, sizeof(dataa3));
+     engPutVariable(ep, "a3", a3);
+
+     u1 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(u1), (void *)datau1, sizeof(datau1));
+     engPutVariable(ep, "u1", u1);
+     u2 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(u2), (void *)datau2, sizeof(datau2));
+     engPutVariable(ep, "u2", u2);
+     u3 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(u3), (void *)datau3, sizeof(datau3));
+     engPutVariable(ep, "u3", u3);
+
+     b1 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(b1), (void *)datab1, sizeof(datab1));
+     engPutVariable(ep, "b1", b1);
+     b2 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(b2), (void *)datab2, sizeof(datab2));
+     engPutVariable(ep, "b2", b2);
+     b3 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(b3), (void *)datab3, sizeof(datab3));
+     engPutVariable(ep, "b3", b3);
+
+     v1 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(v1), (void *)datav1, sizeof(datav1));
+     engPutVariable(ep, "v1", v1);
+     v2 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(v2), (void *)datav2, sizeof(datav2));
+     engPutVariable(ep, "v2", v2);
+     v3 = mxCreateDoubleMatrix(1, 1, mxREAL);
+     memcpy((void *)mxGetPr(v3), (void *)datav3, sizeof(datav3));
+     engPutVariable(ep, "v3", v3);
+
+     mxDestroyArray(a1);
+     mxDestroyArray(a2);
+     mxDestroyArray(a3);
+     mxDestroyArray(u1);
+     mxDestroyArray(u2);
+     mxDestroyArray(u3);
+     mxDestroyArray(b1);
+     mxDestroyArray(b2);
+     mxDestroyArray(b3);
+     mxDestroyArray(v1);
+     mxDestroyArray(v2);
+     mxDestroyArray(v3);
+
+}
+/*
+  Both Lines are defined by f = a + r*u, g = b + s*v, u and v are already direction vectors.
+*/
+struct vector* perpFootTwoLines(struct vector a, struct vector u, struct vector b, struct vector v, Engine *ep) {
+    enterVariablesTwoLines(a, u, b, v, ep);
+    mxArray *resultf, *resultg;
+    engEvalString(ep, "a = [a1, a2, a3];");
+    engEvalString(ep, "u = [u1, u2, u3];");
+    engEvalString(ep, "b = [b1, b2, b3];");
+    engEvalString(ep, "v = [v1, v2, v3];");
+    engEvalString(ep, "n = cross(u, v);");
+    engEvalString(ep, "A = [-u1 -n(1) v1; -u2 -n(2) v2; -u3 -n(3) v3];");
+    engEvalString(ep, "dif = [a1 - b1, a2 - b2, a3 - b3]");
+    engEvalString(ep, "bb = [dif(1); dif(2); dif(3)];");
+    engEvalString(ep, "x = inv(A)*bb");
+    engEvalString(ep, "perpf = a + x(1,1) * u");
+    engEvalString(ep, "perpg = b + x(3,1) * v");
+    resultf = engGetVariable(ep, "perpf");
+    printf("Lotfußpunkt von f ist [%f, %f, %f]\n", mxGetPr(resultf)[0], mxGetPr(resultf)[1], mxGetPr(resultf)[2]);
+    resultg = engGetVariable(ep, "perpg");
+    printf("Lotfußpunkt von g ist [%f, %f, %f]\n", mxGetPr(resultg)[0], mxGetPr(resultg)[1], mxGetPr(resultg)[2]);
+    struct vector perpFootf, perpFootg;
+    perpFootf.v1 = mxGetPr(resultf)[0];
+    perpFootf.v2 = mxGetPr(resultf)[1];
+    perpFootf.v3 = mxGetPr(resultf)[2];
+    perpFootf.v1 = mxGetPr(resultg)[0];
+    perpFootf.v2 = mxGetPr(resultg)[1];
+    perpFootf.v3 = mxGetPr(resultg)[2];
+    struct vector perpFoot[2] = {perpFootf, perpFootg};
+    mxDestroyArray(resultf);
+    mxDestroyArray(resultg);
+    return perpFoot;
+}
+
+struct vector perpFootOneLine(struct vector a, struct vector u, struct vector b, Engine *ep) {
+    enterVariablesOneLine(a, u, b, ep);
+    mxArray *result;
+    engEvalString(ep, "a = [a1,a2,a3];");
+    engEvalString(ep, "u = [u1,u2,u3];");
+    engEvalString(ep, "b = [b1,b2,b3];");
+    engEvalString(ep, "d = dot(b, u);");
+    result = engGetVariable(ep, "d");
+
+    /*
+      nicer solution with Sym MathToolbox
+        engEvalString(ep, "syms r;");
+        engEvalString(ep, "vector = a + r*u;");
+        engEvalString(ep, "product = dot(b,vector)");
+        engEvalString(ep, "r = solve(product == d, r)");
+        engEvalString(ep, "x = cast(r, 'double');");
+    */
+
+    engEvalString(ep, "x = (a1*b1+a2*b2+a3*b3-d)/(-u1*b1-u2*b2-u3*b3)");
+    engEvalString(ep, "result = a + x*u");
+
+    result = engGetVariable(ep, "result");
+    printf("result is [%f, %f, %f]\n", mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]);
+    struct vector perpFoot;
+    perpFoot.v1 = mxGetPr(result)[0];
+    perpFoot.v2 = mxGetPr(result)[1];
+    perpFoot.v3 = mxGetPr(result)[2];
+    mxDestroyArray(result);
+    return perpFoot;
+}
 
 int main()
 {
-    double a = 1;           // vector1 = [a, b, c]
-    double b = 0;
-    double c = 2;
-    double d = 1;           // vector2 = [d, e, f], gerade = vector1+r*(vector2-vector1)
-    double e = 2;
-    double f = 3;
-    double g = 2;           // vector3 = [g, h, i] Punkt
-    double h = 3;
-    double i = 1;
     Engine *ep;
-    mxArray *p11, *p12, *p13, *p21, *p22, *p23, *p31, *p32, *p33 = NULL;
-    mxArray *result;
-    char buffer[BUFSIZE+1];
-    double dataa[1] = {a};
-    double datab[1] = {b};
-    double datac[1] = {c};
-    double datad[1] = {d};
-    double datae[1] = {e};
-    double dataf[1] = {f};
-    double datag[1] = {g};
-    double datah[1] = {h};
-    double datai[1] = {i};
 /*
  * Call engOpen with a NULL string. This starts a MATLAB process
  * on the current host using the command "matlab".
@@ -47,81 +225,26 @@ int main()
         fprintf(stderr, "\nCan't start MATLAB engine\n");
         return EXIT_FAILURE;
     }
-// Abstand Punkt P3 von Vektor / Gerade
-
-    /*
-     * Create variables for our data
-     */
-    p11 = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(p11), (void *)dataa, sizeof(dataa));
-    p12 = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(p12), (void *)datab, sizeof(datab));
-    p13 = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(p13), (void *)datac, sizeof(datac));
-    p21 = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(p21), (void *)datad, sizeof(datad));
-    p22 = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(p22), (void *)datae, sizeof(datae));
-    p23 = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(p23), (void *)dataf, sizeof(dataf));
-    p31 = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(p31), (void *)datag, sizeof(datag));
-    p32 = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(p32), (void *)datah, sizeof(datah));
-    p33 = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(p33), (void *)datai, sizeof(datai));
-
-    /*
-     * Place the variables into the MATLAB workspace
-     */
-
-    engPutVariable(ep, "p11", p11);
-
-    engPutVariable(ep, "p12", p12);
-    engPutVariable(ep, "p13", p13);
-    engEvalString(ep, "vector1 = [p11,p12,p13];");
-    engPutVariable(ep, "p21", p21);
-    engPutVariable(ep, "p22", p22);
-    engPutVariable(ep, "p23", p23);
-    engEvalString(ep, "vector2 = [p21,p22,p23];");
-    engPutVariable(ep, "p31", p31);
-    engPutVariable(ep, "p32", p32);
-    engPutVariable(ep, "p33", p33);
-    engEvalString(ep, "vector3 = [p31,p32,p33];");
-    engEvalString(ep, "directionVector = [vector2 - vector1];"); // line: v1+r*directionVector
-
-    result = engGetVariable(ep, "directionVector");
-    printf("directionVector is [%f, %f, %f]\n", mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]);
-
-    engEvalString(ep, "d = dot(vector3, directionVector);");
-
-    result = engGetVariable(ep, "d");
-    printf("scalarproduct is %f\n", mxGetPr(result)[0]);
-
-    engEvalString(ep, "syms r;");
-    engEvalString(ep, "vector4 = vector1 + r*directionVector;");
-    engEvalString(ep, "product = dot(vector3,vector4)");
-    engEvalString(ep, "r = solve(product == d, r)");
-    engEvalString(ep, "x = cast(r, 'double');");
-
-    result = engGetVariable(ep, "x");
-    printf("r is %f\n", mxGetPr(result)[0]);
-
-    engEvalString(ep, "result = vector1 + x*directionVector");
-
-    result = engGetVariable(ep, "result");
-    printf("result is [%f, %f, %f]\n", mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]);
-
-    mxDestroyArray(p11);
-    mxDestroyArray(p12);
-    mxDestroyArray(p13);
-    mxDestroyArray(p21);
-    mxDestroyArray(p22);
-    mxDestroyArray(p23);
-    mxDestroyArray(p31);
-    mxDestroyArray(p32);
-    mxDestroyArray(p33);
-    mxDestroyArray(result);
+    struct vector a, u, b, v;
+    a.v1 = -7;
+    a.v2 = 2;
+    a.v3 = -3;
+    u.v1 = 0;
+    u.v2 = 1;
+    u.v3 = 2;
+    b.v1 = -3;
+    b.v2 = -3;
+    b.v3 = 3;
+    v.v1 = 1;
+    v.v2 = 2;
+    v.v3 = 1;
+    struct vector oneLine = perpFootOneLine(a, u, b, ep);
+    printf("result is [%f, %f, %f]\n", oneLine.v1, oneLine.v2, oneLine.v3);
+    struct vector* twoLines = perpFootTwoLines(a, u, b, v, ep);
+    printf("Lotfußpunkt von f ist [%f, %f, %f]\n", twoLines[0].v1, twoLines[0].v2, twoLines[0].v3);
+    printf("Lotfußpunkt von g ist [%f, %f, %f]\n", twoLines[1].v1, twoLines[1].v2, twoLines[1].v3);
     engClose;
     return EXIT_SUCCESS;
 }
+
+
