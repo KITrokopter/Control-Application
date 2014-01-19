@@ -2,7 +2,7 @@
 int main(int argc, char** argv)
 {
 // TODO: Create unique name.
-	ros::init(argc, argv, "controller");
+	ros::init(argc, argv, "control_talker");
 	
 	/**
   	 * NodeHandle is the main access point to communications with the ROS system.
@@ -37,11 +37,13 @@ int main(int argc, char** argv)
        loop_rate.sleep();
     }
 
+	/*
 	ros::shutdown();
 	
 	// Wait for ros to shutdown.
 	while (ros::ok()) {
 		usleep(10000);
 	}
+*/
 
 }
