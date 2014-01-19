@@ -158,16 +158,16 @@ Vector perpFootOneLine(Vector a, Vector u, Vector b, Engine *ep) {
       nicer solution with Sym MathToolbox
         engEvalString(ep, "syms r;");
         engEvalString(ep, "vector = a + r*u;");
-        engEvalString(ep, "product = dot(b,vector)");
+        engEvalString(ep, "product = dot(u,vector)");
         engEvalString(ep, "r = solve(product == d, r)");
         engEvalString(ep, "x = cast(r, 'double');");
     */
 
-    engEvalString(ep, "x = (a1*b1+a2*b2+a3*b3-d)/(-u1*b1-u2*b2-u3*b3)");
+    engEvalString(ep, "x = (a1*u1+a2*u2+a3*u3-d)/(-u1*u1-u2*u2-u3*u3)");
     engEvalString(ep, "result = a + x*u");
 
     result = engGetVariable(ep, "result");
-    printf("result is [%f, %f, %f]\n", mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]);
+    //printf("result is [%f, %f, %f]\n", mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]);
     Vector* perpFoot = new Vector(mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]);
     mxDestroyArray(result);
     return *perpFoot;
@@ -175,55 +175,98 @@ Vector perpFootOneLine(Vector a, Vector u, Vector b, Engine *ep) {
 
 /*
   Both Lines are defined by f = a + r*u, g = b + s*v, u and v are already direction vectors.
+  You have to creat a Vector** instance, so the result can be saved in it.
+  returns true if lines are skew, returns false if an intersection point exists.
 */
-Vector* perpFootTwoLines(Vector a, Vector u, Vector b, Vector v, Engine *ep) {
+bool perpFootTwoLines(Vector a, Vector u, Vector b, Vector v, Engine *ep, Vector **result) {
     enterVariablesTwoLines(a, u, b, v, ep);
-    mxArray *resultf, *resultg;
+    mxArray *same, *parallel;
     engEvalString(ep, "a = [a1, a2, a3];");
     engEvalString(ep, "u = [u1, u2, u3];");
     engEvalString(ep, "b = [b1, b2, b3];");
     engEvalString(ep, "v = [v1, v2, v3];");
+    engEvalString(ep, "dif = [a1 - b1, a2 - b2, a3 - b3]");
+    // checks whether the lines intersect, if so result false
+    engEvalString(ep, "A = [-u1 v1; -u2 v2];");    
+    engEvalString(ep, "bb = [dif(1); dif(2)];");
+    // A*x = bb, x = (r, s)
+    engEvalString(ep, "x = inv(A)*bb");
+    // checks if equation is also right for the third vectorcomponent.
+    engEvalString(ep, "same = (a3+x(1)*u3 == b3 + x(2) * v3)");
+    same = engGetVariable(ep, "same");
+    if (mxGetPr(same)[0] != 0.0) {
+	printf("same\n");
+	mxDestroyArray(same);
+	return false;
+    }
+    // cecks whether the lines are parallel: 0 = u + r*v?
+    engEvalString(ep, "parallel = (((-u1/v1) == (-u2/v2)) && ((-u1/v1) == (-u3/v3)));");
+    parallel = engGetVariable(ep, "parallel");
+    if (mxGetPr(parallel)[0] != 0.0) {
+	printf("parallel\n");
+	mxDestroyArray(parallel);
+	return false;
+    }
+    // calculating perpendicular foot points.
+    mxArray *resultf, *resultg;
     engEvalString(ep, "n = cross(u, v);");
     engEvalString(ep, "A = [-u1 -n(1) v1; -u2 -n(2) v2; -u3 -n(3) v3];");
-    engEvalString(ep, "dif = [a1 - b1, a2 - b2, a3 - b3]");
     engEvalString(ep, "bb = [dif(1); dif(2); dif(3)];");
+    // A*x = bb, x = (r, t, s)
     engEvalString(ep, "x = inv(A)*bb");
     engEvalString(ep, "perpf = a + x(1,1) * u");
     engEvalString(ep, "perpg = b + x(3,1) * v");
     resultf = engGetVariable(ep, "perpf");
-    printf("Lotfußpunkt von f ist [%f, %f, %f]\n", mxGetPr(resultf)[0], mxGetPr(resultf)[1], mxGetPr(resultf)[2]);
+    //printf("Lotfußpunkt von f ist [%f, %f, %f]\n", mxGetPr(resultf)[0], mxGetPr(resultf)[1], mxGetPr(resultf)[2]);
     resultg = engGetVariable(ep, "perpg");
-    printf("Lotfußpunkt von g ist [%f, %f, %f]\n", mxGetPr(resultg)[0], mxGetPr(resultg)[1], mxGetPr(resultg)[2]);
+    //printf("Lotfußpunkt von g ist [%f, %f, %f]\n", mxGetPr(resultg)[0], mxGetPr(resultg)[1], mxGetPr(resultg)[2]);
     Vector* perpFootf = new Vector(mxGetPr(resultf)[0], mxGetPr(resultf)[1], mxGetPr(resultf)[2]);
     Vector* perpFootg = new Vector(mxGetPr(resultg)[0], mxGetPr(resultg)[1], mxGetPr(resultg)[2]);
-    printf("Lotfußpunkt von g ist [%f, %f, %f]\n", perpFootg->getV1(), perpFootg->getV2(),perpFootg->getV3());
-    Vector* perpFoot[2] = {perpFootf, perpFootg};
+    //printf("Lotfußpunkt von g ist [%f, %f, %f]\n", perpFootg->getV1(), perpFootg->getV2(),perpFootg->getV3());
+    result[0] = perpFootf;
+    result[1] = perpFootg;
     mxDestroyArray(resultf);
     mxDestroyArray(resultg);
-    return *perpFoot;
+    mxDestroyArray(same);
+    mxDestroyArray(parallel);
+    return true;
 }
 
 
 int main()
 {
     Engine *ep;
-/*
- * Call engOpen with a NULL string. This starts a MATLAB process
- * on the current host using the command "matlab".
- */
+    // starts a MATLAB process
     if (!(ep = engOpen(""))) {
         fprintf(stderr, "\nCan't start MATLAB engine\n");
         return EXIT_FAILURE;
     }
+/*  parallel:
+    Vector* a = new Vector(-7, 2, -3);
+    Vector* u = new Vector(1, 2, 3);
+    Vector* b = new Vector(-3, -3, 3);
+    Vector* v = new Vector(3, 6, 9);
+    
+    normal:
     Vector* a = new Vector(-7, 2, -3);
     Vector* u = new Vector(0, 1, 2);
     Vector* b = new Vector(-3, -3, 3);
     Vector* v = new Vector(1, 2, 1);
+
+    intersection point exists
+    */Vector* a = new Vector(4, 2, 8);
+    Vector* u = new Vector(-1, 4, 3);
+    Vector* b = new Vector(5, 8, 21);
+    Vector* v = new Vector(1, 1, 5);
+
     Vector oneLine = perpFootOneLine(*a, *u, *b, ep);
     printf("result is [%f, %f, %f]\n", oneLine.getV1(), oneLine.getV2(), oneLine.getV3());
-    Vector* twoLines = perpFootTwoLines(*a, *u, *b, *v, ep);
-    printf("Lotfußpunkt von f ist [%f, %f, %f]\n", twoLines[0].getV1(), twoLines[0].getV2(), twoLines[0].getV3());
-    printf("Lotfußpunkt von g ist [%f, %f, %f]\n", twoLines[1].getV1(), twoLines[1].getV2(), twoLines[1].getV3());
+    Vector* result[2];
+    bool intersects = perpFootTwoLines(*a, *u, *b, *v, ep, result);
+    if (intersects) {
+    	printf("Lotfußpunkt von f ist [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
+    	printf("Lotfußpunkt von g ist [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
+    }
     engClose;
     return EXIT_SUCCESS;
 }
