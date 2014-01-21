@@ -16,7 +16,8 @@ class Matlab {
 	void enterVariablesTwoLines(Line f, Line g, Engine *ep);
 	Vector perpFootOneLine(Line f, Vector b, Engine *ep);
 	int perpFootTwoLines(Line f, Line g, Engine *ep, Vector **result);
-	Vector getApproximationPoint(Line *lines, int quantity, Engine *ep);
+	Vector interpolateLines(Line *lines, int quantity, Engine *ep);
+	Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor, Engine *ep);
 };
 
 #endif /* MATLAB_H_ */

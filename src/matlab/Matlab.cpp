@@ -16,17 +16,17 @@
 #define  BUFSIZE 256
 
 void enterVariablesOneLine(Line f, Vector b, Engine *ep) {
-     mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3;
+	mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3;
 
-     double dataa1[1] = {f.getA().getV1()};
-     double dataa2[1] = {f.getA().getV2()};
-     double dataa3[1] = {f.getA().getV3()};
+	double dataa1[1] = {f.getA().getV1()};
+	double dataa2[1] = {f.getA().getV2()};
+	double dataa3[1] = {f.getA().getV3()};
 
-     double datau1[1] = {f.getU().getV1()};
-     double datau2[1] = {f.getU().getV2()};
-     double datau3[1] = {f.getU().getV3()};
+	double datau1[1] = {f.getU().getV1()};
+	double datau2[1] = {f.getU().getV2()};
+	double datau3[1] = {f.getU().getV3()};
 
-     double datab1[1] = {b.getV1()};
+	double datab1[1] = {b.getV1()};
      double datab2[1] = {b.getV2()};
      double datab3[1] = {b.getV3()};
 
@@ -249,7 +249,7 @@ int perpFootTwoLines(Line f, Line g, Engine *ep, Vector **result) {
     return 2;
 }
 
-Vector getApproximationPoint(Line *lines, int quantity, Engine *ep) {
+Vector interpolateLines(Line *lines, int quantity, Engine *ep) {
     Vector points[2*quantity];
     int pos = 0;
     int intersects;
@@ -281,6 +281,15 @@ Vector getApproximationPoint(Line *lines, int quantity, Engine *ep) {
    return *approximated;
 }
 
+Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor, Engine *ep) {
+	Vector newPos = perpFootOneLine(line, quadPos, ep);
+	//interpolatedNewPos = newPos * interpolationFactor + quadPos * (1 - interpolationFactor)
+	double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
+	double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
+	double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
+	Vector* interpolatedNewPos = new Vector(v1, v2, v3);
+	return *interpolatedNewPos;
+}
 
 int main()
 {
