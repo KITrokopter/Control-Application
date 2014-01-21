@@ -14,6 +14,7 @@ class Vector {
 private: double v1, v2, v3;
 public:
 	Vector(double v1, double v2, double v3);
+	Vector();
 	double getV1();
 	double getV2();
 	double getV3();

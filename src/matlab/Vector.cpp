@@ -7,6 +7,12 @@
 
 #include "Vector.h"
 
+Vector::Vector() {
+	this->v1= 0;
+	this->v2 = 0;
+	this->v3 = 0;
+}
+
 Vector::Vector(double v1, double v2, double v3) {
 	this->v1= v1;
 	this->v2 = v2;

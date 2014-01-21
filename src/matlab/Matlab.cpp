@@ -12,18 +12,19 @@
 #include <iostream>
 #include "engine.h"
 #include "Vector.h"
+#include "Line.h"
 #define  BUFSIZE 256
 
-void enterVariablesOneLine(Vector a, Vector u, Vector b, Engine *ep) {
+void enterVariablesOneLine(Line f, Vector b, Engine *ep) {
      mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3;
 
-     double dataa1[1] = {a.getV1()};
-     double dataa2[1] = {a.getV2()};
-     double dataa3[1] = {a.getV3()};
+     double dataa1[1] = {f.getA().getV1()};
+     double dataa2[1] = {f.getA().getV2()};
+     double dataa3[1] = {f.getA().getV3()};
 
-     double datau1[1] = {u.getV1()};
-     double datau2[1] = {u.getV2()};
-     double datau3[1] = {u.getV3()};
+     double datau1[1] = {f.getU().getV1()};
+     double datau2[1] = {f.getU().getV2()};
+     double datau3[1] = {f.getU().getV3()};
 
      double datab1[1] = {b.getV1()};
      double datab2[1] = {b.getV2()};
@@ -71,24 +72,24 @@ void enterVariablesOneLine(Vector a, Vector u, Vector b, Engine *ep) {
 
 }
 
-void enterVariablesTwoLines(Vector a, Vector u, Vector b, Vector v, Engine *ep) {
+void enterVariablesTwoLines(Line f, Line g, Engine *ep) {
      mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3, *v1, *v2, *v3;
 
-     double dataa1[1] = {a.getV1()};
-     double dataa2[1] = {a.getV2()};
-     double dataa3[1] = {a.getV3()};
+     double dataa1[1] = {f.getA().getV1()};
+     double dataa2[1] = {f.getA().getV2()};
+     double dataa3[1] = {f.getA().getV3()};
 
-     double datau1[1] = {u.getV1()};
-     double datau2[1] = {u.getV2()};
-     double datau3[1] = {u.getV3()};
+     double datau1[1] = {f.getU().getV1()};
+     double datau2[1] = {f.getU().getV2()};
+     double datau3[1] = {f.getU().getV3()};
 
-     double datab1[1] = {b.getV1()};
-     double datab2[1] = {b.getV2()};
-     double datab3[1] = {b.getV3()};
+     double datab1[1] = {g.getA().getV1()};
+     double datab2[1] = {g.getA().getV2()};
+     double datab3[1] = {g.getA().getV3()};
 
-     double datav1[1] = {v.getV1()};
-     double datav2[1] = {v.getV2()};
-     double datav3[1] = {v.getV3()};
+     double datav1[1] = {g.getU().getV1()};
+     double datav2[1] = {g.getU().getV2()};
+     double datav3[1] = {g.getU().getV3()};
 
      a1 = mxCreateDoubleMatrix(1, 1, mxREAL);
      memcpy((void *)mxGetPr(a1), (void *)dataa1, sizeof(dataa1));
@@ -145,8 +146,8 @@ void enterVariablesTwoLines(Vector a, Vector u, Vector b, Vector v, Engine *ep) 
 
 }
 
-Vector perpFootOneLine(Vector a, Vector u, Vector b, Engine *ep) {
-    enterVariablesOneLine(a, u, b, ep);
+Vector perpFootOneLine(Line f, Vector b, Engine *ep) {
+    enterVariablesOneLine(f, b, ep);
     mxArray *result;
     engEvalString(ep, "a = [a1,a2,a3];");
     engEvalString(ep, "u = [u1,u2,u3];");
@@ -163,6 +164,7 @@ Vector perpFootOneLine(Vector a, Vector u, Vector b, Engine *ep) {
         engEvalString(ep, "x = cast(r, 'double');");
     */
 
+    // as u is the direction vector it can't be 0
     engEvalString(ep, "x = (a1*u1+a2*u2+a3*u3-d)/(-u1*u1-u2*u2-u3*u3)");
     engEvalString(ep, "result = a + x*u");
 
@@ -176,10 +178,12 @@ Vector perpFootOneLine(Vector a, Vector u, Vector b, Engine *ep) {
 /*
   Both Lines are defined by f = a + r*u, g = b + s*v, u and v are already direction vectors.
   You have to creat a Vector** instance, so the result can be saved in it.
-  returns true if lines are skew, returns false if an intersection point exists.
+  returns 0 if parallel, result isn't changed
+	  1 if f and g intersect, result[0] is intersection point
+	  2 if f and g are scew, result[0] is perpFoot of f, result[1] is perpFoot of g
 */
-bool perpFootTwoLines(Vector a, Vector u, Vector b, Vector v, Engine *ep, Vector **result) {
-    enterVariablesTwoLines(a, u, b, v, ep);
+int perpFootTwoLines(Line f, Line g, Engine *ep, Vector **result) {
+    enterVariablesTwoLines(f, g, ep);
     mxArray *same, *parallel;
     engEvalString(ep, "a = [a1, a2, a3];");
     engEvalString(ep, "u = [u1, u2, u3];");
@@ -187,25 +191,38 @@ bool perpFootTwoLines(Vector a, Vector u, Vector b, Vector v, Engine *ep, Vector
     engEvalString(ep, "v = [v1, v2, v3];");
     engEvalString(ep, "dif = [a1 - b1, a2 - b2, a3 - b3]");
     // checks whether the lines intersect, if so result false
-    engEvalString(ep, "A = [-u1 v1; -u2 v2];");    
+    // checks whether a line or a row of A would be 0, so that it can't be inverted
     engEvalString(ep, "bb = [dif(1); dif(2)];");
     // A*x = bb, x = (r, s)
-    engEvalString(ep, "x = inv(A)*bb");
     // checks if equation is also right for the third vectorcomponent.
-    engEvalString(ep, "same = (a3+x(1)*u3 == b3 + x(2) * v3)");
+    if (((f.getU().getV1() != 0) && (g.getU().getV1() != 0)) && ((f.getU().getV2() != 0) && (g.getU().getV2() != 0)) && ((f.getU().getV1() != 0) && (f.getU().getV2() != 0)) && ((g.getU().getV1() != 0) && (g.getU().getV2() != 0))) {
+    	engEvalString(ep, "A = [-u1 v1; -u2 v2];");
+    	engEvalString(ep, "x = A\\bb");
+	engEvalString(ep, "same = (a1+x(1)*u1 == b1 + x(2) * v1)");
+    } else if (((f.getU().getV1() != 0) && (g.getU().getV1() != 0)) && ((f.getU().getV3() != 0) && (g.getU().getV3() != 0)) && ((f.getU().getV1() != 0) && (f.getU().getV3() != 0)) && ((g.getU().getV1() != 0) && (g.getU().getV3() != 0))) {
+    	engEvalString(ep, "A = [-u1 v1; -u3 v3]");
+    	engEvalString(ep, "x = A\\bb");
+	engEvalString(ep, "same = (a2+x(1)*u2 == b2 + x(2) * v2)");
+    } else {
+    	engEvalString(ep, "A = [-u2 v2; -u3 v3]"); 
+    	engEvalString(ep, "x = A\\bb");
+	engEvalString(ep, "same = (a3+x(1)*u3 == b3 + x(2) * v3)");
+    }
     same = engGetVariable(ep, "same");
     if (mxGetPr(same)[0] != 0.0) {
-	printf("same\n");
+	engEvalString(ep, "i = a + x(1)*u");
+	mxArray* intersectionpoint = engGetVariable(ep, "i");
+	result[0] = new Vector(mxGetPr(intersectionpoint)[0], mxGetPr(intersectionpoint)[1], mxGetPr(intersectionpoint)[2]);
 	mxDestroyArray(same);
-	return false;
+	mxDestroyArray(intersectionpoint);
+	return 1;
     }
     // cecks whether the lines are parallel: 0 = u + r*v?
     engEvalString(ep, "parallel = (((-u1/v1) == (-u2/v2)) && ((-u1/v1) == (-u3/v3)));");
     parallel = engGetVariable(ep, "parallel");
     if (mxGetPr(parallel)[0] != 0.0) {
-	printf("parallel\n");
 	mxDestroyArray(parallel);
-	return false;
+	return 0;
     }
     // calculating perpendicular foot points.
     mxArray *resultf, *resultg;
@@ -229,7 +246,39 @@ bool perpFootTwoLines(Vector a, Vector u, Vector b, Vector v, Engine *ep, Vector
     mxDestroyArray(resultg);
     mxDestroyArray(same);
     mxDestroyArray(parallel);
-    return true;
+    return 2;
+}
+
+Vector getApproximationPoint(Line *lines, int quantity, Engine *ep) {
+    Vector points[2*quantity];
+    int pos = 0;
+    int intersects;
+    Vector* result[2];
+    for (int i = 0; i < quantity; i++) {
+	for (int j = i + 1; j < quantity; j++) {
+		intersects = perpFootTwoLines(lines[i], lines[j], ep, result);
+		if (intersects == 1) {
+			points[pos] = *result[0];
+			pos++;
+		} else if (intersects == 2) {
+			points[pos] = *result[0];
+			pos++;
+			points[pos] = *result[1];
+			pos++;
+		}
+	}
+    }
+    int v1, v2, v3;
+    for (int i = 0; i < pos; i++) {
+	v1 = v1 + points[pos].getV1();
+	v2 = v2 + points[pos].getV2();
+	v3 = v3 + points[pos].getV3();
+   }
+   v1 = v1 / pos;
+   v2 = v2 / pos;
+   v3 = v3 / pos;
+   Vector *approximated = new Vector(v1, v2, v3);
+   return *approximated;
 }
 
 
@@ -241,31 +290,49 @@ int main()
         fprintf(stderr, "\nCan't start MATLAB engine\n");
         return EXIT_FAILURE;
     }
-/*  parallel:
-    Vector* a = new Vector(-7, 2, -3);
-    Vector* u = new Vector(1, 2, 3);
-    Vector* b = new Vector(-3, -3, 3);
-    Vector* v = new Vector(3, 6, 9);
     
-    normal:
+/*
+    //Lotfußpunkt (6, 3, 1)
+    Vector* a = new Vector(-2, 1, 7);
+    Vector* u = new Vector(4, 1, -3);
+    Vector* b = new Vector(10, 5, 7);
+
+    //Lotfußpunkt f: (-7,5,3) Lotfußpunkt g: (-1, 1, 5)
     Vector* a = new Vector(-7, 2, -3);
     Vector* u = new Vector(0, 1, 2);
     Vector* b = new Vector(-3, -3, 3);
     Vector* v = new Vector(1, 2, 1);
 
-    intersection point exists
-    */Vector* a = new Vector(4, 2, 8);
+    //Lotfußpunkt f: (8, -1, 7) Lotfußpunkt g: (8, 11, 1)
+    Vector* a = new Vector(3, -1, 7);
+    Vector* u = new Vector(1, 0, 0);
+    Vector* b = new Vector(2, 8, -5);
+    Vector* v = new Vector(2, 1, 2);
+*/
+    //intersection point (3, 6, 11)
+    Vector* a = new Vector(4, 2, 8);
     Vector* u = new Vector(-1, 4, 3);
     Vector* b = new Vector(5, 8, 21);
     Vector* v = new Vector(1, 1, 5);
+    Line* f = new Line(a, u);
+    Line* g = new Line(b, v);
 
-    Vector oneLine = perpFootOneLine(*a, *u, *b, ep);
+    Vector oneLine = perpFootOneLine(*f, *b, ep);
     printf("result is [%f, %f, %f]\n", oneLine.getV1(), oneLine.getV2(), oneLine.getV3());
+
     Vector* result[2];
-    bool intersects = perpFootTwoLines(*a, *u, *b, *v, ep, result);
-    if (intersects) {
-    	printf("Lotfußpunkt von f ist [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
-    	printf("Lotfußpunkt von g ist [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
+    int intersects = perpFootTwoLines(*f, *g, ep, result);
+    if (intersects == 0) {
+	printf("parallel or same\n");
+    } else {
+	if (intersects == 1) {
+    		printf("intersectionpoint is [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
+	} else {
+		if (intersects == 2) { 
+  	  		printf("Lotfußpunkt von f ist [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
+    			printf("Lotfußpunkt von g ist [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
+		}
+	}
     }
     engClose;
     return EXIT_SUCCESS;
