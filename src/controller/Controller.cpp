@@ -32,16 +32,27 @@ void Controller::initialize()
 		
 void Controller::makeMovement()
 {
-	int moveVector[amount][3];
+	int moveVector[3];
 	for(int i = 0; i < amount; i++)
-	{
-		moveVector[i][0] = targetPosition[i].position[0] - currentPosition[i].position[0];
-		moveVector[i][1] = targetPosition[i].position[1] - currentPosition[i].position[1];
-		moveVector[i][2] = targetPosition[i].position[2] - currentPosition[i].position[2];
+	{		
+		control_application::Movement msg;
+		msg.id = i;
+		moveVector[0] = targetPosition[i].position[0] - currentPosition[i].position[0];
+		moveVector[1] = targetPosition[i].position[1] - currentPosition[i].position[1];
+		moveVector[2] = targetPosition[i].position[2] - currentPosition[i].position[2];
+		msg.thrust = 10;
+		msg.yaw = 0.0;
+		msg.pitch = 0.0;
+		msg.roll = 0.0;
+		this->Movement_pub.publish(msg);
 	}
+	
 }
 
 void Controller::MoveFormationCallback(const control_application::MoveFormation::ConstPtr &msg)
 {
 	ROS_INFO("I heard: %f", msg->xMovement);
+	this->formationMovement[0] = msg->xMovement;
+	this->formationMovement[1] = msg->yMovement;
+	this->formationMovement[2] = msg->zMovement;
 }

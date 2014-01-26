@@ -31,7 +31,7 @@ private:
 	ros::Subscriber MoveFormation_sub;
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	ros::Publisher Movement_pub;
-	
+	float* formationMovement;
 };
 
 
