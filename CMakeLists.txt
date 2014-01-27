@@ -105,16 +105,19 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-# add_executable(control_application_node src/Control-Application_node.cpp)
+add_executable(control_application_node src/matlab/Matlab.cpp src/matlab/Vector.cpp src/matlab/Line.cpp src/matlab/Calibration.cpp src/matlab/profiling.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(control_application_node Control-Application_generate_messages_cpp)
 
-## Specify libraries to link a library or executable target against
-# target_link_libraries(control_application_node
-#   ${catkin_LIBRARIES}
-# )
+# Use full path names to go around strange errors since matlab has some strange versions of some libs that are already included in ubuntu.
+target_link_libraries(control_application_node
+   ${catkin_LIBRARIES}
+~/matlab/bin/glnxa64/libeng.so
+~/matlab/bin/glnxa64/libmx.so
+~/matlab/bin/glnxa64/libmat.so
+)
 
 #############
 ## Install ##
