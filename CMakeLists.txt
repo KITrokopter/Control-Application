@@ -108,10 +108,12 @@ add_executable(control_application_node src/matlab/Matlab.cpp src/matlab/Vector.
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(control_application_node Control-Application_generate_messages_cpp)
 
-## Specify libraries to link a library or executable target against
+# Use full path names to go around strange errors since matlab has some strange versions of some libs that are already included in ubuntu.
 target_link_libraries(control_application_node
    ${catkin_LIBRARIES}
-	libeng.so libmx.so libmat.so
+~/matlab/bin/glnxa64/libeng.so
+~/matlab/bin/glnxa64/libmx.so
+~/matlab/bin/glnxa64/libmat.so
 )
 
 #############
