@@ -8,10 +8,13 @@ public:
 	//both arrays of the return pointer have size three
 	int* getPosition();
 	short int* getOrientation();
+	void setPosition(int * position);
+	void setOrientation(short int* orientation);
 	int position[3];
 	short int orientation[3];
 	time_t getTimestamp();
 	Position6DOF(int x, int y, int z, short int xOrientation, short int yOrientation, short int zOrientation);
+	Position6DOF(int x, int y, int z);
 
 private:
 	//int position[3];

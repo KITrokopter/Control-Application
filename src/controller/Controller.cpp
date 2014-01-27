@@ -1,3 +1,4 @@
+
 #include "Controller.hpp"
 
 
@@ -10,7 +11,8 @@ Controller::Controller(Position6DOF targetPosition[], Position6DOF currentPositi
      */
     ros::NodeHandle n;
 	//Subscriber for the MoveFormation data of the Quadcopts (1000 is the max. buffered messages)
-	this->MoveFormation_sub = n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);	
+	this->MoveFormation_sub = n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
+	this->SetFormation_sub = n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
 
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	this->Movement_pub = n.advertise<control_application::Movement>("Movement", 1000);
@@ -55,4 +57,22 @@ void Controller::MoveFormationCallback(const control_application::MoveFormation:
 	this->formationMovement[0] = msg->xMovement;
 	this->formationMovement[1] = msg->yMovement;
 	this->formationMovement[2] = msg->zMovement;
+}
+
+void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
+{
+	this->formation.distance = msg->distance;
+	this->formation.amount = msg->amount;
+	for(int i = 0; i < amount; i++)
+	{
+		int * pos, * ori;
+		pos[0] = msg->xPositions;
+		pos[1] = msg->yPositions;
+		pos[2] = msg->zPositions;
+		this->formation.position[i].setPosition(msposition.getPosition());
+		//ori[0] = msg->
+		//ori[1] = msg->
+		//ori[2] = msg->
+		//this->formation.position[i].setOrientation(position.getOrientation());
+	}
 }

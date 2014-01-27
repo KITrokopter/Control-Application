@@ -48,6 +48,7 @@ add_message_files(
   FILES
   Movement.msg
   MoveFormation.msg
+  CurrentPosition.msg
 )
 
 ## Generate services in the 'srv' folder

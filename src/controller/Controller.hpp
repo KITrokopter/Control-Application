@@ -2,10 +2,10 @@
 #define CONTROLLER_HPP
 #include "Position6DOF.hpp"
 #include "Formation.hpp"
-#include "Gamepad.hpp"
 #include "ros/ros.h"
 #include "control_application/MoveFormation.h"
 #include "control_application/Movement.h"
+#include "api_application/SetFormation.h"
 
 
 class Controller {
@@ -20,15 +20,16 @@ public:
 	Position6DOF* getTargetPosition();
 protected:
 	void MoveFormationCallback(const control_application::MoveFormation::ConstPtr& msg);
-
+	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
 private:
 	Position6DOF targetPosition[], currentPosition[];
-	//Brauchen wir Formation hier ueberhaupt. Wo ist die gewaehlte Formation gespeichert? Wo sind die Quadcopter-Objekte gespeichert? Wo die Kameras? Gamepad?
+	//Identification der Quadcopters?
 	Formation formation;
-	Gamepad gamepad;
 	int amount;
 	//Subscriber for the MoveFormation data of the Quadcopts
 	ros::Subscriber MoveFormation_sub;
+	//Subscriber for Formation data from API
+	ros::Subscriber SetFormation_sub;
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	ros::Publisher Movement_pub;
 	float* formationMovement;

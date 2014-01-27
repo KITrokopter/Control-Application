@@ -1,12 +1,14 @@
+
 #include "Formation.hpp"
 
 Formation::Formation(int distance, int amount, Position6DOF * position)
 {
 	this->distance = distance;
 	this->amount = amount;
-	for(int i=0; i < amount; i++)
+	for(int i = 0; i < amount; i++)
 	{
-		this->position[i] = position[i];
+		this->position[i].setPosition(position.getPosition());
+		this->position[i].setOrientation(position.getOrientation());
 	}
 }
 
@@ -24,7 +26,8 @@ void Formation::setPosition(Position6DOF * position)
 {
 	for(int i=0; i < amount; i++)
 	{
-		this->position[i] = position[i];
+		this->position[i].setPosition(position.getPosition());
+		this->position[i].setOrientation(position.getOrientation());
 	}
 }
 
