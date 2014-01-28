@@ -74,7 +74,9 @@ void Controller::move()
 {
 	control_application::Movement msg;
 	int * check = this->currentPosition[id].getPosition();
-	msg.id = this->idString;
+	int * target = this->targetPosition[id].getPosition();
+	//msg.id = this->idString;
+	msg.id = this->id;
 	msg.thrust = this->thrust;
 	msg.yaw = this->yaw;
 	msg.pitch = this->pitch;
@@ -123,7 +125,7 @@ void Controller::buildFormation()
 	int * first;
 	for(int i = 0; i < amount; i++)
 	{
-		this->idString = quadcopters[i];
+		this->idString = this->quadcopters[i];
 		this->id = i;
 		//What is a good value here to mount slowly?
 		this->thrust = START;
@@ -160,7 +162,25 @@ void Controller::buildFormation()
 	}
 }
 
-
+void Controller::shutdownFormation()
+{
+	for(int i = 0; i < amount; i++)
+	{
+		this->idString = this->quadcopters[i];
+		this->id = i;
+		this->thrust = STAND_STILL;
+		this->yaw = 0;
+		this->pitch = 0;
+		this->roll = 0;
+		move();
+		//TODO Check for collisions when declining
+		this->thrust = DECLINE;
+		move();
+		//TODO Is this point to high?
+		this->thrust = 0;
+		move();
+	}
+}
 
 void Controller::MoveFormationCallback(const control_application::MoveFormation::ConstPtr &msg)
 {

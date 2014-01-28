@@ -6,9 +6,10 @@
 #include "control_application/MoveFormation.h"
 #include "control_application/Movement.h"
 //TODO How to include when not in the same package
-#include "api_application/SetFormation.h"
-#define STAND_STILL 10
+//#include "api_application/SetFormation.h"
+#define STAND_STILL 100
 #define START 1000
+#define DECLINE 10
 //TODO are three coordinate checks too much? Doable? Add epsilon?
 #define POS_CHECK (check[0] != target[0]) || (check[1] != target[1]) || (check[2] != target[2])
 
@@ -24,7 +25,7 @@ public:
 	//use this as service and then don't use setformation
 	//void buildFormation(Formation formation);
 	void buildFormation();
-	void shutdown();
+	void shutdownFormation();
 	void checkInputMovement();
 	Position6DOF* getTargetPosition();
 protected:
