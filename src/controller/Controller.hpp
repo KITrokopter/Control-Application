@@ -5,16 +5,25 @@
 #include "ros/ros.h"
 #include "control_application/MoveFormation.h"
 #include "control_application/Movement.h"
+//TODO How to include when not in the same package
 #include "api_application/SetFormation.h"
-
+#define STAND_STILL 10
+#define START 1000
+//TODO are three coordinate checks too much? Doable? Add epsilon?
+#define POS_CHECK (check[0] != target[0]) || (check[1] != target[1]) || (check[2] != target[2])
 
 class Controller {
 public:
 	Controller(Position6DOF *targetPosition, Position6DOF *currentPosition, Formation formation);
+	Controller();
 	void initialize();
-	void makeMovement();
-	void setTargetPosition(Position6DOF *targetPosition);
-	void buildFormation(Formation formation);
+	void calculateMovement();
+	void move();
+	void convertMovement(int* vector);
+	void setTargetPosition();
+	//use this as service and then don't use setformation
+	//void buildFormation(Formation formation);
+	void buildFormation();
 	void shutdown();
 	void checkInputMovement();
 	Position6DOF* getTargetPosition();
@@ -33,6 +42,12 @@ private:
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	ros::Publisher Movement_pub;
 	float* formationMovement;
+	char quadcopters[][40];
+	int thrust;
+	float pitch, roll, yaw;
+	char * idString;
+	int id;
+	int startProcess;
 };
 
 
