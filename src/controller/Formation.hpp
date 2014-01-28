@@ -1,18 +1,21 @@
 #ifndef FORMATION_HPP
 #define FORMATION_HPP
+#include "Position6DOF.hpp"
 
 class Formation {
 public:
-	setDistance(int distance);
-	setAmount(int amount);
-	setPosition(int position[amount][3]);
+	Formation(int distance, int amount, Position6DOF * position);
+	//Formation(){}
+	void setDistance(int distance);
+	void setAmount(int amount);
+	void setPosition(Position6DOF * position);
 	int getDistance();
-	int setAmount();
-	int[amount][3] setPosition();
+	int getAmount();
+	Position6DOF* getPosition();
 private:
 	int distance;
 	int amount;
-	int position[amount][3];
+	Position6DOF* position;
 };
 
 

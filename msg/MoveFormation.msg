@@ -1,5 +1,5 @@
 Header header
-float32 xMovement
-float32 yMovement
-float32 zMovement
+float64 xMovement
+float64 yMovement
+float64 zMovement
 
