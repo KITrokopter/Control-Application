@@ -117,7 +117,10 @@ add_executable(control_application_node
 	#src/controller/main.cpp
 )
 
-add_dependencies(control_application_node control_application_generate_messages_cpp)
+add_dependencies(control_application_node
+	control_application_generate_messages_cpp
+	api_application_generate_messages_cpp
+)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
