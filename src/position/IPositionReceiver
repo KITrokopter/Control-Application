@@ -1,0 +1,20 @@
+#ifndef IPOSITION_RECEIVER
+#define IPOSITION_RECEIVER
+
+#include <vector>
+#include "../matlab/Vector.h"
+
+class IPositionReceiver
+{
+public:
+	/**
+	 * Method: updatePositions
+	 *
+	 * Takes the positions of all quadcopters that were updated.
+	 * Automatically generates new control information for the quadcopters
+	 * and sends it via ROS.
+	 */
+	virtual void updatePositions(std::vector<Vector> positions, std::vector<int> ids) = 0;
+};
+
+#endif // IPOSITION_RECEIVER
