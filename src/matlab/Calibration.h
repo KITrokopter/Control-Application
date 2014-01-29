@@ -12,9 +12,11 @@
 #include "engine.h"
 
 class Matlab {
+public:
+	Calibration();
 	// sqareLengthX: length of each square of the checkboard in X direction (mm)
 	// number of square corners of the checkerboard in the X direction
-	void multiCameraCalibration(double numberCameras, double squareLengthX, double squareLengthY, double numberSquareCornersX, double numberSquareCornersY, Engine *ep) {
-};
+	void multiCameraCalibration(double numberCameras, double squareLengthX, double squareLengthY, double numberSquareCornersX, double numberSquareCornersY, Engine *ep);
+}
 
 #endif /* MATLAB_H_ */

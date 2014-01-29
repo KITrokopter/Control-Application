@@ -16,6 +16,11 @@
 #include "profiling.hpp"
 #define  BUFSIZE 256
 
+Matlab::Matlab () {
+
+}
+
+
 void enterVariablesOneLine(Line f, Vector b, Engine *ep) {
 	mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3;
 
@@ -183,6 +188,7 @@ Vector perpFootOneLine(Line f, Vector b, Engine *ep) {
 	  1 if f and g intersect, result[0] is intersection point
 	  2 if f and g are scew, result[0] is perpFoot of f, result[1] is perpFoot of g
 */
+
 int perpFootTwoLines(Line f, Line g, Engine *ep, Vector **result) {
 	enterVariablesTwoLines(f, g, ep);
 	mxArray *same, *parallel;
@@ -292,15 +298,98 @@ Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor, En
 	return *interpolatedNewPos;
 }
 
+
+
+//M. Warren, D. McKinnon, B. Upcroft, "Online Calibration of Stereo Rigs for Long-Term Autonomy", in International Conference on Robotics and Automation, Karlsruhe, Germany, 2013.
+void multiCameraCalibration(int numberCameras, double squareLengthX, double squareLengthY, int numberSquareCornersX, int numberSquareCornersY, Engine *ep) {
+    mxArray *slx, *sly, *nscx, *nscy, *nc;
+
+    int dataSlx[1] = {squareLengthX};
+    slx = mxCreateDoubleMatrix(1, 1, mxREAL);
+    memcpy((void *)mxGetPr(slx), (void *)dataSlx, sizeof(dataSlx));
+    engPutVariable(ep, "dX", slx);
+
+    int dataSly[1] = {squareLengthY};
+    sly = mxCreateDoubleMatrix(1, 1, mxREAL);
+    memcpy((void *)mxGetPr(sly), (void *)dataSly, sizeof(dataSly));
+    engPutVariable(ep, "dY", sly);
+
+    int dataNscx[1] = {numberSquareCornersX};
+    nscx = mxCreateNumericMatrix(1, 1, mxSINGLE_CLASS, mxREAL);
+    memcpy((void *)mxGetPr(nscx), (void *)dataNscx, sizeof(dataNscx));
+    engPutVariable(ep, "nx_crnrs", nscx);
+
+    int dataNscy[1] = {numberSquareCornersY};
+    nscy = mxCreateNumericMatrix(1, 1, mxSINGLE_CLASS, mxREAL);
+    memcpy((void *)mxGetPr(nscy), (void *)dataNscy, sizeof(dataNscy));
+    engPutVariable(ep, "ny_crnrs", nscy);
+
+    int dataNc[1] = {numberCameras};
+    nc = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
+    memcpy((void *)mxGetPr(nc), (void *)dataNc, sizeof(dataNc));
+    engPutVariable(ep, "nc", nc);
+
+    // Where the images are (forward slashes only, and must include a trailing slash)
+    engEvalString(ep, "input_dir = '/home/dani/input_calibrationtest/';");
+
+    // Where the data will be saved (forward slashes only, and must include a trailing slash). This folder should already exist
+    engEvalString(ep, "output_dir = '/home/dani/output_calibrationtest/';");
+
+    // Image format: jpeg, bmp, tiff, png etc.
+    engEvalString(ep, "format_image = 'jpeg'");
+
+    // tolerance in pixels of reprojection of checkerboard corners
+    engEvalString(ep, "proj_tol = 0.6;");
+
+    // The index of the cameras to calibrate. In this example we are calibrating four cameras with sequential naming.
+    // camera_vec = [0 1 2 3]; % version 1.2 and before
+    // camera_vec = [0 1; 0 2; 0 3]';
+    engEvalString(ep, "camera_vec = [zeros(1,(nc-1), 'single'); (1:(cast(nc, 'single')-1))]");
+
+    // The index of the cameras to be rotated (1 for rotating 180 degrees)
+    // rotcam = [0 0 0 0]; % version 1.2 and before
+    engEvalString(ep, "rotcam = zeros(2, (nc), 'single')';");
+
+    // indicate whether or not to use the fisheye calibration routine (not strictly required).
+    engEvalString(ep, "fisheye = false;");
+
+    // indicate whether or not to use the third radial distortion term when doing a projective calibration (not strictly required)
+    engEvalString(ep, "k3_enable = false;");
+
+    // the base naming convention for the calibration images (not strictly required), will default to the 'camX_image' convention if not used.
+    // cam_names = ['cam0_image', 'cam1_image', 'cam2_image', 'cam3_image']; % version 1.2 and before
+    engEvalString(ep, "cam_names = ['cam0_image'; 'cam1_image'; 'cam2_image'; 'cam3_image'];");
+
+    // indicate whether or not to use the batch mode of the stereo calibrator (not strictly required)
+    engEvalString(ep, "batch = false;");
+
+    // Perform the calibration
+
+    engEvalString(ep, "auto_multi_calibrator_efficient(camera_vec, input_dir, output_dir, format_image, dX, dY, nx_crnrs, ny_crnrs, proj_tol, rotcam, cam_names, fisheye, k3_enable, batch);");
+
+}
+
+
+
+
+
+
+
+
+
+
 int main()
 {
 	Engine *ep;
-	// starts a MATLAB process
-	if (!(ep = engOpen(""))) {
+    // starts a MATLAB process
+    if (!(ep = engOpen(""))) {
         	fprintf(stderr, "\nCan't start MATLAB engine\n");
         	return EXIT_FAILURE;
-	}
-    
+    }
+
+    engEvalString(ep, "auto_multi_calibrator_efficient([0 0; 0 1; 0 2; 0 3]', '/home/dani/input_calibrationtest/', '/home/dani/output_calibrationtest/', 'jpeg',100.0, 100.0, 5, 8, 0.6,[0 0; 0 0; 0 0; 0 0], ['cam0_image', 'cam1_image', 'cam2_image', 'cam3_image'], false, false, false)");
+
+    //multiCameraCalibration(2, 30, 30, 11, 8, ep);
 /*
 	//Lotfußpunkt (6, 3, 1)
 	Vector* a = new Vector(-2, 1, 7);
@@ -312,19 +401,19 @@ int main()
 	Vector* u = new Vector(0, 1, 2);
 	Vector* b = new Vector(-3, -3, 3);
 	Vector* v = new Vector(1, 2, 1);
-*/
-	//Lotfußpunkt f: (8, -1, 7) Lotfußpunkt g: (8, 11, 1)
-	Vector* a = new Vector(3, -1, 7);
+
+    //Lotfußpunkt f: (8, -1, 7) Lotfußpunkt g: (8, 11, 1)
+    Vector* a = new Vector(3, -1, 7);
 	Vector* u = new Vector(1, 0, 0);
 	Vector* b = new Vector(2, 8, -5);
 	Vector* v = new Vector(2, 1, 2);
 
-	/*intersection point (3, 6, 11)
+    intersection point (3, 6, 11)
 	Vector* a = new Vector(4, 2, 8);
 	Vector* u = new Vector(-1, 4, 3);
 	Vector* b = new Vector(5, 8, 21);
-	Vector* v = new Vector(1, 1, 5);*/
-	Line* f = new Line(a, u);
+    Vector* v = new Vector(1, 1, 5);
+    Line* f = new Line(a, u);
 	Line* g = new Line(b, v);
 	long int first = getNanoTime();
 	Vector oneLine = perpFootOneLine(*f, *b, ep);
@@ -346,7 +435,7 @@ int main()
     				printf("Lotfußpunkt von g ist [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
 			}
 		}
-	}
+    }*/
 	engClose;
     	return EXIT_SUCCESS;
 }

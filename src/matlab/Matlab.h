@@ -12,6 +12,8 @@
 #include "engine.h"
 
 class Matlab {
+public:
+	Matlab();
 	void enterVariablesOneLine(Line f, Vector b, Engine *ep);
 	void enterVariablesTwoLines(Line f, Line g, Engine *ep);
 	Vector perpFootOneLine(Line f, Vector b, Engine *ep);
