@@ -7,6 +7,7 @@ project(control_application)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  rosconsole
   message_generation
 )
 
@@ -68,8 +69,7 @@ add_message_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-	control_application
-   std_msgs
+	std_msgs
 )
 
 ###################################
@@ -84,9 +84,8 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES control_application
-#  CATKIN_DEPENDS roscpp std_msgs
+	CATKIN_DEPENDS roscpp std_msgs message_runtime
 #  DEPENDS system_lib
-CATKIN_DEPENDS message_runtime
 )
 
 ###########
@@ -106,7 +105,19 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(control_application_node src/matlab/Matlab.cpp src/matlab/Vector.cpp src/matlab/Line.cpp src/matlab/Calibration.cpp src/matlab/profiling.cpp)
+add_executable(control_application_node 
+	src/matlab/Matlab.cpp 
+	src/matlab/Vector.cpp 
+	src/matlab/Line.cpp 
+	src/matlab/Calibration.cpp 
+	src/matlab/profiling.cpp
+	src/controller/Controller.cpp
+	src/controller/Formation.cpp
+	src/controller/Position6DOF.cpp
+	#src/controller/main.cpp
+)
+
+add_dependencies(control_application_node control_application_generate_messages_cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

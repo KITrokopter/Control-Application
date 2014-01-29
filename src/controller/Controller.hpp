@@ -6,7 +6,7 @@
 #include "control_application/MoveFormation.h"
 #include "control_application/Movement.h"
 //TODO How to include when not in the same package
-//#include "api_application/SetFormation.h"
+#include "api_application/SetFormation.h"
 #define STAND_STILL 100
 #define START 1000
 #define DECLINE 10

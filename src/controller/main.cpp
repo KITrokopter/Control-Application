@@ -1,3 +1,9 @@
+#include <ros/ros.h>
+#include "Controller.hpp"
+#include "Formation.hpp"
+#include "Position6DOF.hpp"
+#include "control_application/MoveFormation.h"
+#include "control_application/Movement.h"
 int main(int argc, char** argv)
 {
 // TODO: Create unique name.

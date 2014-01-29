@@ -1,6 +1,4 @@
-
 #include "Controller.hpp"
-
 
 Controller::Controller(Position6DOF targetPosition[], Position6DOF currentPosition[], Formation formation)
 {
@@ -192,19 +190,21 @@ void Controller::MoveFormationCallback(const control_application::MoveFormation:
 
 void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
 {
-	this->formation.distance = msg->distance;
-	this->formation.amount = msg->amount;
-	for(int i = 0; i < amount; i++)
+	this->formation.setDistance(msg->distance);
+	this->formation.setAmount(msg->amount);
+	Position6DOF * formPos;
+	for(int i = 0; i < msg->amount; i++)
 	{
 		int * pos, * ori;
-		pos[0] = msg->xPositions;
-		pos[1] = msg->yPositions;
-		pos[2] = msg->zPositions;
-		this->formation.position[i].setPosition(msposition.getPosition());
+		pos[0] = (int)msg->xPositions[i];
+		pos[1] = (int)msg->yPositions[i];
+		pos[2] = (int)msg->zPositions[i];
+		formPos[i].setPosition(pos);
 		//Depends on the calculation of target and current position
 		//ori[0] = msg->
 		//ori[1] = msg->
 		//ori[2] = msg->
-		//this->formation.position[i].setOrientation(position.getOrientation());
+		//formPos[i].setOrientation(ori);
 	}
+	this->formation.setPosition(formPos);
 }
