@@ -39,10 +39,10 @@ Controller::Controller()
 
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	this->Movement_pub = n.advertise<control_application::Movement>("Movement", 1000);
-	int invalid[3] = {-1, -1, -1};
+	int invalid[3] = {INVALID, INVALID, INVALID};
 	this->currentPosition[0].setPosition(invalid);
 	this->targetPosition[0].setPosition(invalid);
-	this->formation.setAmount(-1);
+	this->formation.setAmount(INVALID);
 }
 
 void Controller::initialize()
@@ -64,8 +64,7 @@ void Controller::calculateMovement()
 		moveVector[2] = target[2] - current[2];
 		convertMovement(moveVector);
 		move();
-	}
-	
+	}	
 }
 
 void Controller::move()
@@ -79,7 +78,10 @@ void Controller::move()
 	msg.yaw = this->yaw;
 	msg.pitch = this->pitch;
 	msg.roll = this->roll;
-	while(check[0] == -1 || POS_CHECK)
+
+	// Send values until targed is reached.
+	//TODO: change it
+	while(check[0] != INVALID || POS_CHECK)		//TODO: changed by Do.
 	{
 		this->Movement_pub.publish(msg);
 		check = this->currentPosition[id].getPosition();		
