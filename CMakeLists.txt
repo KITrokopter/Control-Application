@@ -151,6 +151,7 @@ add_dependencies(position_module
 
 target_link_libraries(position_module
 	${catkin_LIBRARIES}
+	libopencv_core.so
 )
 
 #############
