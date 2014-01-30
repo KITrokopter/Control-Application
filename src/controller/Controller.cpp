@@ -116,9 +116,10 @@ void Controller::convertMovement(int* vector)
 	double ratio_roll = vector[0] / length;
 	double ratio_pitch = vector[1] / length;
 
+	this->roll = ratio_roll + ROLL_STEP;
+	this->pitch = ratio_pitch + PITCH_STEP;
+
 	this->yawrate = 0.0;
-	this->pitch = 0.0;
-	this->roll = 0.0;
 }
 
 //Move the last Positions according to the formation movement vector (without orientation right now)
