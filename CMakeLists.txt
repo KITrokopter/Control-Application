@@ -53,11 +53,10 @@ add_message_files(
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  StartCalibration.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -132,6 +131,16 @@ target_link_libraries(control_application_node
 ~/matlab/bin/glnxa64/libeng.so
 ~/matlab/bin/glnxa64/libmx.so
 ~/matlab/bin/glnxa64/libmat.so
+)
+
+add_executable(position_module
+	src/position/tmpmain.cpp
+	src/position/PositionModule.cpp
+	src/position/DummyPositionReceiver.cpp
+)
+
+target_link_libraries(position_module
+	${catkin_LIBRARIES}
 )
 
 #############
