@@ -75,7 +75,7 @@ void Controller::move()
 	//msg.id = this->idString;
 	msg.id = this->id;
 	msg.thrust = this->thrust;
-	msg.yaw = this->yaw;
+	msg.yaw = this->yawrate;
 	msg.pitch = this->pitch;
 	msg.roll = this->roll;
 
@@ -95,10 +95,28 @@ void Controller::move()
 
 void Controller::convertMovement(int* vector)
 {
-//insert conversion from vectors to thrust, yaw, pitch...
+	/* conversion from vectors to thrust, yawrate, pitch... */
+	int thrust_react_z_low = -5;
+	int thrust_react_z_high = 5;
+	
+	if (vector[2] > thrust_react_z_high) {
+		this->thrust += THRUST_STEP;
+	} else if (vector[2] < thrust_react_z_high) {
+		this->thrust -= THRUST_STEP;
+	} else
+		/* Not sure what to do here, maybe nothing. */
+	}
 
-	this->thrust = 0.0;
-	this->yaw = 0.0;
+	double length = 0;
+	for (int i = 0; i < 3; i++) {
+		length = length + vector[i]*vector[i];
+	}
+	length = sqrt(length);
+
+	double ratio_roll = vector[0] / length;
+	double ratio_pitch = vector[1] / length;
+
+	this->yawrate = 0.0;
 	this->pitch = 0.0;
 	this->roll = 0.0;
 }
@@ -117,7 +135,10 @@ void Controller::setTargetPosition()
 }
 
 
-//Gehe davon aus dass es ein Topic mit Quadcopters gibt mit URI/Hardware ID und diese dem quadcopter array zugewiesen wurde qc[id][uri/hardware id]
+/*
+ * Gehe davon aus dass es ein Topic mit Quadcopters gibt mit URI/Hardware ID 
+ * und diese dem quadcopter array zugewiesen wurde qc[id][uri/hardware id]
+ */
 void Controller::buildFormation()
 {
 	Position6DOF* formPos = this->formation.getPosition();
@@ -127,9 +148,8 @@ void Controller::buildFormation()
 	{
 		this->idString = this->quadcopters[i];
 		this->id = i;
-		//What is a good value here to mount slowly?
-		this->thrust = START;
-		this->yaw = 0;
+		this->thrust = THRUST_START;
+		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
 		int * target = formPos[i].getPosition();
@@ -169,15 +189,15 @@ void Controller::shutdownFormation()
 		this->idString = this->quadcopters[i];
 		this->id = i;
 		this->thrust = STAND_STILL;
-		this->yaw = 0;
+		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
 		move();
 		//TODO Check for collisions when declining
-		this->thrust = DECLINE;
+		this->thrust = THRUST_DECLINE;
 		move();
 		//TODO Is this point to high?
-		this->thrust = 0;
+		this->thrust = THRUST_MIN;
 		move();
 	}
 }

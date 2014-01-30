@@ -1,5 +1,6 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
+#include <math.h>
 #include "Position6DOF.hpp"
 #include "Formation.hpp"
 #include "ros/ros.h"
@@ -9,9 +10,10 @@
 #include "api_application/SetFormation.h"
 
 #define THRUST_MIN 10001
-#define THRUST_STAND_STILL 15001
-#define START 18000
-#define DECLINE 10
+#define THRUST_STAND_STILL 18001
+#define THRUST_START 22000
+#define THRUST_DECLINE 20000
+#define THRUST_STEP 50
 #define INVALID -1
 
 //TODO are three coordinate checks too much? Doable? Add epsilon?
@@ -50,7 +52,7 @@ private:
 	float* formationMovement;
 	char quadcopters[][40];
 	int thrust;
-	float pitch, roll, yaw;
+	float pitch, roll, yawrate;
 	char * idString;
 	int id;
 	int startProcess;
