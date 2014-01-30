@@ -7,6 +7,7 @@ project(control_application)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  sensor_msgs
   rosconsole
   message_generation
 )
@@ -53,11 +54,11 @@ add_message_files(
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  StartCalibration.srv
+  TakeCalibrationPicture.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -70,6 +71,7 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  sensor_msgs
 )
 
 ###################################
@@ -84,7 +86,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES control_application
-  CATKIN_DEPENDS roscpp std_msgs message_runtime
+  CATKIN_DEPENDS roscpp std_msgs sensor_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -120,6 +122,7 @@ add_executable(control_application_node
 add_dependencies(control_application_node
   control_application_generate_messages_cpp
   api_application_generate_messages_cpp
+  camera_application_generate_messages_cpp
 )
 
 ## Add cmake target dependencies of the executable/library
@@ -132,6 +135,23 @@ target_link_libraries(control_application_node
   ~/matlab/bin/glnxa64/libeng.so
   ~/matlab/bin/glnxa64/libmx.so
   ~/matlab/bin/glnxa64/libmat.so
+)
+
+add_executable(position_module
+	src/position/tmpmain.cpp
+	src/position/PositionModule.cpp
+	src/position/DummyPositionReceiver.cpp
+)
+
+add_dependencies(position_module
+	control_application_generate_messages_cpp
+	api_application_generate_messages_cpp
+	camera_application_generate_messages_cpp
+)
+
+target_link_libraries(position_module
+	${catkin_LIBRARIES}
+	libopencv_core.so
 )
 
 #############
