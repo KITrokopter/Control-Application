@@ -1,22 +1,24 @@
 /*
- * Matlab.h
+ * Calibration.h
  *
  *  Created on: 13.01.2014
  *      Author: daniela
  */
 
-#ifndef MATLAB_H_
-#define MATLAB_H_
+#ifndef Calibration_H_
+#define Calibration_H_
 #include "Line.h"
 #include "Vector.h"
 #include "engine.h"
 
-class Matlab {
+class Calibration {
+private: Engine *ep;
 public:
 	Calibration();
+	Calibration(Engine *ep);
 	// sqareLengthX: length of each square of the checkboard in X direction (mm)
 	// number of square corners of the checkerboard in the X direction
-	void multiCameraCalibration(double numberCameras, double squareLengthX, double squareLengthY, double numberSquareCornersX, double numberSquareCornersY, Engine *ep);
-}
+	void multiCameraCalibration(int numberCameras, double squareLengthX, double squareLengthY, int numberSquareCornersX, int numberSquareCornersY);
+};
 
-#endif /* MATLAB_H_ */
+#endif /* Calibration_H_ */

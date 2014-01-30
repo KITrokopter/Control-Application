@@ -14,14 +14,32 @@
 #include "Vector.h"
 #include "Line.h"
 #include "profiling.hpp"
+#include "Calibration.h"
 #define  BUFSIZE 256
 
-Matlab::Matlab () {
-
+Matlab::Matlab() {
+    Engine *ep;
+    // starts a MATLAB process
+    if (!(ep = engOpen(""))) {
+            fprintf(stderr, "\nCan't start MATLAB engine\n");
+    } else {
+        this->ep = ep;
+    }
 }
 
+Matlab::Matlab (Engine *ep) {
+    this->ep = ep;
+}
 
-void enterVariablesOneLine(Line f, Vector b, Engine *ep) {
+void Matlab::destroyMatlab() {
+    engClose(ep);
+}
+
+Engine* Matlab::getEngine() {
+    return this->ep;
+}
+
+void Matlab::enterVariablesOneLine(Line f, Vector b) {
 	mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3;
 
 	double dataa1[1] = {f.getA().getV1()};
@@ -38,7 +56,7 @@ void enterVariablesOneLine(Line f, Vector b, Engine *ep) {
 
 	a1 = mxCreateDoubleMatrix(1, 1, mxREAL);
 	memcpy((void *)mxGetPr(a1), (void *)dataa1, sizeof(dataa1));
-	engPutVariable(ep, "a1", a1);
+    engPutVariable(ep, "a1", a1);
 	a2 = mxCreateDoubleMatrix(1, 1, mxREAL);
 	memcpy((void *)mxGetPr(a2), (void *)dataa2, sizeof(dataa2));
 	engPutVariable(ep, "a2", a2);
@@ -78,7 +96,7 @@ void enterVariablesOneLine(Line f, Vector b, Engine *ep) {
 
 }
 
-void enterVariablesTwoLines(Line f, Line g, Engine *ep) {
+void Matlab::enterVariablesTwoLines(Line f, Line g) {
 	mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3, *v1, *v2, *v3;
 
 	double dataa1[1] = {f.getA().getV1()};
@@ -152,8 +170,8 @@ void enterVariablesTwoLines(Line f, Line g, Engine *ep) {
 
 }
 
-Vector perpFootOneLine(Line f, Vector b, Engine *ep) {
-	enterVariablesOneLine(f, b, ep);
+Vector Matlab::perpFootOneLine(Line f, Vector b) {
+    enterVariablesOneLine(f, b);
 	mxArray *result;
 	engEvalString(ep, "a = [a1,a2,a3];");
 	engEvalString(ep, "u = [u1,u2,u3];");
@@ -189,8 +207,8 @@ Vector perpFootOneLine(Line f, Vector b, Engine *ep) {
 	  2 if f and g are scew, result[0] is perpFoot of f, result[1] is perpFoot of g
 */
 
-int perpFootTwoLines(Line f, Line g, Engine *ep, Vector **result) {
-	enterVariablesTwoLines(f, g, ep);
+int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
+    enterVariablesTwoLines(f, g);
 	mxArray *same, *parallel;
 	engEvalString(ep, "a = [a1, a2, a3];");
 	engEvalString(ep, "u = [u1, u2, u3];");
@@ -256,14 +274,14 @@ int perpFootTwoLines(Line f, Line g, Engine *ep, Vector **result) {
 	return 2;
 }
 
-Vector interpolateLines(Line *lines, int quantity, Engine *ep) {
+Vector Matlab::interpolateLines(Line *lines, int quantity) {
 	Vector points[2*quantity];
 	int pos = 0;
 	int intersects;
 	Vector* result[2];
 	for (int i = 0; i < quantity; i++) {
 		for (int j = i + 1; j < quantity; j++) {
-			intersects = perpFootTwoLines(lines[i], lines[j], ep, result);
+            intersects = perpFootTwoLines(lines[i], lines[j], result);
 			if (intersects == 1) {
 				points[pos] = *result[0];
 				pos++;
@@ -288,8 +306,8 @@ Vector interpolateLines(Line *lines, int quantity, Engine *ep) {
 	return *approximated;
 }
 
-Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor, Engine *ep) {
-	Vector newPos = perpFootOneLine(line, quadPos, ep);
+Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
+    Vector newPos = perpFootOneLine(line, quadPos);
 	//interpolatedNewPos = newPos * interpolationFactor + quadPos * (1 - interpolationFactor)
 	double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
 	double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
@@ -300,98 +318,13 @@ Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor, En
 
 
 
-//M. Warren, D. McKinnon, B. Upcroft, "Online Calibration of Stereo Rigs for Long-Term Autonomy", in International Conference on Robotics and Automation, Karlsruhe, Germany, 2013.
-void multiCameraCalibration(int numberCameras, double squareLengthX, double squareLengthY, int numberSquareCornersX, int numberSquareCornersY, Engine *ep) {
-    mxArray *slx, *sly, *nscx, *nscy, *nc;
-
-    int dataSlx[1] = {squareLengthX};
-    slx = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(slx), (void *)dataSlx, sizeof(dataSlx));
-    engPutVariable(ep, "dX", slx);
-
-    int dataSly[1] = {squareLengthY};
-    sly = mxCreateDoubleMatrix(1, 1, mxREAL);
-    memcpy((void *)mxGetPr(sly), (void *)dataSly, sizeof(dataSly));
-    engPutVariable(ep, "dY", sly);
-
-    int dataNscx[1] = {numberSquareCornersX};
-    nscx = mxCreateNumericMatrix(1, 1, mxSINGLE_CLASS, mxREAL);
-    memcpy((void *)mxGetPr(nscx), (void *)dataNscx, sizeof(dataNscx));
-    engPutVariable(ep, "nx_crnrs", nscx);
-
-    int dataNscy[1] = {numberSquareCornersY};
-    nscy = mxCreateNumericMatrix(1, 1, mxSINGLE_CLASS, mxREAL);
-    memcpy((void *)mxGetPr(nscy), (void *)dataNscy, sizeof(dataNscy));
-    engPutVariable(ep, "ny_crnrs", nscy);
-
-    int dataNc[1] = {numberCameras};
-    nc = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
-    memcpy((void *)mxGetPr(nc), (void *)dataNc, sizeof(dataNc));
-    engPutVariable(ep, "nc", nc);
-
-    // Where the images are (forward slashes only, and must include a trailing slash)
-    engEvalString(ep, "input_dir = '/home/dani/input_calibrationtest/';");
-
-    // Where the data will be saved (forward slashes only, and must include a trailing slash). This folder should already exist
-    engEvalString(ep, "output_dir = '/home/dani/output_calibrationtest/';");
-
-    // Image format: jpeg, bmp, tiff, png etc.
-    engEvalString(ep, "format_image = 'jpeg'");
-
-    // tolerance in pixels of reprojection of checkerboard corners
-    engEvalString(ep, "proj_tol = 0.6;");
-
-    // The index of the cameras to calibrate. In this example we are calibrating four cameras with sequential naming.
-    // camera_vec = [0 1 2 3]; % version 1.2 and before
-    // camera_vec = [0 1; 0 2; 0 3]';
-    engEvalString(ep, "camera_vec = [zeros(1,(nc-1), 'single'); (1:(cast(nc, 'single')-1))]");
-
-    // The index of the cameras to be rotated (1 for rotating 180 degrees)
-    // rotcam = [0 0 0 0]; % version 1.2 and before
-    engEvalString(ep, "rotcam = zeros(2, (nc), 'single')';");
-
-    // indicate whether or not to use the fisheye calibration routine (not strictly required).
-    engEvalString(ep, "fisheye = false;");
-
-    // indicate whether or not to use the third radial distortion term when doing a projective calibration (not strictly required)
-    engEvalString(ep, "k3_enable = false;");
-
-    // the base naming convention for the calibration images (not strictly required), will default to the 'camX_image' convention if not used.
-    // cam_names = ['cam0_image', 'cam1_image', 'cam2_image', 'cam3_image']; % version 1.2 and before
-    engEvalString(ep, "cam_names = ['cam0_image'; 'cam1_image'; 'cam2_image'; 'cam3_image'];");
-
-    // indicate whether or not to use the batch mode of the stereo calibrator (not strictly required)
-    engEvalString(ep, "batch = false;");
-
-    // Perform the calibration
-
-    engEvalString(ep, "auto_multi_calibrator_efficient(camera_vec, input_dir, output_dir, format_image, dX, dY, nx_crnrs, ny_crnrs, proj_tol, rotcam, cam_names, fisheye, k3_enable, batch);");
-
-}
-
-
-
-
-
-
-
-
-
-
 int main()
 {
-	Engine *ep;
-    // starts a MATLAB process
-    if (!(ep = engOpen(""))) {
-        	fprintf(stderr, "\nCan't start MATLAB engine\n");
-        	return EXIT_FAILURE;
-    }
+    Matlab *m = new Matlab();
+    Calibration *h = new Calibration(m->getEngine());
+//    h->multiCameraCalibration(2, 30, 30, 11, 8);
 
-    engEvalString(ep, "auto_multi_calibrator_efficient([0 0; 0 1; 0 2; 0 3]', '/home/dani/input_calibrationtest/', '/home/dani/output_calibrationtest/', 'jpeg',100.0, 100.0, 5, 8, 0.6,[0 0; 0 0; 0 0; 0 0], ['cam0_image', 'cam1_image', 'cam2_image', 'cam3_image'], false, false, false)");
-
-    //multiCameraCalibration(2, 30, 30, 11, 8, ep);
-/*
-	//Lotfußpunkt (6, 3, 1)
+    /*//Lotfußpunkt (6, 3, 1)
 	Vector* a = new Vector(-2, 1, 7);
 	Vector* u = new Vector(4, 1, -3);
 	Vector* b = new Vector(10, 5, 7);
@@ -399,30 +332,31 @@ int main()
 	//Lotfußpunkt f: (-7,5,3) Lotfußpunkt g: (-1, 1, 5)
 	Vector* a = new Vector(-7, 2, -3);
 	Vector* u = new Vector(0, 1, 2);
-	Vector* b = new Vector(-3, -3, 3);
+    Vector* b = new Vector(-3, -3, 3);
 	Vector* v = new Vector(1, 2, 1);
 
+    intersection point (3, 6, 11)
+    Vector* a = new Vector(4, 2, 8);
+    Vector* u = new Vector(-1, 4, 3);
+    Vector* b = new Vector(5, 8, 21);
+    Vector* v = new Vector(1, 1, 5);
+*/
     //Lotfußpunkt f: (8, -1, 7) Lotfußpunkt g: (8, 11, 1)
     Vector* a = new Vector(3, -1, 7);
 	Vector* u = new Vector(1, 0, 0);
 	Vector* b = new Vector(2, 8, -5);
 	Vector* v = new Vector(2, 1, 2);
 
-    intersection point (3, 6, 11)
-	Vector* a = new Vector(4, 2, 8);
-	Vector* u = new Vector(-1, 4, 3);
-	Vector* b = new Vector(5, 8, 21);
-    Vector* v = new Vector(1, 1, 5);
     Line* f = new Line(a, u);
 	Line* g = new Line(b, v);
 	long int first = getNanoTime();
-	Vector oneLine = perpFootOneLine(*f, *b, ep);
+    Vector oneLine = m->perpFootOneLine(*f, *b);
 	long int second = getNanoTime();
 	printf("result is [%f, %f, %f] in time %ld\n", oneLine.getV1(), oneLine.getV2(), oneLine.getV3(), second-first);
 
 	Vector* result[2];
 	first = getNanoTime();
-	int intersects = perpFootTwoLines(*f, *g, ep, result);
+    int intersects = m->perpFootTwoLines(*f, *g, result);
 	second = getNanoTime();
 	if (intersects == 0) {
 		printf("parallel or same\n");
@@ -432,12 +366,12 @@ int main()
 		} else {
 			if (intersects == 2) { 
   	  			printf("Lotfußpunkt von f ist [%f, %f, %f] int time %ld\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3(), second-first);
-    				printf("Lotfußpunkt von g ist [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
+                printf("Lotfußpunkt von g ist [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
 			}
 		}
-    }*/
-	engClose;
-    	return EXIT_SUCCESS;
+    }
+    m->destroyMatlab();
+    return EXIT_SUCCESS;
 }
 
 
