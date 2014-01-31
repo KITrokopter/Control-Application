@@ -39,10 +39,10 @@ Controller::Controller()
 
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	this->Movement_pub = n.advertise<control_application::Movement>("Movement", 1000);
-	int invalid[3] = {-1, -1, -1};
+	int invalid[3] = {INVALID, INVALID, INVALID};
 	this->currentPosition[0].setPosition(invalid);
 	this->targetPosition[0].setPosition(invalid);
-	this->formation.setAmount(-1);
+	this->formation.setAmount(INVALID);
 }
 
 void Controller::initialize()
@@ -64,8 +64,7 @@ void Controller::calculateMovement()
 		moveVector[2] = target[2] - current[2];
 		convertMovement(moveVector);
 		move();
-	}
-	
+	}	
 }
 
 void Controller::move()
@@ -76,10 +75,13 @@ void Controller::move()
 	//msg.id = this->idString;
 	msg.id = this->id;
 	msg.thrust = this->thrust;
-	msg.yaw = this->yaw;
+	msg.yaw = this->yawrate;
 	msg.pitch = this->pitch;
 	msg.roll = this->roll;
-	while(check[0] == -1 || POS_CHECK)
+
+	// Send values until targed is reached.
+	//TODO: change it
+	while(check[0] != INVALID || POS_CHECK)		//TODO: changed by Do.
 	{
 		this->Movement_pub.publish(msg);
 		check = this->currentPosition[id].getPosition();		
@@ -93,10 +95,28 @@ void Controller::move()
 
 void Controller::convertMovement(int* vector)
 {
-//insert conversion from vectors to thrust, yaw, pitch...
+	/* conversion from vectors to thrust, yawrate, pitch... */
+	int thrust_react_z_low = -5;
+	int thrust_react_z_high = 5;
+	
+	if (vector[2] > thrust_react_z_high) {
+		this->thrust += THRUST_STEP;
+	} else if (vector[2] < thrust_react_z_high) {
+		this->thrust -= THRUST_STEP;
+	} else
+		/* Not sure what to do here, maybe nothing. */
+	}
 
-	this->thrust = 0.0;
-	this->yaw = 0.0;
+	double length = 0;
+	for (int i = 0; i < 3; i++) {
+		length = length + vector[i]*vector[i];
+	}
+	length = sqrt(length);
+
+	double ratio_roll = vector[0] / length;
+	double ratio_pitch = vector[1] / length;
+
+	this->yawrate = 0.0;
 	this->pitch = 0.0;
 	this->roll = 0.0;
 }
@@ -115,7 +135,10 @@ void Controller::setTargetPosition()
 }
 
 
-//Gehe davon aus dass es ein Topic mit Quadcopters gibt mit URI/Hardware ID und diese dem quadcopter array zugewiesen wurde qc[id][uri/hardware id]
+/*
+ * Gehe davon aus dass es ein Topic mit Quadcopters gibt mit URI/Hardware ID 
+ * und diese dem quadcopter array zugewiesen wurde qc[id][uri/hardware id]
+ */
 void Controller::buildFormation()
 {
 	Position6DOF* formPos = this->formation.getPosition();
@@ -125,9 +148,8 @@ void Controller::buildFormation()
 	{
 		this->idString = this->quadcopters[i];
 		this->id = i;
-		//What is a good value here to mount slowly?
-		this->thrust = START;
-		this->yaw = 0;
+		this->thrust = THRUST_START;
+		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
 		int * target = formPos[i].getPosition();
@@ -167,15 +189,15 @@ void Controller::shutdownFormation()
 		this->idString = this->quadcopters[i];
 		this->id = i;
 		this->thrust = STAND_STILL;
-		this->yaw = 0;
+		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
 		move();
 		//TODO Check for collisions when declining
-		this->thrust = DECLINE;
+		this->thrust = THRUST_DECLINE;
 		move();
 		//TODO Is this point to high?
-		this->thrust = 0;
+		this->thrust = THRUST_MIN;
 		move();
 	}
 }
