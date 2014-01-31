@@ -106,8 +106,13 @@ include_directories(
 #   src/${PROJECT_NAME}/control_application.cpp
 # )
 
-## Declare a cpp executable
-add_executable(control_application_node 
+set(MATLAB_PATH "~/matlab"
+  CACHE PATH "Path to matlab installation")
+
+# Skip the control application when matlab is not installed.
+if(EXISTS ${MATLAB_PATH})
+  ## Declare a cpp executable
+  add_executable(control_application_node 
   src/matlab/Matlab.cpp 
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp 
@@ -132,10 +137,14 @@ add_dependencies(control_application_node
 # Use full path names to go around strange errors since matlab has some strange versions of some libs that are already included in ubuntu.
 target_link_libraries(control_application_node
   ${catkin_LIBRARIES}
-  ~/matlab/bin/glnxa64/libeng.so
-  ~/matlab/bin/glnxa64/libmx.so
-  ~/matlab/bin/glnxa64/libmat.so
+  ${MATLAB_PATH}/bin/glnxa64/libeng.so
+  ${MATLAB_PATH}/bin/glnxa64/libmx.so
+  ${MATLAB_PATH}/bin/glnxa64/libmat.so
 )
+else()
+  message(WARNING
+    "Not building control_application_node because MATLAB_PATH is invalid.")
+endif()
 
 add_executable(position_module
 	src/position/tmpmain.cpp
