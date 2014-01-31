@@ -1,6 +1,6 @@
 #include "Controller.hpp"
 
-Controller::Controller(Position6DOF targetPosition[], Position6DOF currentPosition[], Formation formation)
+Controller::Controller(std::vector<Position6DOF> targetPosition, std::vector<Position6DOF> currentPosition, Formation formation)
 {
 	/**
   	 * NodeHandle is the main access point to communications with the ROS system.
@@ -52,13 +52,13 @@ void Controller::initialize()
 		
 void Controller::calculateMovement()
 {
-	int moveVector[3];
+	double moveVector[3];
 	for(int i = 0; i < amount; i++)
 	{		
 		this->idString = this->quadcopters[i];
 		this->id = i;
-		int * target = this->targetPosition[i].getPosition();
-		int * current = this->currentPosition[i].getPosition();
+		double * const target = this->targetPosition[i].getPosition();
+		double * const current = this->currentPosition[i].getPosition();
 		moveVector[0] = target[0] - current[0];
 		moveVector[1] = target[1] - current[1];
 		moveVector[2] = target[2] - current[2];
@@ -70,8 +70,8 @@ void Controller::calculateMovement()
 void Controller::move()
 {
 	control_application::Movement msg;
-	int * check = this->currentPosition[id].getPosition();
-	int * target = this->targetPosition[id].getPosition();
+	double * const check = this->currentPosition[id].getPosition();
+	double * const target = this->targetPosition[id].getPosition();
 	//msg.id = this->idString;
 	msg.id = this->id;
 	msg.thrust = this->thrust;
@@ -83,8 +83,7 @@ void Controller::move()
 	//TODO: change it
 	while(check[0] != INVALID || POS_CHECK)		//TODO: changed by Do.
 	{
-		this->Movement_pub.publish(msg);
-		check = this->currentPosition[id].getPosition();		
+		this->Movement_pub.publish(msg);	
 	}
 	if(startProcess)
 	{
@@ -93,7 +92,7 @@ void Controller::move()
 	}
 }
 
-void Controller::convertMovement(int* vector)
+void Controller::convertMovement(double* vector)
 {
 	/* conversion from vectors to thrust, yawrate, pitch... */
 	int thrust_react_z_low = -5;
@@ -126,11 +125,12 @@ void Controller::setTargetPosition()
 {
 	for(int i = 0; i < amount; i++)
 	{
-		int * position = this->targetPosition[i].getPosition();
-		position[0] += this->formationMovement[0];
-		position[1] += this->formationMovement[1];
-		position[2] += this->formationMovement[2];
-		targetPosition[i].setPosition(position);
+		double * const pos = this->targetPosition[i].getPosition();
+		double target[3];
+		target[0] = pos[0] + this->formationMovement[0];
+		target[1] = pos[1] + this->formationMovement[1];
+		target[2] = pos[2] + this->formationMovement[2];
+		targetPosition[i].setPosition(target);
 	}
 }
 
@@ -141,9 +141,9 @@ void Controller::setTargetPosition()
  */
 void Controller::buildFormation()
 {
-	Position6DOF* formPos = this->formation.getPosition();
-	int distance = this->formation.getDistance();
-	int * first;
+	Position6DOF* const formPos = this->formation.getPosition();
+	double distance = this->formation.getDistance();
+	double first[3];
 	for(int i = 0; i < amount; i++)
 	{
 		this->idString = this->quadcopters[i];
@@ -152,10 +152,11 @@ void Controller::buildFormation()
 		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
-		int * target = formPos[i].getPosition();
-		target[0] *= distance;
-		target[1] *= distance;
-		target[2] *= distance;
+		double * pos = formPos[i].getPosition();
+		double target[3];
+		target[0] = pos[0] * distance;
+		target[1] = pos[1] * distance;
+		target[2] = pos[2] * distance;
 		this->targetPosition[i].setPosition(target);
 		move();		
 		if( i == 0)
@@ -214,13 +215,13 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 {
 	this->formation.setDistance(msg->distance);
 	this->formation.setAmount(msg->amount);
-	Position6DOF * formPos;
+	Position6DOF * const formPos;
 	for(int i = 0; i < msg->amount; i++)
 	{
-		int * pos, * ori;
-		pos[0] = (int)msg->xPositions[i];
-		pos[1] = (int)msg->yPositions[i];
-		pos[2] = (int)msg->zPositions[i];
+		double pos[3], ori[3];
+		pos[0] = msg->xPositions[i];
+		pos[1] = msg->yPositions[i];
+		pos[2] = msg->zPositions[i];
 		formPos[i].setPosition(pos);
 		//Depends on the calculation of target and current position
 		//ori[0] = msg->

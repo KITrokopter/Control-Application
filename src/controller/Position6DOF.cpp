@@ -1,7 +1,7 @@
 
 #include "Position6DOF.hpp"
 
-Position6DOF::Position6DOF(int x, int y, int z, short int xOrientation, short int yOrientation, short int zOrientation)
+Position6DOF::Position6DOF(double x, double y, double z,  double xOrientation,  double yOrientation,  double zOrientation)
 {
 	position[0] = (x);
 	position[1] = (y);
@@ -11,7 +11,7 @@ Position6DOF::Position6DOF(int x, int y, int z, short int xOrientation, short in
 	orientation[2] = (zOrientation);
 }
 
-Position6DOF::Position6DOF(int x, int y, int z)
+Position6DOF::Position6DOF(double x, double y, double z)
 {
 	position[0] = (x);
 	position[1] = (y);
@@ -21,18 +21,18 @@ Position6DOF::Position6DOF(int x, int y, int z)
 	orientation[2] = 0;
 }
 
-int* Position6DOF::getPosition()
+double* const Position6DOF::getPosition()
 {
 	return position;
 }
 
 
-short int* Position6DOF::getOrientation()
+ double* const Position6DOF::getOrientation()
 {
 	return orientation;
 }
 
-void Position6DOF::setPosition(int* position)
+void Position6DOF::setPosition(double* const position)
 {
 	for(int i = 0; i < 3; i++)
 	{	
@@ -41,7 +41,7 @@ void Position6DOF::setPosition(int* position)
 	
 }
 
-void Position6DOF::setOrientation(short int* orientation)
+void Position6DOF::setOrientation( double* const orientation)
 {
 	for(int i = 0; i < 3; i++)
 	{	

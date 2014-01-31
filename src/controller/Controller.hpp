@@ -8,6 +8,8 @@
 #include "control_application/Movement.h"		// ? (D)
 //TODO How to include when not in the same package
 #include "api_application/SetFormation.h"
+#include <string>
+#include <vector>
 
 #define THRUST_MIN 10001
 #define THRUST_STAND_STILL 18001
@@ -21,7 +23,7 @@
 
 class Controller {
 public:
-	Controller(Position6DOF *targetPosition, Position6DOF *currentPosition, Formation formation);
+	Controller(std::vector<Position6DOF> targetPosition, std::vector<Position6DOF> currentPosition, Formation formation);
 	Controller();
 	
 	void initialize();
@@ -44,16 +46,16 @@ protected:
 	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
 
 private:
-	Position6DOF targetPosition[];
-	Position6DOF currentPosition[];
+	std::vector<Position6DOF> targetPosition;
+	std::vector<Position6DOF> currentPosition;
 	//Identification of Quadcopters?
 	Formation formation;
 	int amount;
-	float* formationMovement;
-	char quadcopters[][40];
+	float formationMovement[3];
+	std::vector<std::string> quadcopters;
 	int thrust;
 	float pitch, roll, yawrate;
-	char * idString;
+	std::string idString;
 	int id;
 	int startProcess;
 

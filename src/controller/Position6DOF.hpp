@@ -6,17 +6,17 @@
 class Position6DOF {
 public:
 	//both arrays of the return pointer have size three
-	int* getPosition();
-	short int* getOrientation();
-	void setPosition(int * position);
-	void setOrientation(short int* orientation);
+	double* const getPosition();
+	double* const getOrientation();
+	void setPosition(double * const position);
+	void setOrientation(double* const orientation);
 	time_t getTimestamp();
-	Position6DOF(int x, int y, int z, short int xOrientation, short int yOrientation, short int zOrientation);
-	Position6DOF(int x, int y, int z);
+	Position6DOF(double x, double y, double z, double xOrientation, double yOrientation, double zOrientation);
+	Position6DOF(double x, double y, double z);
 
 private:
-	int position[3];
-	short int orientation[3];
+	double position[3];
+	double orientation[3];
 	time_t timestamp;
 };
 
