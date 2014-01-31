@@ -70,8 +70,8 @@ add_service_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-	std_msgs
-	sensor_msgs
+  std_msgs
+  sensor_msgs
 )
 
 ###################################
@@ -86,7 +86,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES control_application
-	CATKIN_DEPENDS roscpp std_msgs sensor_msgs message_runtime
+  CATKIN_DEPENDS roscpp std_msgs sensor_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -106,23 +106,28 @@ include_directories(
 #   src/${PROJECT_NAME}/control_application.cpp
 # )
 
-## Declare a cpp executable
-add_executable(control_application_node 
-	src/matlab/Matlab.cpp 
-	src/matlab/Vector.cpp 
-	src/matlab/Line.cpp 
-	src/matlab/Calibration.cpp 
-	src/matlab/profiling.cpp
-	src/controller/Controller.cpp
-	src/controller/Formation.cpp
-	src/controller/Position6DOF.cpp
-	#src/controller/main.cpp
+set(MATLAB_PATH "~/matlab"
+  CACHE PATH "Path to matlab installation")
+
+# Skip the control application when matlab is not installed.
+if(EXISTS ${MATLAB_PATH})
+  ## Declare a cpp executable
+  add_executable(control_application_node 
+  src/matlab/Matlab.cpp 
+  src/matlab/Vector.cpp 
+  src/matlab/Line.cpp 
+  src/matlab/Calibration.cpp 
+  src/matlab/profiling.cpp
+  src/controller/Controller.cpp
+  src/controller/Formation.cpp
+  src/controller/Position6DOF.cpp
+  #src/controller/main.cpp
 )
 
 add_dependencies(control_application_node
-	control_application_generate_messages_cpp
-	api_application_generate_messages_cpp
-	camera_application_generate_messages_cpp
+  control_application_generate_messages_cpp
+  api_application_generate_messages_cpp
+  camera_application_generate_messages_cpp
 )
 
 ## Add cmake target dependencies of the executable/library
@@ -131,11 +136,15 @@ add_dependencies(control_application_node
 
 # Use full path names to go around strange errors since matlab has some strange versions of some libs that are already included in ubuntu.
 target_link_libraries(control_application_node
-   ${catkin_LIBRARIES}
-~/matlab/bin/glnxa64/libeng.so
-~/matlab/bin/glnxa64/libmx.so
-~/matlab/bin/glnxa64/libmat.so
+  ${catkin_LIBRARIES}
+  ${MATLAB_PATH}/bin/glnxa64/libeng.so
+  ${MATLAB_PATH}/bin/glnxa64/libmx.so
+  ${MATLAB_PATH}/bin/glnxa64/libmat.so
 )
+else()
+  message(WARNING
+    "Not building control_application_node because MATLAB_PATH is invalid.")
+endif()
 
 add_executable(position_module
 	src/position/tmpmain.cpp
