@@ -88,7 +88,7 @@ void Controller::move()
 	}
 	if(startProcess)
 	{
-		msg.thrust = STAND_STILL;
+		msg.thrust = THRUST_STAND_STILL;
 		this->Movement_pub.publish(msg);
 	}
 }
@@ -103,7 +103,7 @@ void Controller::convertMovement(int* vector)
 		this->thrust += THRUST_STEP;
 	} else if (vector[2] < thrust_react_z_high) {
 		this->thrust -= THRUST_STEP;
-	} else
+	} else {
 		/* Not sure what to do here, maybe nothing. */
 	}
 
@@ -189,7 +189,7 @@ void Controller::shutdownFormation()
 	{
 		this->idString = this->quadcopters[i];
 		this->id = i;
-		this->thrust = STAND_STILL;
+		this->thrust = THRUST_STAND_STILL;
 		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
