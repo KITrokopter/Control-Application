@@ -36,11 +36,12 @@ public:
 	double getHeight();
 	double getWidth();
 	double getLength();
-    	bool isInTrackingArea(Vector x);
+	bool contains(Vector x);
+    bool inTrackingArea(Vector cameraPosition, Vector cameraDirection, double maxRange, Vector x, Engine *ep);
 	double getVectorLength(Vector a, Vector b);
 	double getDistPointPlane(Vector a1, Vector u, Vector v, Vector x);
-	bool inCameraRange(Vector *cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Vector x);
-	void setTrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange);
+    bool inCameraRange(Vector *cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep);
+    void setTrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Engine *ep);
 };
 
 #endif /* TRACKINGAREA_H_ */

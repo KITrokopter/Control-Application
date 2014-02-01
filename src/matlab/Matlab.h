@@ -18,8 +18,6 @@ public:
 	Matlab(Engine *ep);
 	Engine* getEngine();
 	void destroyMatlab();
-	void enterVariablesOneLine(Line f, Vector b);
-	void enterVariablesTwoLines(Line f, Line g);
 	Vector perpFootOneLine(Line f, Vector b);
 	int perpFootTwoLines(Line f, Line g, Vector **result);
 	Vector interpolateLines(Line *lines, int quantity);

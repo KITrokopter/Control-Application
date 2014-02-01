@@ -4,12 +4,13 @@
  *  Created on: 18.01.2014
  *      Author: daniela
  */
-
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "Vector.h"
 #include "Line.h"
 #include "Matlab.h"
 #include "engine.h"
-#include "math.h"
+#include <math.h>
 #include "TrackingArea.h"
 
 TrackingArea::TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector b1, Vector b2, Vector b3, Vector b4) {
@@ -140,7 +141,7 @@ double TrackingArea::getDistPointPlane(Vector a1, Vector u, Vector v, Vector x) 
 /*
  *  checks whether a point x is the TrackingArea or not
  */
-bool TrackingArea::isInTrackingArea(Vector x) {
+bool TrackingArea::contains(Vector x) {
     Vector *u = new Vector(a2.getV1() - a1.getV1(), a2.getV2() - a1.getV2(), a2.getV3() - a1.getV3());
     Vector *v = new Vector(a3.getV1() - a1.getV1(), a3.getV2() - a1.getV2(), a3.getV3() - a1.getV3());
     double diff1 = getDistPointPlane(center, *u, *v, x);
@@ -157,18 +158,81 @@ bool TrackingArea::isInTrackingArea(Vector x) {
     }
 }
 
+bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection, double maxRange, Vector x, Engine *ep) {
+    /*cameraPosition.putVariable("p", ep);
+    Vector d = cameraDirection.mult(1/cameraDirection.getLength());
+    d.putVariable("d", ep);
+    n.putVariable("n", ep);
+    m.putVariable("m", ep);
+    x.putVariable("x", ep);
+    engEvalString(ep, "b = x - p");
+    engEvalString(ep, "A = [d1 n1 m1; d2 n2 m2; d3 n3 m3]");
+    // x = (r, s, t)
+    engEvalString(ep, "x = inv(A) * b");
+    mxArray *result;
+    result = engGetVariable(ep, "x(1)");
+    double r = mxGetPr(result)[0];
+    double s = mxGetPr(result)[1];
+    double t = mxGetPr(result)[2];
+    if ((r > maxRange) || (r < 0)) {
+        return false
+    } //else if (r*r + s*s > )*/
+    Matlab *m = new Matlab(ep);
+    Vector *u = new Vector(cameraDirection.add(cameraPosition.mult(-1)));
+    Line *direct = new Line(&cameraPosition, u);
+    Vector perp = m->perpFootOneLine(*direct, x);
+    Vector dist = perp.add(x.mult(-1));
+    // diff is the distance between x and the cameraDirection line
+    // diff / length(perp - cameraPosition) mustn't be greater than maxDiff/maxLength
+    double diff = dist.getLength();
+    double length = (perp.add(cameraPosition.mult(-1))).getLength();
+    double maxLength = maxRange * cos(21.5 * M_PI / 180);
+    double maxDiff = maxRange * sin(21.5 * M_PI / 180);
+    if ((length > maxLength) || (length < 0)) {
+        return false;
+    } else if (diff/length > maxDiff/maxRange) {
+        return false;
+    }
+    return true;
+}
+
+
 /*
  * checks whether all cameras observe x
  */
-bool TrackingArea::inCameraRange(Vector *cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Vector x) {
-    //TODO
+bool TrackingArea::inCameraRange(Vector *cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep) {
+    // idea: cameraPosition[i] + r*cameraDirection[i]/cameraDirection[i].getLength + s * n + t * m = x
+    // vectors (cameraDirection[i], n, m) are an orthogonalsystem of B = (cameraDirection, (1 0 0), (0 1 0) calculated by gram-schmidt
+    // m, n are normalized
+    // r in [0, maxRange]
+
+    //Vector* a = new Vector(1, 0, 0);
+    //Vector* b = new Vector(0, 1, 0);
+    for (int i = 0; i < numberCameras; i++) {
+        /*
+        // n = a - (cameraDirection[i] * a)/(cameraDirection[i] * cameraDirection[i]) * cameraDirection[i]
+        double q = cameraDirection[i].scalarMult(*a)/cameraDirection[i].getLength();
+        Vector n = a->add(cameraDirection[i].mult(-q));
+        // m = b - (cameraDirection[i] * b)/(cameraDirection[i] * cameraDirection[i]) * cameraDirection[i] - (n * b)/(n * n) * n
+        q = cameraDirection[i].scalarMult(*b)/cameraDirection[i].getLength();
+        double r = n.scalarMult(*b)/n.getLength();
+        Vector m = b->add(cameraDirection[i].mult(-q));
+        m = m.add(n.mult(-r));
+        // normalize
+        n = n.mult(1/n.getLength());
+        m = m.mult(1/m.getLength());*/
+        if (inTrackingArea(cameraPosition[i], cameraDirection[i], maxRange, x, ep) == false) {
+            return false;
+        }
+
+    }
     return true;
 }
 
 /*
  *  calculates the maximum TrackingArea in form of a quader
  */
-void TrackingArea::setTrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange) {
+void TrackingArea::setTrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Engine *ep) {
     double v1 = 0;
     double v2 = 0;
     double v3 = 0;
@@ -192,10 +256,10 @@ void TrackingArea::setTrackingArea(Vector* cameraPosition, Vector* cameraDirecti
     setB3(*center);
     setB4(*center);
     double posChange = 0.1;
-    while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4)) {
+    while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
+            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
+            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
         setA1(*(new Vector(center->getV1() - posChange, center->getV2() - posChange, center->getV3() - posChange)));
         setA2(*(new Vector(center->getV1() - posChange, center->getV2() - posChange, center->getV3() + posChange)));
         setA3(*(new Vector(center->getV1() - posChange, center->getV2() + posChange, center->getV3() + posChange)));
