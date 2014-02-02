@@ -16,6 +16,8 @@
 #define THRUST_START 22000
 #define THRUST_DECLINE 20000
 #define THRUST_STEP 50
+#define ROLL_STEP 2
+#define PITCH_STEP 2
 #define INVALID -1
 
 //TODO are three coordinate checks too much? Doable? Add epsilon?

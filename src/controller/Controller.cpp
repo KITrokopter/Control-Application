@@ -81,13 +81,13 @@ void Controller::move()
 
 	// Send values until targed is reached.
 	//TODO: change it
-	while(check[0] != INVALID || POS_CHECK)		//TODO: changed by Do.
+	while(check[0] == INVALID || POS_CHECK)	 //TODO: comment
 	{
 		this->Movement_pub.publish(msg);	
 	}
 	if(startProcess)
 	{
-		msg.thrust = STAND_STILL;
+		msg.thrust = THRUST_STAND_STILL;
 		this->Movement_pub.publish(msg);
 	}
 }
@@ -102,7 +102,7 @@ void Controller::convertMovement(double* vector)
 		this->thrust += THRUST_STEP;
 	} else if (vector[2] < thrust_react_z_high) {
 		this->thrust -= THRUST_STEP;
-	} else
+	} else {
 		/* Not sure what to do here, maybe nothing. */
 	}
 
@@ -115,9 +115,10 @@ void Controller::convertMovement(double* vector)
 	double ratio_roll = vector[0] / length;
 	double ratio_pitch = vector[1] / length;
 
+	this->roll = ratio_roll + ROLL_STEP;
+	this->pitch = ratio_pitch + PITCH_STEP;
+
 	this->yawrate = 0.0;
-	this->pitch = 0.0;
-	this->roll = 0.0;
 }
 
 //Move the last Positions according to the formation movement vector (without orientation right now)
@@ -189,7 +190,7 @@ void Controller::shutdownFormation()
 	{
 		this->idString = this->quadcopters[i];
 		this->id = i;
-		this->thrust = STAND_STILL;
+		this->thrust = THRUST_STAND_STILL;
 		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
