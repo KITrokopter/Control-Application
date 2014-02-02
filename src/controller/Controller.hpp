@@ -61,6 +61,8 @@ private:
 	std::string idString;
 	int id;
 	int startProcess;
+	int newTarget;
+	int shutdown;
 
 	//Subscriber for the MoveFormation data of the Quadcopts
 	ros::Subscriber MoveFormation_sub;
