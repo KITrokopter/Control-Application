@@ -32,7 +32,7 @@ public:
 	
 	void calculateMovement();
 	void move();
-	void convertMovement(int* vector);
+	void convertMovement(double* const vector);
 	void setTargetPosition();
 	
 	//use this as service and then don't use setformation

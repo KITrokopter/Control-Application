@@ -13,6 +13,7 @@ public:
 	time_t getTimestamp();
 	Position6DOF(double x, double y, double z, double xOrientation, double yOrientation, double zOrientation);
 	Position6DOF(double x, double y, double z);
+	Position6DOF(){};
 
 private:
 	double position[3];

@@ -39,7 +39,7 @@ Controller::Controller()
 
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	this->Movement_pub = n.advertise<control_application::Movement>("Movement", 1000);
-	int invalid[3] = {INVALID, INVALID, INVALID};
+	double invalid[3] = {INVALID, INVALID, INVALID};
 	this->currentPosition[0].setPosition(invalid);
 	this->targetPosition[0].setPosition(invalid);
 	this->formation.setAmount(INVALID);
@@ -144,7 +144,7 @@ void Controller::buildFormation()
 {
 	Position6DOF* const formPos = this->formation.getPosition();
 	double distance = this->formation.getDistance();
-	double first[3];
+	double * first;
 	for(int i = 0; i < amount; i++)
 	{
 		this->idString = this->quadcopters[i];
@@ -216,8 +216,8 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 {
 	this->formation.setDistance(msg->distance);
 	this->formation.setAmount(msg->amount);
-	Position6DOF * const formPos;
-	for(int i = 0; i < msg->amount; i++)
+	Position6DOF formPos[this->amount];
+	for(int i = 0; i < this->amount; i++)
 	{
 		double pos[3], ori[3];
 		pos[0] = msg->xPositions[i];
