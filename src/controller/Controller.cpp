@@ -47,11 +47,29 @@ Controller::Controller()
 
 void Controller::initialize()
 {
-	
+	/*
+	 * Start using threads here.
+	 * tGet- One waiting to set new positions
+	 * tCalc- One calculating the output
+	 * tSend- One sending movement-data over ROS
+	 * 
+	 * TODO: Could the following work?
+	 * tGet is not a new thread, implemented as parent. 
+	 * Leave function and wait to be called by position-instance?
+	 */
+	std::pthread_t tCalc, tSend;
+
+	/* TODO: Error-handling. */
+	std:pthread_create(&tCalc, NULL, &calculateMovement, NULL);
+	std:pthread_create(&tSend, NULL, &move, NULL);
 }
 		
 void Controller::calculateMovement()
 {
+
+	/* TODO:  */
+	
+	/* TODO: pthread, while shutdown=no do run the infinte loop */
 	double moveVector[3];
 	for(int i = 0; i < amount; i++)
 	{		
@@ -69,6 +87,9 @@ void Controller::calculateMovement()
 
 void Controller::move()
 {
+	
+	/* TODO: pthread, while shutdown=no do run the infinte loop */
+	
 	control_application::Movement msg;
 	double * const check = this->currentPosition[id].getPosition();
 	double * const target = this->targetPosition[id].getPosition();

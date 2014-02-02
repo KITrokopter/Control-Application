@@ -10,6 +10,7 @@
 #include "api_application/SetFormation.h"
 #include <string>
 #include <vector>
+#include <pthread.h>
 
 #define THRUST_MIN 10001
 #define THRUST_STAND_STILL 18001
