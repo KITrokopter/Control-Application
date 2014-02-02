@@ -81,7 +81,7 @@ void Controller::move()
 
 	// Send values until targed is reached.
 	//TODO: change it
-	while(check[0] != INVALID || POS_CHECK)		//TODO: changed by Do.
+	while(check[0] == INVALID || POS_CHECK)	 //TODO: comment
 	{
 		this->Movement_pub.publish(msg);
 		check = this->currentPosition[id].getPosition();		
