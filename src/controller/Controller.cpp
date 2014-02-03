@@ -43,52 +43,85 @@ Controller::Controller()
 	this->currentPosition[0].setPosition(invalid);
 	this->targetPosition[0].setPosition(invalid);
 	this->formation.setAmount(INVALID);
+	this->newTarget = 0;
+	this->shutdown = 0;
 }
 
 void Controller::initialize()
 {
-	
+	/*
+	 * Start using threads here.
+	 * tGet- One waiting to set new positions
+	 * tCalc- One calculating the output
+	 * tSend- One sending movement-data over ROS
+	 * 
+	 * TODO: Could the following work?
+	 * tGet is not a new thread, implemented as parent. 
+	 * Leave function and wait to be called by position-instance?
+	 */
+	std::pthread_t tCalc, tSend;
+
+	/* TODO: Error-handling. */
+	std:pthread_create(&tCalc, NULL, &calculateMovement, NULL);
+	std:pthread_create(&tSend, NULL, &move, NULL);
 }
 		
 void Controller::calculateMovement()
 {
-	double moveVector[3];
-	for(int i = 0; i < amount; i++)
-	{		
-		this->idString = this->quadcopters[i];
-		this->id = i;
-		double * const target = this->targetPosition[i].getPosition();
-		double * const current = this->currentPosition[i].getPosition();
-		moveVector[0] = target[0] - current[0];
-		moveVector[1] = target[1] - current[1];
-		moveVector[2] = target[2] - current[2];
-		convertMovement(moveVector);
-		move();
+
+	/* TODO:  */
+	
+	/* TODO: pthread, while shutdown=no do run the infinte loop */
+	while(!shutdown)
+	{
+		double moveVector[3];
+		for(int i = 0; i < amount; i++)
+		{		
+			this->idString = this->quadcopters[i];
+			this->id = i;
+			double * const target = this->targetPosition[i].getPosition();
+			double * const current = this->currentPosition[i].getPosition();
+			moveVector[0] = target[0] - current[0];
+			moveVector[1] = target[1] - current[1];
+			moveVector[2] = target[2] - current[2];
+			convertMovement(moveVector);
+			move();
+		}
 	}	
 }
 
 void Controller::move()
 {
-	control_application::Movement msg;
-	double * const check = this->currentPosition[id].getPosition();
-	double * const target = this->targetPosition[id].getPosition();
-	//msg.id = this->idString;
-	msg.id = this->id;
-	msg.thrust = this->thrust;
-	msg.yaw = this->yawrate;
-	msg.pitch = this->pitch;
-	msg.roll = this->roll;
+	/* TODO: pthread, while shutdown=no do run the infinte loop */
+	while(!shutdown)
+	{	
+		control_application::Movement msg;
+		double * const check = this->currentPosition[id].getPosition();
+		double * const target = this->targetPosition[id].getPosition();
+		this->target = 0;
+		//msg.id = this->idString;
+		msg.id = this->id;
+		msg.thrust = this->thrust;
+		msg.yaw = this->yawrate;
+		msg.pitch = this->pitch;
+		msg.roll = this->roll;
 
-	// Send values until targed is reached.
-	//TODO: change it
-	while(check[0] == INVALID || POS_CHECK)	 //TODO: comment
-	{
-		this->Movement_pub.publish(msg);	
-	}
-	if(startProcess)
-	{
-		msg.thrust = THRUST_STAND_STILL;
-		this->Movement_pub.publish(msg);
+		// Send values until targed is reached.
+		//TODO: change it
+		while(check[0] == INVALID || POS_CHECK)	 //Either the current position is invalid because qc not tracked yet or we try to reach the target position
+		{
+			this->Movement_pub.publish(msg);
+			//If a new target is set, the newTarget variable is true and we start a new calculation	
+			if(target)
+			{
+				return;
+			}	
+		}
+		if(startProcess)
+		{
+			msg.thrust = THRUST_STAND_STILL;
+			this->Movement_pub.publish(msg);
+		}
 	}
 }
 
@@ -133,6 +166,7 @@ void Controller::setTargetPosition()
 		target[2] = pos[2] + this->formationMovement[2];
 		targetPosition[i].setPosition(target);
 	}
+	this->newTarget = 1;
 }
 
 
@@ -186,6 +220,7 @@ void Controller::buildFormation()
 
 void Controller::shutdownFormation()
 {
+	this->shutdown = 1;
 	for(int i = 0; i < amount; i++)
 	{
 		this->idString = this->quadcopters[i];

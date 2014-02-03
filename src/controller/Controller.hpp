@@ -10,6 +10,7 @@
 #include "api_application/SetFormation.h"
 #include <string>
 #include <vector>
+#include <pthread.h>
 
 #define THRUST_MIN 10001
 #define THRUST_STAND_STILL 18001
@@ -60,6 +61,8 @@ private:
 	std::string idString;
 	int id;
 	int startProcess;
+	int newTarget;
+	int shutdown;
 
 	//Subscriber for the MoveFormation data of the Quadcopts
 	ros::Subscriber MoveFormation_sub;
