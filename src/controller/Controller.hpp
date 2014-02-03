@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 #include <pthread.h>
+#include "Mutex.hpp"
+#include <cmath>
 
 #define THRUST_MIN 10001
 #define THRUST_STAND_STILL 18001
@@ -22,7 +24,7 @@
 #define INVALID -1
 
 //TODO are three coordinate checks too much? Doable? Add epsilon?
-#define POS_CHECK (check[0] != target[0]) || (check[1] != target[1]) || (check[2] != target[2])
+#define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
 
 class Controller {
 public:
@@ -63,6 +65,8 @@ private:
 	int startProcess;
 	int newTarget;
 	int shutdown;
+	Mutex curPosMutex;
+	Mutex tarPosMutex;
 
 	//Subscriber for the MoveFormation data of the Quadcopts
 	ros::Subscriber MoveFormation_sub;
