@@ -64,6 +64,7 @@ private:
 	int id;
 	int startProcess;
 	int newTarget;
+	int newCurrent;
 	int shutdown;
 	Mutex curPosMutex;
 	Mutex tarPosMutex;

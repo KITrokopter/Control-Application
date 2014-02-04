@@ -44,6 +44,7 @@ Controller::Controller()
 	this->targetPosition[0].setPosition(invalid);
 	this->formation.setAmount(INVALID);
 	this->newTarget = 0;
+	this->newCurrent = 0;
 	this->shutdown = 0;
 }
 
@@ -81,6 +82,7 @@ void Controller::calculateMovement()
 			this->id = i;
 			tarPosMutex.lock();
 			double * const target = this->targetPosition[i].getPosition();
+			this->newTarget = 0;			
 			tarPosMutex.unlock();
 			curPosMutex.lock();
 			double * const current = this->currentPosition[i].getPosition();
@@ -91,45 +93,40 @@ void Controller::calculateMovement()
 			convertMovement(moveVector);
 			move();
 		}
+		while(this->newTarget == 0 && this->newCurrent == 0) {};
 	}	
 }
 
 void Controller::move()
 {
-	/* TODO: pthread, while shutdown=no do run the infinte loop */
-	while(!shutdown)
-	{	
-		control_application::Movement msg;
-		tarPosMutex.lock();
-		double * const target = this->targetPosition[id].getPosition();
-		tarPosMutex.unlock();
-		curPosMutex.lock();
-		double * const current = this->currentPosition[id].getPosition();
-		curPosMutex.unlock();
-		this->newTarget = 0;
-		//msg.id = this->idString;
-		msg.id = this->id;
-		msg.thrust = this->thrust;
-		msg.yaw = this->yawrate;
-		msg.pitch = this->pitch;
-		msg.roll = this->roll;
-
-		// Send values until targed is reached.
-		//TODO: change it
-		while(current[0] == INVALID || POS_CHECK)	 //Either the current position is invalid because qc not tracked yet or we try to reach the target position
+	control_application::Movement msg;
+	tarPosMutex.lock();
+	double * const target = this->targetPosition[id].getPosition();
+	tarPosMutex.unlock();
+	curPosMutex.lock();
+	double * const current = this->currentPosition[id].getPosition();
+	curPosMutex.unlock();
+	//msg.id = this->idString;
+	msg.id = this->id;
+	msg.thrust = this->thrust;
+	msg.yaw = this->yawrate;
+	msg.pitch = this->pitch;
+	msg.roll = this->roll;
+	this->Movement_pub.publish(msg);
+	// Keep sending values until quadcopter is tracked
+	while(current[0] == INVALID)
+	{
+		this->Movement_pub.publish(msg);
+		//If a new target is set, the newTarget variable is true and we start a new calculation	
+		if(newTarget || shutdown)
 		{
-			this->Movement_pub.publish(msg);
-			//If a new target is set, the newTarget variable is true and we start a new calculation	
-			if(newTarget)
-			{
-				return;
-			}	
-		}
-		if(startProcess)
-		{
-			msg.thrust = THRUST_STAND_STILL;
-			this->Movement_pub.publish(msg);
-		}
+			return;
+		}	
+	}
+	if(this->startProcess)
+	{
+		msg.thrust = THRUST_STAND_STILL;
+		this->Movement_pub.publish(msg);
 	}
 }
 
@@ -186,6 +183,7 @@ void Controller::setTargetPosition()
  */
 void Controller::buildFormation()
 {
+	this->startprocess = 1;
 	Position6DOF* const formPos = this->formation.getPosition();
 	double distance = this->formation.getDistance();
 	double * first;
@@ -230,6 +228,7 @@ void Controller::buildFormation()
 		tarPosMutex.unlock();
 		calculateMovement();
 	}
+	this->startprocess = 0;
 }
 
 void Controller::shutdownFormation()
@@ -263,7 +262,7 @@ void Controller::shutdownFormation()
 		this->thrust = THRUST_MIN;
 		move();
 	}
-	this->shutdown = 1;
+	this->shutdown = 0;
 }
 
 void Controller::MoveFormationCallback(const control_application::MoveFormation::ConstPtr &msg)
@@ -272,6 +271,7 @@ void Controller::MoveFormationCallback(const control_application::MoveFormation:
 	this->formationMovement[0] = msg->xMovement;
 	this->formationMovement[1] = msg->yMovement;
 	this->formationMovement[2] = msg->zMovement;
+	setTargetPosition();
 }
 
 void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
