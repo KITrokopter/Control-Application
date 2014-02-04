@@ -42,6 +42,7 @@ public:
 	//void buildFormation(Formation formation);
 	void buildFormation();
 	void shutdownFormation();
+	void shutdown();
 	void checkInputMovement();
 	
 	Position6DOF* getTargetPosition();
@@ -65,8 +66,12 @@ private:
 	int startProcess;
 	int newTarget;
 	int shutdown;
+	
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
+
+	std::pthread_t tCalc;
+	std::pthread_t tSend;
 
 	//Subscriber for the MoveFormation data of the Quadcopts
 	ros::Subscriber MoveFormation_sub;

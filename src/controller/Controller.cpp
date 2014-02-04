@@ -59,7 +59,6 @@ void Controller::initialize()
 	 * tGet is not a new thread, implemented as parent. 
 	 * Leave function and wait to be called by position-instance?
 	 */
-	std::pthread_t tCalc, tSend;
 
 	/* TODO: Error-handling. */
 	std:pthread_create(&tCalc, NULL, &calculateMovement, NULL);
@@ -264,6 +263,15 @@ void Controller::shutdownFormation()
 		move();
 	}
 	this->shutdown = 1;
+}
+
+void Controller::shutdown()
+{
+	shutdownFormation ();
+
+	void *resultCalc, *resultSend;
+	pthread_join(tCalc, &resultCalc);
+	pthread_join(tSend, &resultSend);
 }
 
 void Controller::MoveFormationCallback(const control_application::MoveFormation::ConstPtr &msg)
