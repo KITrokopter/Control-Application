@@ -11,6 +11,11 @@ Controller::Controller(std::vector<Position6DOF> targetPosition, std::vector<Pos
 	//Subscriber for the MoveFormation data of the Quadcopts (1000 is the max. buffered messages)
 	this->MoveFormation_sub = n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
 	this->SetFormation_sub = n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
+	this->QuadStatus_sub = n.subscribe("quadcopter_status", 1000, &Controller::QuadStatusCallback, this);
+
+	//Service
+	this->BuildForm_srv  = n.advertiseService("BuildFormation", &Controller::buildFormation, this);
+	this->Shutdown_srv = n.advertiseService("Shutdown", &Controller::shutdownFormation, this);
 
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	this->Movement_pub = n.advertise<control_application::Movement>("Movement", 1000);
@@ -36,6 +41,11 @@ Controller::Controller()
 	//Subscriber for the MoveFormation data of the Quadcopts (1000 is the max. buffered messages)
 	this->MoveFormation_sub = n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
 	this->SetFormation_sub = n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
+	this->QuadStatus_sub = n.subscribe("quadcopter_status", 1000, &Controller::QuadStatusCallback, this);
+
+	//Service
+	this->BuildForm_srv  = n.advertiseService("BuildFormation", &Controller::buildFormation, this);
+	this->Shutdown_srv = n.advertiseService("Shutdown", &Controller::shutdownFormation, this);
 
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	this->Movement_pub = n.advertise<control_application::Movement>("Movement", 1000);
@@ -204,7 +214,7 @@ void Controller::shutdownFormation()
 	}
 }
 
-void Controller::MoveFormationCallback(const control_application::MoveFormation::ConstPtr &msg)
+void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
 {
 	ROS_INFO("I heard: %f", msg->xMovement);
 	this->formationMovement[0] = msg->xMovement;
@@ -231,4 +241,14 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		//formPos[i].setOrientation(ori);
 	}
 	this->formation.setPosition(formPos);
+}
+
+void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg)
+{
+	this->mag[msg->id][0] = msg->mag_x;
+	this->mag[msg->id][1] = msg->mag_y;
+	this->mag[msg->id][2] = msg->mag_z;
+	this->gyro[msg->id][0] = msg->gyro_x;
+	this->gyro[msg->id][1] = msg->gyro_y;
+	this->gyro[msg->id][2] = msg->gyro_z;
 }

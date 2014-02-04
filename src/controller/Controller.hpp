@@ -4,10 +4,12 @@
 #include "Position6DOF.hpp"
 #include "Formation.hpp"
 #include "ros/ros.h"
-#include "control_application/MoveFormation.h"	// ? (D)
+#include "api_application/MoveFormation.h"	// ? (D)
 #include "control_application/Movement.h"		// ? (D)
-//TODO How to include when not in the same package
 #include "api_application/SetFormation.h"
+#include "quadcopter_application/quadcopter_status.h"
+#include "api_application/BuildFormation.h"
+#include "api_application/Shutdown.h"
 #include <string>
 #include <vector>
 
@@ -44,8 +46,9 @@ public:
 	Position6DOF* getTargetPosition();
     
 protected:
-	void MoveFormationCallback(const control_application::MoveFormation::ConstPtr& msg);
+	void MoveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
 	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
+	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg);
 
 private:
 	std::vector<Position6DOF> targetPosition;
@@ -57,16 +60,24 @@ private:
 	std::vector<std::string> quadcopters;
 	int thrust;
 	float pitch, roll, yawrate;
+	std::vector<float> mag[3];
+	std::vector<float> gyro[3];
 	std::string idString;
 	int id;
 	int startProcess;
 
-	//Subscriber for the MoveFormation data of the Quadcopts
+	//Subscriber for the MoveFormation data
 	ros::Subscriber MoveFormation_sub;
 	//Subscriber for Formation data from API
 	ros::Subscriber SetFormation_sub;
+	//Subscriber for Quadcopter data from QuadcopterModul
+	ros::Subscriber QuadStatus_sub;
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	ros::Publisher Movement_pub;
+	//Service for building formation
+	ros::ServiceServer BuildForm_srv;
+	//Service for shutingdown formation
+	ros::ServiceServer Shutdown_srv;
 
 };
 
