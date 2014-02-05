@@ -53,52 +53,92 @@ Controller::Controller()
 	this->currentPosition[0].setPosition(invalid);
 	this->targetPosition[0].setPosition(invalid);
 	this->formation.setAmount(INVALID);
+	this->newTarget = 0;
+	this->shutdown = 0;
 }
 
 void Controller::initialize()
 {
-	
+	/*
+	 * Start using threads here.
+	 * tGet- One waiting to set new positions
+	 * tCalc- One calculating the output
+	 * tSend- One sending movement-data over ROS
+	 * 
+	 * TODO: Could the following work?
+	 * tGet is not a new thread, implemented as parent. 
+	 * Leave function and wait to be called by position-instance?
+	 */
+
+	/* TODO: Error-handling. */
+	std:pthread_create(&tCalc, NULL, &calculateMovement, NULL);
+	std:pthread_create(&tSend, NULL, &move, NULL);
 }
 		
 void Controller::calculateMovement()
 {
-	double moveVector[3];
-	for(int i = 0; i < amount; i++)
-	{		
-		this->idString = this->quadcopters[i];
-		this->id = i;
-		double * const target = this->targetPosition[i].getPosition();
-		double * const current = this->currentPosition[i].getPosition();
-		moveVector[0] = target[0] - current[0];
-		moveVector[1] = target[1] - current[1];
-		moveVector[2] = target[2] - current[2];
-		convertMovement(moveVector);
-		move();
+
+	/* TODO:  */
+	
+	/* TODO: pthread, while shutdown=no do run the infinte loop */
+	while(!shutdown)
+	{
+		double moveVector[3];
+		for(int i = 0; i < amount; i++)
+		{		
+			this->idString = this->quadcopters[i];
+			this->id = i;
+			tarPosMutex.lock();
+			double * const target = this->targetPosition[i].getPosition();
+			tarPosMutex.unlock();
+			curPosMutex.lock();
+			double * const current = this->currentPosition[i].getPosition();
+			curPosMutex.unlock();
+			moveVector[0] = target[0] - current[0];
+			moveVector[1] = target[1] - current[1];
+			moveVector[2] = target[2] - current[2];
+			convertMovement(moveVector);
+			move();
+		}
 	}	
 }
 
 void Controller::move()
 {
-	control_application::Movement msg;
-	double * const check = this->currentPosition[id].getPosition();
-	double * const target = this->targetPosition[id].getPosition();
-	//msg.id = this->idString;
-	msg.id = this->id;
-	msg.thrust = this->thrust;
-	msg.yaw = this->yawrate;
-	msg.pitch = this->pitch;
-	msg.roll = this->roll;
+	/* TODO: pthread, while shutdown=no do run the infinte loop */
+	while(!shutdown)
+	{	
+		control_application::Movement msg;
+		tarPosMutex.lock();
+		double * const target = this->targetPosition[id].getPosition();
+		tarPosMutex.unlock();
+		curPosMutex.lock();
+		double * const current = this->currentPosition[id].getPosition();
+		curPosMutex.unlock();
+		this->newTarget = 0;
+		//msg.id = this->idString;
+		msg.id = this->id;
+		msg.thrust = this->thrust;
+		msg.yaw = this->yawrate;
+		msg.pitch = this->pitch;
+		msg.roll = this->roll;
 
-	// Send values until targed is reached.
-	//TODO: change it
-	while(check[0] == INVALID || POS_CHECK)	 //TODO: comment
-	{
-		this->Movement_pub.publish(msg);	
-	}
-	if(startProcess)
-	{
-		msg.thrust = THRUST_STAND_STILL;
-		this->Movement_pub.publish(msg);
+		// Send values until targed is reached.
+		//TODO: change it
+		while(current[0] == INVALID || POS_CHECK)	 //Either the current position is invalid because qc not tracked yet or we try to reach the target position
+		{
+			this->Movement_pub.publish(msg);
+			//If a new target is set, the newTarget variable is true and we start a new calculation	
+			if(newTarget)
+			{
+				return;
+			}	
+		}
+		if(startProcess)
+		{
+			msg.thrust = THRUST_STAND_STILL;
+			this->Movement_pub.publish(msg);
+		}
 	}
 }
 
@@ -136,13 +176,16 @@ void Controller::setTargetPosition()
 {
 	for(int i = 0; i < amount; i++)
 	{
-		double * const pos = this->targetPosition[i].getPosition();
-		double target[3];
-		target[0] = pos[0] + this->formationMovement[0];
-		target[1] = pos[1] + this->formationMovement[1];
-		target[2] = pos[2] + this->formationMovement[2];
-		targetPosition[i].setPosition(target);
+		tarPosMutex.lock();
+		double * const targetOld = this->targetPosition[i].getPosition();
+		tarPosMutex.unlock();
+		double targetNew[3];
+		targetNew[0] = targetOld[0] + this->formationMovement[0];
+		targetNew[1] = targetOld[1] + this->formationMovement[1];
+		targetNew[2] = targetOld[2] + this->formationMovement[2];
+		this->targetPosition[i].setPosition(targetNew);
 	}
+	this->newTarget = 1;
 }
 
 
@@ -169,10 +212,12 @@ void Controller::buildFormation()
 		target[1] = pos[1] * distance;
 		target[2] = pos[2] * distance;
 		this->targetPosition[i].setPosition(target);
-		move();		
+		move();	
 		if( i == 0)
 		{
+			curPosMutex.lock();
 			first = this->currentPosition[0].getPosition();
+			curPosMutex.unlock();
 		}
 		else
 		{
@@ -180,22 +225,26 @@ void Controller::buildFormation()
 			target[0] += first[0];
 			target[1] += first[1];
 			target[2] += first[2];
+			tarPosMutex.lock();
 			this->targetPosition[i].setPosition(target);
-			convertMovement(target);
-			//TODO are three coordinate checks too much? Doable? Add epsilon?
-			move();
+			tarPosMutex.unlock();
+			calculateMovement();
 		}
 		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
 		target[0] = 0;
 		target[1] = distance;
 		target[2] = 0;
-		convertMovement(target);
-		move();		
+		tarPosMutex.lock();
+		this->targetPosition[i].setPosition(target);
+		tarPosMutex.unlock();
+		calculateMovement();
 	}
 }
 
 void Controller::shutdownFormation()
 {
+	this->shutdown = 1;
+	//Bring all quadcopters to a stand
 	for(int i = 0; i < amount; i++)
 	{
 		this->idString = this->quadcopters[i];
@@ -204,14 +253,35 @@ void Controller::shutdownFormation()
 		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
+		this->shutdown = 0;
 		move();
-		//TODO Check for collisions when declining
-		this->thrust = THRUST_DECLINE;
-		move();
+	}
+	//Decline each quadcopter till it's not tracked anymore and then shutdown motor
+	for(int i = 0; i < amount; i++)
+	{
+		curPosMutex.lock();
+		double * const current = this->currentPosition[id].getPosition();
+		curPosMutex.unlock();
+		while(current[0] != INVALID)
+		{
+			//TODO Check for collisions when declining
+			this->thrust = THRUST_DECLINE;
+			move();
+		}
 		//TODO Is this point to high?
 		this->thrust = THRUST_MIN;
 		move();
 	}
+	this->shutdown = 1;
+}
+
+void Controller::shutdown()
+{
+	shutdownFormation ();
+
+	void *resultCalc, *resultSend;
+	pthread_join(tCalc, &resultCalc);
+	pthread_join(tSend, &resultSend);
 }
 
 void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
