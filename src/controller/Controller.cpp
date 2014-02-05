@@ -71,6 +71,8 @@ void Controller::initialize()
 	 * Leave function and wait to be called by position-instance?
 	 */
 
+	listInit = false;
+
 	/* TODO: Error-handling. */
 	std:pthread_create(&tCalc, NULL, &calculateMovement, NULL);
 	/* Unneccessary if move is not in loop */
@@ -79,6 +81,17 @@ void Controller::initialize()
 	shutdownMutex.lock();
 	this->shutdown = 0;
 	shutdownMutex.unlock();
+}
+
+void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates) = 0;
+{
+	/* Initialize lists */
+	if( listInit == false )
+	{
+		this->amount = ids.size();
+		//TODO: list of vectors or vector of lists?
+		listInit = true;
+	}
 }
 		
 void Controller::calculateMovement()
@@ -94,6 +107,8 @@ void Controller::calculateMovement()
 		{		
 			this->idString = this->quadcopters[i];
 			this->id = i;
+			
+			/* TODO: why locking here? */
 			tarPosMutex.lock();
 			double * const target = this->targetPosition[i].getPosition();
 			this->newTarget = 0;			
