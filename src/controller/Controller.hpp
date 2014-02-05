@@ -36,11 +36,11 @@ public:
 	/* Initializing */
 	void initialize();
 
-	/* Movement */
+	/* Movement and Positioning */
 	void calculateMovement();
 	void move();
 	void convertMovement(double* const vector);
-
+	Position6DOF* getTargetPosition();
 	void setTargetPosition();
 
 	/* Formation */
@@ -50,9 +50,9 @@ public:
 	void shutdownFormation();
 	
 	void shutdown();
+	
 	void checkInputMovement();
 	
-	Position6DOF* getTargetPosition();
     
 protected:
 	void MoveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
@@ -80,6 +80,7 @@ private:
 	
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
+	Mutex shutdownMutex;
 
 	std::pthread_t tCalc;
 	std::pthread_t tSend;

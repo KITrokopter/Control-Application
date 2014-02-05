@@ -73,7 +73,12 @@ void Controller::initialize()
 
 	/* TODO: Error-handling. */
 	std:pthread_create(&tCalc, NULL, &calculateMovement, NULL);
-	std:pthread_create(&tSend, NULL, &move, NULL);
+	/* Unneccessary if move is not in loop */
+	//std:pthread_create(&tSend, NULL, &move, NULL);
+
+	shutdownMutex.lock();
+	this->shutdown = 0;
+	shutdownMutex.unlock();
 }
 		
 void Controller::calculateMovement()
@@ -116,26 +121,39 @@ void Controller::move()
 	double * const current = this->currentPosition[id].getPosition();
 	curPosMutex.unlock();
 	//msg.id = this->idString;
+
+	//TODO: Use target position not some random values.
 	msg.id = this->id;
 	msg.thrust = this->thrust;
 	msg.yaw = this->yawrate;
 	msg.pitch = this->pitch;
 	msg.roll = this->roll;
 	this->Movement_pub.publish(msg);
-	// Keep sending values until quadcopter is tracked
-	while(current[0] == INVALID)
+	
+	shutdownMutex.lock();
+	int doShutdown = this->shutdown;
+	shutdownMutex.unlock();
+	if( doShutdown == 1 )
 	{
+		msg.thrust = THRUST_MIN;
 		this->Movement_pub.publish(msg);
-		//If a new target is set, the newTarget variable is true and we start a new calculation	
-		if(newTarget || shutdown)
+	} else
+	{
+		// Keep sending values until quadcopter is tracked
+		while(current[0] == INVALID)
 		{
-			return;
-		}	
-	}
-	if(this->startProcess)
-	{
-		msg.thrust = THRUST_STAND_STILL;
-		this->Movement_pub.publish(msg);
+			this->Movement_pub.publish(msg);
+			//If a new target is set, the newTarget variable is true and we start a new calculation	
+			if(newTarget || shutdown)
+			{
+				return;
+			}	
+		}
+		if(this->startProcess)
+		{
+			msg.thrust = THRUST_STAND_STILL;
+			this->Movement_pub.publish(msg);
+		}
 	}
 }
 
@@ -240,6 +258,15 @@ void Controller::buildFormation()
 	this->startprocess = 0;
 }
 
+/*
+ * Shutdown Formation
+ * Set all values to zero and thrust to minimum. Send the values and do nothing
+ * after that.
+ * The thread for calculating the next values (target position, etc.) does not
+ * exit. 
+ * TODO: Check description with actual code ...
+ * 
+ */
 void Controller::shutdownFormation()
 {
 	this->shutdown = 1;
@@ -274,13 +301,22 @@ void Controller::shutdownFormation()
 	this->shutdown = 0;
 }
 
+/*
+ * Shutdown
+ * Set all values to zero and thrust to minimum. Send the values and exit program
+ * after that.
+ * 
+ */
 void Controller::shutdown()
 {
 	shutdownFormation ();
 
-	void *resultCalc, *resultSend;
+	void *resultCalc;
 	pthread_join(tCalc, &resultCalc);
-	pthread_join(tSend, &resultSend);
+	
+	/* Unneccessary if move is not in loop */
+	//void *resultSend;
+	//pthread_join(tSend, &resultSend);
 }
 
 void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
