@@ -32,18 +32,23 @@ class Controller {
 public:
 	Controller(std::vector<Position6DOF> targetPosition, std::vector<Position6DOF> currentPosition, Formation formation);
 	Controller();
-	
+
+	/* Initializing */
 	void initialize();
-	
+
+	/* Movement */
 	void calculateMovement();
 	void move();
 	void convertMovement(double* const vector);
+
 	void setTargetPosition();
-	
+
+	/* Formation */
 	//use this as service and then don't use setformation
 	//void buildFormation(Formation formation);
 	void buildFormation();
 	void shutdownFormation();
+	
 	void shutdown();
 	void checkInputMovement();
 	
