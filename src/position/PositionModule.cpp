@@ -158,7 +158,7 @@ void PositionModule::systemCallback(const api_application::System &msg)
 void PositionModule::setPictureSendingActivated(bool activated)
 {
 	camera_application::PictureSendingActivation msg;
-	msg.ID = rosId;
+	msg.ID = 0;
 	msg.active = activated;
 	
 	pictureSendingActivationPublisher.publish(msg);
