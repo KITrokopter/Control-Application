@@ -1,8 +1,12 @@
 #include "PositionModule.hpp"
 
 #include <assert.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <string>
 
 #include <ros/console.h>
+#include <opencv2/highgui/highgui.hpp>
 
 #include "sensor_msgs/Image.h"
 #include "api_application/Ping.h"
@@ -79,6 +83,7 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	if (!isCalibrating)
 	{
 		setPictureSendingActivated(true);
+		calibrationPictureCount = 0;
 	}
 	
 	isCalibrating = true;
@@ -88,11 +93,27 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 // Service
 bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req, control_application::TakeCalibrationPicture::Response &res)
 {
-	for (std::vector<cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++)
+	int id = 0;
+	
+	for (std::vector<cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++, id++)
 	{
 		if (*it != 0)
 		{
 			// TODO: check if image is "good"
+			
+			// Create directory for images.
+			int error = mkdir("~/calibrationImages", 770);
+				
+			if (error != 0 && error != EEXIST)
+			{
+				ROS_ERROR("Could not create directory for calibration images: %d", error);
+				return false;
+			}
+			
+			std::stringstream ss;
+			ss << "~/calibrationImages/cam" << id << "_image" << calibrationPictureCount << ".png";
+			
+			cv::imwrite(ss.str(), **it);
 			
 			sensor_msgs::Image img;
 			img.width = 640;
@@ -110,6 +131,8 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			*it = 0;
 		}
 	}
+	
+	calibrationPictureCount++;
 	
 	return true;
 }

@@ -23,6 +23,7 @@ private:
 	
 	// Calibration
 	bool isCalibrating;
+	int calibrationPictureCount;
 	std::vector<cv::Mat*> pictureCache;
 	std::vector<uint64_t> pictureTimes;
 	
