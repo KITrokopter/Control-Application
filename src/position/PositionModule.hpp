@@ -13,6 +13,7 @@
 #include "control_application/CalculateCalibration.h"
 #include "camera_application/PictureSendingActivation.h"
 #include "camera_application/Picture.h"
+#include "camera_application/RawPosition.h"
 #include "api_application/System.h"
 
 class PositionModule {
@@ -38,6 +39,7 @@ private:
 	
 	ros::Subscriber pictureSubscriber;
 	ros::Subscriber systemSubscriber;
+	ros::Subscriber rawPositionSubscriber;
 	
 	int rosId;
 	KitrokopterMessages* msg;
@@ -49,6 +51,7 @@ private:
 	
 	void pictureCallback(const camera_application::Picture &msg);
 	void systemCallback(const api_application::System &msg);
+	void rawPositionCallback(const camera_application::RawPosition &msg);
 	
 	// ROS wrappers
 	void setPictureSendingActivated(bool activated);

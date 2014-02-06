@@ -26,7 +26,10 @@ PositionModule::PositionModule(IPositionReceiver* receiver)
 	
 	this->pictureSendingActivationPublisher = n.advertise<camera_application::PictureSendingActivation>("PictureSendingActivation", 4);
 	this->pingPublisher = n.advertise<api_application::Ping>("Ping", 4);
+	
 	this->pictureSubscriber = n.subscribe("Picture", 128, &PositionModule::pictureCallback, this);
+	this->systemSubscriber = n.subscribe("System", 4, &PositionModule::systemCallback, this);
+	this->rawPositionSubscriber = n.subscribe("RawPosition", 1024, &PositionModule::rawPositionCallback, this);
 	
 	this->startCalibrationService = n.advertiseService("StartCalibration", &PositionModule::startCalibrationCallback, this);
 	this->takeCalibrationPictureService = n.advertiseService("TakeCalibrationPicture", &PositionModule::takeCalibrationPictureCallback, this);
@@ -190,6 +193,12 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 void PositionModule::systemCallback(const api_application::System &msg)
 {
 	isRunning = msg.command == 1;
+}
+
+// Topic
+void PositionModule::rawPositionCallback(const camera_application::RawPosition &msg)
+{
+ 	// TODO: Calculate position in our coordinate system.
 }
 
 void PositionModule::setPictureSendingActivated(bool activated)
