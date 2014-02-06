@@ -7,6 +7,7 @@
 
 #include <ros/console.h>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 
 #include "sensor_msgs/Image.h"
 #include "api_application/Ping.h"
@@ -84,6 +85,7 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	{
 		setPictureSendingActivated(true);
 		calibrationPictureCount = 0;
+		boardSize = cv::Size(req.chessboardWidth, req.chessboardHeight);
 	}
 	
 	isCalibrating = true;
@@ -100,6 +102,18 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		if (*it != 0)
 		{
 			// TODO: check if image is "good"
+			std::vector<cv::Point2f> corners;
+			bool foundAllCorners = cv::findChessboardCorners(**it, boardSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+			
+			if (!foundAllCorners)
+			{
+				ROS_INFO("Took bad picture (id %d)", id);
+				continue;
+			}
+			else
+			{
+				ROS_INFO("Took good picture (id %d)", id);
+			}
 			
 			// Create directory for images.
 			int error = mkdir("~/calibrationImages", 770);

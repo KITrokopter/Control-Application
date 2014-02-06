@@ -24,6 +24,7 @@ private:
 	// Calibration
 	bool isCalibrating;
 	int calibrationPictureCount;
+	cv::Size boardSize;
 	std::vector<cv::Mat*> pictureCache;
 	std::vector<uint64_t> pictureTimes;
 	

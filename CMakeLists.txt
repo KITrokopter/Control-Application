@@ -163,6 +163,7 @@ target_link_libraries(position_module
 	${catkin_LIBRARIES}
 	libopencv_core.so
 	libopencv_highgui.so
+	libopencv_calib3d.so
 )
 
 #############
