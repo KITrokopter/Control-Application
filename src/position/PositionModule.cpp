@@ -15,6 +15,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver)
 	
 	_isInitialized = true;
 	isCalibrating = false;
+	isRunning = false;
 	
 	ros::NodeHandle n;
 	
@@ -53,6 +54,8 @@ PositionModule::PositionModule(IPositionReceiver* receiver)
 		_isInitialized = false;
 	}
 	
+	msg = new KitrokopterMessages(rosId);
+	
 	if (_isInitialized)
 	{
 		ROS_DEBUG("PositionModule initialized.");
@@ -61,6 +64,10 @@ PositionModule::PositionModule(IPositionReceiver* receiver)
 
 PositionModule::~PositionModule()
 {
+	msg->~KitrokopterMessages();
+	
+	// TODO: Free picture cache.
+	
 	ROS_DEBUG("PositionModule destroyed.");
 }
 
@@ -115,6 +122,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	return true;
 }
 
+// Topic
 void PositionModule::pictureCallback(const camera_application::Picture &msg)
 {
 	if (isCalibrating)
@@ -139,6 +147,12 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 		pictureCache[msg.ID] = image;
 		pictureTimes[msg.ID] = msg.timestamp;
 	}
+}
+
+// Topic
+void PositionModule::systemCallback(const api_application::System &msg)
+{
+	isRunning = msg.command == 1;
 }
 
 void PositionModule::setPictureSendingActivated(bool activated)

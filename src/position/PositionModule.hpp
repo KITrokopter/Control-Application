@@ -7,16 +7,19 @@
 #include <inttypes.h>
 
 #include "IPositionReceiver.hpp"
+#include "../KitrokopterMessages.hpp"
 #include "control_application/StartCalibration.h"
 #include "control_application/TakeCalibrationPicture.h"
 #include "control_application/CalculateCalibration.h"
 #include "camera_application/PictureSendingActivation.h"
 #include "camera_application/Picture.h"
+#include "api_application/System.h"
 
 class PositionModule {
 private:
 	IPositionReceiver* receiver;
 	bool _isInitialized;
+	bool isRunning;
 	
 	// Calibration
 	bool isCalibrating;
@@ -32,8 +35,10 @@ private:
 	ros::Publisher pingPublisher;
 	
 	ros::Subscriber pictureSubscriber;
+	ros::Subscriber systemSubscriber;
 	
 	int rosId;
+	KitrokopterMessages* msg;
 	
 	// ROS callbacks
 	bool startCalibrationCallback(control_application::StartCalibration::Request &req, control_application::StartCalibration::Response &res);
@@ -41,6 +46,7 @@ private:
 	bool calculateCalibrationCallback(control_application::CalculateCalibration::Request &req, control_application::CalculateCalibration::Response &res);
 	
 	void pictureCallback(const camera_application::Picture &msg);
+	void systemCallback(const api_application::System &msg);
 	
 	// ROS wrappers
 	void setPictureSendingActivated(bool activated);

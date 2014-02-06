@@ -150,6 +150,7 @@ add_executable(position_module
 	src/position/tmpmain.cpp
 	src/position/PositionModule.cpp
 	src/position/DummyPositionReceiver.cpp
+	src/KitrokopterMessages.cpp
 )
 
 add_dependencies(position_module
