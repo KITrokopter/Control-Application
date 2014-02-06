@@ -113,33 +113,33 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			else
 			{
 				ROS_INFO("Took good picture (id %d)", id);
-			}
-			
-			// Create directory for images.
-			int error = mkdir("~/calibrationImages", 770);
 				
-			if (error != 0 && error != EEXIST)
-			{
-				ROS_ERROR("Could not create directory for calibration images: %d", error);
-				return false;
+				// Create directory for images.
+				int error = mkdir("~/calibrationImages", 770);
+				
+				if (error != 0 && error != EEXIST)
+				{
+					ROS_ERROR("Could not create directory for calibration images: %d", error);
+					return false;
+				}
+				
+				std::stringstream ss;
+				ss << "~/calibrationImages/cam" << id << "_image" << calibrationPictureCount << ".png";
+				
+				cv::imwrite(ss.str(), **it);
+				
+				sensor_msgs::Image img;
+				img.width = 640;
+				img.height = 480;
+				img.step = 3 * 640;
+				
+				for (int i = 0; i < 640 * 480 * 3; i++)
+				{
+					img.data[i] = (*it)->data[i];
+				}
+				
+				res.images.push_back(img);
 			}
-			
-			std::stringstream ss;
-			ss << "~/calibrationImages/cam" << id << "_image" << calibrationPictureCount << ".png";
-			
-			cv::imwrite(ss.str(), **it);
-			
-			sensor_msgs::Image img;
-			img.width = 640;
-			img.height = 480;
-			img.step = 3 * 640;
-			
-			for (int i = 0; i < 640 * 480 * 3; i++)
-			{
-				img.data[i] = (*it)->data[i];
-			}
-			
-			res.images.push_back(img);
 			
 			delete *it;
 			*it = 0;
