@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include <math.h>
 
 Vector::Vector() {
 	this->v1= 0;
@@ -62,7 +63,7 @@ int Vector::scalarMult(Vector a) {
 }
 
 int Vector::getLength() {
-    return (this->v1*this->v1 + this->v2*this->v2 + this->v3*this->v3);
+    return sqrt((this->v1*this->v1 + this->v2*this->v2 + this->v3*this->v3));
 }
 
 void Vector::putVariable(std::string a, Engine *ep) {

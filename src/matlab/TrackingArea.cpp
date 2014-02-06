@@ -26,6 +26,10 @@ TrackingArea::TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector b1
     this->center = *(calculateCenter(m->getEngine()));
 }
 
+TrackingArea::TrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Engine *ep) {
+    setTrackingArea(cameraPosition, cameraDirection, numberCameras, maxRange, ep);
+}
+
 Vector TrackingArea::getA1() {
     return this->a1;
 }
@@ -124,12 +128,10 @@ double TrackingArea::getHeight() {
     return getVectorLength(a1, b1);
 }
 
-double TrackingArea::getDistPointPlane(Vector a1, Vector u, Vector v, Vector x) {
+double TrackingArea::getDistPointPlane(Vector a, Vector u, Vector v, Vector x) {
     Vector *n = new Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
-    Vector *h = new Vector(0, 0, 0);
-    double l = getVectorLength(*n, *h);
-    double a = n->getV1()*a1.getV1()+n->getV2()*a2.getV2()+n->getV3()*a2.getV3();
-    double result = (n->getV1()*x.getV1()+n->getV2()*x.getV2()+n->getV3()*x.getV3()-a)/l;
+    double l = n->getLength();
+    double result = (n->scalarMult(x) - n->scalarMult(a))/l;
     if (result < 0) {
         return -result;
     } else {
@@ -236,6 +238,10 @@ void TrackingArea::setTrackingArea(Vector* cameraPosition, Vector* cameraDirecti
     double v1 = 0;
     double v2 = 0;
     double v3 = 0;
+    // normalize cameraDirection Vectors
+    for (int i = 0; i < numberCameras; i++) {
+        cameraDirection[i] = cameraDirection[i].mult(cameraDirection[i].getLength());
+    }
     for (int i = 0; i < numberCameras; i++) {
         // cameraPosition[i] + maxRange * cameraDirection[i]
         v1 = v1 + cameraPosition[i].getV1() + maxRange * cameraDirection[i].getV1();

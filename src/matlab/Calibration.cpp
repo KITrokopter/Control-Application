@@ -67,7 +67,7 @@ void Calibration::multiCameraCalibration(int numberCameras, double squareLengthX
     engEvalString(ep, "output_dir = '/home/dani/output_calibrationtest/';");
 
     // Image format: jpeg, bmp, tiff, png etc.
-    engEvalString(ep, "format_image = 'jpeg'");
+    engEvalString(ep, "format_image = 'jpg'");
 
     // tolerance in pixels of reprojection of checkerboard corners
     engEvalString(ep, "proj_tol = 0.6;");
@@ -75,7 +75,7 @@ void Calibration::multiCameraCalibration(int numberCameras, double squareLengthX
     // The index of the cameras to calibrate. In this example we are calibrating four cameras with sequential naming.
     // camera_vec = [0 1 2 3]; % version 1.2 and before
     // camera_vec = [0 1; 0 2; 0 3]';
-    engEvalString(ep, "camera_vec = [zeros(1,(nc-1), 'single'); (1:(cast(nc, 'single')-1))]");
+    engEvalString(ep, "camera_vec = [zeros(1,(nc), 'single'); (1:(cast(nc, 'single')))]");
 
     // The index of the cameras to be rotated (1 for rotating 180 degrees)
     // rotcam = [0 0 0 0]; % version 1.2 and before

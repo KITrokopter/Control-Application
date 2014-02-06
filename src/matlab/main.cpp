@@ -9,13 +9,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include <math.h>
 
 
 int main(int argc, char** argv)
 {
     Matlab *m = new Matlab();
     Calibration *h = new Calibration(m->getEngine());
-//    h->multiCameraCalibration(2, 30, 30, 11, 8);
+    h->multiCameraCalibration(2, 30, 30, 11, 8);
 
     /*//Lotfußpunkt (6, 3, 1)
     Vector* a = new Vector(-2, 1, 7);
@@ -63,6 +64,24 @@ int main(int argc, char** argv)
             }
         }
     }
+    Vector *c1 = new Vector(0, 0, 0);
+    Vector *c2 = new Vector(0, 1, 0);
+    Vector *c3 = new Vector(1, 0, 0);
+    Vector *c4 = new Vector(1, 1, 0);
+    Vector *d1 = new Vector(1, 1, 1);
+    Vector *d2 = new Vector(1, -1, 1);
+    Vector *d3 = new Vector(-1, 1, 1);
+    Vector *d4 = new Vector(-1, -1, 0);
+    Vector cameraPosition[4] = {*c1, *c2, *c3, *c4};
+    Vector cameraDirection[4] = {*d1, *d2, *d3, *d4};
+    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 1, m->getEngine());
+    printf("[%f %f %f], [%f %f %f], [%f %f %f], [%f, %f, %f], [%f, %f, %f] is the tracking area\n", t->getA1().getV1(), t->getA1().getV2(),t->getA1().getV3(), t->getA2().getV1(), t->getA2().getV2(), t->getA2().getV3(), t->getA3().getV1(), t->getA3().getV2(), t->getA3().getV3(), t->getA4().getV1(), t->getA4().getV2(), t->getA4().getV3(), t->getB1().getV1(), t->getB1().getV2(), t->getB1().getV3());
+    Vector *x = new Vector(0, 0, 20);
+    a = new Vector(1, 1, 1);
+    u = new Vector(0, 1, 0);
+    v = new Vector(1, 0, 0);
+    double dist = t->getDistPointPlane(*a, *u, *v, *x);
+    printf("distance is %f\n", dist);
     m->destroyMatlab();
     return EXIT_SUCCESS;
 }
