@@ -5,23 +5,58 @@
 #include <ros/console.h>
 
 #include "sensor_msgs/Image.h"
+#include "api_application/Ping.h"
+#include "api_application/Announce.h"
 
 PositionModule::PositionModule(IPositionReceiver* receiver)
 {
 	assert(receiver != 0);
 	this->receiver = receiver;
 	
+	_isInitialized = true;
 	isCalibrating = false;
 	
 	ros::NodeHandle n;
 	
 	this->pictureSendingActivationPublisher = n.advertise<camera_application::PictureSendingActivation>("PictureSendingActivation", 4);
+	this->pingPublisher = n.advertise<api_application::Ping>("Ping", 4);
 	this->pictureSubscriber = n.subscribe("Picture", 128, &PositionModule::pictureCallback, this);
 	
 	this->startCalibrationService = n.advertiseService("StartCalibration", &PositionModule::startCalibrationCallback, this);
 	this->takeCalibrationPictureService = n.advertiseService("TakeCalibrationPicture", &PositionModule::takeCalibrationPictureCallback, this);
+	this->calculateCalibrationService = n.advertiseService("CalculateCalibration", &PositionModule::calculateCalibrationCallback, this);
 	
-	ROS_DEBUG("PositionModule initialized.");
+	// Advertise myself to API
+	ros::ServiceClient announceClient = n.serviceClient<api_application::Announce>("Announce");
+	
+	api_application::Announce announce;
+	announce.request.type = 3; // 3 means position module
+	announce.request.initializeServiceName = std::string("InitializePositionModule");
+	
+	if (announceClient.call(announce))
+	{
+		rosId = announce.response.ID;
+		
+		if (rosId == ~0 /* -1 */)
+		{
+			ROS_ERROR("Error! Got id -1");
+			_isInitialized = false;
+		}
+		else
+		{
+			ROS_INFO("Position module successfully announced. Got id %d", rosId);
+		}
+	}
+	else
+	{
+		ROS_ERROR("Error! Could not announce myself to API!");
+		_isInitialized = false;
+	}
+	
+	if (_isInitialized)
+	{
+		ROS_DEBUG("PositionModule initialized.");
+	}
 }
 
 PositionModule::~PositionModule()
@@ -36,12 +71,7 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	
 	if (!isCalibrating)
 	{
-		// Activate picture sending.
-		camera_application::PictureSendingActivation msg;
-		msg.ID = rosId;
-		msg.active = true;
-		
-		pictureSendingActivationPublisher.publish(msg);
+		setPictureSendingActivated(true);
 	}
 	
 	isCalibrating = true;
@@ -73,6 +103,16 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			*it = 0;
 		}
 	}
+	
+	return true;
+}
+
+// Service
+bool PositionModule::calculateCalibrationCallback(control_application::CalculateCalibration::Request &req, control_application::CalculateCalibration::Response &res)
+{
+	// TODO: Do stuff with danis code...
+	
+	return true;
 }
 
 void PositionModule::pictureCallback(const camera_application::Picture &msg)
@@ -99,4 +139,25 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 		pictureCache[msg.ID] = image;
 		pictureTimes[msg.ID] = msg.timestamp;
 	}
+}
+
+void PositionModule::setPictureSendingActivated(bool activated)
+{
+	camera_application::PictureSendingActivation msg;
+	msg.ID = rosId;
+	msg.active = activated;
+	
+	pictureSendingActivationPublisher.publish(msg);
+}
+
+void PositionModule::sendPing()
+{
+	api_application::Ping msg;
+	msg.ID = rosId;
+	pingPublisher.publish(msg);
+}
+
+bool PositionModule::isInitialized()
+{
+	return _isInitialized;
 }
