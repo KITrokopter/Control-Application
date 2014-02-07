@@ -57,6 +57,7 @@ add_service_files(
   FILES
   StartCalibration.srv
   TakeCalibrationPicture.srv
+  CalculateCalibration.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -149,6 +150,7 @@ add_executable(position_module
 	src/position/tmpmain.cpp
 	src/position/PositionModule.cpp
 	src/position/DummyPositionReceiver.cpp
+	src/KitrokopterMessages.cpp
 )
 
 add_dependencies(position_module
@@ -160,6 +162,8 @@ add_dependencies(position_module
 target_link_libraries(position_module
 	${catkin_LIBRARIES}
 	libopencv_core.so
+	libopencv_highgui.so
+	libopencv_calib3d.so
 )
 
 #############
