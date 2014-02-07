@@ -55,7 +55,7 @@ Controller::Controller()
 	this->formation.setAmount(INVALID);
 	this->newTarget = 0;
 	this->newCurrent = 0;
-	this->shutdown = 0;
+	this->shutdownStarted = 0;
 }
 
 void Controller::initialize()
@@ -79,7 +79,7 @@ void Controller::initialize()
 	//std:pthread_create(&tSend, NULL, &move, NULL);
 
 	shutdownMutex.lock();
-	this->shutdown = 0;
+	this->shutdownStarted = 0;
 	shutdownMutex.unlock();
 }
 
@@ -100,7 +100,7 @@ void Controller::calculateMovement()
 	/* TODO:  */
 	
 	/* TODO: pthread, while shutdown=no do run the infinte loop */
-	while(!shutdown)
+	while(!shutdownStarted)
 	{
 		double moveVector[3];
 		for(int i = 0; i < amount; i++)
@@ -146,7 +146,7 @@ void Controller::move()
 	this->Movement_pub.publish(msg);
 	
 	shutdownMutex.lock();
-	int doShutdown = this->shutdown;
+	int doShutdown = this->shutdownStarted;
 	shutdownMutex.unlock();
 	if( doShutdown == 1 )
 	{
@@ -159,7 +159,7 @@ void Controller::move()
 		{
 			this->Movement_pub.publish(msg);
 			//If a new target is set, the newTarget variable is true and we start a new calculation	
-			if(newTarget || shutdown)
+			if(newTarget || shutdownStarted)
 			{
 				return;
 			}	
@@ -284,7 +284,7 @@ void Controller::buildFormation()
  */
 void Controller::shutdownFormation()
 {
-	this->shutdown = 1;
+	this->shutdownStarted = 1;
 	//Bring all quadcopters to a stand
 	for(int i = 0; i < amount; i++)
 	{
@@ -294,7 +294,7 @@ void Controller::shutdownFormation()
 		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
-		this->shutdown = 0;
+		this->shutdownStarted = 0;
 		move();
 	}
 	//Decline each quadcopter till it's not tracked anymore and then shutdown motor
@@ -313,7 +313,7 @@ void Controller::shutdownFormation()
 		this->thrust = THRUST_MIN;
 		move();
 	}
-	this->shutdown = 0;
+	this->shutdownStarted = 0;
 }
 
 /*

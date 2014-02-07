@@ -4,6 +4,7 @@
 #include "Position6DOF.hpp"
 #include "control_application/MoveFormation.h"
 #include "control_application/Movement.h"
+
 int main(int argc, char** argv)
 {
 // TODO: Create unique name.
@@ -24,13 +25,13 @@ int main(int argc, char** argv)
        control_application::Movement control_msg;
    
 	   //get data from controller::makeMovement() (maybe loop over the amount of crazyflies)
-       control_msg.thrust = ;
-       control_msg.yaw = ;
-       control_msg.pitch = ;
-       control_msg.roll = ;
-       control_msg.id = ;	
+       //control_msg.thrust = ;
+       //control_msg.yaw = ;
+       //control_msg.pitch = ;
+       //control_msg.roll = ;
+       //control_msg.id = ;	
    
-       Movement_pub.publish(control_msg);
+       //Movement_pub.publish(control_msg);
 	   //necessary for subscriber
        ros::spinOnce();
   	   //sleep to secure chosen rate

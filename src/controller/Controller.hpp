@@ -6,6 +6,7 @@
 #include "ros/ros.h"
 #include "api_application/MoveFormation.h"	// ? (D)
 #include "control_application/Movement.h"		// ? (D)
+#include "../matlab/Vector.h"
 #include "api_application/SetFormation.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "api_application/BuildFormation.h"
@@ -32,7 +33,7 @@
 //TODO are three coordinate checks too much? Doable? Add epsilon?
 #define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
 
-class Controller : IPositionReceiver {
+class Controller : public IPositionReceiver {
 public:
 	Controller(std::vector<Position6DOF> targetPosition, std::vector<Position6DOF> currentPosition, Formation formation);
 	Controller();
@@ -46,7 +47,7 @@ public:
 	void convertMovement(double* const vector);
 	Position6DOF* getTargetPosition();
 	void setTargetPosition();
-	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates) = 0;
+	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 
 	/* Formation */
 	//use this as service and then don't use setformation
@@ -70,9 +71,9 @@ private:
 	/* Position */
 	std::vector<Position6DOF> targetPosition;
 	std::vector<Position6DOF> currentPosition;
-	std::vector<std::list<Position6DOF>> listPositions;
-	std::vector<std::list<Position6DOF>> listTargets;
-	std::vector<std::list<Position6DOF>> listSendTargets;
+	std::vector<std::list<Position6DOF> > listPositions;
+	std::vector<std::list<Position6DOF> > listTargets;
+	std::vector<std::list<Position6DOF> > listSendTargets;
 	bool listInit;
 	
 	//Identification of Quadcopters?
@@ -91,15 +92,15 @@ private:
 	int startProcess;
 	int newTarget;
 	int newCurrent;
-	int shutdown;
+	bool shutdownStarted;
 	
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
 	Mutex shutdownMutex;
 
 	/* Threads */
-	std::pthread_t tCalc;
-	std::pthread_t tSend;
+	pthread_t tCalc;
+	pthread_t tSend;
 
 	//Subscriber for the MoveFormation data
 	ros::Subscriber MoveFormation_sub;
