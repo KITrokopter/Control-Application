@@ -7,6 +7,7 @@
 #include "api_application/MoveFormation.h"	// ? (D)
 #include "control_application/Movement.h"		// ? (D)
 #include "../matlab/Vector.h"
+#include "control_application/quadcopter_movement.h"		// ? (D)
 #include "api_application/SetFormation.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "api_application/BuildFormation.h"
@@ -34,8 +35,10 @@
 #define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
 
 class Controller : public IPositionReceiver {
+=======
+class Controller {
+>>>>>>> master
 public:
-	Controller(std::vector<Position6DOF> targetPosition, std::vector<Position6DOF> currentPosition, Formation formation);
 	Controller();
 
 	/* Initializing */
@@ -43,7 +46,7 @@ public:
 
 	/* Movement and Positioning */
 	void calculateMovement();
-	void move();
+	void sendMovement();
 	void convertMovement(double* const vector);
 	Position6DOF* getTargetPosition();
 	void setTargetPosition();
@@ -83,15 +86,24 @@ private:
 	int amount;
 	float formationMovement[3];
 	std::vector<std::string> quadcopters;
+	//Set data
 	int thrust;
 	float pitch, roll, yawrate;
-	std::vector<float> mag[3];
-	std::vector<float> gyro[3];
+	//Received data
+	std::vector<float> pitch_stab;
+	std::vector<float> roll_stab;
+	std::vector<float> yaw_stab;
+	std::vector<unsigned int> thrust_stab;
+	std::vector<float> battery_status;
 	std::string idString;
 	int id;
 	int startProcess;
 	int newTarget;
 	int newCurrent;
+	std::vector<bool> tracked;
+	bool newTarget;
+	bool newCurrent;
+>>>>>>> master
 	bool shutdownStarted;
 	
 	Mutex curPosMutex;

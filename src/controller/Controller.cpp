@@ -1,35 +1,5 @@
 #include "Controller.hpp"
 
-Controller::Controller(std::vector<Position6DOF> targetPosition, std::vector<Position6DOF> currentPosition, Formation formation)
-{
-	/**
-  	 * NodeHandle is the main access point to communications with the ROS system.
-	 * The first NodeHandle constructed will fully initialize this node, and the last
-     * NodeHandle destructed will close down the node.
-     */
-    ros::NodeHandle n;
-	//Subscriber for the MoveFormation data of the Quadcopts (1000 is the max. buffered messages)
-	this->MoveFormation_sub = n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
-	this->SetFormation_sub = n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
-	this->QuadStatus_sub = n.subscribe("quadcopter_status", 1000, &Controller::QuadStatusCallback, this);
-
-	//Service
-	this->BuildForm_srv  = n.advertiseService("BuildFormation", &Controller::buildFormation, this);
-	this->Shutdown_srv = n.advertiseService("Shutdown", &Controller::shutdownFormation, this);
-
-	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
-	this->Movement_pub = n.advertise<control_application::Movement>("Movement", 1000);
-	
-	this->formation.setDistance(formation.getDistance());
-	this->formation.setAmount(formation.getAmount());
-	this->formation.setPosition(formation.getPosition());
-	for(int i = 0; i < amount; i++) 
-	{
-		this->targetPosition[i] = targetPosition[i];
-		this->currentPosition[i] = currentPosition[i];
-	}
-}
-
 Controller::Controller()
 {
 	/**
@@ -41,6 +11,7 @@ Controller::Controller()
 	//Subscriber for the MoveFormation data of the Quadcopts (1000 is the max. buffered messages)
 	this->MoveFormation_sub = n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
 	this->SetFormation_sub = n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
+	//TODO multiple topics
 	this->QuadStatus_sub = n.subscribe("quadcopter_status", 1000, &Controller::QuadStatusCallback, this);
 
 	//Service
@@ -48,7 +19,7 @@ Controller::Controller()
 	this->Shutdown_srv = n.advertiseService("Shutdown", &Controller::shutdownFormation, this);
 
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
-	this->Movement_pub = n.advertise<control_application::Movement>("Movement", 1000);
+	this->Movement_pub = n.advertise<control_application::quadcopter_movement>("quadcopter_movement", 1000);
 	double invalid[3] = {INVALID, INVALID, INVALID};
 	this->currentPosition[0].setPosition(invalid);
 	this->targetPosition[0].setPosition(invalid);
@@ -103,7 +74,7 @@ void Controller::calculateMovement()
 	while(!shutdownStarted)
 	{
 		double moveVector[3];
-		for(int i = 0; i < amount; i++)
+		for(int i = 0; i < this->amount; i++)
 		{		
 			this->idString = this->quadcopters[i];
 			this->id = i;
@@ -120,29 +91,19 @@ void Controller::calculateMovement()
 			moveVector[1] = target[1] - current[1];
 			moveVector[2] = target[2] - current[2];
 			convertMovement(moveVector);
-			move();
+			sendMovement();
 		}
 		while(this->newTarget == 0 && this->newCurrent == 0) {};
 	}	
 }
-
-void Controller::move()
+void Controller::sendMovement()
 {
-	control_application::Movement msg;
-	tarPosMutex.lock();
-	double * const target = this->targetPosition[id].getPosition();
-	tarPosMutex.unlock();
-	curPosMutex.lock();
-	double * const current = this->currentPosition[id].getPosition();
-	curPosMutex.unlock();
-	//msg.id = this->idString;
-
-	//TODO: Use target position not some random values.
-	msg.id = this->id;
+	control_application::quadcopter_movement msg;
 	msg.thrust = this->thrust;
 	msg.yaw = this->yawrate;
 	msg.pitch = this->pitch;
 	msg.roll = this->roll;
+<<<<<<< HEAD
 	this->Movement_pub.publish(msg);
 	
 	shutdownMutex.lock();
@@ -170,6 +131,9 @@ void Controller::move()
 			this->Movement_pub.publish(msg);
 		}
 	}
+=======
+	this->Movement_pub.publish(msg);		
+>>>>>>> master
 }
 
 void Controller::convertMovement(double* vector)
@@ -204,7 +168,7 @@ void Controller::convertMovement(double* vector)
 //Move the last Positions according to the formation movement vector (without orientation right now)
 void Controller::setTargetPosition()
 {
-	for(int i = 0; i < amount; i++)
+	for(int i = 0; i < this->amount; i++)
 	{
 		tarPosMutex.lock();
 		double * const targetOld = this->targetPosition[i].getPosition();
@@ -225,11 +189,10 @@ void Controller::setTargetPosition()
  */
 void Controller::buildFormation()
 {
-	this->startprocess = 1;
 	Position6DOF* const formPos = this->formation.getPosition();
 	double distance = this->formation.getDistance();
 	double * first;
-	for(int i = 0; i < amount; i++)
+	for(int i = 0; i < this->amount; i++)
 	{
 		this->idString = this->quadcopters[i];
 		this->id = i;
@@ -243,7 +206,10 @@ void Controller::buildFormation()
 		target[1] = pos[1] * distance;
 		target[2] = pos[2] * distance;
 		this->targetPosition[i].setPosition(target);
-		move();	
+		while(!this->tracked[i])
+		{
+			sendMovement();
+		}
 		if( i == 0)
 		{
 			curPosMutex.lock();
@@ -270,7 +236,6 @@ void Controller::buildFormation()
 		tarPosMutex.unlock();
 		calculateMovement();
 	}
-	this->startprocess = 0;
 }
 
 /*
@@ -286,7 +251,7 @@ void Controller::shutdownFormation()
 {
 	this->shutdownStarted = 1;
 	//Bring all quadcopters to a stand
-	for(int i = 0; i < amount; i++)
+	for(int i = 0; i < this->amount; i++)
 	{
 		this->idString = this->quadcopters[i];
 		this->id = i;
@@ -295,23 +260,27 @@ void Controller::shutdownFormation()
 		this->pitch = 0;
 		this->roll = 0;
 		this->shutdownStarted = 0;
+<<<<<<< HEAD
 		move();
+=======
+		sendMovement();
+>>>>>>> master
 	}
 	//Decline each quadcopter till it's not tracked anymore and then shutdown motor
-	for(int i = 0; i < amount; i++)
+	for(int i = 0; i < this->amount; i++)
 	{
 		curPosMutex.lock();
 		double * const current = this->currentPosition[id].getPosition();
 		curPosMutex.unlock();
-		while(current[0] != INVALID)
+		//Decline until crazyflie isn't tracked anymore
+		while(tracked[i] != INVALID)
 		{
-			//TODO Check for collisions when declining
 			this->thrust = THRUST_DECLINE;
-			move();
+			sendMovement();
 		}
-		//TODO Is this point to high?
+		//Shutdown crazyflie after having left the tracking area.
 		this->thrust = THRUST_MIN;
-		move();
+		sendMovement();
 	}
 	this->shutdownStarted = 0;
 }
@@ -347,6 +316,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 {
 	this->formation.setDistance(msg->distance);
 	this->formation.setAmount(msg->amount);
+	this->amount = msg->amount;
 	Position6DOF formPos[this->amount];
 	for(int i = 0; i < this->amount; i++)
 	{
@@ -362,14 +332,18 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		//formPos[i].setOrientation(ori);
 	}
 	this->formation.setPosition(formPos);
+	for(int i = 0; i < this->amount; i++)
+	{
+		this->tracked[i] = 0;
+	}
 }
 
+//TODO Needs to be adjusted according to callback number
 void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg)
 {
-	this->mag[msg->id][0] = msg->mag_x;
-	this->mag[msg->id][1] = msg->mag_y;
-	this->mag[msg->id][2] = msg->mag_z;
-	this->gyro[msg->id][0] = msg->gyro_x;
-	this->gyro[msg->id][1] = msg->gyro_y;
-	this->gyro[msg->id][2] = msg->gyro_z;
+	this->battery_status[i] = msg->battery_status;
+	this->roll_stab[i] = msg->stabilizer_roll;
+	this->pitch_stab[i] = msg->stabilizer_pitch;
+	this->yaw_stab[i] = msg->stabilizer_yaw;
+	this->thrust_stab[i] = msg->stabilizer_thrust;
 }
