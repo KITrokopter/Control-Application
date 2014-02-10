@@ -40,8 +40,6 @@ public:
 	void setTargetPosition();
 
 	/* Formation */
-	//use this as service and then don't use setformation
-	//void buildFormation(Formation formation);
 	void buildFormation();
 	void shutdownFormation();
 	
