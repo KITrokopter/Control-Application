@@ -33,9 +33,8 @@ void Controller::initialize()
 {
 	/*
 	 * Start using threads here.
-	 * tGet- One waiting to set new positions
+	 * tGet- One waiting to set and send new positions
 	 * tCalc- One calculating the output
-	 * tSend- One sending movement-data over ROS
 	 * 
 	 * TODO: Could the following work?
 	 * tGet is not a new thread, implemented as parent. 
@@ -46,8 +45,6 @@ void Controller::initialize()
 
 	/* TODO: Error-handling. */
 	std:pthread_create(&tCalc, NULL, &calculateMovement, NULL);
-	/* Unneccessary if move is not in loop */
-	//std:pthread_create(&tSend, NULL, &move, NULL);
 
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
@@ -103,7 +100,6 @@ void Controller::sendMovement()
 	msg.yaw = this->yawrate;
 	msg.pitch = this->pitch;
 	msg.roll = this->roll;
-<<<<<<< HEAD
 	this->Movement_pub.publish(msg);
 	
 	shutdownMutex.lock();
@@ -131,9 +127,7 @@ void Controller::sendMovement()
 			this->Movement_pub.publish(msg);
 		}
 	}
-=======
 	this->Movement_pub.publish(msg);		
->>>>>>> master
 }
 
 void Controller::convertMovement(double* vector)
@@ -260,11 +254,7 @@ void Controller::shutdownFormation()
 		this->pitch = 0;
 		this->roll = 0;
 		this->shutdownStarted = 0;
-<<<<<<< HEAD
-		move();
-=======
 		sendMovement();
->>>>>>> master
 	}
 	//Decline each quadcopter till it's not tracked anymore and then shutdown motor
 	for(int i = 0; i < this->amount; i++)

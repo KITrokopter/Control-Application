@@ -35,9 +35,7 @@
 #define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
 
 class Controller : public IPositionReceiver {
-=======
 class Controller {
->>>>>>> master
 public:
 	Controller();
 
@@ -103,7 +101,6 @@ private:
 	std::vector<bool> tracked;
 	bool newTarget;
 	bool newCurrent;
->>>>>>> master
 	bool shutdownStarted;
 	
 	Mutex curPosMutex;
