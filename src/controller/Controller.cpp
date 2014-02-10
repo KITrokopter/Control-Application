@@ -40,7 +40,8 @@ void Controller::initialize()
 	 * Leave function and wait to be called by position-instance.
 	 */
 
-	listInit = false;
+	this->listInit = false;
+	this->amount = 0;
 
 	/* TODO: Error-handling. */
 	std:pthread_create(&tCalc, NULL, &calculateMovement, NULL);

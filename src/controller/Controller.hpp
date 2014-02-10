@@ -76,17 +76,20 @@ private:
 	std::list<std::vector<Position6DOF> > listTargets;
 	std::list<std::vector<Position6DOF> > listSendTargets;
 	
-	//Identification of Quadcopters?
-
 	/*  */
+	
+	/* Identification of Quadcopters */
+	int amount; /* Unknown at start, variable at runtime. */
 	Formation formation;
-	int amount;
-	float formationMovement[3];
+	float formationMovement[3]; /*TODO*/
 	std::vector<std::string> quadcopters;
-	//Set data
+	std::map<std::string, int> IdToArray; /* "quadcopters"->Arrayposition */
+	
+	/* Set data */ /*TODO*/
 	int thrust;
 	float pitch, roll, yawrate;
-	//Received data
+
+	/* Received data */ /*TODO*/
 	std::vector<float> pitch_stab;
 	std::vector<float> roll_stab;
 	std::vector<float> yaw_stab;
