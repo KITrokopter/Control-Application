@@ -51,7 +51,6 @@ public:
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 
 	/* Formation */
-	//use this as service and then don't use setformation
 	//void buildFormation(Formation formation);
 	void buildFormation();
 	void shutdownFormation();
@@ -72,10 +71,10 @@ private:
 	/* Position */
 	std::vector<Position6DOF> targetPosition;
 	std::vector<Position6DOF> currentPosition;
-	std::vector<std::list<Position6DOF> > listPositions;
-	std::vector<std::list<Position6DOF> > listTargets;
-	std::vector<std::list<Position6DOF> > listSendTargets;
 	bool listInit;
+	std::list<std::vector<Position6DOF> > listPositions;
+	std::list<std::vector<Position6DOF> > listTargets;
+	std::list<std::vector<Position6DOF> > listSendTargets;
 	
 	//Identification of Quadcopters?
 
@@ -109,7 +108,6 @@ private:
 
 	/* Threads */
 	pthread_t tCalc;
-	pthread_t tSend;
 
 	//Subscriber for the MoveFormation data
 	ros::Subscriber MoveFormation_sub;

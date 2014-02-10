@@ -36,9 +36,8 @@ void Controller::initialize()
 	 * tGet- One waiting to set and send new positions
 	 * tCalc- One calculating the output
 	 * 
-	 * TODO: Could the following work?
 	 * tGet is not a new thread, implemented as parent. 
-	 * Leave function and wait to be called by position-instance?
+	 * Leave function and wait to be called by position-instance.
 	 */
 
 	listInit = false;
@@ -57,7 +56,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	if( listInit == false )
 	{
 		this->amount = ids.size();
-		//TODO: list of vectors or vector of lists?
+		/* TODO: Add to list */
 		listInit = true;
 	}
 }
@@ -67,7 +66,6 @@ void Controller::calculateMovement()
 
 	/* TODO:  */
 	
-	/* TODO: pthread, while shutdown=no do run the infinte loop */
 	while(!shutdownStarted)
 	{
 		double moveVector[3];
@@ -93,6 +91,7 @@ void Controller::calculateMovement()
 		while(this->newTarget == 0 && this->newCurrent == 0) {};
 	}	
 }
+
 void Controller::sendMovement()
 {
 	control_application::quadcopter_movement msg;
@@ -141,7 +140,7 @@ void Controller::convertMovement(double* vector)
 	} else if (vector[2] < thrust_react_z_high) {
 		this->thrust -= THRUST_STEP;
 	} else {
-		/* Not sure what to do here, maybe nothing. */
+		/* Probably nothing to do here. */
 	}
 
 	double length = 0;
@@ -284,13 +283,8 @@ void Controller::shutdownFormation()
 void Controller::shutdown()
 {
 	shutdownFormation ();
-
 	void *resultCalc;
-	pthread_join(tCalc, &resultCalc);
-	
-	/* Unneccessary if move is not in loop */
-	//void *resultSend;
-	//pthread_join(tSend, &resultSend);
+	pthread_join(tCalc, &resultCalc);	
 }
 
 void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
