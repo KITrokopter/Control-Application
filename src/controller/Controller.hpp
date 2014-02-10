@@ -49,6 +49,7 @@ public:
 	
     
 protected:
+	//Callbacks for Ros subscriber
 	void MoveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
 	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
 	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg);
@@ -56,42 +57,56 @@ protected:
 private:
 	std::vector<Position6DOF> targetPosition;
 	std::vector<Position6DOF> currentPosition;
-	//Identification of Quadcopters?
+	
+	//Receive data over ROS
 	Formation formation;
+	//TODO needs to be with service find all
+	int totalAmount;
 	int amount;
 	float formationMovement[3];
+	
+	//Mapping of int id to string id/ hardware id   qc[id][uri/hardware id]
 	std::vector<std::string> quadcopters;
 	//Set data
 	int thrust;
 	float pitch, roll, yawrate;
+	int id;
 	//Received data
 	std::vector<float> pitch_stab;
 	std::vector<float> roll_stab;
 	std::vector<float> yaw_stab;
 	std::vector<unsigned int> thrust_stab;
 	std::vector<float> battery_status;
-	std::string idString;
-	int id;
+	std::vector<string> idString;
+
+	//Control variables
+	//Array of tracked quadcopters
 	std::vector<bool> tracked;
-	bool newTarget;
-	bool newCurrent;
+	//Set when we are in the shutdown process
 	bool shutdownStarted;
 	
+	//Mutex for currentPosition, targetPosition and shutdown
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
 	Mutex shutdownMutex;
 
+	//Threads
 	pthread_t tCalc;
 	pthread_t tSend;
 
+	//Subscriber
 	//Subscriber for the MoveFormation data
 	ros::Subscriber MoveFormation_sub;
 	//Subscriber for Formation data from API
 	ros::Subscriber SetFormation_sub;
 	//Subscriber for Quadcopter data from QuadcopterModul
 	ros::Subscriber QuadStatus_sub;
+
+	//Publisher
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	ros::Publisher Movement_pub;
+
+	//Service
 	//Service for building formation
 	ros::ServiceServer BuildForm_srv;
 	//Service for shutingdown formation
