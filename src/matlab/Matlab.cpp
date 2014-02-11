@@ -139,14 +139,14 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 	return 2;
 }
 
-Vector Matlab::interpolateLines(Line *lines, int quantity) {
-	Vector points[2*quantity];
+Vector Matlab::interpolateLines(Line **lines, int quantity) {
+    /*Vector points[2*quantity];
 	int pos = 0;
 	int intersects;
 	Vector* result[2];
 	for (int i = 0; i < quantity; i++) {
 		for (int j = i + 1; j < quantity; j++) {
-            intersects = perpFootTwoLines(lines[i], lines[j], result);
+            intersects = perpFootTwoLines(*lines[i], *lines[j], result);
 			if (intersects == 1) {
 				points[pos] = *result[0];
 				pos++;
@@ -168,7 +168,9 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 	v2 = v2 / pos;
 	v3 = v3 / pos;
 	Vector *approximated = new Vector(v1, v2, v3);
-	return *approximated;
+    return *approximated;*/
+    Vector *u = new Vector(0.5, 1, 1);
+    return *u;
 }
 
 Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
@@ -180,5 +182,38 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
 	Vector* interpolatedNewPos = new Vector(v1, v2, v3);
 	return *interpolatedNewPos;
 }
-
-
+/*
+ * intersection line of E1:f.getA() + r * f.getU() + s * (directV1 - f.getA()) and
+ * E2: g.getA() + t* g.getU() + z * (directV2-g.getA())
+ */
+Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {
+    f.getA().putVariable("a", ep);
+    f.getU().putVariable("u", ep);
+    Vector v = directV1.add(f.getA().mult(-1));
+    v.putVariable("v", ep);
+    g.getA().putVariable("b", ep);
+    g.getU().putVariable("w", ep);
+    // E1 == g
+    engEvalString(ep, "A = [u(1) v(1) -w(1); u(2) v(2) -w(2); u(3) v(3) -w(3)]");
+    engEvalString(ep, "diff = b - a");
+    engEvalString(ep, "bb = [diff(1); diff(2); diff(3)]");
+    // x = (r, s, t)
+    engEvalString(ep, "x = inv(A) * bb");
+    mxArray *x = engGetVariable(ep, "x");
+    // point on the intersectionline
+    Vector intersection1 = g.getA().add(g.getU().mult(mxGetPr(x)[2]));
+    Vector w = directV2.add(g.getA().mult(-1));
+    w.putVariable("w", ep);
+    // E1 == g.getA() + r * (directV2 - g.getA())
+    engEvalString(ep, "A = [u(1) v(1) -w(1); u(2) v(2) -w(2); u(3) v(3) -w(3)]");
+    engEvalString(ep, "diff = b - a");
+    engEvalString(ep, "bb = [diff(1); diff(2); diff(3)]");
+    // x = (r, s, t)
+    engEvalString(ep, "x = inv(A) * bb");
+    x = engGetVariable(ep, "x");
+    // point on the intersectionline
+    Vector intersection2 = g.getA().add(g.getU().mult(mxGetPr(x)[2]));
+    Line *intersectionLine = new Line(intersection1, (intersection2.add(intersection1.mult(-1))));
+    mxDestroyArray(x);
+    return *intersectionLine;
+}

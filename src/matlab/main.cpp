@@ -15,6 +15,7 @@
 int main(int argc, char** argv)
 {
     Matlab *m = new Matlab();
+
     Calibration *h = new Calibration(m->getEngine());
     h->multiCameraCalibration(2, 30, 30, 11, 8);
 
@@ -35,14 +36,16 @@ int main(int argc, char** argv)
     Vector* b = new Vector(5, 8, 21);
     Vector* v = new Vector(1, 1, 5);
 */
+
+/*
     //Lotfußpunkt f: (8, -1, 7) Lotfußpunkt g: (8, 11, 1)
     Vector* a = new Vector(3, -1, 7);
     Vector* u = new Vector(1, 0, 0);
     Vector* b = new Vector(2, 8, -5);
     Vector* v = new Vector(2, 1, 2);
 
-    Line* f = new Line(a, u);
-    Line* g = new Line(b, v);
+    Line* f = new Line(*a, *u);
+    Line* g = new Line(*b, *v);
     long int first = getNanoTime();
     Vector oneLine = m->perpFootOneLine(*f, *b);
     long int second = getNanoTime();
@@ -64,24 +67,56 @@ int main(int argc, char** argv)
             }
         }
     }
+
+
+    Line *f = new Line(*(new Vector(2, 2, 2)), *(new Vector(1, -1, 5)));
+    Vector *f1 = new Vector(3, 2, 4);
+    Line *g = new Line(*(new Vector(2, 1, 5)), *(new Vector(0, -1, 3)));
+    Vector *g1 = new Vector(2, 2, 11);
+    Line u = m->getIntersectionLine(*f, *f1, *g, *g1);
+    printf("a is [%f, %f, %f], should be [2, 2, 2], u is [%f, %f, %f], should be [0, -1, 3]\n", u.getA().getV1(), u.getA().getV2(), u.getA().getV3(),u.getU().getV1(), u.getU().getV2(), u.getU().getV3());
+*/
+    Vector *a1 = new Vector(0, 0, 0);
+    Vector *a2 = new Vector(1, 0, 0);
+    Vector *a3 = new Vector(1, 1, 0);
+    Vector *a4 = new Vector(0, 1, 0);
+    Vector *b1 = new Vector(0, 0, 1);
+    Vector *b2 = new Vector(1, 0, 1);
+    Vector *b3 = new Vector(1, 1, 1);
+    Vector *b4 = new Vector(0, 1, 1);
     Vector *c1 = new Vector(0, 0, 0);
-    Vector *c2 = new Vector(0, 1, 0);
-    Vector *c3 = new Vector(1, 0, 0);
-    Vector *c4 = new Vector(1, 1, 0);
-    Vector *d1 = new Vector(1, 1, 1);
-    Vector *d2 = new Vector(1, -1, 1);
-    Vector *d3 = new Vector(-1, 1, 1);
-    Vector *d4 = new Vector(-1, -1, 0);
+    Vector *c2 = new Vector(0, 10, 0);
+    Vector *c3 = new Vector(10, 10, 0);
+    Vector *c4 = new Vector(10, 0, 0);
+    Vector *d1 = new Vector(10, 10, 10);
+    Vector *d2 = new Vector(10, -10, 10);
+    Vector *d3 = new Vector(-10, -10, 10);
+    Vector *d4 = new Vector(-10, 10, 10);
+    TrackingArea *t = new TrackingArea(*a1, *a2, *a3, *a4, *b1, *b2, *b3, *b4);
+    //if (t->inTrackingArea(*c1, *d1, 10, *(new Vector(0.5, 0.5, 0.5)), m->getEngine())) printf("true");
+    //if (t->contains(t->getCenter()) == false) printf("Not in tracking area.\n");
+    if (t->inTrackingArea(*a2, *b2, 1, *(new Vector(0.5, 0.5, 0.5)), m->getEngine())) printf("true\n");
+/*
     Vector cameraPosition[4] = {*c1, *c2, *c3, *c4};
     Vector cameraDirection[4] = {*d1, *d2, *d3, *d4};
-    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 1, m->getEngine());
+    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 10, m->getEngine());
     printf("[%f %f %f], [%f %f %f], [%f %f %f], [%f, %f, %f], [%f, %f, %f] is the tracking area\n", t->getA1().getV1(), t->getA1().getV2(),t->getA1().getV3(), t->getA2().getV1(), t->getA2().getV2(), t->getA2().getV3(), t->getA3().getV1(), t->getA3().getV2(), t->getA3().getV3(), t->getA4().getV1(), t->getA4().getV2(), t->getA4().getV3(), t->getB1().getV1(), t->getB1().getV2(), t->getB1().getV3());
-    Vector *x = new Vector(0, 0, 20);
-    a = new Vector(1, 1, 1);
-    u = new Vector(0, 1, 0);
-    v = new Vector(1, 0, 0);
+
+
+    Line *f = new Line(*a1, *a3);
+    Line *g = new Line(*b1, *b2);
+    Line perp = m->getIntersectionLine(*f, *a2, *g, *(new Vector(0.5, 0.5, 0.5)));
+    printf("intersectionLine is [%f, %f, %f]\n", perp.getU().getV1(), perp.getU().getV2(), perp.getU().getV3());
+
+    if(t->inTrackingArea(*a1, *b3, 4, t->getCenter(), m->getEngine())) printf("Contains\n");
+
+    Vector *x = new Vector(5, -2, 0);
+    Vector *a = new Vector(-2, -7.5, 2);
+    Vector *u = new Vector(-8, 7.5, -2);
+    Vector *v = new Vector(2, 10, -2);
     double dist = t->getDistPointPlane(*a, *u, *v, *x);
-    printf("distance is %f\n", dist);
+    printf("distance is %f, should be 1,183.\n", dist);
+*/
     m->destroyMatlab();
     return EXIT_SUCCESS;
 }

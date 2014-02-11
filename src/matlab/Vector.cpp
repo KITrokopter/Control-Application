@@ -62,7 +62,7 @@ int Vector::scalarMult(Vector a) {
     return (this->v1*a.getV1() + this->v2*a.getV2() + this->v3*a.getV3());
 }
 
-int Vector::getLength() {
+double Vector::getLength() {
     return sqrt((this->v1*this->v1 + this->v2*this->v2 + this->v3*this->v3));
 }
 
@@ -87,4 +87,9 @@ void Vector::putVariable(std::string a, Engine *ep) {
     mxDestroyArray(v1);
     mxDestroyArray(v2);
     mxDestroyArray(v3);
+}
+
+Vector Vector::cross(Vector v) {
+    Vector *cross = new Vector(v.getV2()*v3 - v.getV3()*v2, v.getV3()*v1 - v.getV1()*v3, v.getV1()*v2 -v.getV2()*v1);
+    return *cross;
 }

@@ -29,8 +29,9 @@ public:
 	Vector add(Vector a);
 	Vector mult(double a);
 	int scalarMult(Vector a);
-	int getLength();
+    double getLength();
     	void putVariable(std::string a, Engine *ep);
+	Vector cross(Vector v);
 };
 
 #endif /* VECTOR_H_ */

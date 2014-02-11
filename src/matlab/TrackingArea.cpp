@@ -11,7 +11,10 @@
 #include "Matlab.h"
 #include "engine.h"
 #include <math.h>
+#include <iostream>
 #include "TrackingArea.h"
+
+using namespace std;
 
 TrackingArea::TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector b1, Vector b2, Vector b3, Vector b4) {
     this->a1 = a1;
@@ -102,9 +105,9 @@ void TrackingArea::setCenter(Vector center) {
 
 Vector* TrackingArea::calculateCenter(Engine *ep) {
     Vector* u1 = new Vector(a1.getV1() - b3.getV1(), a1.getV2() - b3.getV2(), a1.getV3() - b3.getV3());
-    Line* diag1 = new Line(&b3, u1);
+    Line* diag1 = new Line(b3, *u1);
     Vector* u2 = new Vector(a2.getV1() - b4.getV1(), a2.getV2() - b4.getV2(), a2.getV3() - b4.getV3());
-    Line* diag2 = new Line(&b4, u2);
+    Line* diag2 = new Line(b4, *u2);
     Vector* result[2];
     Matlab *h = new Matlab(ep);
     h->perpFootTwoLines(*diag1, *diag2, result);
@@ -159,27 +162,103 @@ bool TrackingArea::contains(Vector x) {
         return false;
     }
 }
-
+// übergebe linie von ursprung auf flacher Ebene und ebene aus drei punkten bestehen mit maxRange abstand
 bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection, double maxRange, Vector x, Engine *ep) {
-    /*cameraPosition.putVariable("p", ep);
-    Vector d = cameraDirection.mult(1/cameraDirection.getLength());
-    d.putVariable("d", ep);
-    n.putVariable("n", ep);
-    m.putVariable("m", ep);
-    x.putVariable("x", ep);
-    engEvalString(ep, "b = x - p");
-    engEvalString(ep, "A = [d1 n1 m1; d2 n2 m2; d3 n3 m3]");
-    // x = (r, s, t)
-    engEvalString(ep, "x = inv(A) * b");
-    mxArray *result;
-    result = engGetVariable(ep, "x(1)");
-    double r = mxGetPr(result)[0];
-    double s = mxGetPr(result)[1];
-    double t = mxGetPr(result)[2];
-    if ((r > maxRange) || (r < 0)) {
-        return false
-    } //else if (r*r + s*s > )*/
     Matlab *m = new Matlab(ep);
+    // finding direction vectors of the plain of the floor of the camera range pyramid.
+    Vector n = cameraPosition.add(cameraDirection.mult(maxRange/cameraDirection.getLength()));
+    Vector *u = new Vector(n.getV1(), n.getV2(), -(n.getV1()*n.getV1() + n.getV2()*n.getV2())/n.getV3());
+    Vector v = n.cross(*u);
+
+    // describing plain by line f and direction vector v
+    *u = u->add(n.mult(-1));
+    Line *f = new Line(n, *u);
+
+    // describing floor plain by a and b and cameraPosition
+    Vector *a = new Vector(n.getV1(), n.getV2(), 0);
+    Vector *b = new Vector(n.getV1(), n.getV2() + 0.1, 0);
+    Line *g = new Line(cameraPosition, *a);
+
+    Line horizontal = m->getIntersectionLine(*f, v, *g, *b);
+    horizontal.setA(n);
+    horizontal.setU(n.add(horizontal.getU().mult(-1)));
+    printf("horizontal: a is [%f, %f, %f], u is [%f, %f, %f]\n", horizontal.getA().getV1(), horizontal.getA().getV2(), horizontal.getA().getV3(),horizontal.getU().getV1(), horizontal.getU().getV2(), horizontal.getU().getV3());
+
+    v = n.cross(horizontal.getU());
+    Line vertical = *(new Line(n, n.add(v.mult(-1))));
+
+
+  /*
+    // a is vector where the camera looks to
+    Vector a = cameraDirection.add(cameraPosition);
+
+    printf("a is [%f, %f, %f]", a.getV1(), a.getV2(), a.getV3());
+
+    // b is orthographic on a
+    Vector *b = new Vector(a.getV1(), a.getV2(), -(a.getV1()*a.getV1() + a.getV2()*a.getV2())/a.getV3());
+    // b and cross are the plain of the quadrat
+    Vector cross = a.cross(*b);
+    Vector center = cameraPosition.add(cameraDirection.mult(maxRange/cameraDirection.getLength()));
+
+    printf("center is [%f, %f, %f]\n", center.getV1(), center.getV2(), center.getV3());
+
+    *b = b->add(center.mult(-1));
+    Line *f = new Line(center, *b);
+    // u1 and u2 are on the floor plain vectors, that should build the floor plain.
+
+    Vector *u1 = new Vector(cameraDirection.getV1(), cameraDirection.getV2(), 0);
+    Vector *u2 = new Vector(cameraDirection.getV2(), cameraDirection.getV2() + 0.1, 0);
+
+    printf("u1 :[%f, %f, %f]\n", u1->getV1(), u1->getV2(), u1->getV3());
+
+    Line *g = new Line(cameraPosition, *u1);
+    // u is one middle line of the quadrat, v is vector of cameraPosition to quadrat, c is crossproduct
+    Line u = m->getIntersectionLine(*f, cross.add(center), *g, *u2);
+
+    printf("f: a is [%f, %f, %f], u is [%f, %f, %f]\n",f->getA().getV1(), f->getA().getV2(), f->getA().getV3(),f->getU().getV1(), f->getU().getV2(), f->getU().getV3());
+    printf("g: a is [%f, %f, %f], u is [%f, %f, %f]\n",g->getA().getV1(), g->getA().getV2(), g->getA().getV3(),g->getU().getV1(), g->getU().getV2(), g->getU().getV3());
+
+
+
+    Vector v = cameraPosition.add(a.mult(-1));
+    Vector c = u.getU().cross(v);
+    c = c.add(center);
+    // c and v are the vectors of the lines of the quadrat
+*/
+    double maxLengthHorizontal = maxRange;
+    double hypotenuse = maxRange / cos(28.5 * M_PI / 180);
+    double maxDiffHorizontal = hypotenuse * sin(28.5 * M_PI / 180);
+    // Line *horizontal = new Line(a, v);
+    // perp is Vector on line *horizontal
+
+    Vector perp = m->perpFootOneLine(horizontal, x);
+    double diff = (perp.add(x.mult(-1))).getLength();
+    double length = (perp.add(cameraPosition.mult(-1))).getLength();
+
+    if ((length > maxLengthHorizontal) || (length < 0) || (diff/length > maxDiffHorizontal/maxLengthHorizontal)) {
+        printf("length: %f, maxLengthHorizontal: %f, diff: %f, maxDiffHorizontal: %f\n", length, maxLengthHorizontal, diff, maxDiffHorizontal);
+        return false;
+    } else {
+        double maxLengthVertical = maxRange;
+        hypotenuse = maxRange / cos(21.5 * M_PI/180);
+        double maxDiffVertical = maxRange * sin(21.5 * M_PI / 180);
+        //Line *vertical = new Line(a, u.getU());
+
+        perp = m->perpFootOneLine(vertical, x);
+        diff = (perp.add(x.mult(-1))).getLength();
+        length = (perp.add(cameraPosition.mult(-1))).getLength();
+
+        if ((length > maxLengthVertical) || (length < 0) || (diff/length > maxDiffVertical/maxLengthVertical)) {
+            printf("length: %f, maxLengthVertical: %f, diff: %f, maxDiffVertical: %f\n", length, maxLengthVertical, diff, maxDiffVertical);
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    /*
+     *old version of cone
     Vector *u = new Vector(cameraDirection.add(cameraPosition.mult(-1)));
     Line *direct = new Line(&cameraPosition, u);
     Vector perp = m->perpFootOneLine(*direct, x);
@@ -195,7 +274,7 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
     } else if (diff/length > maxDiff/maxRange) {
         return false;
     }
-    return true;
+    return true;*/
 }
 
 
@@ -224,9 +303,9 @@ bool TrackingArea::inCameraRange(Vector *cameraPosition, Vector* cameraDirection
         n = n.mult(1/n.getLength());
         m = m.mult(1/m.getLength());*/
         if (inTrackingArea(cameraPosition[i], cameraDirection[i], maxRange, x, ep) == false) {
+            printf("camPos[%f, %f, %f], x: [%f, %f, %f]\n", cameraPosition[i].getV1(), cameraPosition[i].getV2(), cameraPosition[i].getV3(), x.getV1(), x.getV2(), x.getV3());
             return false;
         }
-
     }
     return true;
 }
@@ -239,10 +318,11 @@ void TrackingArea::setTrackingArea(Vector* cameraPosition, Vector* cameraDirecti
     double v2 = 0;
     double v3 = 0;
     // normalize cameraDirection Vectors
+
     for (int i = 0; i < numberCameras; i++) {
         cameraDirection[i] = cameraDirection[i].mult(cameraDirection[i].getLength());
     }
-    for (int i = 0; i < numberCameras; i++) {
+    /*for (int i = 0; i < numberCameras; i++) {
         // cameraPosition[i] + maxRange * cameraDirection[i]
         v1 = v1 + cameraPosition[i].getV1() + maxRange * cameraDirection[i].getV1();
         v2 = v2 + cameraPosition[i].getV2() + maxRange * cameraDirection[i].getV2();
@@ -250,38 +330,50 @@ void TrackingArea::setTrackingArea(Vector* cameraPosition, Vector* cameraDirecti
     }
     v1 = v1 / numberCameras;
     v2 = v2 / numberCameras;
-    v3 = v3 / numberCameras;
-    Vector *center = new Vector(v1, v2, v3);
-    setCenter(* center);
-    setA1(*center);
-    setA2(*center);
-    setA3(*center);
-    setA4(*center);
-    setB1(*center);
-    setB2(*center);
-    setB3(*center);
-    setB4(*center);
-    double posChange = 0.1;
+    v3 = v3 / numberCameras;*/
+
+   /* Matlab *m = new Matlab(ep);
+    Line **cameraLines = new Line*[numberCameras];
+    cout << "test1" << endl;
+    for (int i = 0; i < numberCameras; i++) {
+        *cameraLines[i] = *(new Line(cameraPosition[i], cameraDirection[i].add(cameraPosition[i].mult(-1))));
+        cout << "test" << endl;
+    }
+    Vector center = m->interpolateLines(cameraLines, numberCameras);
+    printf("center is [%f, %f, %f]\n", center.getV1(), center.getV2(), center.getV3());*/
+    Vector center = *(new Vector(0.5, 0.5, 0.5));
+
+    setCenter(center);
+    setA1(center);
+    setA2(center);
+    setA3(center);
+    setA4(center);
+    setB1(center);
+    setB2(center);
+    setB3(center);
+    setB4(center);
+    double posChange = 0.01;
     while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
-        setA1(*(new Vector(center->getV1() - posChange, center->getV2() - posChange, center->getV3() - posChange)));
-        setA2(*(new Vector(center->getV1() - posChange, center->getV2() - posChange, center->getV3() + posChange)));
-        setA3(*(new Vector(center->getV1() - posChange, center->getV2() + posChange, center->getV3() + posChange)));
-        setA4(*(new Vector(center->getV1() - posChange, center->getV2() + posChange, center->getV3() - posChange)));
-        setB1(*(new Vector(center->getV1() + posChange, center->getV2() - posChange, center->getV3() - posChange)));
-        setB2(*(new Vector(center->getV1() + posChange, center->getV2() - posChange, center->getV3() + posChange)));
-        setB3(*(new Vector(center->getV1() + posChange, center->getV2() + posChange, center->getV3() + posChange)));
-        setB4(*(new Vector(center->getV1() + posChange, center->getV2() + posChange, center->getV3() - posChange)));
-        posChange += 0.1;
+        setA1(*(new Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange)));
+        setA2(*(new Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange)));
+        setA3(*(new Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange)));
+        setA4(*(new Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() - posChange)));
+        setB1(*(new Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() - posChange)));
+        setB2(*(new Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange)));
+        setB3(*(new Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange)));
+        setB4(*(new Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange)));
+        posChange += 0.01;
     }
-    setA1(*(new Vector(center->getV1() - posChange, center->getV2() - posChange, center->getV3() - posChange)));
-    setA2(*(new Vector(center->getV1() - posChange, center->getV2() - posChange, center->getV3() + posChange)));
-    setA3(*(new Vector(center->getV1() - posChange, center->getV2() + posChange, center->getV3() + posChange)));
-    setA4(*(new Vector(center->getV1() - posChange, center->getV2() + posChange, center->getV3() - posChange)));
-    setB1(*(new Vector(center->getV1() + posChange, center->getV2() - posChange, center->getV3() - posChange)));
-    setB2(*(new Vector(center->getV1() + posChange, center->getV2() - posChange, center->getV3() + posChange)));
-    setB3(*(new Vector(center->getV1() + posChange, center->getV2() + posChange, center->getV3() + posChange)));
-    setB4(*(new Vector(center->getV1() + posChange, center->getV2() + posChange, center->getV3() - posChange)));
+    posChange -= 0.01;
+    setA1(*(new Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange)));
+    setA2(*(new Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange)));
+    setA3(*(new Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange)));
+    setA4(*(new Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() - posChange)));
+    setB1(*(new Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() - posChange)));
+    setB2(*(new Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange)));
+    setB3(*(new Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange)));
+    setB4(*(new Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange)));
 }

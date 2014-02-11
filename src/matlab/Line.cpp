@@ -8,9 +8,9 @@
 #include "Line.h"
 #include "Vector.h"
 
-Line::Line(Vector *a, Vector *u) {
-	this->a = *a;
-	this->u = *u;
+Line::Line(Vector a, Vector u) {
+    this->a = a;
+    this->u = u;
 }
 
 Vector Line::getA() {
