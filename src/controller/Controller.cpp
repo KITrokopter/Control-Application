@@ -8,24 +8,28 @@ Controller::Controller()
      * NodeHandle destructed will close down the node.
      */
     ros::NodeHandle n;
-	//Subscriber for the MoveFormation data of the Quadcopts (1000 is the max. buffered messages)
+	//Subscriber for the MoveFormation data of the Quadcopters (1000 is the max. buffered messages)
 	this->MoveFormation_sub = n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
+	//Subscriber for the SetFormation data of the Quadcopters (100 is the max. buffered messages)
 	this->SetFormation_sub = n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
 	//TODO multiple topics
+	//Subscriber for the quadcopter status data of the Quadcopters (1000 is the max. buffered messages)
 	this->QuadStatus_sub = n.subscribe("quadcopter_status", 1000, &Controller::QuadStatusCallback, this);
 
 	//Service
+	//Service for BuildFormation and Shutdown
 	this->BuildForm_srv  = n.advertiseService("BuildFormation", &Controller::buildFormation, this);
 	this->Shutdown_srv = n.advertiseService("Shutdown", &Controller::shutdownFormation, this);
 
+	//Publisher
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	this->Movement_pub = n.advertise<control_application::quadcopter_movement>("quadcopter_movement", 1000);
+
+	//Initializes invalid currentPosition and targetPosition
 	double invalid[3] = {INVALID, INVALID, INVALID};
 	this->currentPosition[0].setPosition(invalid);
 	this->targetPosition[0].setPosition(invalid);
-	this->formation.setAmount(INVALID);
-	this->newTarget = 0;
-	this->newCurrent = 0;
+	//All control variables are set to zero
 	this->shutdownStarted = 0;
 }
 
@@ -39,9 +43,6 @@ void Controller::initialize()
 	 * tGet is not a new thread, implemented as parent. 
 	 * Leave function and wait to be called by position-instance.
 	 */
-
-	this->listInit = false;
-	this->amount = 0;
 
 	/* TODO: Error-handling. */
 	std:pthread_create(&tCalc, NULL, &calculateMovement, NULL);
@@ -76,6 +77,8 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 void Controller::calculateMovement()
 {
 	
+	/* As long as we are not in the shutdown process, calculate new Movement data */
+>>>>>>> master
 	while(!shutdownStarted)
 	{
 		double moveVector[3];
@@ -83,11 +86,8 @@ void Controller::calculateMovement()
 		{		
 			this->idString = this->quadcopters[i];
 			this->id = i;
-			
-			/* TODO: why locking here? */
 			tarPosMutex.lock();
 			double * const target = this->targetPosition[i].getPosition();
-			this->newTarget = 0;			
 			tarPosMutex.unlock();
 			curPosMutex.lock();
 			double * const current = this->currentPosition[i].getPosition();
@@ -95,15 +95,18 @@ void Controller::calculateMovement()
 			moveVector[0] = target[0] - current[0];
 			moveVector[1] = target[1] - current[1];
 			moveVector[2] = target[2] - current[2];
+			//Convert Movement vector to thurst, pitch... data
 			convertMovement(moveVector);
+			//Send Movement to the quadcopter
 			sendMovement();
 		}
-		while(this->newTarget == 0 && this->newCurrent == 0) {};
+		while(this->newTarget == 0 && this->newCurrent == 0) {}; /*FIXME*/
 	}	
 }
 
 void Controller::sendMovement()
 {
+	//Creates a message for quadcopter Movement and sends it via Ros
 	control_application::quadcopter_movement msg;
 	msg.thrust = this->thrust;
 	msg.yaw = this->yawrate;
@@ -172,6 +175,7 @@ void Controller::convertMovement(double* vector)
 //Move the last Positions according to the formation movement vector (without orientation right now)
 void Controller::setTargetPosition()
 {
+	//Iterate over all quadcopters in formation and set new target considering old target and formation Movement
 	for(int i = 0; i < this->amount; i++)
 	{
 		tarPosMutex.lock();
@@ -183,37 +187,45 @@ void Controller::setTargetPosition()
 		targetNew[2] = targetOld[2] + this->formationMovement[2];
 		this->targetPosition[i].setPosition(targetNew);
 	}
-	this->newTarget = 1;
 }
 
 
 /*
- * Gehe davon aus dass es ein Topic mit Quadcopters gibt mit URI/Hardware ID 
- * und diese dem quadcopter array zugewiesen wurde qc[id][uri/hardware id]
+ * Builds Formation by starting one quadcopter after another, finding the right position and then
+ * inclining a little to avoid collisions. So there is a "being tracked" and "moving" level, and a "standing still"
+ * at the right position level.
  */
 void Controller::buildFormation()
 {
+	//Get the formation Positions and the distance.
 	Position6DOF* const formPos = this->formation.getPosition();
 	double distance = this->formation.getDistance();
+	//Pointer to the first tracked quadcopter
 	double * first;
+	//Start one quadcopter after another
 	for(int i = 0; i < this->amount; i++)
 	{
+		//Starting/ Inclining process
 		this->idString = this->quadcopters[i];
 		this->id = i;
 		this->thrust = THRUST_START;
 		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
+		//Calculate the wanted position for quadcopter i
 		double * pos = formPos[i].getPosition();
 		double target[3];
 		target[0] = pos[0] * distance;
 		target[1] = pos[1] * distance;
 		target[2] = pos[2] * distance;
+		//Set target Position for quadcopter i
 		this->targetPosition[i].setPosition(target);
+		//As long as the quadcopter isn't tracked, incline
 		while(!this->tracked[i])
 		{
 			sendMovement();
 		}
+		//If this is the first tracked quadcopter set it as a reference point for all the others
 		if( i == 0)
 		{
 			curPosMutex.lock();
@@ -229,6 +241,7 @@ void Controller::buildFormation()
 			tarPosMutex.lock();
 			this->targetPosition[i].setPosition(target);
 			tarPosMutex.unlock();
+			//Calculate Movement to the wanted position + convert it + send it
 			calculateMovement();
 		}
 		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
@@ -253,6 +266,7 @@ void Controller::buildFormation()
  */
 void Controller::shutdownFormation()
 {
+	//Shutdown process is started
 	this->shutdownStarted = 1;
 	//Bring all quadcopters to a stand
 	for(int i = 0; i < this->amount; i++)
@@ -282,6 +296,7 @@ void Controller::shutdownFormation()
 		this->thrust = THRUST_MIN;
 		sendMovement();
 	}
+	//Shutdown process is finished
 	this->shutdownStarted = 0;
 }
 
@@ -295,23 +310,31 @@ void Controller::shutdown()
 {
 	shutdownFormation ();
 	void *resultCalc;
-	pthread_join(tCalc, &resultCalc);	
+	pthread_join(tCalc, &resultCalc);
 }
 
+/*
+* Callback for Ros Subscriber of Formation Movement
+*/
 void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
 {
 	ROS_INFO("I heard: %f", msg->xMovement);
 	this->formationMovement[0] = msg->xMovement;
 	this->formationMovement[1] = msg->yMovement;
 	this->formationMovement[2] = msg->zMovement;
+	//calculate and set a new target position each time there is new data
 	setTargetPosition();
 }
 
+/*
+* Callback for Ros Subscriber of set Formation
+*/
 void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
 {
 	this->formation.setDistance(msg->distance);
 	this->formation.setAmount(msg->amount);
 	this->amount = msg->amount;
+	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
 	Position6DOF formPos[this->amount];
 	for(int i = 0; i < this->amount; i++)
 	{
@@ -327,15 +350,28 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		//formPos[i].setOrientation(ori);
 	}
 	this->formation.setPosition(formPos);
+	//Initialize tracked (no quadcopter is tracked at the beginning)
 	for(int i = 0; i < this->amount; i++)
 	{
 		this->tracked[i] = 0;
 	}
 }
 
+/*
+* Callback for Ros Subscriber of quadcopter status
+*/
 //TODO Needs to be adjusted according to callback number
 void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg)
 {
+	int i;
+	//Search for a match of the string id in the mapping array
+	for(i = 0; i < this->totalAmount; i++)
+	{
+		if(quadcopters[i] = msg->idString)
+		{
+			break;
+		}
+	} 
 	this->battery_status[i] = msg->battery_status;
 	this->roll_stab[i] = msg->stabilizer_roll;
 	this->pitch_stab[i] = msg->stabilizer_pitch;

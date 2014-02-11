@@ -53,7 +53,6 @@ public:
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 
 	/* Formation */
-	//void buildFormation(Formation formation);
 	void buildFormation();
 	void shutdownFormation();
 	
@@ -63,6 +62,7 @@ public:
 	
     
 protected:
+	//Callbacks for Ros subscriber
 	void MoveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
 	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
 	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg);
@@ -83,14 +83,26 @@ private:
 	int amount; /* Unknown at start, variable at runtime. */
 	Formation formation;
 	float formationMovement[3]; /*TODO*/
+	
+	//Receive data over ROS
+	Formation formation;
+	//TODO needs to be with service find all
+	int totalAmount;
+	int amount;
+	float formationMovement[3];
+	
+	//Mapping of int id to string id/ hardware id   qc[id][uri/hardware id]
 	std::vector<std::string> quadcopters;
-	std::map<std::string, int> IdToArray; /* "quadcopters"->Arrayposition */
 	
 	/* Set data */ /*TODO*/
 	int thrust;
 	float pitch, roll, yawrate;
 
 	/* Received data */ /*TODO*/
+=======
+	int id;
+	//Received data
+>>>>>>> master
 	std::vector<float> pitch_stab;
 	std::vector<float> roll_stab;
 	std::vector<float> yaw_stab;
@@ -104,8 +116,16 @@ private:
 	std::vector<bool> tracked;
 /*	bool newTarget;*/
 /*	bool newCurrent;*/
+=======
+	std::vector<string> idString;
+
+	//Control variables
+	//Array of tracked quadcopters
+	std::vector<bool> tracked;
+	//Set when we are in the shutdown process
 	bool shutdownStarted;
 	
+	//Mutex for currentPosition, targetPosition and shutdown
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
 	Mutex shutdownMutex;
@@ -114,14 +134,19 @@ private:
 	/* Threads */
 	pthread_t tCalc;
 
+	/* Subscriber */
 	//Subscriber for the MoveFormation data
 	ros::Subscriber MoveFormation_sub;
 	//Subscriber for Formation data from API
 	ros::Subscriber SetFormation_sub;
 	//Subscriber for Quadcopter data from QuadcopterModul
 	ros::Subscriber QuadStatus_sub;
+
+	//Publisher
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	ros::Publisher Movement_pub;
+
+	//Service
 	//Service for building formation
 	ros::ServiceServer BuildForm_srv;
 	//Service for shutingdown formation
