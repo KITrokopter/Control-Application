@@ -53,3 +53,8 @@ time_t Position6DOF::getTimestamp()
 {
 	return timestamp;
 }
+
+void setTimestamp(time_t newTimestamp) 
+{
+	this->timestamp = newTimestamp;
+}
