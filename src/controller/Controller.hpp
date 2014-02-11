@@ -4,17 +4,23 @@
 #include "Position6DOF.hpp"
 #include "Formation.hpp"
 #include "ros/ros.h"
+//Ros messages/services
 #include "api_application/MoveFormation.h"	// ? (D)
 #include "control_application/quadcopter_movement.h"		// ? (D)
 #include "api_application/SetFormation.h"
+#include "quadcopter_application/find_all.h"
+#include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
-#include "api_application/BuildFormation.h"
-#include "api_application/Shutdown.h"
+#include "control_application/BuildFormation.h"
+#include "control_application/Shutdown.h"
 #include <string>
 #include <vector>
 #include <pthread.h>
 #include "Mutex.hpp"
 #include <cmath>
+#include <time.h>
+#include <sstream>
+#include <boost/bind.hpp>
 
 #define THRUST_MIN 10001
 #define THRUST_STAND_STILL 18001
@@ -40,10 +46,10 @@ public:
 	void setTargetPosition();
 
 	/* Formation */
-	void buildFormation();
+	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
 	void shutdownFormation();
 	
-	void shutdown();
+	bool shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res);
 	
 	void checkInputMovement();
 	
@@ -52,7 +58,7 @@ protected:
 	//Callbacks for Ros subscriber
 	void MoveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
 	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
-	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg);
+	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
 
 private:
 	std::vector<Position6DOF> targetPosition;
@@ -77,7 +83,7 @@ private:
 	std::vector<float> yaw_stab;
 	std::vector<unsigned int> thrust_stab;
 	std::vector<float> battery_status;
-	std::vector<string> idString;
+	std::vector<std::string> idString;
 
 	//Control variables
 	//Array of tracked quadcopters
@@ -94,13 +100,21 @@ private:
 	pthread_t tCalc;
 	pthread_t tSend;
 
+	/**
+  	 * NodeHandle is the main access point to communications with the ROS system.
+	 * The first NodeHandle constructed will fully initialize this node, and the last
+     * NodeHandle destructed will close down the node.
+     */
+    ros::NodeHandle n;
+
 	//Subscriber
 	//Subscriber for the MoveFormation data
 	ros::Subscriber MoveFormation_sub;
 	//Subscriber for Formation data from API
 	ros::Subscriber SetFormation_sub;
 	//Subscriber for Quadcopter data from QuadcopterModul
-	ros::Subscriber QuadStatus_sub;
+	//ros::Subscriber QuadStatus_sub;
+	std::vector<ros::Subscriber> QuadStatus_sub;
 
 	//Publisher
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
@@ -111,6 +125,10 @@ private:
 	ros::ServiceServer BuildForm_srv;
 	//Service for shutingdown formation
 	ros::ServiceServer Shutdown_srv;
+
+	//Clients
+	ros::ServiceClient FindAll_client;
+	ros::ServiceClient Blink_client;
 
 };
 

@@ -2,30 +2,29 @@
 
 Controller::Controller()
 {
-	/**
-  	 * NodeHandle is the main access point to communications with the ROS system.
-	 * The first NodeHandle constructed will fully initialize this node, and the last
-     * NodeHandle destructed will close down the node.
-     */
-    ros::NodeHandle n;
+	
 	//Subscriber
 	//Subscriber for the MoveFormation data of the Quadcopters (1000 is the max. buffered messages)
-	this->MoveFormation_sub = n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
+	this->MoveFormation_sub = this->n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
 	//Subscriber for the SetFormation data of the Quadcopters (100 is the max. buffered messages)
-	this->SetFormation_sub = n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
+	this->SetFormation_sub = this->n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
 	//TODO multiple topics
 	//Subscriber for the quadcopter status data of the Quadcopters (1000 is the max. buffered messages)
-	this->QuadStatus_sub = n.subscribe("quadcopter_status", 1000, &Controller::QuadStatusCallback, this);
+	//this->QuadStatus_sub = this->n.subscribe("quadcopter_status", 1000, &Controller::QuadStatusCallback, this);
 
 	//Service
 	//Service for BuildFormation and Shutdown
-	this->BuildForm_srv  = n.advertiseService("BuildFormation", &Controller::buildFormation, this);
-	this->Shutdown_srv = n.advertiseService("Shutdown", &Controller::shutdownFormation, this);
+	this->BuildForm_srv  = this->n.advertiseService("BuildFormation", &Controller::buildFormation, this);
+	this->Shutdown_srv = this->n.advertiseService("Shutdown", &Controller::shutdown, this);
 
 	//Publisher
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
-	this->Movement_pub = n.advertise<control_application::quadcopter_movement>("quadcopter_movement", 1000);
+	this->Movement_pub = this->n.advertise<control_application::quadcopter_movement>("quadcopter_movement", 1000);
 
+	//Client
+	this->FindAll_client = this->n.serviceClient<quadcopter_application::find_all>("find_all");
+	this->Blink_client = this->n.serviceClient<quadcopter_application::blink>("blink");
+	
 	//Initializes invalid currentPosition and targetPosition
 	double invalid[3] = {INVALID, INVALID, INVALID};
 	this->currentPosition[0].setPosition(invalid);
@@ -55,6 +54,28 @@ void Controller::initialize()
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
 	shutdownMutex.unlock();
+	
+	//Initialization of quadcopters (find_all and create mapping + subscribe)
+	quadcopter_application::find_all srv;
+	//TODO initialization
+	/*srv.request.seq = (unsigned int)0;
+	srv.request.stamp = (time)0;
+	srv.request.frame_id = "";*/
+	std::string * uri;
+	if(FindAll_client.call(srv))
+	{
+		uri = srv.response.uri;
+		//this->totalAmount = srv.response.amount;
+		
+		//TODO Create map uri->id
+		//Generate Subscribers
+		for(int i = 0; i < this->totalAmount; i++)
+		{
+			std::stringstream topicName;
+  			topicName << "quadcopter_status_" << i;
+			this->QuadStatus_sub[i] = this->n.subscribe(topicName.str().c_str(), 1000, boost::bind(&Controller::QuadStatusCallback, _1, i));
+		}
+	}
 }
 		
 void Controller::calculateMovement()
@@ -70,7 +91,7 @@ void Controller::calculateMovement()
 		for(int i = 0; i < this->amount; i++)
 		{		
 			//Gets the right hardware id/ String id
-			this->idString = this->quadcopters[i];
+			//this->idString = this->quadcopters[i];
 			this->id = i;
 			tarPosMutex.lock();
 			double * const target = this->targetPosition[i].getPosition();			
@@ -151,7 +172,7 @@ void Controller::setTargetPosition()
  * inclining a little to avoid collisions. So there is a being tracked and moving level, and a standing still
  * at the right position level.
  */
-void Controller::buildFormation()
+bool Controller::buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res)
 {
 	//Get the formation Positions and the distance.
 	Position6DOF* const formPos = this->formation.getPosition();
@@ -162,7 +183,7 @@ void Controller::buildFormation()
 	for(int i = 0; i < this->amount; i++)
 	{
 		//Starting/ Inclining process
-		this->idString = this->quadcopters[i];
+		//this->idString = this->quadcopters[i];
 		this->id = i;
 		this->thrust = THRUST_START;
 		this->yawrate = 0;
@@ -209,6 +230,7 @@ void Controller::buildFormation()
 		tarPosMutex.unlock();
 		calculateMovement();
 	}
+	return true;
 }
 
 /*
@@ -227,7 +249,7 @@ void Controller::shutdownFormation()
 	//Bring all quadcopters to a stand
 	for(int i = 0; i < this->amount; i++)
 	{
-		this->idString = this->quadcopters[i];
+		//this->idString = this->quadcopters[i];
 		this->id = i;
 		this->thrust = THRUST_STAND_STILL;
 		this->yawrate = 0;
@@ -262,7 +284,7 @@ void Controller::shutdownFormation()
  * after that.
  * 
  */
-void Controller::shutdown()
+bool Controller::shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res)
 {
 	shutdownFormation ();
 
@@ -272,6 +294,7 @@ void Controller::shutdown()
 	/* Unneccessary if move is not in loop */
 	//void *resultSend;
 	//pthread_join(tSend, &resultSend);
+	return true;
 }
 
 /*
@@ -321,21 +344,11 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 /*
 * Callback for Ros Subscriber of quadcopter status
 */
-//TODO Needs to be adjusted according to callback number
-void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg)
+void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr)
 {
-	int i;
-	//Search for a match of the string id in the mapping array
-	for(i = 0; i < this->totalAmount; i++)
-	{
-		if(quadcopters[i] = msg->idString)
-		{
-			break;
-		}
-	} 
-	this->battery_status[i] = msg->battery_status;
-	this->roll_stab[i] = msg->stabilizer_roll;
-	this->pitch_stab[i] = msg->stabilizer_pitch;
-	this->yaw_stab[i] = msg->stabilizer_yaw;
-	this->thrust_stab[i] = msg->stabilizer_thrust;
+	this->battery_status[topicNr] = msg->battery_status;
+	this->roll_stab[topicNr] = msg->stabilizer_roll;
+	this->pitch_stab[topicNr] = msg->stabilizer_pitch;
+	this->yaw_stab[topicNr] = msg->stabilizer_yaw;
+	this->thrust_stab[topicNr] = msg->stabilizer_thrust;
 }

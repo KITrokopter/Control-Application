@@ -58,6 +58,8 @@ add_service_files(
   StartCalibration.srv
   TakeCalibrationPicture.srv
   CalculateCalibration.srv
+  BuildFormation.srv
+  Shutdown.srv
 )
 
 ## Generate actions in the 'action' folder
