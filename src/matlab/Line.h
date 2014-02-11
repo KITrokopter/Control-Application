@@ -12,6 +12,7 @@
 class Line {
 private: Vector a, u;
 public:
+	Line();
 	Line(Vector a, Vector u);
 	Vector getA();
 	Vector getU();

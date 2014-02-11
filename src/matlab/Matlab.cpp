@@ -139,38 +139,38 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 	return 2;
 }
 
-Vector Matlab::interpolateLines(Line **lines, int quantity) {
-    /*Vector points[2*quantity];
+Vector Matlab::interpolateLines(Line *lines, int quantity) {
+    Vector *points = new Vector[2*quantity];
 	int pos = 0;
 	int intersects;
 	Vector* result[2];
 	for (int i = 0; i < quantity; i++) {
 		for (int j = i + 1; j < quantity; j++) {
-            intersects = perpFootTwoLines(*lines[i], *lines[j], result);
+            intersects = perpFootTwoLines(lines[i], lines[j], result);
 			if (intersects == 1) {
-				points[pos] = *result[0];
+                points[pos] = *result[0];
 				pos++;
 			} else if (intersects == 2) {
 				points[pos] = *result[0];
 				pos++;
 				points[pos] = *result[1];
-				pos++;
+                pos++;
 			}
 		}
-	}
-    	int v1, v2, v3;
-    	for (int i = 0; i < pos; i++) {
-		v1 = v1 + points[pos].getV1();
-		v2 = v2 + points[pos].getV2();
-		v3 = v3 + points[pos].getV3();
-	}
+    }
+    double v1 = 0;
+    double v2 = 0;
+    double v3 = 0;
+    for (int i = 0; i < pos; i++) {
+        v1 = v1 + points[i].getV1();
+        v2 = v2 + points[i].getV2();
+        v3 = v3 + points[i].getV3();
+    }
 	v1 = v1 / pos;
 	v2 = v2 / pos;
 	v3 = v3 / pos;
 	Vector *approximated = new Vector(v1, v2, v3);
-    return *approximated;*/
-    Vector *u = new Vector(0.5, 1, 1);
-    return *u;
+    return *approximated;
 }
 
 Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {

@@ -41,6 +41,7 @@ public:
     bool inTrackingArea(Vector cameraPosition, Vector cameraDirection, double maxRange, Vector x, Engine *ep);
 	double getVectorLength(Vector a, Vector b);
 	double getDistPointPlane(Vector a1, Vector u, Vector v, Vector x);
+	Vector getPerpPointPlane(Vector a, Vector u, Vector v, Vector x);
     bool inCameraRange(Vector *cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep);
     void setTrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Engine *ep);
 };
