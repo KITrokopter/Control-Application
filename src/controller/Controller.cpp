@@ -78,7 +78,6 @@ void Controller::calculateMovement()
 {
 	
 	/* As long as we are not in the shutdown process, calculate new Movement data */
->>>>>>> master
 	while(!shutdownStarted)
 	{
 		double moveVector[3];

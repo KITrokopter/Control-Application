@@ -33,7 +33,6 @@
 /* Used for lists */
 #define MAX_NUMBER_QUADCOPTER 10
 
-//TODO are three coordinate checks too much? Doable? Add epsilon?
 #define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
 
 class Controller : public IPositionReceiver {
@@ -99,10 +98,7 @@ private:
 	float pitch, roll, yawrate;
 
 	/* Received data */ /*TODO*/
-=======
 	int id;
-	//Received data
->>>>>>> master
 	std::vector<float> pitch_stab;
 	std::vector<float> roll_stab;
 	std::vector<float> yaw_stab;
@@ -116,7 +112,6 @@ private:
 	std::vector<bool> tracked;
 /*	bool newTarget;*/
 /*	bool newCurrent;*/
-=======
 	std::vector<string> idString;
 
 	//Control variables
@@ -146,7 +141,7 @@ private:
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	ros::Publisher Movement_pub;
 
-	//Service
+	/* Services */
 	//Service for building formation
 	ros::ServiceServer BuildForm_srv;
 	//Service for shutingdown formation
