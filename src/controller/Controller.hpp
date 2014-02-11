@@ -73,12 +73,11 @@ private:
 	/* Position */
 	std::vector<Position6DOF> targetPosition;
 	std::vector<Position6DOF> currentPosition;
+/*	std::vector<rpy-values> sentMovement;*/
 	bool listInit;
 	std::list<std::vector<Position6DOF> > listPositions;
 	std::list<std::vector<Position6DOF> > listTargets;
 	std::list<std::vector<Position6DOF> > listSendTargets;
-	
-	/*  */
 	
 	/* Identification of Quadcopters */
 	int amount; /* Unknown at start, variable at runtime. */
@@ -98,13 +97,13 @@ private:
 	std::vector<unsigned int> thrust_stab;
 	std::vector<float> battery_status;
 	std::string idString;
-	int id;
+	/*int id;*/
 	int startProcess;
-	int newTarget;
-	int newCurrent;
+/*	int newTarget;*/
+/*	int newCurrent;*/
 	std::vector<bool> tracked;
-	bool newTarget;
-	bool newCurrent;
+/*	bool newTarget;*/
+/*	bool newCurrent;*/
 	bool shutdownStarted;
 	
 	Mutex curPosMutex;

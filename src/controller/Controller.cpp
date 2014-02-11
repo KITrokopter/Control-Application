@@ -51,15 +51,14 @@ void Controller::initialize()
 	shutdownMutex.unlock();
 }
 
-void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates) = 0;
+void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
 {
 	/* Initialize lists */
 	if( listInit == false )
 	{
-		this->amount = ids.size(); /*FIXME*/
-		/* TODO: Add to list */
-		listInit = true;
+		listInit = true; /*So far unnesessary*/
 	}
+	
 	/* Save position vectors */	
 	std::vector<Position6DOF> newListItem;
 	time_t currentTime = time(&currentTime);
@@ -68,6 +67,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		Position6DOF newPosition = Position6DOF (*it.getV1(), *it.getV2(), *it.getV3());
 		newListItem.push_back( newPosition );		
 	}	
+	size_type elements = positions.size();
 	listPositionsMutex.lock();
 	this->listPositions.push_back(newListItem);
 	listPositionsMutex.unlock();
@@ -75,8 +75,6 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		
 void Controller::calculateMovement()
 {
-
-	/* TODO:  */
 	
 	while(!shutdownStarted)
 	{
@@ -132,6 +130,7 @@ void Controller::sendMovement()
 				return;
 			}	
 		}
+		/*FIXME: startProcess is not set anywhere */
 		if(this->startProcess)
 		{
 			msg.thrust = THRUST_STAND_STILL;
