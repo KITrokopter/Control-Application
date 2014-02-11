@@ -97,8 +97,8 @@ int main(int argc, char** argv)
     Vector *bsp2 = new Vector(6, 0, -2);
     Vector *bsp3 = new Vector(5, -1, -1);
     Vector *bsp4 = new Vector(-2, 5, 7);
-    Vector perp = t->getPerpPointPlane(*bsp1, *bsp2, *bsp3, *bsp4);
-    printf("[%f, %f, %f], should be (-4, 1, 1)", perp.getV1(), perp.getV2(), perp.getV3());
+    //Vector perp = t->getPerpPointPlane(*bsp1, *bsp2, *bsp3, *bsp4);
+    //printf("[%f, %f, %f], should be (-4, 1, 1)", perp.getV1(), perp.getV2(), perp.getV3());
     //if (t->inTrackingArea(*c1, *d1, 10, *(new Vector(0.5, 0.5, 0.5)), m->getEngine())) printf("true");
     //if (t->contains(t->getCenter()) == false) printf("Not in tracking area.\n");
     //if (t->inTrackingArea(*a1, *b1, 1, *(new Vector(0.5, 0.5, 0.5)), m->getEngine())) printf("true\n");
