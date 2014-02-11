@@ -56,10 +56,21 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	/* Initialize lists */
 	if( listInit == false )
 	{
-		this->amount = ids.size();
+		this->amount = ids.size(); /*FIXME*/
 		/* TODO: Add to list */
 		listInit = true;
 	}
+	/* Save position vectors */	
+	std::vector<Position6DOF> newListItem;
+	time_t currentTime = time(&currentTime);
+	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it)
+	{
+		Position6DOF newPosition = Position6DOF (*it.getV1(), *it.getV2(), *it.getV3());
+		newListItem.push_back( newPosition );		
+	}	
+	listPositionsMutex.lock();
+	this->listPositions.push_back(newListItem);
+	listPositionsMutex.unlock();
 }
 		
 void Controller::calculateMovement()

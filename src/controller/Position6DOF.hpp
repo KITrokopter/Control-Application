@@ -11,6 +11,7 @@ public:
 	void setPosition(double * const position);
 	void setOrientation(double* const orientation);
 	time_t getTimestamp();
+	void setTimestamp(time_t newTimestamp);
 	Position6DOF(double x, double y, double z, double xOrientation, double yOrientation, double zOrientation);
 	Position6DOF(double x, double y, double z);
 	Position6DOF(){};

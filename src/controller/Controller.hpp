@@ -1,6 +1,5 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
-#include <math.h>
 #include "Position6DOF.hpp"
 #include "Formation.hpp"
 #include "ros/ros.h"
@@ -12,6 +11,9 @@
 #include "quadcopter_application/quadcopter_status.h"
 #include "api_application/BuildFormation.h"
 #include "api_application/Shutdown.h"
+#include <time.h>
+#include <<stdio.h>
+#include <math.h>
 #include <string>
 #include <vector>
 #include <pthread.h>
@@ -108,6 +110,7 @@ private:
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
 	Mutex shutdownMutex;
+	Mutex listPositionsMutex;
 
 	/* Threads */
 	pthread_t tCalc;

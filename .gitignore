@@ -1,5 +1,7 @@
 *~
 .anjuta*
+*anjuta*
+*.anjuta*
 # Compiled Object files
 *.slo
 *.lo
