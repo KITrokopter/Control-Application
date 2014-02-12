@@ -12,7 +12,8 @@
 #include "api_application/BuildFormation.h"
 #include "api_application/Shutdown.h"
 #include <time.h>
-#include <<stdio.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <math.h>
 #include <string>
 #include <vector>
@@ -72,8 +73,7 @@ private:
 	/* Position */
 	std::vector<Position6DOF> targetPosition;
 	std::vector<Position6DOF> currentPosition;
-/*	std::vector<rpy-values> sentMovement;*/
-	bool listInit;
+	//std::vector<rpy-values> sentMovement;
 	std::list<std::vector<Position6DOF> > listPositions;
 	std::list<std::vector<Position6DOF> > listTargets;
 	std::list<std::vector<Position6DOF> > listSendTargets;
@@ -120,7 +120,7 @@ private:
 	//Set when we are in the shutdown process
 	bool shutdownStarted;
 	
-	//Mutex for currentPosition, targetPosition and shutdown
+	/* Mutex */
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
 	Mutex shutdownMutex;
@@ -137,7 +137,7 @@ private:
 	//Subscriber for Quadcopter data from QuadcopterModul
 	ros::Subscriber QuadStatus_sub;
 
-	//Publisher
+	/* Publisher */
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	ros::Publisher Movement_pub;
 

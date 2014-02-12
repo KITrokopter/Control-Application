@@ -54,12 +54,7 @@ void Controller::initialize()
 
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
 {
-	/* Initialize lists */
-	if( listInit == false )
-	{
-		listInit = true; /*So far unnesessary*/
-	}
-	
+		
 	/* Save position vectors */	
 	std::vector<Position6DOF> newListItem;
 	time_t currentTime = time(&currentTime);
@@ -94,12 +89,16 @@ void Controller::calculateMovement()
 			moveVector[0] = target[0] - current[0];
 			moveVector[1] = target[1] - current[1];
 			moveVector[2] = target[2] - current[2];
-			//Convert Movement vector to thurst, pitch... data
+			//Convert Movement vector to thrust, pitch... data
 			convertMovement(moveVector);
 			//Send Movement to the quadcopter
 			sendMovement();
 		}
-		while(this->newTarget == 0 && this->newCurrent == 0) {}; /*FIXME*/
+		while(this->newTarget == 0 && this->newCurrent == 0) 
+		{
+			/* delete if compiling fails */
+			usleep(1000); // microseconds
+		}
 	}	
 }
 
