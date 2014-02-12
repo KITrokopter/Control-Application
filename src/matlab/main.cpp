@@ -103,12 +103,12 @@ int main(int argc, char** argv)
     //if (t->contains(t->getCenter()) == false) printf("Not in tracking area.\n");
     //if (t->inTrackingArea(*a1, *b1, 1, *(new Vector(0.5, 0.5, 0.5)), m->getEngine())) printf("true\n");
 
-    Vector cameraPosition[4] = {*a1, *a2, *a3, *a4};
-    Vector cameraDirection[4] = {*b1, *b2, *b3, *b4};
+    Vector cameraPosition[4] = {*c1, *c2, *c3, *c4};
+    Vector cameraDirection[4] = {*d1, *d2, *d3, *d4};
     t = new TrackingArea(cameraPosition, cameraDirection, 4, 15, m->getEngine());
     printf("[%f %f %f], [%f %f %f], [%f %f %f], [%f, %f, %f], [%f, %f, %f] is the tracking area\n", t->getA1().getV1(), t->getA1().getV2(),t->getA1().getV3(), t->getA2().getV1(), t->getA2().getV2(), t->getA2().getV3(), t->getA3().getV1(), t->getA3().getV2(), t->getA3().getV3(), t->getA4().getV1(), t->getA4().getV2(), t->getA4().getV3(), t->getB1().getV1(), t->getB1().getV2(), t->getB1().getV3());
-/*
 
+/*
     Line *f = new Line(*a1, *a3);
     Line *g = new Line(*b1, *b2);
     Line perp = m->getIntersectionLine(*f, *a2, *g, *(new Vector(0.5, 0.5, 0.5)));
