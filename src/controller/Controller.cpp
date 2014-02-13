@@ -17,9 +17,11 @@ Controller::Controller()
 	this->BuildForm_srv  = this->n.advertiseService("BuildFormation", &Controller::buildFormation, this);
 	this->Shutdown_srv = this->n.advertiseService("Shutdown", &Controller::shutdown, this);
 
+	/*
 	//Publisher
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	this->Movement_pub = this->n.advertise<control_application::quadcopter_movement>("quadcopter_movement", 1000);
+	*/
 
 	//Client
 	this->FindAll_client = this->n.serviceClient<quadcopter_application::find_all>("find_all");
@@ -69,12 +71,19 @@ void Controller::initialize()
 		//this->totalAmount = srv.response.amount;
 		
 		//TODO Create map uri->id
-		//Generate Subscribers
+		//Generate Subscribers and Publisher
 		for(int i = 0; i < this->totalAmount; i++)
 		{
-			std::stringstream topicName;
-  			topicName << "quadcopter_status_" << i;
-			this->QuadStatus_sub[i] = this->n.subscribe<quadcopter_application::quadcopter_status>(topicName.str().c_str(), 1000, boost::bind(&Controller::QuadStatusCallback, this, _1, i));
+			//Subscriber to quadcopter status
+			std::stringstream topicNameQS;
+  			topicNameQS << "quadcopter_status_" << i;
+			this->QuadStatus_sub[i] = this->n.subscribe<quadcopter_application::quadcopter_status>(topicNameQS.str().c_str(), 1000, boost::bind(&Controller::QuadStatusCallback, this, _1, i));
+
+			//Publisher of Movement			
+			std::stringstream topicNameMov;
+  			topicNameMov << "quadcopter_movement_" << i;
+			//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
+			this->Movement_pub[i] = this->n.advertise<control_application::quadcopter_movement>(topicNameMov.str().c_str(), 1000);
 			
 		}
 	}
@@ -119,7 +128,7 @@ void Controller::sendMovement()
 	msg.yaw = this->yawrate;
 	msg.pitch = this->pitch;
 	msg.roll = this->roll;
-	this->Movement_pub.publish(msg);		
+	this->Movement_pub[id].publish(msg);		
 }
 
 void Controller::convertMovement(double* vector)

@@ -118,7 +118,8 @@ private:
 
 	//Publisher
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
-	ros::Publisher Movement_pub;
+	//ros::Publisher Movement_pub;
+	std::vector<ros::Publisher> Movement_pub;
 
 	//Service
 	//Service for building formation
