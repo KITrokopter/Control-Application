@@ -4,7 +4,6 @@
 #include "Formation.hpp"
 #include "ros/ros.h"
 #include "api_application/MoveFormation.h"	// ? (D)
-#include "control_application/Movement.h"		// ? (D)
 #include "../matlab/Vector.h"
 #include "control_application/quadcopter_movement.h"		// ? (D)
 #include "api_application/SetFormation.h"
