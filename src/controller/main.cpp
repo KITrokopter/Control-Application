@@ -7,12 +7,12 @@
 
 int main(int argc, char** argv)
 {
-// TODO: Create unique name.
-	ros::init(argc, argv, "control_node");
-	
-	
-	ros::spin();
 
+	
+
+	// TODO: Create unique name.
+	ros::init(argc, argv, "control_node");
+	ros::spin();
 	
 	//100 publishes per second
 	ros::Rate loop_rate(100);
@@ -37,7 +37,6 @@ int main(int argc, char** argv)
   	   //sleep to secure chosen rate
        loop_rate.sleep();
     }
-
 
 	ros::shutdown();
 	

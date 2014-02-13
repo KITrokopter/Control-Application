@@ -88,6 +88,7 @@ void Controller::initialize()
 			
 		}
 	}
+	getTracked = false;
 }
 
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
@@ -105,6 +106,55 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	listPositionsMutex.lock();
 	this->listPositions.push_back(newListItem);
 	listPositionsMutex.unlock();
+}
+
+void Controller::reachTrackedArea(std::vector<int> ids)
+{
+	getTrackedMutex.lock();
+	getTracked = true;
+	getTrackedMutex.unlock();
+	
+	/* TODO: Error-handling. */
+	/* Test ... if enough time: fix it, if not: copy to private variable */
+	std:pthread_create(&tGetTracked, NULL, &moveUp, ids); 	
+}
+
+void Controller::stopReachTrackedArea() 
+{
+	bool joinNecessary;
+
+	getTrackedMutex.lock();
+	joinNecessary = getTracked;
+	getTracked = false;
+	getTrackedMutex.unlock();
+
+	if( joinNecessary )
+	{
+		/* TODO: Error-handling. */
+		void *resultGetTracked;
+		pthread_join(tGetTracked, &resultGetTracked);
+	}
+}
+
+void Controller::moveUp(std::vector<int> ids)
+{
+	bool continueMoveUp = true;
+	while(continueMoveUp)
+	{
+		double moveVector[] = {0, 0, 100};
+		for(int i = 0; i < ids.size(); i++)
+		{		
+			this->id = ids[i];
+			//Convert Movement vector to thrust, pitch... data
+			convertMovement(moveVector);
+			//Send Movement to the quadcopter
+			sendMovement();
+		}
+		// usleep(1000); // microseconds
+		getTrackedMutex.lock();
+		continueMoveUp = getTracked;
+		getTrackedMutex.unlock();
+	}
 }
 		
 void Controller::calculateMovement()

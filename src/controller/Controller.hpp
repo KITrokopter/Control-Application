@@ -57,6 +57,8 @@ public:
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 
+	void reachTrackedArea(std::vector<int> ids);
+
 	/* Formation */
 	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
 	void shutdownFormation();
@@ -71,6 +73,10 @@ protected:
 	void MoveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
 	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
 	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
+
+	
+	void stopReachTrackedArea();
+	void moveUp(std::vector<int> ids);
 
 private:
 	/*  */
@@ -124,16 +130,19 @@ private:
 	std::vector<bool> tracked;
 	//Set when we are in the shutdown process
 	bool shutdownStarted;
+	bool getTracked;
 	
 	/* Mutex */
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
 	Mutex shutdownMutex;
 	Mutex listPositionsMutex;
+	Mutex getTrackedMutex;
 
 	/* Threads */
 	pthread_t tCalc;
 	pthread_t tSend;
+	pthread_t tGetTracked;
 
 	/**
   	 * NodeHandle is the main access point to communications with the ROS system.
