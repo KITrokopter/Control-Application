@@ -12,7 +12,7 @@
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "control_application/BuildFormation.h"
-//#include "api_application/Shutdown.h"
+#include "control_application/Shutdown.h"
 #include "../position/IPositionReceiver.hpp"
 #include <time.h>
 #include <stdio.h>
@@ -55,7 +55,8 @@ public:
 	Position6DOF* getTargetPosition();
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
-
+	void sendMovement();
+	void calculateMovement();
 	void reachTrackedArea(std::vector<int> ids);
 
 	/* Formation */
@@ -90,7 +91,7 @@ private:
 	
 	/* Identification of Quadcopters */
 	//Receive data over ROS
-	Formation formation();
+	Formation formation;
 	//TODO needs to be with service find all
 	int totalAmount;
 	int amount;

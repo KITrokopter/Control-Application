@@ -52,7 +52,7 @@ void Controller::initialize()
 	 */
 
 	/* TODO: Error-handling. */
-	std:pthread_create(&tCalc, NULL, &calculateMovement, NULL);
+	std:pthread_create(&tCalc, NULL, &Controller::calculateMovement, NULL);
 
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
@@ -102,7 +102,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		Position6DOF newPosition = Position6DOF (*it.getV1(), *it.getV2(), *it.getV3());
 		newListItem.push_back( newPosition );		
 	}	
-	size_type elements = positions.size();
+	std::size_t elements = positions.size();
 	listPositionsMutex.lock();
 	this->listPositions.push_back(newListItem);
 	listPositionsMutex.unlock();
@@ -116,7 +116,7 @@ void Controller::reachTrackedArea(std::vector<int> ids)
 	
 	/* TODO: Error-handling. */
 	/* Test ... if enough time: fix it, if not: copy to private variable */
-	std:pthread_create(&tGetTracked, NULL, &moveUp, ids); 	
+	std:pthread_create(&tGetTracked, NULL, &Controller::moveUp, ids); 	
 }
 
 void Controller::stopReachTrackedArea() 
@@ -183,11 +183,11 @@ void Controller::calculateMovement()
 			//Send Movement to the quadcopter
 			sendMovement();
 		}
-		while(this->newTarget == 0 && this->newCurrent == 0) 
+		/*while(this->newTarget == 0 && this->newCurrent == 0) 
 		{
-			/* delete if compiling fails */
+			// delete if compiling fails
 			usleep(1000); // microseconds
-		}
+		}*/
 	}	
 }
 
@@ -199,35 +199,7 @@ void Controller::sendMovement()
 	msg.yaw = this->yawrate;
 	msg.pitch = this->pitch;
 	msg.roll = this->roll;
-	this->Movement_pub.publish(msg);
-	
-	shutdownMutex.lock();
-	int doShutdown = this->shutdownStarted;
-	shutdownMutex.unlock();
-	if( doShutdown == 1 )
-	{
-		msg.thrust = THRUST_MIN;
-		this->Movement_pub.publish(msg);
-	} else
-	{
-		// Keep sending values until quadcopter is tracked
-		while(current[0] == INVALID)
-		{
-			this->Movement_pub.publish(msg);
-			//If a new target is set, the newTarget variable is true and we start a new calculation	
-			if(newTarget || shutdownStarted)
-			{
-				return;
-			}	
-		}
-		/*FIXME: startProcess is not set anywhere */
-		if(this->startProcess)
-		{
-			msg.thrust = THRUST_STAND_STILL;
-			this->Movement_pub.publish(msg);
-		}
-	}
-	this->Movement_pub.publish(msg);		
+	this->Movement_pub[id].publish(msg);	
 }
 
 void Controller::convertMovement(double* vector)
@@ -371,6 +343,7 @@ void Controller::shutdownFormation()
 	//Decline each quadcopter till it's not tracked anymore and then shutdown motor
 	for(int i = 0; i < this->amount; i++)
 	{
+		this->id = i;
 		curPosMutex.lock();
 		double * const current = this->currentPosition[id].getPosition();
 		curPosMutex.unlock();
