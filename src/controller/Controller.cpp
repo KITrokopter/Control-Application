@@ -64,7 +64,8 @@ void Controller::initialize()
 	std::string * uri;
 	if(FindAll_client.call(srv))
 	{
-		uri = srv.response.uri;
+		//TODO Get amount of quadcopter over api instead
+		//uri = srv.response.uri;
 		//this->totalAmount = srv.response.amount;
 		
 		//TODO Create map uri->id
@@ -73,7 +74,8 @@ void Controller::initialize()
 		{
 			std::stringstream topicName;
   			topicName << "quadcopter_status_" << i;
-			this->QuadStatus_sub[i] = this->n.subscribe(topicName.str().c_str(), 1000, boost::bind(&Controller::QuadStatusCallback, _1, i));
+			this->QuadStatus_sub[i] = this->n.subscribe<quadcopter_application::quadcopter_status>(topicName.str().c_str(), 1000, boost::bind(&Controller::QuadStatusCallback, this, _1, i));
+			
 		}
 	}
 }
