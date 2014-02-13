@@ -12,7 +12,8 @@
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "control_application/BuildFormation.h"
-#include "api_application/Shutdown.h"
+//#include "api_application/Shutdown.h"
+#include "../position/IPositionReceiver.hpp"
 #include <time.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -42,7 +43,7 @@
 #define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
 
 class Controller : public IPositionReceiver {
-class Controller {
+//class Controller {
 public:
 	Controller();
 
@@ -50,8 +51,6 @@ public:
 	void initialize();
 
 	/* Movement and Positioning */
-	void calculateMovement();
-	void sendMovement();
 	void convertMovement(double* const vector);
 	Position6DOF* getTargetPosition();
 	void setTargetPosition();
@@ -63,7 +62,7 @@ public:
 	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
 	void shutdownFormation();
 	
-	bool shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res);
+	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
 	
 	void checkInputMovement();
 	
@@ -90,12 +89,8 @@ private:
 	std::list<std::vector<Position6DOF> > listSendTargets;
 	
 	/* Identification of Quadcopters */
-	int amount; /* Unknown at start, variable at runtime. */
-	Formation formation;
-	float formationMovement[3]; /*TODO*/
-	
 	//Receive data over ROS
-	Formation formation;
+	Formation formation();
 	//TODO needs to be with service find all
 	int totalAmount;
 	int amount;
@@ -115,15 +110,10 @@ private:
 	std::vector<float> yaw_stab;
 	std::vector<unsigned int> thrust_stab;
 	std::vector<float> battery_status;
-	std::string idString;
-	/*int id;*/
 	int startProcess;
 /*	int newTarget;*/
 /*	int newCurrent;*/
-	std::vector<bool> tracked;
-/*	bool newTarget;*/
-/*	bool newCurrent;*/
-	std::vector<string> idString;
+	std::vector<std::string> idString;
 
 	//Control variables
 	//Array of tracked quadcopters
