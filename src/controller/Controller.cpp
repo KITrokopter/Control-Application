@@ -40,6 +40,11 @@ Controller::Controller()
 	this->shutdownStarted = 0;
 }
 
+void* startThread(void* something)
+{
+	(Controller**) something->calculateMovement();
+}
+
 void Controller::initialize()
 {
 	/*
@@ -52,7 +57,7 @@ void Controller::initialize()
 	 */
 
 	/* TODO: Error-handling. */
-	std:pthread_create(&tCalc, NULL, &Controller::calculateMovement, NULL);
+	pthread_create(&tCalc, NULL, startThread, *this);
 
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
@@ -99,7 +104,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	time_t currentTime = time(&currentTime);
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
-		Position6DOF newPosition = Position6DOF (*it.getV1(), *it.getV2(), *it.getV3());
+		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newListItem.push_back( newPosition );		
 	}	
 	std::size_t elements = positions.size();
