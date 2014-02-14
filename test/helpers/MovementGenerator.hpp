@@ -56,6 +56,6 @@ public:
 	 */
 	MovementGenerator(IPositionReceiver *receiver, std::vector<Vector> from, std::vector<Vector> to, double errorRate, double errorSize, double defaultErrorSize, int steps, double stepsPerSecond);
 	
-	/// Runs the generator synchronous (This method blocks until it finished)
+	/// Runs the generator synchronous. This method blocks until it finished.
 	void run();
 };
