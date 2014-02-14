@@ -79,7 +79,7 @@ void MovementGenerator::run()
 	std::cout << "Running MovementGenerator" << std::endl;
 	
 	// Target time for one loop in us
-	int64_t targetTime = 1000L * 1000 * 1000 / stepsPerSecond;
+	int64_t targetTime = 1000 * 1000 * 1000 / stepsPerSecond;
 	int64_t startTime = getNanoseconds();
 	
 	for (int i = 0; i <= steps; i++)

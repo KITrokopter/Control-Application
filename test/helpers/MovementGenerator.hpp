@@ -19,6 +19,7 @@ private:
 	int steps;
 	double stepsPerSecond;
 	
+	/// Interpolates between a and b with a linear function using alpha as parameter.
 	double interpolate(double a, double b, double alpha);
 	
 	/// Generates a random number between 0 and 1.
