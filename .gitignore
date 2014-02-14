@@ -2,6 +2,7 @@
 .anjuta*
 *anjuta*
 *.anjuta*
+
 # Compiled Object files
 *.slo
 *.lo
@@ -15,3 +16,6 @@
 *.lai
 *.la
 *.a
+
+# Generated docs
+/docs

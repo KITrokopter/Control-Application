@@ -8,16 +8,13 @@ class IPositionReceiver
 {
 public:
 	/**
-	 * Method: updatePositions
-	 *
 	 * Takes the positions of all quadcopters that were updated.
 	 * Automatically generates new control information for the quadcopters
 	 * and sends it via ROS.
-	 *
-	 * Parameters:
-	 *   positions - The positions of the quadcopters.
-	 *   ids - The ids of the quadcopters.
-	 *   updates - The amount of image data that went into the position of the quadcopter since the last call of this method.
+	 * 
+	 * @param positions The positions of the quadcopters.
+	 * @param ids The ids of the quadcopters.
+	 * @param updates The amount of image data that went into the position of the quadcopter since the last call of this method.
 	 *             Can be ignored for now, but may be useful later.
 	 *
 	 * Values in the same position in a std::vector belong together. That means, positions.at(i) is the position of the
