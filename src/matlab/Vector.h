@@ -9,10 +9,7 @@
 #define VECTOR_H_
 
 #include "engine.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <iostream>
+#include <string>
 
 
 class Vector {
@@ -30,8 +27,10 @@ public:
 	Vector mult(double a);
 	int scalarMult(Vector a);
     double getLength();
-    	void putVariable(std::string a, Engine *ep);
+    void putVariable(std::string a, Engine *ep);
 	Vector cross(Vector v);
+	
+	std::string toString();
 };
 
 #endif /* VECTOR_H_ */

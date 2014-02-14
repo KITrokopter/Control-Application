@@ -170,6 +170,15 @@ target_link_libraries(position_module
 	libopencv_calib3d.so
 )
 
+add_executable(profile_control
+	test/ProfileControl.cpp
+	test/helpers/MovementGenerator.cpp
+)
+
+#add_dependencies(profile_control)
+
+#target_link_libraries(profile_control)
+
 #############
 ## Install ##
 #############
