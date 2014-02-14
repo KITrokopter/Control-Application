@@ -8,9 +8,14 @@
 #include "Line.h"
 #include "Vector.h"
 
-Line::Line(Vector *a, Vector *u) {
-	this->a = *a;
-	this->u = *u;
+Line::Line() {
+    this->a = *(new Vector(0, 0, 0));
+    this->u = *(new Vector(0, 0, 0));
+}
+
+Line::Line(Vector a, Vector u) {
+    this->a = a;
+    this->u = u;
 }
 
 Vector Line::getA() {

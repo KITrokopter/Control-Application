@@ -120,6 +120,8 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/Line.cpp 
   src/matlab/Calibration.cpp 
   src/matlab/profiling.cpp
+  src/matlab/main.cpp
+  src/matlab/TrackingArea.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -132,7 +134,6 @@ add_dependencies(control_application_node
   api_application_generate_messages_cpp
   camera_application_generate_messages_cpp
 )
-
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(control_application_node Control-Application_generate_messages_cpp)

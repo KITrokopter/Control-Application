@@ -13,146 +13,35 @@
 #include "engine.h"
 #include "Vector.h"
 #include "Line.h"
-#include "profiling.hpp"
 #define  BUFSIZE 256
 
-void enterVariablesOneLine(Line f, Vector b, Engine *ep) {
-	mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3;
-
-	double dataa1[1] = {f.getA().getV1()};
-	double dataa2[1] = {f.getA().getV2()};
-	double dataa3[1] = {f.getA().getV3()};
-
-	double datau1[1] = {f.getU().getV1()};
-	double datau2[1] = {f.getU().getV2()};
-	double datau3[1] = {f.getU().getV3()};
-
-	double datab1[1] = {b.getV1()};
-	double datab2[1] = {b.getV2()};
-	double datab3[1] = {b.getV3()};
-
-	a1 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(a1), (void *)dataa1, sizeof(dataa1));
-	engPutVariable(ep, "a1", a1);
-	a2 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(a2), (void *)dataa2, sizeof(dataa2));
-	engPutVariable(ep, "a2", a2);
-	a3 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(a3), (void *)dataa3, sizeof(dataa3));
-	engPutVariable(ep, "a3", a3);
-
-	u1 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(u1), (void *)datau1, sizeof(datau1));
-	engPutVariable(ep, "u1", u1);
-	u2 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(u2), (void *)datau2, sizeof(datau2));
-	engPutVariable(ep, "u2", u2);
-	u3 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(u3), (void *)datau3, sizeof(datau3));
-	engPutVariable(ep, "u3", u3);
-
-	b1 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(b1), (void *)datab1, sizeof(datab1));
-	engPutVariable(ep, "b1", b1);
-	b2 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(b2), (void *)datab2, sizeof(datab2));
-	engPutVariable(ep, "b2", b2);
-	b3 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(b3), (void *)datab3, sizeof(datab3));
-	engPutVariable(ep, "b3", b3);
-
-	mxDestroyArray(a1);
-	mxDestroyArray(a2);
-	mxDestroyArray(a3);
-	mxDestroyArray(u1);
-	mxDestroyArray(u2);
-	mxDestroyArray(u3);
-	mxDestroyArray(b1);
-	mxDestroyArray(b2);
-	mxDestroyArray(b3);
-
+Matlab::Matlab() {
+    Engine *ep;
+    // starts a MATLAB process
+    if (!(ep = engOpen(""))) {
+            fprintf(stderr, "\nCan't start MATLAB engine\n");
+    } else {
+        this->ep = ep;
+    }
 }
 
-void enterVariablesTwoLines(Line f, Line g, Engine *ep) {
-	mxArray *a1, *a2, *a3, *b1, *b2, *b3, *u1, *u2, *u3, *v1, *v2, *v3;
-
-	double dataa1[1] = {f.getA().getV1()};
-	double dataa2[1] = {f.getA().getV2()};
-	double dataa3[1] = {f.getA().getV3()};
-
-	double datau1[1] = {f.getU().getV1()};
-	double datau2[1] = {f.getU().getV2()};
-	double datau3[1] = {f.getU().getV3()};
-
-	double datab1[1] = {g.getA().getV1()};
-	double datab2[1] = {g.getA().getV2()};
-	double datab3[1] = {g.getA().getV3()};
-
-	double datav1[1] = {g.getU().getV1()};
-	double datav2[1] = {g.getU().getV2()};
-	double datav3[1] = {g.getU().getV3()};
-
-	a1 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(a1), (void *)dataa1, sizeof(dataa1));
-	engPutVariable(ep, "a1", a1);
-	a2 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(a2), (void *)dataa2, sizeof(dataa2));
-	engPutVariable(ep, "a2", a2);
-	a3 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(a3), (void *)dataa3, sizeof(dataa3));
-	engPutVariable(ep, "a3", a3);
-
-	u1 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(u1), (void *)datau1, sizeof(datau1));
-	engPutVariable(ep, "u1", u1);
-	u2 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(u2), (void *)datau2, sizeof(datau2));
-	engPutVariable(ep, "u2", u2);
-	u3 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(u3), (void *)datau3, sizeof(datau3));
-	engPutVariable(ep, "u3", u3);
-
-	b1 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(b1), (void *)datab1, sizeof(datab1));
-	engPutVariable(ep, "b1", b1);
-	b2 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(b2), (void *)datab2, sizeof(datab2));
-	engPutVariable(ep, "b2", b2);
-	b3 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(b3), (void *)datab3, sizeof(datab3));
-	engPutVariable(ep, "b3", b3);
-
-	v1 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(v1), (void *)datav1, sizeof(datav1));
-	engPutVariable(ep, "v1", v1);
-	v2 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(v2), (void *)datav2, sizeof(datav2));
-	engPutVariable(ep, "v2", v2);
-	v3 = mxCreateDoubleMatrix(1, 1, mxREAL);
-	memcpy((void *)mxGetPr(v3), (void *)datav3, sizeof(datav3));
-	engPutVariable(ep, "v3", v3);
-
-	mxDestroyArray(a1);
-	mxDestroyArray(a2);
-	mxDestroyArray(a3);
-	mxDestroyArray(u1);
-	mxDestroyArray(u2);
-	mxDestroyArray(u3);
-	mxDestroyArray(b1);
-	mxDestroyArray(b2);
-	mxDestroyArray(b3);
-	mxDestroyArray(v1);
-	mxDestroyArray(v2);
-	mxDestroyArray(v3);
-
+Matlab::Matlab (Engine *ep) {
+    this->ep = ep;
 }
 
-Vector perpFootOneLine(Line f, Vector b, Engine *ep) {
-	enterVariablesOneLine(f, b, ep);
-	mxArray *result;
-	engEvalString(ep, "a = [a1,a2,a3];");
-	engEvalString(ep, "u = [u1,u2,u3];");
-	engEvalString(ep, "b = [b1,b2,b3];");
+void Matlab::destroyMatlab() {
+    engClose(ep);
+}
+
+Engine* Matlab::getEngine() {
+    return this->ep;
+}
+
+Vector Matlab::perpFootOneLine(Line f, Vector b) {
+    f.getA().putVariable("a", ep);
+    f.getU().putVariable("u", ep);
+    b.putVariable("b", ep);
+    mxArray *result;
 	engEvalString(ep, "d = dot(b, u);");
 	result = engGetVariable(ep, "d");
 
@@ -183,13 +72,13 @@ Vector perpFootOneLine(Line f, Vector b, Engine *ep) {
 	  1 if f and g intersect, result[0] is intersection point
 	  2 if f and g are scew, result[0] is perpFoot of f, result[1] is perpFoot of g
 */
-int perpFootTwoLines(Line f, Line g, Engine *ep, Vector **result) {
-	enterVariablesTwoLines(f, g, ep);
-	mxArray *same, *parallel;
-	engEvalString(ep, "a = [a1, a2, a3];");
-	engEvalString(ep, "u = [u1, u2, u3];");
-	engEvalString(ep, "b = [b1, b2, b3];");
-	engEvalString(ep, "v = [v1, v2, v3];");
+
+int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
+    f.getA().putVariable("a", ep);
+    f.getU().putVariable("u", ep);
+    g.getA().putVariable("b", ep);
+    g.getU().putVariable("v", ep);
+    mxArray *same, *parallel;
 	engEvalString(ep, "dif = [a1 - b1, a2 - b2, a3 - b3]");
 	// checks whether the lines intersect, if so result false
 	// checks whether a line or a row of A would be 0, so that it can't be inverted
@@ -250,40 +139,42 @@ int perpFootTwoLines(Line f, Line g, Engine *ep, Vector **result) {
 	return 2;
 }
 
-Vector interpolateLines(Line *lines, int quantity, Engine *ep) {
-	Vector points[2*quantity];
+Vector Matlab::interpolateLines(Line *lines, int quantity) {
+    Vector *points = new Vector[2*quantity];
 	int pos = 0;
 	int intersects;
 	Vector* result[2];
 	for (int i = 0; i < quantity; i++) {
 		for (int j = i + 1; j < quantity; j++) {
-			intersects = perpFootTwoLines(lines[i], lines[j], ep, result);
+            intersects = perpFootTwoLines(lines[i], lines[j], result);
 			if (intersects == 1) {
-				points[pos] = *result[0];
+                points[pos] = *result[0];
 				pos++;
 			} else if (intersects == 2) {
 				points[pos] = *result[0];
 				pos++;
 				points[pos] = *result[1];
-				pos++;
+                pos++;
 			}
 		}
-	}
-    	int v1, v2, v3;
-    	for (int i = 0; i < pos; i++) {
-		v1 = v1 + points[pos].getV1();
-		v2 = v2 + points[pos].getV2();
-		v3 = v3 + points[pos].getV3();
-	}
+    }
+    double v1 = 0;
+    double v2 = 0;
+    double v3 = 0;
+    for (int i = 0; i < pos; i++) {
+        v1 = v1 + points[i].getV1();
+        v2 = v2 + points[i].getV2();
+        v3 = v3 + points[i].getV3();
+    }
 	v1 = v1 / pos;
 	v2 = v2 / pos;
 	v3 = v3 / pos;
 	Vector *approximated = new Vector(v1, v2, v3);
-	return *approximated;
+    return *approximated;
 }
 
-Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor, Engine *ep) {
-	Vector newPos = perpFootOneLine(line, quadPos, ep);
+Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
+    Vector newPos = perpFootOneLine(line, quadPos);
 	//interpolatedNewPos = newPos * interpolationFactor + quadPos * (1 - interpolationFactor)
 	double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
 	double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
@@ -291,64 +182,38 @@ Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor, En
 	Vector* interpolatedNewPos = new Vector(v1, v2, v3);
 	return *interpolatedNewPos;
 }
-
-int main()
-{
-	Engine *ep;
-	// starts a MATLAB process
-	if (!(ep = engOpen(""))) {
-        	fprintf(stderr, "\nCan't start MATLAB engine\n");
-        	return EXIT_FAILURE;
-	}
-    
 /*
-	//Lotfußpunkt (6, 3, 1)
-	Vector* a = new Vector(-2, 1, 7);
-	Vector* u = new Vector(4, 1, -3);
-	Vector* b = new Vector(10, 5, 7);
-
-	//Lotfußpunkt f: (-7,5,3) Lotfußpunkt g: (-1, 1, 5)
-	Vector* a = new Vector(-7, 2, -3);
-	Vector* u = new Vector(0, 1, 2);
-	Vector* b = new Vector(-3, -3, 3);
-	Vector* v = new Vector(1, 2, 1);
-*/
-	//Lotfußpunkt f: (8, -1, 7) Lotfußpunkt g: (8, 11, 1)
-	Vector* a = new Vector(3, -1, 7);
-	Vector* u = new Vector(1, 0, 0);
-	Vector* b = new Vector(2, 8, -5);
-	Vector* v = new Vector(2, 1, 2);
-
-	/*intersection point (3, 6, 11)
-	Vector* a = new Vector(4, 2, 8);
-	Vector* u = new Vector(-1, 4, 3);
-	Vector* b = new Vector(5, 8, 21);
-	Vector* v = new Vector(1, 1, 5);*/
-	Line* f = new Line(a, u);
-	Line* g = new Line(b, v);
-	long int first = getNanoTime();
-	Vector oneLine = perpFootOneLine(*f, *b, ep);
-	long int second = getNanoTime();
-	printf("result is [%f, %f, %f] in time %ld\n", oneLine.getV1(), oneLine.getV2(), oneLine.getV3(), second-first);
-
-	Vector* result[2];
-	first = getNanoTime();
-	int intersects = perpFootTwoLines(*f, *g, ep, result);
-	second = getNanoTime();
-	if (intersects == 0) {
-		printf("parallel or same\n");
-	} else {
-		if (intersects == 1) {
-    			printf("intersectionpoint is [%f, %f, %f] in time %ld\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3(), second-first);
-		} else {
-			if (intersects == 2) { 
-  	  			printf("Lotfußpunkt von f ist [%f, %f, %f] int time %ld\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3(), second-first);
-    				printf("Lotfußpunkt von g ist [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
-			}
-		}
-	}
-	engClose;
-    	return EXIT_SUCCESS;
+ * intersection line of E1:f.getA() + r * f.getU() + s * (directV1 - f.getA()) and
+ * E2: g.getA() + t* g.getU() + z * (directV2-g.getA())
+ */
+Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {
+    f.getA().putVariable("a", ep);
+    f.getU().putVariable("u", ep);
+    Vector v = directV1.add(f.getA().mult(-1));
+    v.putVariable("v", ep);
+    g.getA().putVariable("b", ep);
+    g.getU().putVariable("w", ep);
+    // E1 == g
+    engEvalString(ep, "A = [u(1) v(1) -w(1); u(2) v(2) -w(2); u(3) v(3) -w(3)]");
+    engEvalString(ep, "diff = b - a");
+    engEvalString(ep, "bb = [diff(1); diff(2); diff(3)]");
+    // x = (r, s, t)
+    engEvalString(ep, "x = inv(A) * bb");
+    mxArray *x = engGetVariable(ep, "x");
+    // point on the intersectionline
+    Vector intersection1 = g.getA().add(g.getU().mult(mxGetPr(x)[2]));
+    Vector w = directV2.add(g.getA().mult(-1));
+    w.putVariable("w", ep);
+    // E1 == g.getA() + r * (directV2 - g.getA())
+    engEvalString(ep, "A = [u(1) v(1) -w(1); u(2) v(2) -w(2); u(3) v(3) -w(3)]");
+    engEvalString(ep, "diff = b - a");
+    engEvalString(ep, "bb = [diff(1); diff(2); diff(3)]");
+    // x = (r, s, t)
+    engEvalString(ep, "x = inv(A) * bb");
+    x = engGetVariable(ep, "x");
+    // point on the intersectionline
+    Vector intersection2 = g.getA().add(g.getU().mult(mxGetPr(x)[2]));
+    Line *intersectionLine = new Line(intersection1, (intersection2.add(intersection1.mult(-1))));
+    mxDestroyArray(x);
+    return *intersectionLine;
 }
-
-

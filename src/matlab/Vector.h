@@ -8,6 +8,11 @@
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
+#include "engine.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <iostream>
 
 
 class Vector {
@@ -21,6 +26,12 @@ public:
 	void setV1(double v1);
 	void setV2(double v2);
 	void setV3(double v3);
+	Vector add(Vector a);
+	Vector mult(double a);
+	int scalarMult(Vector a);
+    double getLength();
+    	void putVariable(std::string a, Engine *ep);
+	Vector cross(Vector v);
 };
 
 #endif /* VECTOR_H_ */

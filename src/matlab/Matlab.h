@@ -12,12 +12,17 @@
 #include "engine.h"
 
 class Matlab {
-	void enterVariablesOneLine(Line f, Vector b, Engine *ep);
-	void enterVariablesTwoLines(Line f, Line g, Engine *ep);
-	Vector perpFootOneLine(Line f, Vector b, Engine *ep);
-	int perpFootTwoLines(Line f, Line g, Engine *ep, Vector **result);
-	Vector interpolateLines(Line *lines, int quantity, Engine *ep);
-	Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor, Engine *ep);
+private: Engine *ep;
+public:
+	Matlab();
+	Matlab(Engine *ep);
+	Engine* getEngine();
+	void destroyMatlab();
+	Vector perpFootOneLine(Line f, Vector b);
+	int perpFootTwoLines(Line f, Line g, Vector **result);
+    Vector interpolateLines(Line *lines, int quantity);
+	Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor);
+	Line getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2);
 };
 
 #endif /* MATLAB_H_ */

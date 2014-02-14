@@ -12,7 +12,8 @@
 class Line {
 private: Vector a, u;
 public:
-	Line(Vector *a, Vector *u);
+	Line();
+	Line(Vector a, Vector u);
 	Vector getA();
 	Vector getU();
 	void setA(Vector a);
