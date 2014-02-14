@@ -67,6 +67,8 @@ public:
 	
 	void checkInputMovement();
 	
+	void moveUp(std::vector<int> ids);
+	void moveUpNoArg();
     
 protected:
 	//Callbacks for Ros subscriber
@@ -76,7 +78,6 @@ protected:
 
 	
 	void stopReachTrackedArea();
-	void moveUp(std::vector<int> ids);
 
 private:
 	/*  */
@@ -115,6 +116,7 @@ private:
 /*	int newTarget;*/
 /*	int newCurrent;*/
 	std::vector<std::string> idString;
+	std::vector<int> idsToGetTracked;
 
 	//Control variables
 	//Array of tracked quadcopters

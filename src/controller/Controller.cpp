@@ -40,6 +40,12 @@ Controller::Controller()
 	this->shutdownStarted = 0;
 }
 
+void* startThread(void* something)
+{
+	Controller *someOther = (Controller *) something; 
+	someOther->calculateMovement();
+}
+
 void Controller::initialize()
 {
 	/*
@@ -52,7 +58,7 @@ void Controller::initialize()
 	 */
 
 	/* TODO: Error-handling. */
-	std:pthread_create(&tCalc, NULL, &Controller::calculateMovement, NULL);
+	pthread_create(&tCalc, NULL, startThread, this);
 
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
@@ -99,13 +105,19 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	time_t currentTime = time(&currentTime);
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
-		Position6DOF newPosition = Position6DOF (*it.getV1(), *it.getV2(), *it.getV3());
+		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newListItem.push_back( newPosition );		
 	}	
 	std::size_t elements = positions.size();
 	listPositionsMutex.lock();
 	this->listPositions.push_back(newListItem);
 	listPositionsMutex.unlock();
+}
+
+void* startThreadMoveUp(void* something)
+{
+	Controller* other = (Controller*) something;
+	other->moveUpNoArg();
 }
 
 void Controller::reachTrackedArea(std::vector<int> ids)
@@ -116,7 +128,8 @@ void Controller::reachTrackedArea(std::vector<int> ids)
 	
 	/* TODO: Error-handling. */
 	/* Test ... if enough time: fix it, if not: copy to private variable */
-	std:pthread_create(&tGetTracked, NULL, &Controller::moveUp, ids); 	
+	idsToGetTracked = ids;
+	std:pthread_create(&tGetTracked, NULL, startThreadMoveUp, NULL); //ids); 	
 }
 
 void Controller::stopReachTrackedArea() 
@@ -134,6 +147,11 @@ void Controller::stopReachTrackedArea()
 		void *resultGetTracked;
 		pthread_join(tGetTracked, &resultGetTracked);
 	}
+}
+
+void Controller::moveUpNoArg()
+{
+	moveUp(this->idsToGetTracked);
 }
 
 void Controller::moveUp(std::vector<int> ids)
