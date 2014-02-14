@@ -123,7 +123,7 @@ if(EXISTS ${MATLAB_PATH})
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
-  ../camera_application/src/Mutex.cpp
+  src/controller/Mutex.cpp
   #src/controller/main.cpp
 )
 
