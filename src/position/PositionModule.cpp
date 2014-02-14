@@ -40,11 +40,10 @@ PositionModule::PositionModule(IPositionReceiver* receiver)
 	
 	api_application::Announce announce;
 	announce.request.type = 3; // 3 means position module
-	announce.request.initializeServiceName = std::string("InitializePositionModule");
 	
 	if (announceClient.call(announce))
 	{
-		rosId = announce.response.ID;
+		rosId = announce.response.id;
 		
 		if (rosId == ~0 /* -1 */)
 		{
