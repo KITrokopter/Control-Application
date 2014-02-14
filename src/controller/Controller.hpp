@@ -77,6 +77,7 @@ protected:
 	
 	void stopReachTrackedArea();
 	void moveUp(std::vector<int> ids);
+	void moveUpNoArg();
 
 private:
 	/*  */
@@ -115,6 +116,7 @@ private:
 /*	int newTarget;*/
 /*	int newCurrent;*/
 	std::vector<std::string> idString;
+	std::vector<int> idsToGetTracked;
 
 	//Control variables
 	//Array of tracked quadcopters

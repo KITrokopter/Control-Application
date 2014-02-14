@@ -42,7 +42,8 @@ Controller::Controller()
 
 void* startThread(void* something)
 {
-	(Controller**) something->calculateMovement();
+	Controller *someOther = (Controller *) something; 
+	someOther->calculateMovement();
 }
 
 void Controller::initialize()
@@ -57,7 +58,7 @@ void Controller::initialize()
 	 */
 
 	/* TODO: Error-handling. */
-	pthread_create(&tCalc, NULL, startThread, *this);
+	pthread_create(&tCalc, NULL, startThread, this);
 
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
@@ -113,6 +114,12 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	listPositionsMutex.unlock();
 }
 
+void* startThreadMoveUp(void* something)
+{
+	Controller* other = (Controller*) something;
+	other->moveUpNoArg();
+}
+
 void Controller::reachTrackedArea(std::vector<int> ids)
 {
 	getTrackedMutex.lock();
@@ -121,7 +128,8 @@ void Controller::reachTrackedArea(std::vector<int> ids)
 	
 	/* TODO: Error-handling. */
 	/* Test ... if enough time: fix it, if not: copy to private variable */
-	std:pthread_create(&tGetTracked, NULL, &Controller::moveUp, ids); 	
+	idsToGetTracked = ids;
+	std:pthread_create(&tGetTracked, NULL, startThreadMoveUp, NULL); //ids); 	
 }
 
 void Controller::stopReachTrackedArea() 
@@ -139,6 +147,11 @@ void Controller::stopReachTrackedArea()
 		void *resultGetTracked;
 		pthread_join(tGetTracked, &resultGetTracked);
 	}
+}
+
+void Controller::moveUpNoArg()
+{
+	moveUp(this->idsToGetTracked);
 }
 
 void Controller::moveUp(std::vector<int> ids)
