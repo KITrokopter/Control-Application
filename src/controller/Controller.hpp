@@ -67,6 +67,8 @@ public:
 	
 	void checkInputMovement();
 	
+	void moveUp(std::vector<int> ids);
+	void moveUpNoArg();
     
 protected:
 	//Callbacks for Ros subscriber
@@ -76,8 +78,6 @@ protected:
 
 	
 	void stopReachTrackedArea();
-	void moveUp(std::vector<int> ids);
-	void moveUpNoArg();
 
 private:
 	/*  */
