@@ -49,7 +49,8 @@ public:
 	 * @param errorSize The maximum size of a random error. A random error ranges from -errorSize to errorSize and is added to the position.
 	 *                  For every component of the position vector a new random number is generated, but the random error is applied to
 	 *                  either all components of the position vector or none.
-	 * @param defaultErrorSize The error that is always applied.
+	 * @param defaultErrorSize The maximum size of the error that is always applied.
+	 *                         The default error ranges from -defaultErrorSize to defaultErrorSize.
 	 * @param steps The amount of steps to use for moving from the start to the end position.
 	 * @param stepsPerSecond The amount of steps to calculate per second.
 	 */
