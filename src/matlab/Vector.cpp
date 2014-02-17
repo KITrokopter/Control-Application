@@ -8,8 +8,10 @@
 #include "Vector.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <string>
 #include <iostream>
+#include <sstream>
+#include <cstring>
 #include <math.h>
 
 Vector::Vector() {
@@ -92,4 +94,10 @@ void Vector::putVariable(std::string a, Engine *ep) {
 Vector Vector::cross(Vector v) {
     Vector *cross = new Vector(v.getV2()*v3 - v.getV3()*v2, v.getV3()*v1 - v.getV1()*v3, v.getV1()*v2 -v.getV2()*v1);
     return *cross;
+}
+
+std::string Vector::toString() {
+	std::stringstream ss;
+	ss << v1 << "/" << v2 << "/" << v3;
+	return ss.str();
 }

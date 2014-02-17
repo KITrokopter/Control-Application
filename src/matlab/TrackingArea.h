@@ -8,6 +8,7 @@
 #ifndef TRACKINGAREA_H_
 #define TRACKINGAREA_H_
 
+#include "Vector.h"
 
 class TrackingArea {
 // a1 to a4 is clockwisely one plain, b1 to b4 the same, ai is below of bi

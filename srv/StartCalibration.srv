@@ -1,0 +1,5 @@
+Header header
+uint32 chessboardWidth
+uint32 chessboardHeight
+---
+bool ok

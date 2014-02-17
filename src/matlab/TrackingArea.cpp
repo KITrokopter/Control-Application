@@ -12,6 +12,7 @@
 #include "engine.h"
 #include <math.h>
 #include <iostream>
+#include <stdio.h>
 #include "TrackingArea.h"
 
 using namespace std;

@@ -7,6 +7,9 @@ project(control_application)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  sensor_msgs
+  rosconsole
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -43,18 +46,21 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  quadcopter_movement.msg
+  CurrentPosition.msg
+)
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  StartCalibration.srv
+  TakeCalibrationPicture.srv
+  CalculateCalibration.srv
+  BuildFormation.srv
+  Shutdown.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -64,10 +70,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  sensor_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -81,7 +88,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES control_application
-#  CATKIN_DEPENDS roscpp std_msgs
+  CATKIN_DEPENDS roscpp std_msgs sensor_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -101,20 +108,76 @@ include_directories(
 #   src/${PROJECT_NAME}/control_application.cpp
 # )
 
-## Declare a cpp executable
-add_executable(control_application_node src/matlab/Matlab.cpp src/matlab/Vector.cpp src/matlab/Line.cpp src/matlab/profiling.cpp src/matlab/TrackingArea.cpp src/matlab/Calibration.cpp src/matlab/main.cpp)
+set(MATLAB_PATH "~/matlab"
+  CACHE PATH "Path to matlab installation")
 
+# Skip the control application when matlab is not installed.
+if(EXISTS ${MATLAB_PATH})
+  ## Declare a cpp executable
+  add_executable(control_application_node 
+  src/matlab/Matlab.cpp 
+  src/matlab/Vector.cpp 
+  src/matlab/Line.cpp 
+  src/matlab/Calibration.cpp 
+  src/matlab/profiling.cpp
+  src/matlab/main.cpp
+  src/matlab/TrackingArea.cpp
+  src/controller/Controller.cpp
+  src/controller/Formation.cpp
+  src/controller/Position6DOF.cpp
+  src/controller/Mutex.cpp
+  #src/controller/main.cpp
+)
+
+add_dependencies(control_application_node
+  control_application_generate_messages_cpp
+  api_application_generate_messages_cpp
+  camera_application_generate_messages_cpp
+)
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(control_application_node Control-Application_generate_messages_cpp)
 
 # Use full path names to go around strange errors since matlab has some strange versions of some libs that are already included in ubuntu.
 target_link_libraries(control_application_node
-   ${catkin_LIBRARIES}
-~/matlab/bin/glnxa64/libeng.so
-~/matlab/bin/glnxa64/libmx.so
-~/matlab/bin/glnxa64/libmat.so
+  ${catkin_LIBRARIES}
+  ${MATLAB_PATH}/bin/glnxa64/libeng.so
+  ${MATLAB_PATH}/bin/glnxa64/libmx.so
+  ${MATLAB_PATH}/bin/glnxa64/libmat.so
 )
+else()
+  message(WARNING
+    "Not building control_application_node because MATLAB_PATH is invalid.")
+endif()
+
+add_executable(position_module
+	src/position/tmpmain.cpp
+	src/position/PositionModule.cpp
+	src/position/DummyPositionReceiver.cpp
+	src/KitrokopterMessages.cpp
+)
+
+add_dependencies(position_module
+	control_application_generate_messages_cpp
+	api_application_generate_messages_cpp
+	camera_application_generate_messages_cpp
+)
+
+target_link_libraries(position_module
+	${catkin_LIBRARIES}
+	libopencv_core.so
+	libopencv_highgui.so
+	libopencv_calib3d.so
+)
+
+add_executable(profile_control
+	test/ProfileControl.cpp
+	test/helpers/MovementGenerator.cpp
+)
+
+#add_dependencies(profile_control)
+
+#target_link_libraries(profile_control)
 
 #############
 ## Install ##
