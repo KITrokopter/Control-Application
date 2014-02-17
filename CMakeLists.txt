@@ -147,9 +147,30 @@ target_link_libraries(control_application_node
   ${MATLAB_PATH}/bin/glnxa64/libmx.so
   ${MATLAB_PATH}/bin/glnxa64/libmat.so
 )
+
+add_executable(profile_control
+	test/ProfileControl.cpp
+	test/helpers/MovementGenerator.cpp
+	src/matlab/Vector.cpp
+	src/position/DummyPositionReceiver.cpp
+)
+
+add_dependencies(profile_control
+  control_application_generate_messages_cpp
+  api_application_generate_messages_cpp
+  camera_application_generate_messages_cpp
+)
+
+target_link_libraries(profile_control
+  ${catkin_LIBRARIES}
+  ${MATLAB_PATH}/bin/glnxa64/libeng.so
+  ${MATLAB_PATH}/bin/glnxa64/libmx.so
+  ${MATLAB_PATH}/bin/glnxa64/libmat.so
+)
+
 else()
   message(WARNING
-    "Not building control_application_node because MATLAB_PATH is invalid.")
+    "Not building control_application_node and profile_control because MATLAB_PATH is invalid.")
 endif()
 
 add_executable(position_module
@@ -171,15 +192,6 @@ target_link_libraries(position_module
 	libopencv_highgui.so
 	libopencv_calib3d.so
 )
-
-add_executable(profile_control
-	test/ProfileControl.cpp
-	test/helpers/MovementGenerator.cpp
-)
-
-#add_dependencies(profile_control)
-
-#target_link_libraries(profile_control)
 
 #############
 ## Install ##
