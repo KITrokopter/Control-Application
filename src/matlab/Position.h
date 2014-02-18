@@ -8,6 +8,7 @@ class Position {
 private: Engine *ep;
 	 Calibration calib;
 public:
+    Position();
     Position(Engine *ep);
     void calibrate(CameraData cameraData, int cameraId);
     Vector updatePosition(Vector v, int cameraId, double quadcopterId);

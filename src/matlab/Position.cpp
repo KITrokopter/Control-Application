@@ -1,6 +1,18 @@
 #include "Position.h"
 #include "Calibration.h"
 
+Position::Position()
+{
+    Engine *ep;
+    // starts a MATLAB process
+    if (!(ep = engOpen(""))) {
+            fprintf(stderr, "\nCan't start MATLAB engine\n");
+    } else {
+        this->ep = ep;
+    }
+    calib = *(new Calibration());
+}
+
 Position::Position(Engine *ep)
 {
     this->ep = ep;
