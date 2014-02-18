@@ -7,6 +7,7 @@
 #include <inttypes.h>
 
 #include "IPositionReceiver.hpp"
+#include "CvChessboardDetector.hpp"
 #include "../KitrokopterMessages.hpp"
 #include "control_application/StartCalibration.h"
 #include "control_application/TakeCalibrationPicture.h"
@@ -26,8 +27,10 @@ private:
 	bool isCalibrating;
 	int calibrationPictureCount;
 	cv::Size boardSize;
+	cv::Size realSize;
 	std::vector<cv::Mat*> pictureCache;
 	std::vector<uint64_t> pictureTimes;
+	CvChessboardDetector chessboardDetector;
 	
 	// ROS network
 	ros::ServiceServer startCalibrationService;

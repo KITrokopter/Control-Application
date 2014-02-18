@@ -111,6 +111,9 @@ include_directories(
 set(MATLAB_PATH "~/matlab"
   CACHE PATH "Path to matlab installation")
 
+# Adds the matlab path to the library search directories
+# LINK_DIRECTORIES(${MATLAB_PATH}/bin/glnxa64)
+
 # Skip the control application when matlab is not installed.
 if(EXISTS ${MATLAB_PATH})
   ## Declare a cpp executable
@@ -168,16 +171,14 @@ target_link_libraries(profile_control
   ${MATLAB_PATH}/bin/glnxa64/libmat.so
 )
 
-else()
-  message(WARNING
-    "Not building control_application_node and profile_control because MATLAB_PATH is invalid.")
-endif()
-
 add_executable(position_module
 	src/position/tmpmain.cpp
 	src/position/PositionModule.cpp
 	src/position/DummyPositionReceiver.cpp
+	src/position/CvChessboardDetector.cpp
+	src/position/ChessboardData.cpp
 	src/KitrokopterMessages.cpp
+	src/matlab/Vector.cpp
 )
 
 add_dependencies(position_module
@@ -188,10 +189,19 @@ add_dependencies(position_module
 
 target_link_libraries(position_module
 	${catkin_LIBRARIES}
+	${MATLAB_PATH}/bin/glnxa64/libeng.so
+	${MATLAB_PATH}/bin/glnxa64/libmx.so
+	${MATLAB_PATH}/bin/glnxa64/libmat.so
 	libopencv_core.so
 	libopencv_highgui.so
 	libopencv_calib3d.so
+	libopencv_imgproc.so
 )
+
+else()
+  message(WARNING
+    "Not building control_application_node and profile_control because MATLAB_PATH is invalid.")
+endif()
 
 #############
 ## Install ##

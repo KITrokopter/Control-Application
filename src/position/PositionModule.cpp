@@ -13,6 +13,8 @@
 #include "api_application/Ping.h"
 #include "api_application/Announce.h"
 
+#include "../matlab/Vector.h"
+
 PositionModule::PositionModule(IPositionReceiver* receiver)
 {
 	assert(receiver != 0);
@@ -88,6 +90,7 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 		setPictureSendingActivated(true);
 		calibrationPictureCount = 0;
 		boardSize = cv::Size(req.chessboardWidth, req.chessboardHeight);
+		realSize = cv::Size(req.chessboardRealWidth, req.chessboardRealHeight);
 	}
 	
 	isCalibrating = true;
@@ -198,6 +201,7 @@ void PositionModule::systemCallback(const api_application::System &msg)
 void PositionModule::rawPositionCallback(const camera_application::RawPosition &msg)
 {
  	// TODO: Calculate position in our coordinate system.
+	Vector cameraVector(1, msg.xPosition, msg.yPosition);
 }
 
 void PositionModule::setPictureSendingActivated(bool activated)
