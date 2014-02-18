@@ -9,10 +9,10 @@ private: Engine *ep;
 	 Calibration calib;
 public:
     Position(Engine *ep);
-    void calibrate(CameraData cameraData, double cameraId);
-    Vector updatePosition(Vector v, double cameraId, double quadcopterId);
-    Vector getPosition(double cameraId);
-    Vector getOrientation(double cameraId);
+    void calibrate(CameraData cameraData, int cameraId);
+    Vector updatePosition(Vector v, int cameraId, double quadcopterId);
+    Vector getPosition(int cameraId);
+    Vector getOrientation(int cameraId);
 };
 
 #endif // POSITION_H
