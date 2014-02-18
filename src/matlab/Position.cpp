@@ -7,7 +7,7 @@ Position::Position(Engine *ep)
     calib = *(new Calibration());
 }
 
-void Position::calibrate(CameraData cameraData, double cameraId) {
+void Position::calibrate(CameraData cameraData, int cameraId) {
     // if B
     calib.setChangeOfBasisVectorB(cameraData.getAlpha(), cameraData.getGamma());
     calib.setTranslationVectorB(cameraData.getSigma(), cameraData.getHa());
@@ -16,14 +16,14 @@ void Position::calibrate(CameraData cameraData, double cameraId) {
     calib.setTranslationVectorB(cameraData.getSigma(), cameraData.getHa());
 }
 
-Vector Position::updatePosition(Vector v, double cameraId, double quadcopterId) {
+Vector Position::updatePosition(Vector v, int cameraId, double quadcopterId) {
 
 }
 
-Vector getPosition(double cameraId) {
+Vector getPosition(int cameraId) {
     //return calib.getTranslationVectorx();
 }
 
-Vector getOrientation(double cameraId) {
+Vector getOrientation(int cameraId) {
 
 }
