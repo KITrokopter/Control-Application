@@ -16,6 +16,7 @@ private: Vector a1, a2, a3, a4, b1, b2, b3, b4, center;
 public:
 	TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector b1, Vector b2, Vector b3, Vector b4);
 	TrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Engine *ep); 
+	TrackingArea(){};
     	Vector getA1();
     	Vector getA2();
     	Vector getA3();

@@ -6,8 +6,10 @@
 //Ros messages/services
 #include "api_application/MoveFormation.h"	// ? (D)
 #include "../matlab/Vector.h"
+#include "../matlab/TrackingArea.h"
 #include "control_application/quadcopter_movement.h"		// ? (D)
 #include "api_application/SetFormation.h"
+#include "api_application/Message.h"
 #include "quadcopter_application/find_all.h"
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
@@ -36,6 +38,8 @@
 #define ROLL_STEP 2
 #define PITCH_STEP 2
 #define INVALID -1
+//TODO 100% = 1?
+#define LOW_BATTERY 0.05
 
 /* Used for lists */
 #define MAX_NUMBER_QUADCOPTER 10
@@ -65,7 +69,8 @@ public:
 	
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
 	
-	void checkInputMovement();
+	//TODO Still needed? We check for invalid formation movement in setTarget
+	//void checkInputMovement();
 	
 	void moveUp(std::vector<int> ids);
 	void moveUpNoArg();
@@ -86,6 +91,8 @@ private:
 	std::vector<Position6DOF> targetPosition;
 	std::vector<Position6DOF> currentPosition;
 	//std::vector<rpy-values> sentMovement;
+	//TODO Where are those lists filled/ updated? FIFO? Latest element last?
+	//TODO Include time somehow or how do we check if there hasn't been any input?
 	std::list<std::vector<Position6DOF> > listPositions;
 	std::list<std::vector<Position6DOF> > listTargets;
 	std::list<std::vector<Position6DOF> > listSendTargets;
@@ -97,6 +104,8 @@ private:
 	int totalAmount;
 	int amount;
 	float formationMovement[3];
+	//TODO Set area
+	TrackingArea trackingArea;
 	
 	//Mapping of int id to string id/ hardware id   qc[id][uri/hardware id]
 	std::vector<std::string> quadcopters;
@@ -157,6 +166,8 @@ private:
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	//ros::Publisher Movement_pub;
 	std::vector<ros::Publisher> Movement_pub;
+	//Publisher for Message to API
+	ros::Publisher Message_pub;
 
 	/* Services */
 	//Service for building formation

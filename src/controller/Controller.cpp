@@ -22,11 +22,10 @@ Controller::Controller()
 	this->BuildForm_srv  = this->n.advertiseService("BuildFormation", &Controller::buildFormation, this);
 	this->Shutdown_srv = this->n.advertiseService("Shutdown", &Controller::shutdown, this);
 
-	/*
 	//Publisher
-	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
-	this->Movement_pub = this->n.advertise<control_application::quadcopter_movement>("quadcopter_movement", 1000);
-	*/
+	//Publisher of Message to API
+	this->Message_pub = this->n.advertise<api_application::Message>("Message", 100);
+	
 
 	//Client
 	this->FindAll_client = this->n.serviceClient<quadcopter_application::find_all>("find_all");
@@ -183,7 +182,17 @@ void Controller::calculateMovement()
 	{
 		double moveVector[3];
 		for(int i = 0; i < this->amount; i++)
-		{		
+		{	
+			if(this->battery_status[i] < LOW_BATTERY)
+			{
+				api_application::Message msg;
+				//TODO What's our sender ID?
+				msg.senderID = 0;
+				//Type 3 is an error message
+				msg.type = 3;
+				msg.message = "Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY;
+				this->Message_pub.publish(msg);
+			}
 			//Gets the right hardware id/ String id
 			//this->idString = this->quadcopters[i];
 			this->id = i;
@@ -262,6 +271,25 @@ void Controller::setTargetPosition()
 		targetNew[0] = targetOld[0] + this->formationMovement[0];
 		targetNew[1] = targetOld[1] + this->formationMovement[1];
 		targetNew[2] = targetOld[2] + this->formationMovement[2];
+		//Check if new position would be in tracking area
+		Vector vector = Vector(targetNew[0],targetNew[1],targetNew[2]);
+		if(!this->trackingArea.contains(vector))
+		{
+			api_application::Message msg;
+			//TODO What's our sender ID?
+			msg.senderID = 0;
+			//Type 3 is an error message
+			msg.type = 3;
+			msg.message = "Formation Movement is invalid. Quadcopter %i would leave Tracking Area.\n", i;
+			this->Message_pub.publish(msg);
+			std::vector<Position6DOF> latestTargets = this->listTargets.back();
+			//TODO Restore old data.
+			for(int j = i; j >= 0; j--)
+			{
+				this->targetPosition[j] = latestTargets[j];
+			}
+			return;
+		}
 		this->targetPosition[i].setPosition(targetNew);
 	}
 }
@@ -296,7 +324,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		target[1] = pos[1] * distance;
 		target[2] = pos[2] * distance;
 		//Set target Position for quadcopter i
-		this->targetPosition[i].setPosition(target);
+		//this->targetPosition[i].setPosition(target);
 		//As long as the quadcopter isn't tracked, incline
 		while(!this->tracked[i])
 		{
@@ -319,16 +347,16 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 			this->targetPosition[i].setPosition(target);
 			tarPosMutex.unlock();
 			//Calculate Movement to the wanted position + convert it + send it
-			calculateMovement();
+			//calculateMovement();
 		}
 		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
-		target[0] = 0;
-		target[1] = distance;
-		target[2] = 0;
+		//target[0] = 0;
+		target[1] += distance;
+		//target[2] = 0;
 		tarPosMutex.lock();
 		this->targetPosition[i].setPosition(target);
 		tarPosMutex.unlock();
-		calculateMovement();
+		//calculateMovement();
 	}
 	return true;
 }
@@ -396,6 +424,7 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 	//pthread_join(tSend, &resultSend);
 	return true;
 }
+
 
 /*
 * Callback for Ros Subscriber of Formation Movement
