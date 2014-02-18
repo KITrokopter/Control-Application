@@ -16,6 +16,8 @@
 #include "camera_application/Picture.h"
 #include "camera_application/RawPosition.h"
 #include "api_application/System.h"
+#include "../controller/Mutex.hpp"
+#include "../matlab/Position.h"
 
 class PositionModule {
 private:
@@ -28,9 +30,13 @@ private:
 	int calibrationPictureCount;
 	cv::Size boardSize;
 	cv::Size realSize;
+	Mutex pictureCacheMutex;
 	std::vector<cv::Mat*> pictureCache;
 	std::vector<uint64_t> pictureTimes;
 	CvChessboardDetector chessboardDetector;
+	
+	// Tracking
+	Position tracker;
 	
 	// ROS network
 	ros::ServiceServer startCalibrationService;
