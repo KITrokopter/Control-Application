@@ -117,8 +117,7 @@ if(EXISTS ${MATLAB_PATH})
   add_executable(control_application_node 
   src/matlab/Matlab.cpp 
   src/matlab/Vector.cpp 
-  src/matlab/Line.cpp 
-  src/matlab/Calibration.cpp 
+  src/matlab/Line.cpp
   src/matlab/profiling.cpp
   src/matlab/main.cpp
   src/matlab/TrackingArea.cpp
@@ -126,6 +125,9 @@ if(EXISTS ${MATLAB_PATH})
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
   src/controller/Mutex.cpp
+  src/matlab/Calibration.cpp
+  src/matlab/CameraData.cpp
+  src/matlab/Position.cpp
   #src/controller/main.cpp
 )
 

@@ -1,24 +1,20 @@
-/*
- * Calibration.h
- *
- *  Created on: 13.01.2014
- *      Author: daniela
- */
-
-#ifndef Calibration_H_
-#define Calibration_H_
-#include "Line.h"
-#include "Vector.h"
+#ifndef CALIBRATION_H
+#define CALIBRATION_H
 #include "engine.h"
+#include "Vector.h"
 
 class Calibration {
-private: Engine *ep;
+private: Engine *ep; 
+	 Vector translationA, translationB, translationC;
 public:
-	Calibration();
-	Calibration(Engine *ep);
-	// sqareLengthX: length of each square of the checkboard in X direction (mm)
-	// number of square corners of the checkerboard in the X direction
-	void multiCameraCalibration(int numberCameras, double squareLengthX, double squareLengthY, int numberSquareCornersX, int numberSquareCornersY);
+    Calibration();
+    Calibration(Engine *ep);
+    void setChangeOfBasisVectorB(double alpha, double gamma);
+    void setChangeOfBasisVectorC(double alpha, double gamma);
+    void setTranslationVectorB(double sigma, double ha);
+    void setTranslationVectorC(double sigma, double ha);
+    Vector getTranslationVectorB();
+    Vector getTranslationVectorC();
 };
 
-#endif /* Calibration_H_ */
+#endif // CALIBRATION_H
