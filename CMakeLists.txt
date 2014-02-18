@@ -179,6 +179,7 @@ add_executable(position_module
 	src/position/ChessboardData.cpp
 	src/KitrokopterMessages.cpp
 	src/matlab/Vector.cpp
+	src/controller/Mutex.cpp
 )
 
 add_dependencies(position_module
