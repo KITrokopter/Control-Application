@@ -21,6 +21,7 @@ Controller::Controller()
 	//Service for BuildFormation and Shutdown
 	this->BuildForm_srv  = this->n.advertiseService("BuildFormation", &Controller::buildFormation, this);
 	this->Shutdown_srv = this->n.advertiseService("Shutdown", &Controller::shutdown, this);
+	this->QuadID_srv = this->n.advertiseService("SetQuadcopters", &Controller::setQuadcopters, this);
 
 	//Publisher
 	//Publisher of Message to API
@@ -30,6 +31,7 @@ Controller::Controller()
 	//Client
 	this->FindAll_client = this->n.serviceClient<quadcopter_application::find_all>("find_all");
 	this->Blink_client = this->n.serviceClient<quadcopter_application::blink>("blink");
+	this->Announce_client = this->n.serviceClient<api_application::Announce>("Announce");
 	
 	//Initializes invalid currentPosition and targetPosition
 	double invalid[3] = {INVALID, INVALID, INVALID};
@@ -62,7 +64,10 @@ void Controller::initialize()
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
 	shutdownMutex.unlock();
-	
+	api_application::Announce srvA;
+	srvA.type = 2;
+	srvA.camera_id = 0;
+	this->SenderID = Announce_client.call(srvA);
 	//Initialization of quadcopters (find_all and create mapping + subscribe)
 	quadcopter_application::find_all srv;
 	//TODO initialization
@@ -101,6 +106,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		
 	/* Save position vectors */	
 	std::vector<Position6DOF> newListItem;
+	//TODO use time
 	time_t currentTime = time(&currentTime);
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
@@ -194,8 +200,7 @@ void Controller::calculateMovement()
 				this->Message_pub.publish(msg);
 			}
 			//Gets the right hardware id/ String id
-			//this->idString = this->quadcopters[i];
-			this->id = i;
+			this->id = this->quadcopters[i];
 			tarPosMutex.lock();
 			double * const target = this->targetPosition[i].getPosition();
 			tarPosMutex.unlock();
@@ -292,6 +297,21 @@ void Controller::setTargetPosition()
 		}
 		this->targetPosition[i].setPosition(targetNew);
 	}
+
+	//TODO array to list
+}
+
+/*
+ * Service to set Quadcopter IDs
+ */
+bool setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res)
+{
+	this->totalAmount = req.amount;
+	for(int i = 0; i < req.amount; i++)
+	{
+		this->quatcopters[i] = req.quadcoptersId[i];
+	}
+	return true;
 }
 
 
@@ -311,8 +331,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 	for(int i = 0; i < this->amount; i++)
 	{
 		//Starting/ Inclining process
-		//this->idString = this->quadcopters[i];
-		this->id = i;
+		this->id = this->quadcopters[i];
 		this->thrust = THRUST_START;
 		this->yawrate = 0;
 		this->pitch = 0;
@@ -377,8 +396,7 @@ void Controller::shutdownFormation()
 	//Bring all quadcopters to a stand
 	for(int i = 0; i < this->amount; i++)
 	{
-		//this->idString = this->quadcopters[i];
-		this->id = i;
+		this->id = this->quadcopters[i];
 		this->thrust = THRUST_STAND_STILL;
 		this->yawrate = 0;
 		this->pitch = 0;
@@ -389,7 +407,7 @@ void Controller::shutdownFormation()
 	//Decline each quadcopter till it's not tracked anymore and then shutdown motor
 	for(int i = 0; i < this->amount; i++)
 	{
-		this->id = i;
+		this->id = this->quadcopters[i];
 		curPosMutex.lock();
 		double * const current = this->currentPosition[id].getPosition();
 		curPosMutex.unlock();

@@ -10,6 +10,7 @@
 #include "control_application/quadcopter_movement.h"		// ? (D)
 #include "api_application/SetFormation.h"
 #include "api_application/Message.h"
+#include "api_application/Annouce.h"
 #include "quadcopter_application/find_all.h"
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
@@ -63,9 +64,12 @@ public:
 	void calculateMovement();
 	void reachTrackedArea(std::vector<int> ids);
 
-	/* Formation */
+	/* Formation also services*/
 	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
 	void shutdownFormation();
+
+	/* Service to set Quadcopter IDs*/
+	bool setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res);
 	
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
 	
@@ -104,11 +108,14 @@ private:
 	int totalAmount;
 	int amount;
 	float formationMovement[3];
+	unsigned int SenderID;
 	//TODO Set area
 	TrackingArea trackingArea;
 	
 	//Mapping of int id to string id/ hardware id   qc[id][uri/hardware id]
-	std::vector<std::string> quadcopters;
+	//std::vector<std::string> quadcopters;
+	//Mapping of quadcopter global id
+	std::vector<unsigned int> quadcopters;
 	
 	/* Set data */ /*TODO*/
 	int thrust;
@@ -174,10 +181,13 @@ private:
 	ros::ServiceServer BuildForm_srv;
 	//Service for shutingdown formation
 	ros::ServiceServer Shutdown_srv;
+	//Service for setting the quadcopter ids
+	ros::ServiceServer QuadID_srv;
 
 	//Clients
 	ros::ServiceClient FindAll_client;
 	ros::ServiceClient Blink_client;
+	ros::ServiceClient Annouce_client;
 
 };
 
