@@ -132,6 +132,7 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/Calibration.cpp
   src/matlab/CameraData.cpp
   src/matlab/Position.cpp
+  src/matlab/AmccCalibration.cpp
   #src/controller/main.cpp
 )
 

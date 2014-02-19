@@ -1,7 +1,7 @@
 #include "Vector.h"
 #include "Line.h"
 #include "engine.h"
-#include "Calibration.h"
+#include "AmccCalibration.h"
 #include "Matlab.h"
 #include "TrackingArea.h"
 #include "profiling.hpp"
@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     Matlab *m = new Matlab();
 
-    AmccCalibration *h = new Calibration(m->getEngine());
+    AmccCalibration *h = new AmccCalibration(m->getEngine());
     h->multiCameraCalibration(2, 30, 30, 11, 8);
 
     /*//Lotfußpunkt (6, 3, 1)
