@@ -10,7 +10,7 @@
 #include "control_application/quadcopter_movement.h"		// ? (D)
 #include "api_application/SetFormation.h"
 #include "api_application/Message.h"
-#include "api_application/Annouce.h"
+#include "api_application/Announce.h"
 #include "quadcopter_application/find_all.h"
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
