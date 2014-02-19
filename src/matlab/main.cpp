@@ -16,8 +16,8 @@ int main(int argc, char** argv)
 {
     Matlab *m = new Matlab();
 
-    //Calibration *h = new Calibration(m->getEngine());
-    //h->multiCameraCalibration(2, 30, 30, 11, 8);
+    AmccCalibration *h = new Calibration(m->getEngine());
+    h->multiCameraCalibration(2, 30, 30, 11, 8);
 
     /*//Lotfußpunkt (6, 3, 1)
     Vector* a = new Vector(-2, 1, 7);
