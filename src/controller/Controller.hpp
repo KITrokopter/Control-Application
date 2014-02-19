@@ -6,13 +6,17 @@
 //Ros messages/services
 #include "api_application/MoveFormation.h"	// ? (D)
 #include "../matlab/Vector.h"
+#include "../matlab/TrackingArea.h"
 #include "control_application/quadcopter_movement.h"		// ? (D)
 #include "api_application/SetFormation.h"
+#include "api_application/Message.h"
+#include "api_application/Announce.h"
 #include "quadcopter_application/find_all.h"
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
+#include "control_application/SetQuadcopters.h"
 #include "../position/IPositionReceiver.hpp"
 #include <time.h>
 #include <stdio.h>
@@ -36,6 +40,9 @@
 #define ROLL_STEP 2
 #define PITCH_STEP 2
 #define INVALID -1
+//TODO 100% = 1?
+#define LOW_BATTERY 0.05
+#define TIME_UPDATED 0.1
 
 /* Used for lists */
 #define MAX_NUMBER_QUADCOPTER 10
@@ -59,13 +66,16 @@ public:
 	void calculateMovement();
 	void reachTrackedArea(std::vector<int> ids);
 
-	/* Formation */
+	/* Formation also services*/
 	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
 	void shutdownFormation();
+
+	/* Service to set Quadcopter IDs*/
+	bool setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res);
 	
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
 	
-	void checkInputMovement();
+	void checkInput();
 	
 	void moveUp(std::vector<int> ids);
 	void moveUpNoArg();
@@ -83,9 +93,11 @@ private:
 	/*  */
 
 	/* Position */
-	std::vector<Position6DOF> targetPosition;
-	std::vector<Position6DOF> currentPosition;
+	//std::vector<Position6DOF> targetPosition;
+	//std::vector<Position6DOF> currentPosition;
 	//std::vector<rpy-values> sentMovement;
+	//TODO Where are those lists filled/ updated? FIFO? Latest element last?
+	//TODO Include time somehow or how do we check if there hasn't been any input?
 	std::list<std::vector<Position6DOF> > listPositions;
 	std::list<std::vector<Position6DOF> > listTargets;
 	std::list<std::vector<Position6DOF> > listSendTargets;
@@ -96,10 +108,17 @@ private:
 	//TODO needs to be with service find all
 	int totalAmount;
 	int amount;
-	float formationMovement[3];
+	std::list<float[3]> formationMovement;
+	time_t lastFormationMovement;
+	time_t lastCurrent;
+	unsigned int SenderID;
+	//TODO Set area
+	TrackingArea trackingArea;
 	
 	//Mapping of int id to string id/ hardware id   qc[id][uri/hardware id]
-	std::vector<std::string> quadcopters;
+	//std::vector<std::string> quadcopters;
+	//Mapping of quadcopter global id
+	std::vector<unsigned int> quadcopters;
 	
 	/* Set data */ /*TODO*/
 	int thrust;
@@ -129,6 +148,7 @@ private:
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
 	Mutex shutdownMutex;
+	Mutex formMovMutex;
 	Mutex listPositionsMutex;
 	Mutex getTrackedMutex;
 
@@ -157,16 +177,21 @@ private:
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	//ros::Publisher Movement_pub;
 	std::vector<ros::Publisher> Movement_pub;
+	//Publisher for Message to API
+	ros::Publisher Message_pub;
 
 	/* Services */
 	//Service for building formation
 	ros::ServiceServer BuildForm_srv;
 	//Service for shutingdown formation
 	ros::ServiceServer Shutdown_srv;
+	//Service for setting the quadcopter ids
+	ros::ServiceServer QuadID_srv;
 
 	//Clients
 	ros::ServiceClient FindAll_client;
 	ros::ServiceClient Blink_client;
+	ros::ServiceClient Announce_client;
 
 };
 

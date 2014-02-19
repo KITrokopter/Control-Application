@@ -13,6 +13,11 @@
 #include "api_application/Ping.h"
 #include "api_application/Announce.h"
 
+#include "../matlab/Vector.h"
+
+// Use to set that we want to use amcctoolbox for calibration.
+// #define AMCCTOOLBOX
+
 PositionModule::PositionModule(IPositionReceiver* receiver)
 {
 	assert(receiver != 0);
@@ -88,6 +93,7 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 		setPictureSendingActivated(true);
 		calibrationPictureCount = 0;
 		boardSize = cv::Size(req.chessboardWidth, req.chessboardHeight);
+		realSize = cv::Size(req.chessboardRealWidth, req.chessboardRealHeight);
 	}
 	
 	isCalibrating = true;
@@ -97,15 +103,22 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 // Service
 bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req, control_application::TakeCalibrationPicture::Response &res)
 {
+	pictureCacheMutex.lock();
+	
 	int id = 0;
 	
 	for (std::vector<cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++, id++)
 	{
 		if (*it != 0)
 		{
+			#ifdef AMCCTOOLBOX
 			// TODO: check if image is "good"
 			std::vector<cv::Point2f> corners;
 			bool foundAllCorners = cv::findChessboardCorners(**it, boardSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+			#else
+			ChessboardData *chessboardData = chessboardDetector.detectChessboard(*it, boardSize, realSize);
+			bool foundAllCorners = chessboardData != 0;
+			#endif
 			
 			if (!foundAllCorners)
 			{
@@ -116,12 +129,14 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			{
 				ROS_INFO("Took good picture (id %d)", id);
 				
+				#ifdef AMCCTOOLBOX
 				// Create directory for images.
 				int error = mkdir("~/calibrationImages", 770);
 				
 				if (error != 0 && error != EEXIST)
 				{
 					ROS_ERROR("Could not create directory for calibration images: %d", error);
+					pictureCacheMutex.unlock();
 					return false;
 				}
 				
@@ -129,6 +144,9 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 				ss << "~/calibrationImages/cam" << id << "_image" << calibrationPictureCount << ".png";
 				
 				cv::imwrite(ss.str(), **it);
+				#else
+				tracker.calibrate(chessboardData, id);
+				#endif
 				
 				sensor_msgs::Image img;
 				img.width = 640;
@@ -149,6 +167,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 	}
 	
 	calibrationPictureCount++;
+	pictureCacheMutex.unlock();
 	
 	return true;
 }
@@ -166,6 +185,8 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 {
 	if (isCalibrating)
 	{
+		pictureCacheMutex.lock();
+		
 		// Don't know if it works that way and I really can randomly insert now...
 		pictureCache.reserve(msg.ID + 1);
 		pictureTimes.reserve(msg.ID + 1);
@@ -185,6 +206,8 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 		
 		pictureCache[msg.ID] = image;
 		pictureTimes[msg.ID] = msg.timestamp;
+		
+		pictureCacheMutex.unlock();
 	}
 }
 
@@ -198,6 +221,7 @@ void PositionModule::systemCallback(const api_application::System &msg)
 void PositionModule::rawPositionCallback(const camera_application::RawPosition &msg)
 {
  	// TODO: Calculate position in our coordinate system.
+	Vector cameraVector(1, msg.xPosition, msg.yPosition);
 }
 
 void PositionModule::setPictureSendingActivated(bool activated)

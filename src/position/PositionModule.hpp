@@ -7,6 +7,7 @@
 #include <inttypes.h>
 
 #include "IPositionReceiver.hpp"
+#include "CvChessboardDetector.hpp"
 #include "../KitrokopterMessages.hpp"
 #include "control_application/StartCalibration.h"
 #include "control_application/TakeCalibrationPicture.h"
@@ -15,6 +16,8 @@
 #include "camera_application/Picture.h"
 #include "camera_application/RawPosition.h"
 #include "api_application/System.h"
+#include "../controller/Mutex.hpp"
+#include "../matlab/Position.h"
 
 class PositionModule {
 private:
@@ -26,8 +29,14 @@ private:
 	bool isCalibrating;
 	int calibrationPictureCount;
 	cv::Size boardSize;
+	cv::Size realSize;
+	Mutex pictureCacheMutex;
 	std::vector<cv::Mat*> pictureCache;
 	std::vector<uint64_t> pictureTimes;
+	CvChessboardDetector chessboardDetector;
+	
+	// Tracking
+	Position tracker;
 	
 	// ROS network
 	ros::ServiceServer startCalibrationService;
