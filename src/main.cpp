@@ -3,6 +3,7 @@
 #include "position/IPositionReceiver.hpp"
 #include "position/DummyPositionReceiver.hpp"
 #include "position/PositionModule.hpp"
+#include "controller/Controller.hpp"
 #include <stdlib.h>
 
 int main(int argc, char **argv)
