@@ -7,7 +7,8 @@
 
 Position::Position()
 {
-    Engine *ep;
+	this->setCameras = 0;
+	Engine *ep;
     // starts a MATLAB process
     if (!(ep = engOpen(""))) {
             fprintf(stderr, "\nCan't start MATLAB engine\n");
@@ -23,11 +24,17 @@ Position::Position(Engine *ep)
     calib = *(new Calibration());
 }
 
-void Position::calibrate(ChessboardData *chessboardData, int cameraId) {
+Transformation Position::calibrate(ChessboardData *chessboardData, int cameraId) {
 	// Let dominik calculate the angles.
 	// If first call, this is camera A, if second call, this is camera B,
 	// if third call, this is camera C, if fourth call, error (do whatever you want, or ignore).
 	// Calculate the rotation matrix and translation vector, given the angles and the position of the camera (A, B or C).
+
+	if( this->setCameras == 0 )
+	{
+
+		this->setCameras++;
+	}
 	
     // if B
     //calib.setChangeOfBasisVectorB(cameraData.getAlpha(), cameraData.getGamma());
