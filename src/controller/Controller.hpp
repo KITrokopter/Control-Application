@@ -41,6 +41,7 @@
 #define INVALID -1
 //TODO 100% = 1?
 #define LOW_BATTERY 0.05
+#define TIME_UPDATED 0.1
 
 /* Used for lists */
 #define MAX_NUMBER_QUADCOPTER 10
@@ -73,8 +74,7 @@ public:
 	
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
 	
-	//TODO Still needed? We check for invalid formation movement in setTarget
-	//void checkInputMovement();
+	void checkInput();
 	
 	void moveUp(std::vector<int> ids);
 	void moveUpNoArg();
@@ -109,6 +109,7 @@ private:
 	int amount;
 	std::list<float[3]> formationMovement;
 	time_t lastFormationMovement;
+	time_t lastCurrent;
 	unsigned int SenderID;
 	//TODO Set area
 	TrackingArea trackingArea;

@@ -102,11 +102,11 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		
 	/* Save position vectors */	
 	std::vector<Position6DOF> newListItem;
-	time_t currentTime = time(&currentTime);
+	this->lastCurrent = time(&this->lastCurrent);
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
-		newPosition.setTimestamp(currentTime);
+		newPosition.setTimestamp(this->lastCurrent);
 		newListItem.push_back( newPosition );		
 	}	
 	std::size_t elements = positions.size();
@@ -182,6 +182,7 @@ void Controller::calculateMovement()
 	/* As long as we are not in the shutdown process, calculate new Movement data */
 	while(!shutdownStarted)
 	{
+		checkInput();
 		double moveVector[3];
 		for(int i = 0; i < this->amount; i++)
 		{	
@@ -194,6 +195,8 @@ void Controller::calculateMovement()
 				msg.type = 2;
 				msg.message = "Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY;
 				this->Message_pub.publish(msg);
+				shutdownFormation();
+				return;
 			}
 			//Gets the right hardware id/ String id
 			this->id = this->quadcopters[i];
@@ -217,6 +220,19 @@ void Controller::calculateMovement()
 			usleep(1000); // microseconds
 		}*/
 	}	
+}
+
+void checkInput()
+{
+	time_t currentTime = time(&currentTime);
+	if(currentTime - this->lastFormationMovement < TIME_UPDATED)
+	{
+		
+	}
+	if(currentTime - this->lastCurrent < TIME_UPDATED)
+	{
+		
+	}
 }
 
 void Controller::sendMovement()
