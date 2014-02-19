@@ -92,8 +92,8 @@ private:
 	/*  */
 
 	/* Position */
-	std::vector<Position6DOF> targetPosition;
-	std::vector<Position6DOF> currentPosition;
+	//std::vector<Position6DOF> targetPosition;
+	//std::vector<Position6DOF> currentPosition;
 	//std::vector<rpy-values> sentMovement;
 	//TODO Where are those lists filled/ updated? FIFO? Latest element last?
 	//TODO Include time somehow or how do we check if there hasn't been any input?
@@ -107,7 +107,8 @@ private:
 	//TODO needs to be with service find all
 	int totalAmount;
 	int amount;
-	float formationMovement[3];
+	std::list<float[3]> formationMovement;
+	time_t lastFormationMovement;
 	unsigned int SenderID;
 	//TODO Set area
 	TrackingArea trackingArea;

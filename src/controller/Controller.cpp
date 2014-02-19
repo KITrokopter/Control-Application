@@ -33,10 +33,6 @@ Controller::Controller()
 	this->Blink_client = this->n.serviceClient<quadcopter_application::blink>("blink");
 	this->Announce_client = this->n.serviceClient<api_application::Announce>("Announce");
 	
-	//Initializes invalid currentPosition and targetPosition
-	double invalid[3] = {INVALID, INVALID, INVALID};
-	this->currentPosition[0].setPosition(invalid);
-	this->targetPosition[0].setPosition(invalid);
 	//All control variables are set to zero
 	this->shutdownStarted = 0;
 }
@@ -106,11 +102,11 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		
 	/* Save position vectors */	
 	std::vector<Position6DOF> newListItem;
-	//TODO use time
 	time_t currentTime = time(&currentTime);
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
+		newPosition.setTimestamp(currentTime);
 		newListItem.push_back( newPosition );		
 	}	
 	std::size_t elements = positions.size();
@@ -194,18 +190,18 @@ void Controller::calculateMovement()
 				api_application::Message msg;
 				//TODO What's our sender ID?
 				msg.senderID = 0;
-				//Type 3 is an error message
-				msg.type = 3;
+				//Type 2 is an warning message
+				msg.type = 2;
 				msg.message = "Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY;
 				this->Message_pub.publish(msg);
 			}
 			//Gets the right hardware id/ String id
 			this->id = this->quadcopters[i];
 			tarPosMutex.lock();
-			double * const target = this->targetPosition[i].getPosition();
+			double * const target = this->listTargets.back()[i].getPosition();
 			tarPosMutex.unlock();
 			curPosMutex.lock();
-			double * const current = this->currentPosition[i].getPosition();
+			double * const current = this->listPositions.back()[i].getPosition();
 			curPosMutex.unlock();
 			moveVector[0] = target[0] - current[0];
 			moveVector[1] = target[1] - current[1];
@@ -266,16 +262,22 @@ void Controller::convertMovement(double* vector)
 //Move the last Positions according to the formation movement vector (without orientation right now)
 void Controller::setTargetPosition()
 {
+	tarPosMutex.lock();
+	std::vector<Position6DOF> latestTargets = this->listTargets.back();
+	tarPosMutex.unlock();
+	time_t currentTime = time(&currentTime);
+	std::vector<Position6DOF> newTargets;
 	//Iterate over all quadcopters in formation and set new target considering old target and formation Movement
 	for(int i = 0; i < this->amount; i++)
 	{
 		tarPosMutex.lock();
-		double * const targetOld = this->targetPosition[i].getPosition();
+		double * const targetOld = latestTargets[i].getPosition();
 		tarPosMutex.unlock();
 		double targetNew[3];
-		targetNew[0] = targetOld[0] + this->formationMovement[0];
-		targetNew[1] = targetOld[1] + this->formationMovement[1];
-		targetNew[2] = targetOld[2] + this->formationMovement[2];
+		float movement[3] = this->formationMovement.back();
+		targetNew[0] = targetOld[0] + movement[0];
+		targetNew[1] = targetOld[1] + movement[1];
+		targetNew[2] = targetOld[2] + movement[2];
 		//Check if new position would be in tracking area
 		Vector vector = Vector(targetNew[0],targetNew[1],targetNew[2]);
 		if(!this->trackingArea.contains(vector))
@@ -283,22 +285,18 @@ void Controller::setTargetPosition()
 			api_application::Message msg;
 			//TODO What's our sender ID?
 			msg.senderID = 0;
-			//Type 3 is an error message
-			msg.type = 3;
+			//Type 1 is an message
+			msg.type = 1;
 			msg.message = "Formation Movement is invalid. Quadcopter %i would leave Tracking Area.\n", i;
 			this->Message_pub.publish(msg);
-			std::vector<Position6DOF> latestTargets = this->listTargets.back();
-			//TODO Restore old data.
-			for(int j = i; j >= 0; j--)
-			{
-				this->targetPosition[j] = latestTargets[j];
-			}
 			return;
 		}
-		this->targetPosition[i].setPosition(targetNew);
+		newTargets[i].setPosition(targetNew);
+		newTargets[i].setTimestamp(currentTime);
 	}
-
-	//TODO array to list
+	tarPosMutex.lock();
+	latestTargets.push_back(newTargets);
+	tarPosMutex.unlock();
 }
 
 /*
@@ -327,6 +325,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 	double distance = this->formation.getDistance();
 	//Pointer to the first tracked quadcopter
 	double * first;
+	this->listTargets.emplace_back();
 	//Start one quadcopter after another
 	for(int i = 0; i < this->amount; i++)
 	{
@@ -342,8 +341,6 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		target[0] = pos[0] * distance;
 		target[1] = pos[1] * distance;
 		target[2] = pos[2] * distance;
-		//Set target Position for quadcopter i
-		//this->targetPosition[i].setPosition(target);
 		//As long as the quadcopter isn't tracked, incline
 		while(!this->tracked[i])
 		{
@@ -353,7 +350,8 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		if( i == 0)
 		{
 			curPosMutex.lock();
-			first = this->currentPosition[0].getPosition();
+			first = listPositions.back()[0].getPosition();
+			//first = currentPosition[0].getPosition();
 			curPosMutex.unlock();
 		}
 		else
@@ -363,7 +361,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 			target[1] += first[1];
 			target[2] += first[2];
 			tarPosMutex.lock();
-			this->targetPosition[i].setPosition(target);
+			this->listTargets.back()[i].setPosition(target);
 			tarPosMutex.unlock();
 			//Calculate Movement to the wanted position + convert it + send it
 			//calculateMovement();
@@ -373,7 +371,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		target[1] += distance;
 		//target[2] = 0;
 		tarPosMutex.lock();
-		this->targetPosition[i].setPosition(target);
+		this->listTargets.back()[i].setPosition(target);
 		tarPosMutex.unlock();
 		//calculateMovement();
 	}
@@ -408,9 +406,6 @@ void Controller::shutdownFormation()
 	for(int i = 0; i < this->amount; i++)
 	{
 		this->id = this->quadcopters[i];
-		curPosMutex.lock();
-		double * const current = this->currentPosition[id].getPosition();
-		curPosMutex.unlock();
 		//Decline until crazyflie isn't tracked anymore
 		while(tracked[i] != INVALID)
 		{
@@ -450,9 +445,12 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
 {
 	ROS_INFO("I heard: %f", msg->xMovement);
-	this->formationMovement[0] = msg->xMovement;
-	this->formationMovement[1] = msg->yMovement;
-	this->formationMovement[2] = msg->zMovement;
+	float movement[3];
+	movement[0] = msg->xMovement;
+	movement[1] = msg->yMovement;
+	movement[2] = msg->zMovement;
+	this->formationMovement.push_back(movement);
+	this->lastFormationMovement = time(&this->lastFormationMovement);
 	//calculate and set a new target position each time there is new data
 	setTargetPosition();
 }
