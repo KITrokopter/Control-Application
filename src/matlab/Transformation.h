@@ -1,6 +1,5 @@
 #ifndef TRANSFORMATION_H
 #define FORMATION_HPP
-#include "Transformation.h"
 
 class Transformation {
 public:
