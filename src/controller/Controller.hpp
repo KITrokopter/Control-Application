@@ -11,12 +11,13 @@
 #include "api_application/SetFormation.h"
 #include "api_application/Message.h"
 #include "api_application/Announce.h"
+#include "api_application/System.h"
 #include "quadcopter_application/find_all.h"
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
-#include "control_application/SetQuadcopters.h"
+//#include "control_application/SetQuadcopters.h"
 #include "../position/IPositionReceiver.hpp"
 #include <time.h>
 #include <stdio.h>
@@ -42,7 +43,8 @@
 #define INVALID -1
 //TODO 100% = 1?
 #define LOW_BATTERY 0.05
-#define TIME_UPDATED 0.1
+//In seconds
+#define TIME_UPDATED 1
 
 /* Used for lists */
 #define MAX_NUMBER_QUADCOPTER 10
@@ -75,7 +77,8 @@ public:
 	
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
 	
-	void checkInput();
+	bool checkInput();
+	void emergencyRoutine(std::string message);
 	
 	void moveUp(std::vector<int> ids);
 	void moveUpNoArg();
@@ -85,7 +88,7 @@ protected:
 	void MoveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
 	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
 	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
-
+	void SystemCallback(const api_application::System::ConstPtr& msg);
 	
 	void stopReachTrackedArea();
 
@@ -111,7 +114,7 @@ private:
 	std::list<float[3]> formationMovement;
 	time_t lastFormationMovement;
 	time_t lastCurrent;
-	unsigned int SenderID;
+	unsigned int senderID;
 	//TODO Set area
 	TrackingArea trackingArea;
 	
@@ -143,6 +146,7 @@ private:
 	//Set when we are in the shutdown process
 	bool shutdownStarted;
 	bool getTracked;
+	bool receiveQuadcopters;
 	
 	/* Mutex */
 	Mutex curPosMutex;
@@ -172,6 +176,8 @@ private:
 	//Subscriber for Quadcopter data from QuadcopterModul
 	//ros::Subscriber QuadStatus_sub;
 	std::vector<ros::Subscriber> QuadStatus_sub;
+	//Subscriber to System topic (Sends the start and end of the system)
+	ros::Subscriber System_sub;
 
 	/* Publisher */
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)

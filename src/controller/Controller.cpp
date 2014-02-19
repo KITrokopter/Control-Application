@@ -15,7 +15,7 @@ Controller::Controller()
 	this->SetFormation_sub = this->n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
 	//TODO multiple topics
 	//Subscriber for the quadcopter status data of the Quadcopters (1000 is the max. buffered messages)
-	//this->QuadStatus_sub = this->n.subscribe("quadcopter_status", 1000, &Controller::QuadStatusCallback, this);
+	this->System_sub = this->n.subscribe("System", 1000, &Controller::SystemCallback, this);
 
 	//Service
 	//Service for BuildFormation and Shutdown
@@ -29,12 +29,13 @@ Controller::Controller()
 	
 
 	//Client
-	this->FindAll_client = this->n.serviceClient<quadcopter_application::find_all>("find_all");
+	//this->FindAll_client = this->n.serviceClient<quadcopter_application::find_all>("find_all");
 	this->Blink_client = this->n.serviceClient<quadcopter_application::blink>("blink");
 	this->Announce_client = this->n.serviceClient<api_application::Announce>("Announce");
 	
 	//All control variables are set to zero
 	this->shutdownStarted = 0;
+	this->receiveQuadcopters = 0;
 }
 
 void* startThread(void* something)
@@ -60,24 +61,15 @@ void Controller::initialize()
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
 	shutdownMutex.unlock();
-	api_application::Announce srvA;
-	srvA.type = 2;
-	srvA.camera_id = 0;
-	this->SenderID = Announce_client.call(srvA);
-	//Initialization of quadcopters (find_all and create mapping + subscribe)
-	quadcopter_application::find_all srv;
-	//TODO initialization
-	/*srv.request.seq = (unsigned int)0;
-	srv.request.stamp = (time)0;
-	srv.request.frame_id = "";*/
-	std::string * uri;
-	if(FindAll_client.call(srv))
+	api_application::Announce srv;
+	srv.request.type = 2;
+	//srv.request.camera_id = 0;
+	if(Announce_client.call(srv))
 	{
-		//TODO Get amount of quadcopter over api instead
-		//uri = srv.response.uri;
-		//this->totalAmount = srv.response.amount;
-		
-		//TODO Create map uri->id
+		this->senderID = srv.response.id;
+	}
+	if(receiveQuadcopters)
+	{
 		//Generate Subscribers and Publisher
 		for(int i = 0; i < this->totalAmount; i++)
 		{
@@ -175,27 +167,36 @@ void Controller::moveUp(std::vector<int> ids)
 		getTrackedMutex.unlock();
 	}
 }
-		
+	
+/*
+ * Calculates the movement vector of each quadcopter non stop and sends the vector first to convertMovement to set the yaw, pitch, roll and thrust
+ * values. Then sends the movement to the quadcopter. Routine runs till shutdown formaiton is called.
+ */	
 void Controller::calculateMovement()
 {
 	
 	/* As long as we are not in the shutdown process, calculate new Movement data */
 	while(!shutdownStarted)
 	{
-		checkInput();
+		if(!checkInput())
+		{
+			return;
+		}
 		double moveVector[3];
 		for(int i = 0; i < this->amount; i++)
 		{	
 			if(this->battery_status[i] < LOW_BATTERY)
 			{
-				api_application::Message msg;
+				std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
+				emergencyRoutine(message);
+				/*api_application::Message msg;
 				//TODO What's our sender ID?
-				msg.senderID = 0;
+				msg.senderID = this->senderID;
 				//Type 2 is an warning message
 				msg.type = 2;
 				msg.message = "Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY;
 				this->Message_pub.publish(msg);
-				shutdownFormation();
+				shutdownFormation();*/
 				return;
 			}
 			//Gets the right hardware id/ String id
@@ -222,19 +223,44 @@ void Controller::calculateMovement()
 	}	
 }
 
-void Controller::checkInput()
+/*
+ * Checks if formation movement data and quadcopter positions have been received lately. Otherwise calls emergencyroutine.
+ */
+bool Controller::checkInput()
 {
 	time_t currentTime = time(&currentTime);
 	if(currentTime - this->lastFormationMovement < TIME_UPDATED)
 	{
-		
+		std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED);
+		emergencyRoutine(message);
+		return false;
 	}
 	if(currentTime - this->lastCurrent < TIME_UPDATED)
 	{
-		
+		std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED);
+		emergencyRoutine(message);
+		return false;
 	}
+	return true;
 }
 
+/*
+ * Emergency Routine. Gets started e.g. low battery status. Sends warning via Ros and then shuts down formation.
+ */
+void Controller::emergencyRoutine(std::string message)
+{
+	api_application::Message msg;
+	msg.senderID = this->senderID;
+	//Type 2 is an warning message
+	msg.type = 2;
+	msg.message = message;
+	this->Message_pub.publish(msg);
+	shutdownFormation();
+}
+
+/*
+ * Creates a Ros message for the movement of the quadcopter and sends this to the quadcopter modul
+ */
 void Controller::sendMovement()
 {
 	//Creates a message for quadcopter Movement and sends it via Ros
@@ -246,6 +272,9 @@ void Controller::sendMovement()
 	this->Movement_pub[id].publish(msg);	
 }
 
+/*
+ * Converts vector in yaw, pitch, roll and thrust values.
+ */
 void Controller::convertMovement(double* vector)
 {
 	/* conversion from vectors to thrust, yawrate, pitch... */
@@ -275,7 +304,9 @@ void Controller::convertMovement(double* vector)
 	this->yawrate = 0.0;
 }
 
-//Move the last Positions according to the formation movement vector (without orientation right now)
+/*
+ * Calculates the new Targets considering the previous targets and the formation movement vector (without orientation right now)
+ */
 void Controller::setTargetPosition()
 {
 	tarPosMutex.lock();
@@ -299,13 +330,14 @@ void Controller::setTargetPosition()
 		Vector vector = Vector(targetNew[0],targetNew[1],targetNew[2]);
 		if(!this->trackingArea.contains(vector))
 		{
-			api_application::Message msg;
-			//TODO What's our sender ID?
-			msg.senderID = 0;
+			/*api_application::Message msg;
+			msg.senderID = this->senderID;
 			//Type 1 is an message
 			msg.type = 1;
 			msg.message = "Formation Movement is invalid. Quadcopter %i would leave Tracking Area.\n", i;
-			this->Message_pub.publish(msg);
+			this->Message_pub.publish(msg);*/
+			std::string message("Formation Movement is invalid. Quadcopter %i would leave Tracking Area.\n", i);
+			emergencyRoutine(message);
 			return;
 		}
 		newTargets[i].setPosition(targetNew);
@@ -326,6 +358,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	{
 		this->quatcopters[i] = req.quadcoptersId[i];
 	}
+	receiveQuadcopters = true;
 	return true;
 }
 
@@ -433,8 +466,6 @@ void Controller::shutdownFormation()
 		this->thrust = THRUST_MIN;
 		sendMovement();
 	}
-	//Shutdown process is finished
-	this->shutdownStarted = 0;
 }
 
 /*
@@ -506,8 +537,8 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 }
 
 /*
-* Callback for Ros Subscriber of quadcopter status
-*/
+ * Callback for Ros Subscriber of quadcopter status
+ */
 void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr)
 {
 	this->battery_status[topicNr] = msg->battery_status;
@@ -515,4 +546,23 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	this->pitch_stab[topicNr] = msg->stabilizer_pitch;
 	this->yaw_stab[topicNr] = msg->stabilizer_yaw;
 	this->thrust_stab[topicNr] = msg->stabilizer_thrust;
+}
+
+/*
+ * Callback for Ros Subscriber of system status. 1 = start, 2 = end
+ */
+void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
+{
+	if(msg->command == 1)
+	{
+		initialize();
+	}
+	if(msg->command == 2)
+	{
+		if(!shutdownStarted)
+		{
+			shutdown(NULL, NULL);
+		}
+		//TODO Do we need to clean up something here? Free space, join threads ...
+	}
 }
