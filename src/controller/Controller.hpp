@@ -10,12 +10,13 @@
 #include "control_application/quadcopter_movement.h"		// ? (D)
 #include "api_application/SetFormation.h"
 #include "api_application/Message.h"
-#include "api_application/Annouce.h"
+#include "api_application/Announce.h"
 #include "quadcopter_application/find_all.h"
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
+#include "control_application/SetQuadcopters.h"
 #include "../position/IPositionReceiver.hpp"
 #include <time.h>
 #include <stdio.h>
@@ -147,6 +148,7 @@ private:
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
 	Mutex shutdownMutex;
+	Mutex formMovMutex;
 	Mutex listPositionsMutex;
 	Mutex getTrackedMutex;
 
@@ -189,7 +191,7 @@ private:
 	//Clients
 	ros::ServiceClient FindAll_client;
 	ros::ServiceClient Blink_client;
-	ros::ServiceClient Annouce_client;
+	ros::ServiceClient Announce_client;
 
 };
 

@@ -60,6 +60,7 @@ add_service_files(
   CalculateCalibration.srv
   BuildFormation.srv
   Shutdown.srv
+  SetQuadcopters.srv
 )
 
 ## Generate actions in the 'action' folder

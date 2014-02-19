@@ -222,7 +222,7 @@ void Controller::calculateMovement()
 	}	
 }
 
-void checkInput()
+void Controller::checkInput()
 {
 	time_t currentTime = time(&currentTime);
 	if(currentTime - this->lastFormationMovement < TIME_UPDATED)
@@ -290,10 +290,11 @@ void Controller::setTargetPosition()
 		double * const targetOld = latestTargets[i].getPosition();
 		tarPosMutex.unlock();
 		double targetNew[3];
-		float movement[3] = this->formationMovement.back();
-		targetNew[0] = targetOld[0] + movement[0];
-		targetNew[1] = targetOld[1] + movement[1];
-		targetNew[2] = targetOld[2] + movement[2];
+		formMovMutex.lock();
+		targetNew[0] = targetOld[0] + this->formationMovement.back()[0];
+		targetNew[1] = targetOld[1] + this->formationMovement.back()[1];
+		targetNew[2] = targetOld[2] + this->formationMovement.back()[2];
+		formMovMutex.unlock();
 		//Check if new position would be in tracking area
 		Vector vector = Vector(targetNew[0],targetNew[1],targetNew[2]);
 		if(!this->trackingArea.contains(vector))
@@ -311,14 +312,14 @@ void Controller::setTargetPosition()
 		newTargets[i].setTimestamp(currentTime);
 	}
 	tarPosMutex.lock();
-	latestTargets.push_back(newTargets);
+	this->listTargets.push_back(newTargets);
 	tarPosMutex.unlock();
 }
 
 /*
  * Service to set Quadcopter IDs
  */
-bool setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res)
+bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res)
 {
 	this->totalAmount = req.amount;
 	for(int i = 0; i < req.amount; i++)
@@ -465,7 +466,9 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 	movement[0] = msg->xMovement;
 	movement[1] = msg->yMovement;
 	movement[2] = msg->zMovement;
+	formMovMutex.lock();
 	this->formationMovement.push_back(movement);
+	formMovMutex.unlock();	
 	this->lastFormationMovement = time(&this->lastFormationMovement);
 	//calculate and set a new target position each time there is new data
 	setTargetPosition();
