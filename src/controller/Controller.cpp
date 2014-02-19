@@ -375,7 +375,9 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 	double distance = this->formation.getDistance();
 	//Pointer to the first tracked quadcopter
 	double * first;
-	this->listTargets.emplace_back();
+	std::vector<Position6DOF> newElement;
+	this->listTargets.push_back(newElement);
+	//this->listTargets.emplace_back();
 	//Start one quadcopter after another
 	for(int i = 0; i < this->amount; i++)
 	{
