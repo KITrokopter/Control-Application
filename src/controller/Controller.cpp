@@ -356,7 +356,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	this->totalAmount = req.amount;
 	for(int i = 0; i < req.amount; i++)
 	{
-		this->quatcopters[i] = req.quadcoptersId[i];
+		this->quadcopters[i] = req.quadcoptersId[i];
 	}
 	receiveQuadcopters = true;
 	return true;
