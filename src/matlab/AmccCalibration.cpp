@@ -90,13 +90,16 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     engEvalString(ep, "k3_enable = false;");
     std::string cam_names;
     cam_names = "cam_names = [";
-    for (int i = 1; i < nc; i++) {
-        cam_names = cam_names + "'" + i + "', ";
+    std::ostringstream id;
+    for (int i = 1; i < numberCameras; i++) {
+        id << i;
+        cam_names = cam_names + "'" + id.str() + "', ";
     }
-    cam_names = cam_names + "'" + nc + "'];";
+    id << numberCameras;
+    cam_names = cam_names + "'" + id.str() + "'];";
     // the base naming convention for the calibration images (not strictly required), will default to the 'camX_image' convention if not used.
     // cam_names = ['cam0_image', 'cam1_image', 'cam2_image', 'cam3_image']; % version 1.2 and before
-    engEvalString(ep, cam_names);
+    engEvalString(ep, cam_names.c_str());
 
     // indicate whether or not to use the batch mode of the stereo calibrator (not strictly required)
     engEvalString(ep, "batch = false;");
@@ -111,11 +114,13 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     mxDestroyArray(nscy);
 }
 
-Vector calculatePosition(Vector quad, int camId) {
+Vector AmccCalibration::calculatePosition(Vector quad, int camId) {
     std::string result;
-    result = "load('~/multiCalibrationResults/Calib_Results_" + camId + ".mat');";
+    std::ostringstream id;
+    id << camId;
+    result = "load('~/multiCalibrationResults/Calib_Results_" + id.str() + ".mat');";
     // loads resulting file in matlab workspace
-    engEvalString(ep, result);
+    engEvalString(ep, result.c_str());
     quad.putVariable("quad", ep);
     engEvalString(ep, "pos = quad * omc_1 + Tc_1;");
     mxArray *position = engGetVariable(ep, "pos");

@@ -19,6 +19,7 @@ public:
 	// sqareLengthX: length of each square of the checkboard in X direction (mm)
 	// number of square corners of the checkerboard in the X direction
 	void multiCameraCalibration(int numberCameras, double squareLengthX, double squareLengthY, int numberSquareCornersX, int numberSquareCornersY);
+	Vector calculatePosition(Vector quad, int camId);
 };
 
 #endif /* AmccCalibration_H_ */
