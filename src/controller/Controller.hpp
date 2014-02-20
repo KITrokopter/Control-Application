@@ -46,6 +46,14 @@
 //In seconds
 #define TIME_UPDATED 1
 
+/* For calculateMovement */
+#define CALCULATE_NONE 0 // Unset
+#define CALCULATE_START 1
+#define CALCULATE_STABILIZE 2
+#define CALCULATE_HOLD 3
+#define CALCULATE_MOVE 4
+#define CALCULATE_ACTIVATED 6 // QC ready to receive data from quadcoptermodul
+
 /* Used for lists */
 #define MAX_NUMBER_QUADCOPTER 10
 
@@ -65,6 +73,7 @@ public:
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovement();
+	void sendMovementAll();
 	void calculateMovement();
 	void reachTrackedArea(std::vector<int> ids);
 

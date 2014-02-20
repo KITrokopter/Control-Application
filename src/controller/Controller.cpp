@@ -156,8 +156,27 @@ void Controller::moveUp(std::vector<int> ids)
 		for(int i = 0; i < ids.size(); i++)
 		{		
 			this->id = ids[i];
-			//Convert Movement vector to thrust, pitch... data
-			convertMovement(moveVector);
+
+			/*
+			 * While untracked:
+			 * First second: thrust THRUST_START
+			 * Next 4 seconds: thrust THRUST_STAND_STILL
+			 * After that probably an error occured and we can't say where it
+			 * it and should shutdown.
+			 */
+
+			/*
+			 * While tracked:
+			 * Stabilize, then
+			 * Hold Position
+			 * 
+			 * This needs to be done independantly of the startprocess of
+			 * the current quadcopter.
+			 */
+
+			//Convert Movement vector to thrust, pitch... data		
+			convertMovement(moveVector);	
+
 			//Send Movement to the quadcopter
 			sendMovement();
 		}
@@ -251,7 +270,7 @@ void Controller::emergencyRoutine(std::string message)
 {
 	api_application::Message msg;
 	msg.senderID = this->senderID;
-	//Type 2 is an warning message
+	//Type 2 is a warning message
 	msg.type = 2;
 	msg.message = message;
 	this->Message_pub.publish(msg);
@@ -259,12 +278,29 @@ void Controller::emergencyRoutine(std::string message)
 }
 
 /*
- * Creates a Ros message for the movement of the quadcopter and sends this to the quadcopter modul
+ * Creates a Ros message for the movement of the quadcopter and sends this 
+ * to the quadcopter modul
  */
 void Controller::sendMovement()
 {
 	//Creates a message for quadcopter Movement and sends it via Ros
 	control_application::quadcopter_movement msg;
+	msg.thrust = this->thrust;
+	msg.yaw = this->yawrate;
+	msg.pitch = this->pitch;
+	msg.roll = this->roll;
+	this->Movement_pub[id].publish(msg);	
+}
+
+/*
+ * Creates a Ros message for the movement of each quadcopter and sends this 
+ * to the quadcopter modul
+ */
+void Controller::sendMovementAll()
+{
+	//Creates a message for each quadcopter movement and sends it via Ros
+	control_application::quadcopter_movement msg;
+	
 	msg.thrust = this->thrust;
 	msg.yaw = this->yawrate;
 	msg.pitch = this->pitch;
