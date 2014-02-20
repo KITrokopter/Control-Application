@@ -132,6 +132,8 @@ private:
 	//std::vector<std::string> quadcopters;
 	//Mapping of quadcopter global id
 	std::vector<unsigned int> quadcopters;
+	/* For calculateMovement, using local id from mapping before. */
+	std::vector<unsigned int> quadcopterMovementStatus;
 	
 	/* Set data */ 
 	int thrust;
