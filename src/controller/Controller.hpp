@@ -55,6 +55,8 @@
 #define CALCULATE_MOVE 4
 #define CALCULATE_ACTIVATED 6 // QC ready to receive data from quadcoptermodul
 
+#define CALCULATE_TAKE_OLD_VALUE -5
+
 /* Used for lists */
 #define MAX_NUMBER_QUADCOPTER 10
 
@@ -77,6 +79,9 @@ public:
 	void sendMovementAll();
 	void calculateMovement();
 	void reachTrackedArea(std::vector<int> ids);
+	void moveUp(std::vector<int> ids);
+	void moveUp( int internId );
+	void moveUpNoArg();
 
 	/* Formation also services*/
 	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
@@ -90,9 +95,6 @@ public:
 	bool checkInput();
 	void emergencyRoutine(std::string message);
 	
-	void moveUp(std::vector<int> ids);
-	void moveUp( int internId );
-	void moveUpNoArg();
     
 protected:
 	//Callbacks for Ros subscriber
@@ -102,6 +104,8 @@ protected:
 	void SystemCallback(const api_application::System::ConstPtr& msg);
 	
 	void stopReachTrackedArea();
+	void stabilize( int internId );
+	void hold( int internId );
 
 private:
 	/*  */

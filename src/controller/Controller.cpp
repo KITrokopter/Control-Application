@@ -168,37 +168,7 @@ void Controller::stopReachTrackedArea()
 	}
 }
 
-void Controller::moveUp( int internId )
-{
-	getTrackedMutex.lock();
-	bool continueMoveUp = getTracked;
-	getTrackedMutex.unlock();
 
-	if( continueMoveUp )
-	{
-		double moveVector[] = {0, 0, 100};
-
-		//Convert Movement vector to thrust, pitch... data		
-		convertMovement(moveVector);	
-
-		//Send Movement to the quadcopter
-		sendMovement();
-	} 
-	else
-	{
-
-	}
-}
-
-void Controller::moveUpNoArg()
-{
-	moveUp(this->idsToGetTracked);
-}
-
-void Controller::moveUp(std::vector<int> ids)
-{
-	/*TODO: delete or use? */
-}
 	
 /*
  * Calculates the movement vector of each quadcopter non stop and sends the vector first to convertMovement to set the yaw, pitch, roll and thrust
@@ -240,10 +210,14 @@ void Controller::calculateMovement()
 			curPosMutex.lock();
 			double * const current = this->listPositions.back()[i].getPosition();
 			curPosMutex.unlock();
-			
+
+			/*TODO: collect and save comments at one place, in some documentation, too? */
 			switch( quadcopterMovementStatus[i] )
 			{
 				case CALCULATE_NONE:
+					moveVector[0] = CALCULATE_TAKE_OLD_VALUE;
+					moveVector[1] = CALCULATE_TAKE_OLD_VALUE;
+					moveVector[2] = CALCULATE_TAKE_OLD_VALUE;
 					break;
 				case CALCULATE_START:
 					/*
@@ -256,6 +230,7 @@ void Controller::calculateMovement()
 					moveUp( i );
 					break;
 				case CALCULATE_STABILIZE:
+					stabilize( i );
 					break;
 				case CALCULATE_HOLD:
 					break;
@@ -273,13 +248,54 @@ void Controller::calculateMovement()
 					break;
 			}			
 			/*
-			 * Variante 1: convert movement and send movement
-			 * Variante 2: convert movement, save movement and send all
+			 * Variation 1: convert movement and send movement
+			 * Variation 2: convert movement, save movement and send all
 			 */
 			convertMovement(moveVector);
 			sendMovement();
 		}
 	}	
+}
+
+void Controller::moveUp( int internId )
+{
+	getTrackedMutex.lock();
+	bool continueMoveUp = getTracked;
+	getTrackedMutex.unlock();
+
+	if( continueMoveUp )
+	{
+		double moveVector[] = {0, 0, 100};
+
+		//Convert Movement vector to thrust, pitch... data		
+		convertMovement(moveVector);	
+
+		//Send Movement to the quadcopter
+		sendMovement();
+	} 
+	else
+	{
+
+	}
+}
+
+void Controller::moveUpNoArg()
+{
+	moveUp(this->idsToGetTracked);
+}
+
+void Controller::moveUp(std::vector<int> ids)
+{
+	/*TODO: delete or use? */
+}
+
+void Controller::stabilize( int internId )
+{
+
+}
+void Controller::hold( int internId )
+{
+
 }
 
 /*
@@ -317,6 +333,51 @@ void Controller::emergencyRoutine(std::string message)
 	shutdownFormation();
 }
 
+
+/*
+ * Converts vector in yaw, pitch, roll and thrust values.
+ */
+void Controller::convertMovement(double* vector)
+{
+	/* conversion from vectors to thrust, yawrate, pitch... */
+	int thrust_react_z_low = -5;
+	int thrust_react_z_high = 5;
+
+	if( vector[0] == INVALID )
+	{
+		MovementQuadruple newMovement = new MovementQuadruple(0, 0, 0, 0);
+		this->movementAll.push_back( newMovement );
+	}
+	else if( vector[0] == CALCULATE_TAKE_OLD_VALUE )
+	{
+		/*TODO */
+		MovementQuadruple newMovement = new MovementQuadruple(0, 0, 0, 0);
+		this->movementAll.push_back( newMovement );
+	}
+	
+	if (vector[2] > thrust_react_z_high) {
+		this->thrust += THRUST_STEP;
+	} else if (vector[2] < thrust_react_z_high) {
+		this->thrust -= THRUST_STEP;
+	} else {
+		/* Probably nothing to do here. */
+	}
+
+	double length = 0;
+	for (int i = 0; i < 3; i++) {
+		length = length + vector[i]*vector[i];
+	}
+	length = sqrt(length);
+
+	double ratio_roll = vector[0] / length;
+	double ratio_pitch = vector[1] / length;
+
+	this->roll = ratio_roll + ROLL_STEP;
+	this->pitch = ratio_pitch + PITCH_STEP;
+
+	this->yawrate = 0.0;
+}
+
 /*
  * Creates a Ros message for the movement of the quadcopter and sends this 
  * to the quadcopter modul
@@ -348,44 +409,6 @@ void Controller::sendMovementAll()
 		msg.yaw = this->movementAll.getYawrate();
 	this->Movement_pub[id].publish(msg);
 	}
-}
-
-/*
- * Converts vector in yaw, pitch, roll and thrust values.
- */
-void Controller::convertMovement(double* vector)
-{
-	/* conversion from vectors to thrust, yawrate, pitch... */
-	int thrust_react_z_low = -5;
-	int thrust_react_z_high = 5;
-
-	if( vector[0] == INVALID )
-	{
-		MovementQuadruple newMovement = new MovementQuadruple(0, 0, 0, 0);
-		this->movementAll.push_back( newMovement );
-	}
-	
-	if (vector[2] > thrust_react_z_high) {
-		this->thrust += THRUST_STEP;
-	} else if (vector[2] < thrust_react_z_high) {
-		this->thrust -= THRUST_STEP;
-	} else {
-		/* Probably nothing to do here. */
-	}
-
-	double length = 0;
-	for (int i = 0; i < 3; i++) {
-		length = length + vector[i]*vector[i];
-	}
-	length = sqrt(length);
-
-	double ratio_roll = vector[0] / length;
-	double ratio_pitch = vector[1] / length;
-
-	this->roll = ratio_roll + ROLL_STEP;
-	this->pitch = ratio_pitch + PITCH_STEP;
-
-	this->yawrate = 0.0;
 }
 
 /*
