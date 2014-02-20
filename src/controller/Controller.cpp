@@ -107,11 +107,13 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	listPositionsMutex.unlock();
 }
 
+/*
 void* startThreadMoveUp(void* something)
 {
 	Controller* other = (Controller*) something;
 	other->moveUpNoArg();
 }
+*/
 
 void Controller::reachTrackedArea(std::vector<int> ids)
 {
@@ -122,7 +124,20 @@ void Controller::reachTrackedArea(std::vector<int> ids)
 	/* TODO: Error-handling. */
 	/* Test ... if enough time: fix it, if not: copy to private variable */
 	idsToGetTracked = ids;
-	std:pthread_create(&tGetTracked, NULL, startThreadMoveUp, NULL); //ids); 	
+	/*
+	 std:pthread_create(&tGetTracked, NULL, startThreadMoveUp, NULL); //ids); 
+	 */
+	for(unsigned int i = 0; i < quadcopters.size(); i++)
+	{
+		for(unsigned int k = 0; k < ids.size(); k++)
+		{
+			if( quadcopters[i] == ids[k] )
+			{
+				quadcopterMovementStatus[i] = CALCULATE_START;
+			}
+		}
+	}
+	
 }
 
 void Controller::stopReachTrackedArea() 
@@ -134,11 +149,44 @@ void Controller::stopReachTrackedArea()
 	getTracked = false;
 	getTrackedMutex.unlock();
 
+	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
+	{
+		
+		if( quadcopterMovementStatus[i] == CALCULATE_START )
+		{
+			quadcopterMovementStatus[i] = CALCULATE_ACTIVATED;
+		}
+	}
+	
 	if( joinNecessary )
 	{
 		/* TODO: Error-handling. */
-		void *resultGetTracked;
+		/*
+		 void *resultGetTracked;
 		pthread_join(tGetTracked, &resultGetTracked);
+		*/
+	}
+}
+
+void Controller::moveUp( int internId )
+{
+	getTrackedMutex.lock();
+	bool continueMoveUp = getTracked;
+	getTrackedMutex.unlock();
+
+	if( continueMoveUp )
+	{
+		double moveVector[] = {0, 0, 100};
+
+		//Convert Movement vector to thrust, pitch... data		
+		convertMovement(moveVector);	
+
+		//Send Movement to the quadcopter
+		sendMovement();
+	} 
+	else
+	{
+
 	}
 }
 
@@ -149,42 +197,7 @@ void Controller::moveUpNoArg()
 
 void Controller::moveUp(std::vector<int> ids)
 {
-	bool continueMoveUp = true;
-	while(continueMoveUp)
-	{
-		double moveVector[] = {0, 0, 100};
-		for(int i = 0; i < ids.size(); i++)
-		{		
-			this->id = ids[i];
-
-			/*
-			 * While untracked:
-			 * First second: thrust THRUST_START
-			 * Next 4 seconds: thrust THRUST_STAND_STILL
-			 * After that probably an error occured and we can't say where it
-			 * it and should shutdown.
-			 */
-
-			/*
-			 * While tracked:
-			 * Stabilize, then
-			 * Hold Position
-			 * 
-			 * This needs to be done independantly of the startprocess of
-			 * the current quadcopter.
-			 */
-
-			//Convert Movement vector to thrust, pitch... data		
-			convertMovement(moveVector);	
-
-			//Send Movement to the quadcopter
-			sendMovement();
-		}
-		// usleep(1000); // microseconds
-		getTrackedMutex.lock();
-		continueMoveUp = getTracked;
-		getTrackedMutex.unlock();
-	}
+	/*TODO: delete or use? */
 }
 	
 /*
@@ -199,6 +212,7 @@ void Controller::calculateMovement()
 	{
 		if(!checkInput())
 		{
+			/*TODO: Goto emergency-routine*/
 			return;
 		}
 		double moveVector[3];
@@ -226,19 +240,45 @@ void Controller::calculateMovement()
 			curPosMutex.lock();
 			double * const current = this->listPositions.back()[i].getPosition();
 			curPosMutex.unlock();
-			moveVector[0] = target[0] - current[0];
-			moveVector[1] = target[1] - current[1];
-			moveVector[2] = target[2] - current[2];
-			//Convert Movement vector to thrust, pitch... data
+			
+			switch( quadcopterMovementStatus[i] )
+			{
+				case CALCULATE_NONE:
+					break;
+				case CALCULATE_START:
+					/*
+					 * While untracked:
+					 * First second: thrust THRUST_START
+					 * Next 4 seconds: thrust THRUST_STAND_STILL
+					 * After that probably an error occured and we can't say where it
+					 * it and should shutdown.
+					 */
+					moveUp( i );
+					break;
+				case CALCULATE_STABILIZE:
+					break;
+				case CALCULATE_HOLD:
+					break;
+				case CALCULATE_MOVE:
+					moveVector[0] = target[0] - current[0];
+					moveVector[1] = target[1] - current[1];
+					moveVector[2] = target[2] - current[2];
+					break;
+				case CALCULATE_ACTIVATED:
+					moveVector[0] = INVALID;
+					moveVector[1] = INVALID;
+					moveVector[2] = INVALID;
+					break;
+				default:
+					break;
+			}			
+			/*
+			 * Variante 1: convert movement and send movement
+			 * Variante 2: convert movement, save movement and send all
+			 */
 			convertMovement(moveVector);
-			//Send Movement to the quadcopter
 			sendMovement();
 		}
-		/*while(this->newTarget == 0 && this->newCurrent == 0) 
-		{
-			// delete if compiling fails
-			usleep(1000); // microseconds
-		}*/
 	}	
 }
 
@@ -318,6 +358,12 @@ void Controller::convertMovement(double* vector)
 	/* conversion from vectors to thrust, yawrate, pitch... */
 	int thrust_react_z_low = -5;
 	int thrust_react_z_high = 5;
+
+	if( vector[0] == INVALID )
+	{
+		MovementQuadruple newMovement = new MovementQuadruple(0, 0, 0, 0);
+		this->movementAll.push_back( newMovement );
+	}
 	
 	if (vector[2] > thrust_react_z_high) {
 		this->thrust += THRUST_STEP;
@@ -395,6 +441,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	for(int i = 0; i < req.amount; i++)
 	{
 		this->quadcopters[i] = req.quadcoptersId[i];
+		this->quadcopterMovementStatus.push_back( CALCULATE_NONE );
 	}
 	receiveQuadcopters = true;
 	return true;

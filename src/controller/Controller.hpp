@@ -91,6 +91,7 @@ public:
 	void emergencyRoutine(std::string message);
 	
 	void moveUp(std::vector<int> ids);
+	void moveUp( int internId );
 	void moveUpNoArg();
     
 protected:
