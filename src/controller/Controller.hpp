@@ -17,7 +17,7 @@
 #include "quadcopter_application/quadcopter_status.h"
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
-//#include "control_application/SetQuadcopters.h"
+#include "control_application/SetQuadcopters.h"
 #include "../position/IPositionReceiver.hpp"
 #include <time.h>
 #include <stdio.h>
@@ -129,6 +129,7 @@ private:
 
 	/* Received data */ /*TODO*/
 	int id;
+	//Arrays for quadcopters sorted by intern id
 	std::vector<float> pitch_stab;
 	std::vector<float> roll_stab;
 	std::vector<float> yaw_stab;
@@ -137,6 +138,7 @@ private:
 	int startProcess;
 /*	int newTarget;*/
 /*	int newCurrent;*/
+	//TODO Probably not needed anymore
 	std::vector<std::string> idString;
 	std::vector<int> idsToGetTracked;
 
@@ -146,7 +148,7 @@ private:
 	//Set when we are in the shutdown process
 	bool shutdownStarted;
 	bool getTracked;
-	bool receiveQuadcopters;
+	bool receivedQuadcopters;
 	
 	/* Mutex */
 	Mutex curPosMutex;

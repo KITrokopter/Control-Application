@@ -35,7 +35,7 @@ Controller::Controller()
 	
 	//All control variables are set to zero
 	this->shutdownStarted = 0;
-	this->receiveQuadcopters = 0;
+	this->receivedQuadcopters = 0;
 }
 
 void* startThread(void* something)
@@ -68,7 +68,7 @@ void Controller::initialize()
 	{
 		this->senderID = srv.response.id;
 	}
-	if(receiveQuadcopters)
+	if(receivedQuadcopters)
 	{
 		//Generate Subscribers and Publisher
 		for(int i = 0; i < this->totalAmount; i++)
@@ -358,7 +358,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	{
 		this->quadcopters[i] = req.quadcoptersId[i];
 	}
-	receiveQuadcopters = true;
+	receivedQuadcopters = true;
 	return true;
 }
 
@@ -543,11 +543,13 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
  */
 void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr)
 {
-	this->battery_status[topicNr] = msg->battery_status;
-	this->roll_stab[topicNr] = msg->stabilizer_roll;
-	this->pitch_stab[topicNr] = msg->stabilizer_pitch;
-	this->yaw_stab[topicNr] = msg->stabilizer_yaw;
-	this->thrust_stab[topicNr] = msg->stabilizer_thrust;
+	//Intern mapping
+	int quaId = quadcopters[topicNr];
+	this->battery_status[quaId] = msg->battery_status;
+	this->roll_stab[quaId] = msg->stabilizer_roll;
+	this->pitch_stab[quaId] = msg->stabilizer_pitch;
+	this->yaw_stab[quaId] = msg->stabilizer_yaw;
+	this->thrust_stab[quaId] = msg->stabilizer_thrust;
 }
 
 /*
