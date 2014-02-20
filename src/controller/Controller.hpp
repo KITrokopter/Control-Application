@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
 #include "Position6DOF.hpp"
+#include "MovementQuadruple.hpp"
 #include "Formation.hpp"
 #include "ros/ros.h"
 //Ros messages/services
@@ -132,11 +133,15 @@ private:
 	//Mapping of quadcopter global id
 	std::vector<unsigned int> quadcopters;
 	
-	/* Set data */ /*TODO*/
+	/* Set data */ 
 	int thrust;
 	float pitch, roll, yawrate;
+	std::vector<int> thrustAll;
+	std::vector<float> pitchAll;
+	std::vector<float> rollAll;
+	std::vector<float>	yawrateAll;
 
-	/* Received data */ /*TODO*/
+	/* Received data */ 
 	int id;
 	std::vector<float> pitch_stab;
 	std::vector<float> roll_stab;
@@ -144,8 +149,6 @@ private:
 	std::vector<unsigned int> thrust_stab;
 	std::vector<float> battery_status;
 	int startProcess;
-/*	int newTarget;*/
-/*	int newCurrent;*/
 	std::vector<std::string> idString;
 	std::vector<int> idsToGetTracked;
 

@@ -300,7 +300,7 @@ void Controller::sendMovementAll()
 {
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
-	
+	for(
 	msg.thrust = this->thrust;
 	msg.yaw = this->yawrate;
 	msg.pitch = this->pitch;
