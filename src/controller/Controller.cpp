@@ -286,9 +286,9 @@ void Controller::sendMovement()
 	//Creates a message for quadcopter Movement and sends it via Ros
 	control_application::quadcopter_movement msg;
 	msg.thrust = this->thrust;
-	msg.yaw = this->yawrate;
-	msg.pitch = this->pitch;
 	msg.roll = this->roll;
+	msg.pitch = this->pitch;
+	msg.yaw = this->yawrate;
 	this->Movement_pub[id].publish(msg);	
 }
 
@@ -300,12 +300,14 @@ void Controller::sendMovementAll()
 {
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
-	for(
-	msg.thrust = this->thrust;
-	msg.yaw = this->yawrate;
-	msg.pitch = this->pitch;
-	msg.roll = this->roll;
-	this->Movement_pub[id].publish(msg);	
+	for(int i = 0; i < ids.size(); i++)
+	{
+		msg.thrust = this->movementAll.getThrust();
+		msg.roll = this->movementAll.getRoll();
+		msg.pitch = this->movementAll.getPitch();
+		msg.yaw = this->movementAll.getYawrate();
+	this->Movement_pub[id].publish(msg);
+	}
 }
 
 /*
