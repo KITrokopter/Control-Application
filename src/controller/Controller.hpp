@@ -136,10 +136,7 @@ private:
 	/* Set data */ 
 	int thrust;
 	float pitch, roll, yawrate;
-	std::vector<int> thrustAll;
-	std::vector<float> pitchAll;
-	std::vector<float> rollAll;
-	std::vector<float>	yawrateAll;
+	std::vector<MovementQuadruple> movementAll;
 
 	/* Received data */ 
 	int id;
