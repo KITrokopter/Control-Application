@@ -126,7 +126,7 @@ private:
 	//TODO needs to be with service find all
 	int totalAmount;
 	int amount;
-	std::list<float[3]> formationMovement;
+	//std::list<float[3]> formationMovement;
 	time_t lastFormationMovement;
 	time_t lastCurrent;
 	unsigned int senderID;
