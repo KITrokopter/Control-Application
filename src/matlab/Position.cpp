@@ -11,6 +11,7 @@
 #include "Matlab.h"
 #include "AmccCalibration.h"
 #include <vector>
+#include <cmath>
 
 Position::Position()
 {
@@ -23,6 +24,10 @@ Position::Position()
         this->ep = ep;
     }
     calib = *(new AmccCalibration());
+    Vector nan = *(new Vector(NAN, NAN, NAN));
+    for (int i = 0; i < 50; i++) {
+        oldPos[i] = nan;
+    }
 }
 
 Position::Position(Engine *ep, int numberCameras)
@@ -30,6 +35,10 @@ Position::Position(Engine *ep, int numberCameras)
     this->numberCameras = numberCameras;
     this->ep = ep;
     calib = *(new AmccCalibration(ep));
+    Vector nan = *(new Vector(NAN, NAN, NAN));
+    for (int i = 0; i < 50; i++) {
+        oldPos[i] = nan;
+    }
 }
 
 void Position::calibrate(ChessboardData *chessboardData, int cameraId) {
@@ -53,8 +62,8 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
     Vector pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
     (quadPos[quadcopterId])[cameraId] = pos;
     if (quadPos[quadcopterId].size() < numberCameras) {
-        /// default value
-        return *(new Vector(0, 0, 0));
+        /// default value, when not all cameras did track it
+        return *(new Vector(NAN, NAN, NAN));
     } else {
         Line *quadPositions = new Line[numberCameras];
         for (int i = 0; i < numberCameras; i++) {
@@ -66,8 +75,9 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         Vector quadPosition = m->interpolateLines(quadPositions, numberCameras);
         // moving vector = oldPosition - actual position
         Vector movement;
-        if (oldPos[quadcopterId].equals(*(new Vector(0, 0, 0)))) {
-
+        if (oldPos[quadcopterId].equals(*(new Vector(NAN, NAN, NAN)))) {
+            /// default value at the first time when it is tracked.
+            movement = *(new Vector(NAN, NAN, NAN));
         } else {
             movement = oldPos[quadcopterId].add(quadPosition.mult(-1));
         }
