@@ -610,10 +610,14 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
 {
 	ROS_INFO("I heard: %f", msg->xMovement);
-	float movement[3];
-	movement[0] = msg->xMovement;
+	//float movement[3];
+	std::vector<float> movement;
+	movement.push_back( msg->xMovement );
+	movement.push_back( msg->yMovement );
+	movement.push_back( msg->zMovement );
+	/*movement[0] = msg->xMovement;
 	movement[1] = msg->yMovement;
-	movement[2] = msg->zMovement;
+	movement[2] = msg->zMovement;*/
 	formMovMutex.lock();
 	this->formationMovement.push_back(movement);
 	formMovMutex.unlock();	
