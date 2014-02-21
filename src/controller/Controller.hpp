@@ -1,8 +1,8 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
+#include "Formation.hpp"
 #include "Position6DOF.hpp"
 #include "MovementQuadruple.hpp"
-#include "Formation.hpp"
 #include "ros/ros.h"
 //Ros messages/services
 #include "api_application/MoveFormation.h"	// ? (D)
@@ -20,7 +20,6 @@
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
 #include "../position/IPositionReceiver.hpp"
-#include <time.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
@@ -122,7 +121,7 @@ private:
 	
 	/* Identification of Quadcopters */
 	//Receive data over ROS
-	Formation formation;
+	Formation *formation;
 	//TODO needs to be with service find all
 	int totalAmount;
 	int amount;

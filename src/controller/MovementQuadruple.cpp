@@ -1,6 +1,6 @@
 #include "MovementQuadruple.hpp"
 
-MovementQuadruple(int newThrust, float newRoll, float newPitch, float newYawrate)
+MovementQuadruple::MovementQuadruple(int newThrust, float newRoll, float newPitch, float newYawrate)
 {
 	this->thrust = newThrust;
 	this->roll = newRoll;
@@ -30,7 +30,7 @@ float MovementQuadruple::getRoll()
 	return this->roll;
 }
 
-float gMovementQuadruple::etPitch()
+float MovementQuadruple::getPitch()
 {
 	return this->pitch;
 }

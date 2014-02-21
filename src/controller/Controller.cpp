@@ -352,13 +352,13 @@ void Controller::convertMovement(double* vector)
 
 	if( vector[0] == INVALID )
 	{
-		MovementQuadruple newMovement = MovementQuadruple(0, 0, 0, 0);
+		MovementQuadruple newMovement = MovementQuadruple(0, 0.0f, 0.0f, 0.0f);
 		this->movementAll.push_back( newMovement );
 	}
 	else if( vector[0] == CALCULATE_TAKE_OLD_VALUE )
 	{
 		/*TODO */
-		MovementQuadruple newMovement = MovementQuadruple(0, 0, 0, 0);
+		MovementQuadruple newMovement = MovementQuadruple(0, 0.0f, 0.0f, 0.0f);
 		this->movementAll.push_back( newMovement );
 	}
 	
@@ -486,8 +486,8 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 bool Controller::buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res)
 {
 	//Get the formation Positions and the distance.
-	Position6DOF* const formPos = this->formation.getPosition();
-	double distance = this->formation.getDistance();
+	Position6DOF* const formPos = this->formation->getPosition();
+	double distance = this->formation->getDistance();
 	//Pointer to the first tracked quadcopter
 	double * first;
 	std::vector<Position6DOF> newElement;
@@ -631,8 +631,8 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 */
 void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
 {
-	this->formation.setDistance(msg->distance);
-	this->formation.setAmount(msg->amount);
+	this->formation->setDistance(msg->distance);
+	this->formation->setAmount(msg->amount);
 	this->amount = msg->amount;
 	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
 	Position6DOF formPos[this->amount];
@@ -649,7 +649,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		//ori[2] = msg->
 		//formPos[i].setOrientation(ori);
 	}
-	this->formation.setPosition(formPos);
+	this->formation->setPosition(formPos);
 	//Initialize tracked (no quadcopter is tracked at the beginning)
 	for(int i = 0; i < this->amount; i++)
 	{
