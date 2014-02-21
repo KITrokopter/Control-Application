@@ -124,18 +124,23 @@ if(EXISTS ${MATLAB_PATH})
   ## Declare a cpp executable
   add_executable(control_application 
   src/main.cpp
+  src/KitrokopterMessages.cpp
   src/matlab/Matlab.cpp 
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp
   src/matlab/profiling.cpp
   src/matlab/TrackingArea.cpp
+  src/matlab/Calibration.cpp
+  src/matlab/CameraData.cpp
+  src/matlab/Position.cpp
+  src/position/PositionModule.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
   src/controller/Mutex.cpp
-  src/matlab/Calibration.cpp
-  src/matlab/CameraData.cpp
-  src/matlab/Position.cpp
+  src/controller/MovementQuadruple.cpp
+  src/position/CvChessboardDetector.cpp
+  src/position/ChessboardData.cpp
 )
 
 add_dependencies(control_application
@@ -153,6 +158,10 @@ target_link_libraries(control_application
   ${MATLAB_PATH}/bin/glnxa64/libeng.so
   ${MATLAB_PATH}/bin/glnxa64/libmx.so
   ${MATLAB_PATH}/bin/glnxa64/libmat.so
+  libopencv_core.so
+  libopencv_highgui.so
+  libopencv_calib3d.so
+  libopencv_imgproc.so
 )
 
 add_executable(profile_control
