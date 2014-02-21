@@ -1,7 +1,7 @@
 #ifndef POSITION_H
 #define POSITION_H
 #include "engine.h"
-#include "Calibration.h"
+#include "AmccCalibration.h"
 #include "Transformation.h"
 #include "../position/ChessboardData.hpp"
 
@@ -16,8 +16,8 @@ public:
 	
 private: 
 	Engine *ep;
-	Calibration calib;
-	int setCameras;
+	AmccCalibration calib;
+	int numberCameras;
 };
 
 #endif // POSITION_H //?

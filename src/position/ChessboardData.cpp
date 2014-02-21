@@ -2,7 +2,8 @@
 
 ChessboardData::ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
 			   double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double horizonalBeta,
-			   double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels)
+               double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels,
+               int numberFieldsX, int numberFieldsY, double chessFieldWidth, double chessFieldHeight)
 {
 	this->chessboardWidthPixels = chessboardWidthPixels;
 	this->chessboardHeightPixels = chessboardHeightPixels;
@@ -14,6 +15,10 @@ ChessboardData::ChessboardData(double chessboardWidthPixels, double chessboardHe
 	this->verticalBeta = verticalBeta;
 	this->chessboardHorizontalOffsetPixels = chessboardHorizontalOffsetPixels;
 	this->chessboardVerticalOffsetPixels = chessboardVerticalOffsetPixels;
+    this->numberFieldsX = numberFieldsX;
+    this->numberFieldsY = numberFieldsY;
+    this->chessFieldWidth = chessFieldWidth;
+    this->chessFieldHeight = chessFieldHeight;
 }
 
 ChessboardData::ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double imageWidthPixel,
@@ -60,6 +65,14 @@ double ChessboardData::getChessboardHeight()
 	return chessboardHeight;
 }
 
+double getChessFieldWidth() {
+    return this->chessFieldWidth
+}
+
+double getChessFieldHeight() {
+    return this->chessFieldHeight;
+}
+
 double ChessboardData::getImageWidthPixel()
 {
 	return imageWidthPixel;
@@ -78,6 +91,14 @@ double ChessboardData::getHorizonalBeta()
 double ChessboardData::getVerticalBeta()
 {
 	return verticalBeta;
+}
+
+int getNumberFieldsX() {
+    return numberFieldsX;
+}
+
+int getNumberFieldsY() {
+    return numberFieldsY;
 }
 
 double ChessboardData::getChessboardHorizontalOffsetPixels()

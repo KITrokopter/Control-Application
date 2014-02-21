@@ -4,10 +4,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include <sstream>
+#include <cstring>
+#include "engine.h"
+#include "Vector.h"
+#include "Line.h"
+#include "AmccCalibration.h"
 
 Position::Position()
 {
-	this->setCameras = 0;
+    this->numberCameras = 0;
 	Engine *ep;
     // starts a MATLAB process
     if (!(ep = engOpen(""))) {
@@ -15,43 +21,58 @@ Position::Position()
     } else {
         this->ep = ep;
     }
-    calib = *(new Calibration());
+    calib = *(new AmccCalibration());
 }
 
 Position::Position(Engine *ep)
 {
+    this->numberCameras = 0;
     this->ep = ep;
-    calib = *(new Calibration());
+    calib = *(new AmccCalibration(ep));
 }
 
-Transformation Position::calibrate(ChessboardData *chessboardData, int cameraId) {
-	// Let dominik calculate the angles.
-	// If first call, this is camera A, if second call, this is camera B,
-	// if third call, this is camera C, if fourth call, error (do whatever you want, or ignore).
-	// Calculate the rotation matrix and translation vector, given the angles and the position of the camera (A, B or C).
+Position::setCameras(int number) {
+    this->numberCameras = number;
+}
 
-	if( this->setCameras == 0 )
-	{
-
-		this->setCameras++;
-	}
-	
-    // if B
-    //calib.setChangeOfBasisVectorB(cameraData.getAlpha(), cameraData.getGamma());
-    //calib.setTranslationVectorB(cameraData.getSigma(), cameraData.getHa());
-    // if C
-    //calib.setChangeOfBasisVectorB(cameraData.getAlpha(), cameraData.getGamma());
-    //calib.setTranslationVectorB(cameraData.getSigma(), cameraData.getHa());
+Position::calibrate(ChessboardData *chessboardData, int cameraId) {
+    calib.multiCameraCalibration(numberCameras, chessboardData->getChessboardWidth(), chessboardData->getChessboardHeight(), chessboardData->getNumberFieldsX(), chessboardData->getNumberFieldsY());
 }
 
 Vector Position::updatePosition(Vector v, int cameraId, double quadcopterId) {
-
+    std::string result;
+    std::ostringstream id;
+    id << camId;
+    result = "load('~/multiCalibrationResults/Calib_Results_" + id.str() + ".mat');";
+    // loads resulting file in matlab workspace
+    engEvalString(ep, result.c_str());
+    quad.putVariable("quad", ep);
+    engEvalString(ep, "pos = quad * rodrigues(omc_1) + Tc_1;");
+    mxArray *position = engGetVariable(ep, "pos");
+    Vector pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
+    return pos;
 }
 
 Vector getPosition(int cameraId) {
-    //return calib.getTranslationVectorx();
+    std::string result;
+    std::ostringstream id;
+    id << cameraId;
+    result = "load('~/multiCalibrationResults/Calib_Results_" + id.str() + ".mat');";
+    // loads resulting file in matlab workspace
+    engEvalString(ep, result.c_str());
+    mxArray *tV = engGetVariable(ep, "Tc_1");
+    Vector translation = *(new Vector(mxGetPr(tV)[0], mxGetPr(tV)[1], mxGetPr(tV)[2]));
+    return translation;
 }
 
 Vector getOrientation(int cameraId) {
-
+    std::string result;
+    std::ostringstream id;
+    id << cameraId;
+    result = "load('~/multiCalibrationResults/Calib_Results_" + id.str() + ".mat');";
+    // loads resulting file in matlab workspace
+    engEvalString(ep, result.c_str());
+    mxArray *oV = engGetVariable(ep, "omc_1");
+    Vector orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
+    return orientation;
 }

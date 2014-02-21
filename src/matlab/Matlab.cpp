@@ -37,6 +37,9 @@ Engine* Matlab::getEngine() {
     return this->ep;
 }
 
+/*
+ * calculates the perpendicular point of Point b and Line f
+ */
 Vector Matlab::perpFootOneLine(Line f, Vector b) {
     f.getA().putVariable("a", ep);
     f.getU().putVariable("u", ep);
@@ -139,6 +142,9 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 	return 2;
 }
 
+/*
+ * calculates the vector that is in average nearest to all lines
+ */
 Vector Matlab::interpolateLines(Line *lines, int quantity) {
     Vector *points = new Vector[2*quantity];
 	int pos = 0;
@@ -173,6 +179,13 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
     return *approximated;
 }
 
+/**
+ * @brief Matlab::interpolateLine
+ * @param line line where the quadcopter is
+ * @param quadPos position of quadcopter
+ * @param interpolationFactor interpolationFactor
+ * @return vector that is in average nearest to point and line.
+ */
 Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
     Vector newPos = perpFootOneLine(line, quadPos);
 	//interpolatedNewPos = newPos * interpolationFactor + quadPos * (1 - interpolationFactor)
@@ -182,9 +195,16 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
 	Vector* interpolatedNewPos = new Vector(v1, v2, v3);
 	return *interpolatedNewPos;
 }
-/*
- * intersection line of E1:f.getA() + r * f.getU() + s * (directV1 - f.getA()) and
- * E2: g.getA() + t* g.getU() + z * (directV2-g.getA())
+
+/**
+ * @brief Matlab::getIntersectionLine
+ * @param f Line, that is positionated in plain E1
+ * @param directV1 Point, that is not in line f and is on the plain E1
+ * E1 = f.getA() + r*f.getU() + s*(directV1 - f.getA())
+ * @param g Line that is positionated in plain E2
+ * @param directV2 point, that is not in line g and is on the plain E2
+ * E2 = g.getA() + t* g.getU() + z * (directV2-g.getA())
+ * @return intersection line of E1 and E2
  */
 Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {
     f.getA().putVariable("a", ep);

@@ -114,16 +114,4 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     mxDestroyArray(nscy);
 }
 
-Vector AmccCalibration::calculatePosition(Vector quad, int camId) {
-    std::string result;
-    std::ostringstream id;
-    id << camId;
-    result = "load('~/multiCalibrationResults/Calib_Results_" + id.str() + ".mat');";
-    // loads resulting file in matlab workspace
-    engEvalString(ep, result.c_str());
-    quad.putVariable("quad", ep);
-    engEvalString(ep, "pos = quad * omc_1 + Tc_1;");
-    mxArray *position = engGetVariable(ep, "pos");
-    Vector pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
-    return pos;
-}
+
