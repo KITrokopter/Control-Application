@@ -236,10 +236,14 @@ void Controller::calculateMovement()
 					moveVector[2] = target[2] - current[2];
 					break;
 				case CALCULATE_ACTIVATED:
-					moveVector = {INVALID, INVALID, INVALID};
+					moveVector[0] = INVALID;
+					moveVector[1] = INVALID;
+					moveVector[2] = INVALID;
 					break;
 				default:
-					moveVector = {INVALID, INVALID, INVALID};
+					moveVector[0] = INVALID;
+					moveVector[1] = INVALID;
+					moveVector[2] = INVALID;
 					break;
 			}			
 			/*
@@ -269,11 +273,15 @@ void Controller::moveUp( int internId )
 	getTrackedMutex.unlock();	
 	if( continueMoveUp )
 	{
-		moveVector = {0, 0, 100};
+		moveVector[0] = 0;
+		moveVector[1] = 0;
+		moveVector[2] = 100;
 	} 
 	else
 	{
-		moveVector = {INVALID, INVALID, INVALID};
+		moveVector[0] = INVALID;
+		moveVector[1] = INVALID;
+		moveVector[2] = INVALID;
 	}
 }
 
