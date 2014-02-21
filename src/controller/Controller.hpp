@@ -61,7 +61,7 @@
 #define MAX_NUMBER_QUADCOPTER 10
 
 #define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
-
+class Formation;
 class Controller : public IPositionReceiver {
 //class Controller {
 public:
