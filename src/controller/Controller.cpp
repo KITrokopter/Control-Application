@@ -351,13 +351,13 @@ void Controller::convertMovement(double* vector)
 
 	if( vector[0] == INVALID )
 	{
-		MovementQuadruple newMovement = new MovementQuadruple(0, 0, 0, 0);
+		MovementQuadruple newMovement = MovementQuadruple(0, 0, 0, 0);
 		this->movementAll.push_back( newMovement );
 	}
 	else if( vector[0] == CALCULATE_TAKE_OLD_VALUE )
 	{
 		/*TODO */
-		MovementQuadruple newMovement = new MovementQuadruple(0, 0, 0, 0);
+		MovementQuadruple newMovement = MovementQuadruple(0, 0, 0, 0);
 		this->movementAll.push_back( newMovement );
 	}
 	
@@ -407,12 +407,12 @@ void Controller::sendMovementAll()
 {
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
-	for(int i = 0; i < ids.size(); i++)
+	for(int i = 0; i < movementAll.size(); i++)
 	{
-		msg.thrust = this->movementAll.getThrust();
-		msg.roll = this->movementAll.getRoll();
-		msg.pitch = this->movementAll.getPitch();
-		msg.yaw = this->movementAll.getYawrate();
+		msg.thrust = this->movementAll[i].getThrust();
+		msg.roll = this->movementAll[i].getRoll();
+		msg.pitch = this->movementAll[i].getPitch();
+		msg.yaw = this->movementAll[i].getYawrate();
 	this->Movement_pub[id].publish(msg);
 	}
 }
