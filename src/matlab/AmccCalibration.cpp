@@ -16,7 +16,6 @@
 #include "Vector.h"
 #include "Line.h"
 #include "AmccCalibration.h"
-#define  BUFSIZE 256
 
 
 AmccCalibration::AmccCalibration() {
