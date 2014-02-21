@@ -96,6 +96,14 @@ Vector Vector::cross(Vector v) {
     return *cross;
 }
 
+bool Vector::equals(Vector v) {
+    if ((v.getV1() == v1) && (v.getV2() == v2) && (v.getV3() == v3)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 std::string Vector::toString() {
 	std::stringstream ss;
 	ss << v1 << "/" << v2 << "/" << v3;

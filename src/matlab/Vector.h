@@ -26,10 +26,10 @@ public:
 	Vector add(Vector a);
 	Vector mult(double a);
 	int scalarMult(Vector a);
-    double getLength();
-    void putVariable(std::string a, Engine *ep);
+    	double getLength();
+    	void putVariable(std::string a, Engine *ep);
 	Vector cross(Vector v);
-	
+	bool equals(Vector v);
 	std::string toString();
 };
 

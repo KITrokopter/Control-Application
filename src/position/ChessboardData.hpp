@@ -39,10 +39,15 @@ private:
 	double chessboardVerticalOffsetPixels;
 	
 public:
-	ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
-				   double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double horizonalBeta,
-				   double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels);
-	
+    ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
+                   double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double horizonalBeta,
+                   double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels);
+
+    ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
+                   double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double horizonalBeta,
+                   double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels,
+                   int numberFieldsX, int numberFieldsY, double chessFieldWidth, double chessFieldHeight);
+
 	ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double imageWidthPixel,
 				   double imageHeightPixel, double horizonalBeta, double verticalBeta,
 				   double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels);

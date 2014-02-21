@@ -1,6 +1,22 @@
 #include "ChessboardData.hpp"
 
 ChessboardData::ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
+               double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double horizonalBeta,
+               double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels)
+{
+    this->chessboardWidthPixels = chessboardWidthPixels;
+    this->chessboardHeightPixels = chessboardHeightPixels;
+    this->chessboardWidth = chessboardWidth;
+    this->chessboardHeight = chessboardHeight;
+    this->imageWidthPixel = imageWidthPixel;
+    this->imageHeightPixel = imageHeightPixel;
+    this->horizonalBeta = horizonalBeta;
+    this->verticalBeta = verticalBeta;
+    this->chessboardHorizontalOffsetPixels = chessboardHorizontalOffsetPixels;
+    this->chessboardVerticalOffsetPixels = chessboardVerticalOffsetPixels;
+}
+
+ChessboardData::ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
 			   double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double horizonalBeta,
                double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels,
                int numberFieldsX, int numberFieldsY, double chessFieldWidth, double chessFieldHeight)
@@ -65,12 +81,12 @@ double ChessboardData::getChessboardHeight()
 	return chessboardHeight;
 }
 
-double getChessFieldWidth() {
-    return this->chessFieldWidth
+double ChessboardData::getChessFieldWidth() {
+    return chessFieldWidth;
 }
 
-double getChessFieldHeight() {
-    return this->chessFieldHeight;
+double ChessboardData::getChessFieldHeight() {
+    return chessFieldHeight;
 }
 
 double ChessboardData::getImageWidthPixel()
@@ -93,11 +109,11 @@ double ChessboardData::getVerticalBeta()
 	return verticalBeta;
 }
 
-int getNumberFieldsX() {
+int ChessboardData::getNumberFieldsX() {
     return numberFieldsX;
 }
 
-int getNumberFieldsY() {
+int ChessboardData::getNumberFieldsY() {
     return numberFieldsY;
 }
 
