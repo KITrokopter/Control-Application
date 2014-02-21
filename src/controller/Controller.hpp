@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
 #include "Position6DOF.hpp"
+#include "MovementQuadruple.hpp"
 #include "Formation.hpp"
 #include "ros/ros.h"
 //Ros messages/services
@@ -46,6 +47,16 @@
 //In seconds
 #define TIME_UPDATED 1
 
+/* For calculateMovement */
+#define CALCULATE_NONE 0 // Unset
+#define CALCULATE_START 1
+#define CALCULATE_STABILIZE 2
+#define CALCULATE_HOLD 3
+#define CALCULATE_MOVE 4
+#define CALCULATE_ACTIVATED 6 // QC ready to receive data from quadcoptermodul
+
+#define CALCULATE_TAKE_OLD_VALUE -5
+
 /* Used for lists */
 #define MAX_NUMBER_QUADCOPTER 10
 
@@ -65,8 +76,12 @@ public:
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovement();
+	void sendMovementAll();
 	void calculateMovement();
 	void reachTrackedArea(std::vector<int> ids);
+	void moveUp(std::vector<int> ids);
+	void moveUp( int internId );
+	void moveUpNoArg();
 
 	/* Formation also services*/
 	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
@@ -80,8 +95,6 @@ public:
 	bool checkInput();
 	void emergencyRoutine(std::string message);
 	
-	void moveUp(std::vector<int> ids);
-	void moveUpNoArg();
     
 protected:
 	//Callbacks for Ros subscriber
@@ -91,6 +104,8 @@ protected:
 	void SystemCallback(const api_application::System::ConstPtr& msg);
 	
 	void stopReachTrackedArea();
+	void stabilize( int internId );
+	void hold( int internId );
 
 private:
 	/*  */
@@ -122,12 +137,15 @@ private:
 	//std::vector<std::string> quadcopters;
 	//Mapping of quadcopter global id
 	std::vector<unsigned int> quadcopters;
+	/* For calculateMovement, using local id from mapping before. */
+	std::vector<unsigned int> quadcopterMovementStatus;
 	
-	/* Set data */ /*TODO*/
+	/* Set data */ 
 	int thrust;
 	float pitch, roll, yawrate;
+	std::vector<MovementQuadruple> movementAll;
 
-	/* Received data */ /*TODO*/
+	/* Received data */ 
 	int id;
 	//Arrays for quadcopters sorted by intern id
 	std::vector<float> pitch_stab;
@@ -136,9 +154,6 @@ private:
 	std::vector<unsigned int> thrust_stab;
 	std::vector<float> battery_status;
 	int startProcess;
-/*	int newTarget;*/
-/*	int newCurrent;*/
-	//TODO Probably not needed anymore
 	std::vector<std::string> idString;
 	std::vector<int> idsToGetTracked;
 
