@@ -1,7 +1,8 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
-#include "Position6DOF.hpp"
 #include "Formation.hpp"
+#include "Position6DOF.hpp"
+#include "MovementQuadruple.hpp"
 #include "ros/ros.h"
 //Ros messages/services
 #include "api_application/MoveFormation.h"	// ? (D)
@@ -11,6 +12,7 @@
 #include "api_application/SetFormation.h"
 #include "api_application/Message.h"
 #include "api_application/Announce.h"
+#include "api_application/System.h"
 #include "quadcopter_application/find_all.h"
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
@@ -18,7 +20,6 @@
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
 #include "../position/IPositionReceiver.hpp"
-#include <time.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
@@ -42,13 +43,24 @@
 #define INVALID -1
 //TODO 100% = 1?
 #define LOW_BATTERY 0.05
-#define TIME_UPDATED 0.1
+//In seconds
+#define TIME_UPDATED 1
+
+/* For calculateMovement */
+#define CALCULATE_NONE 0 // Unset
+#define CALCULATE_START 1
+#define CALCULATE_STABILIZE 2
+#define CALCULATE_HOLD 3
+#define CALCULATE_MOVE 4
+#define CALCULATE_ACTIVATED 6 // QC ready to receive data from quadcoptermodul
+
+#define CALCULATE_TAKE_OLD_VALUE -5
 
 /* Used for lists */
 #define MAX_NUMBER_QUADCOPTER 10
 
 #define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
-
+class Formation;
 class Controller : public IPositionReceiver {
 //class Controller {
 public:
@@ -63,8 +75,12 @@ public:
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovement();
+	void sendMovementAll();
 	void calculateMovement();
 	void reachTrackedArea(std::vector<int> ids);
+	void moveUp(std::vector<int> ids);
+	void moveUp( int internId );
+	void moveUpNoArg();
 
 	/* Formation also services*/
 	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
@@ -75,19 +91,20 @@ public:
 	
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
 	
-	void checkInput();
+	bool checkInput();
+	void emergencyRoutine(std::string message);
 	
-	void moveUp(std::vector<int> ids);
-	void moveUpNoArg();
     
 protected:
 	//Callbacks for Ros subscriber
 	void MoveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
 	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
 	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
-
+	void SystemCallback(const api_application::System::ConstPtr& msg);
 	
 	void stopReachTrackedArea();
+	void stabilize( int internId );
+	void hold( int internId );
 
 private:
 	/*  */
@@ -104,14 +121,14 @@ private:
 	
 	/* Identification of Quadcopters */
 	//Receive data over ROS
-	Formation formation;
+	Formation *formation;
 	//TODO needs to be with service find all
 	int totalAmount;
 	int amount;
-	std::list<float[3]> formationMovement;
+	std::list<std::vector<float> > formationMovement;
 	time_t lastFormationMovement;
 	time_t lastCurrent;
-	unsigned int SenderID;
+	unsigned int senderID;
 	//TODO Set area
 	TrackingArea trackingArea;
 	
@@ -119,21 +136,23 @@ private:
 	//std::vector<std::string> quadcopters;
 	//Mapping of quadcopter global id
 	std::vector<unsigned int> quadcopters;
+	/* For calculateMovement, using local id from mapping before. */
+	std::vector<unsigned int> quadcopterMovementStatus;
 	
-	/* Set data */ /*TODO*/
+	/* Set data */ 
 	int thrust;
 	float pitch, roll, yawrate;
+	std::vector<MovementQuadruple> movementAll;
 
-	/* Received data */ /*TODO*/
+	/* Received data */ 
 	int id;
+	//Arrays for quadcopters sorted by intern id
 	std::vector<float> pitch_stab;
 	std::vector<float> roll_stab;
 	std::vector<float> yaw_stab;
 	std::vector<unsigned int> thrust_stab;
 	std::vector<float> battery_status;
 	int startProcess;
-/*	int newTarget;*/
-/*	int newCurrent;*/
 	std::vector<std::string> idString;
 	std::vector<int> idsToGetTracked;
 
@@ -143,6 +162,7 @@ private:
 	//Set when we are in the shutdown process
 	bool shutdownStarted;
 	bool getTracked;
+	bool receivedQuadcopters;
 	
 	/* Mutex */
 	Mutex curPosMutex;
@@ -172,6 +192,8 @@ private:
 	//Subscriber for Quadcopter data from QuadcopterModul
 	//ros::Subscriber QuadStatus_sub;
 	std::vector<ros::Subscriber> QuadStatus_sub;
+	//Subscriber to System topic (Sends the start and end of the system)
+	ros::Subscriber System_sub;
 
 	/* Publisher */
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
@@ -189,9 +211,10 @@ private:
 	ros::ServiceServer QuadID_srv;
 
 	//Clients
-	ros::ServiceClient FindAll_client;
+	//ros::ServiceClient FindAll_client;
 	ros::ServiceClient Blink_client;
 	ros::ServiceClient Announce_client;
+	ros::ServiceClient Shutdown_client;
 
 };
 

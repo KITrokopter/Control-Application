@@ -12,6 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+# Use C++ 11
+# I'll just leave this here in case we want to use it
+# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -118,25 +122,29 @@ set(MATLAB_PATH "~/matlab"
 # Skip the control application when matlab is not installed.
 if(EXISTS ${MATLAB_PATH})
   ## Declare a cpp executable
-  add_executable(control_application_node 
+  add_executable(control_application 
+  src/main.cpp
+  src/KitrokopterMessages.cpp
   src/matlab/Matlab.cpp 
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp
   src/matlab/profiling.cpp
-  src/matlab/main.cpp
   src/matlab/TrackingArea.cpp
-  src/controller/Controller.cpp
-  src/controller/Formation.cpp
-  src/controller/Position6DOF.cpp
-  src/controller/Mutex.cpp
   src/matlab/Calibration.cpp
   src/matlab/CameraData.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
-  #src/controller/main.cpp
+  src/position/PositionModule.cpp
+  src/position/CvChessboardDetector.cpp
+  src/position/ChessboardData.cpp
+  src/controller/Controller.cpp
+  src/controller/Formation.cpp
+  src/controller/Position6DOF.cpp
+  src/controller/Mutex.cpp
+  src/controller/MovementQuadruple.cpp
 )
 
-add_dependencies(control_application_node
+add_dependencies(control_application
   control_application_generate_messages_cpp
   api_application_generate_messages_cpp
   camera_application_generate_messages_cpp
@@ -146,11 +154,15 @@ add_dependencies(control_application_node
 # add_dependencies(control_application_node Control-Application_generate_messages_cpp)
 
 # Use full path names to go around strange errors since matlab has some strange versions of some libs that are already included in ubuntu.
-target_link_libraries(control_application_node
+target_link_libraries(control_application
   ${catkin_LIBRARIES}
   ${MATLAB_PATH}/bin/glnxa64/libeng.so
   ${MATLAB_PATH}/bin/glnxa64/libmx.so
   ${MATLAB_PATH}/bin/glnxa64/libmat.so
+  libopencv_core.so
+  libopencv_highgui.so
+  libopencv_calib3d.so
+  libopencv_imgproc.so
 )
 
 add_executable(profile_control

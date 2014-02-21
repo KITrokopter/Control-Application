@@ -12,6 +12,11 @@ Formation::Formation(int distance, int amount, Position6DOF * pos)
 	}
 }
 
+Formation::Formation()
+{
+	/*TODO*/
+}
+
 void Formation::setDistance(int distance)
 {
 	this->distance = distance;

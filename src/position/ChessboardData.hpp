@@ -11,10 +11,10 @@ private:
 	/// The real height of the chessboard in mm.
 	double chessboardHeight;
 	
-    /// The real width of one field on the chessboard
-    double chessFieldWidth;
-    /// The real height of one field on the chessboard
-    double chessFieldHeight;
+	/// The real width of one field on the chessboard
+	double chessFieldWidth;
+	/// The real height of one field on the chessboard
+	double chessFieldHeight;
 
 	/// The width of the complete image in pixels. (2b')
 	double imageWidthPixel;
@@ -22,14 +22,14 @@ private:
 	double imageHeightPixel;
 	
 	/// The horizontal opening angle of the camera in degrees. (beta)
-	double horizonalBeta;
-	/// The vertical opening angle of the camera in degrees.
-	double verticalBeta;
+	double beta;
+	/// The vertical opening angle of the camera in degrees. (epsilon)
+	double epsilon;
 	
-    /// The vertical number of fields
-    int numberFieldsX;
-    /// The horizontal number of fields
-    int numberFieldsY;
+	/// The vertical number of fields
+	int numberFieldsX;
+	/// The horizontal number of fields
+	int numberFieldsY;
 
 	/// The horizontal offset of the chessboard compared to the center in pixels. (g')
 	/// Note that a positive value means the chessboard is moved to the right.
@@ -39,17 +39,17 @@ private:
 	double chessboardVerticalOffsetPixels;
 	
 public:
-    ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
+	ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
                    double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double horizonalBeta,
                    double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels);
 
-    ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
+	ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
                    double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double horizonalBeta,
                    double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels,
                    int numberFieldsX, int numberFieldsY, double chessFieldWidth, double chessFieldHeight);
 
 	ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double imageWidthPixel,
-				   double imageHeightPixel, double horizonalBeta, double verticalBeta,
+				   double imageHeightPixel, double beta, double epsilon,
 				   double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels);
 	
 	void setChessboardWidth(double chessboardWidth);
@@ -63,24 +63,24 @@ public:
 	double getChessboardWidth();
 	/// The real height of the chessboard in mm.
 	double getChessboardHeight();
-    /// The real widht of one field on the chessboard
-    double getChessFieldWidth();
-    /// The real height of one field on the chessboard
-    double getChessFieldHeight();
+	/// The real widht of one field on the chessboard
+	double getChessFieldWidth();
+	/// The real height of one field on the chessboard
+	double getChessFieldHeight();
 
 	/// The width of the complete image in pixels. (2b')
 	double getImageWidthPixel();
 	/// The height of the complete image in pixels.
-    double getImageHeightPixel();
+	double getImageHeightPixel();
+
+	int getNumberFieldsX();
+	int getNumberFieldsY();
 
 	/// The horizontal opening angle of the camera in degrees. (beta)
-	double getHorizonalBeta();
-	/// The vertical opening angle of the camera in degrees.
-	double getVerticalBeta();
-
-    int getNumberFieldsX();
-    int getNumberFieldsY();
-
+	double getBeta();
+	/// The vertical opening angle of the camera in degrees. (epsilon)
+	double getEpsilon();
+	
 	/// The horizontal offset of the chessboard compared to the center in pixels. (g')
 	/// Note that a positive value means the chessboard is moved to the right.
 	double getChessboardHorizontalOffsetPixels();
