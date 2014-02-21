@@ -614,10 +614,10 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 	movement[0] = msg->xMovement;
 	movement[1] = msg->yMovement;
 	movement[2] = msg->zMovement;
-	//formMovMutex.lock();
-	//this->formationMovement.push_back(movement);
-	//formMovMutex.unlock();	
-	//this->lastFormationMovement = time(&this->lastFormationMovement);
+	formMovMutex.lock();
+	this->formationMovement.push_back(movement);
+	formMovMutex.unlock();	
+	this->lastFormationMovement = time(&this->lastFormationMovement);
 	//calculate and set a new target position each time there is new data
 	setTargetPosition();
 }
