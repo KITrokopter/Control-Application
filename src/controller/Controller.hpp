@@ -212,9 +212,10 @@ private:
 	ros::ServiceServer QuadID_srv;
 
 	//Clients
-	ros::ServiceClient FindAll_client;
+	//ros::ServiceClient FindAll_client;
 	ros::ServiceClient Blink_client;
 	ros::ServiceClient Announce_client;
+	ros::ServiceClient Shutdown_client;
 
 };
 

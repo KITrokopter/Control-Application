@@ -32,6 +32,7 @@ Controller::Controller()
 	//this->FindAll_client = this->n.serviceClient<quadcopter_application::find_all>("find_all");
 	this->Blink_client = this->n.serviceClient<quadcopter_application::blink>("blink");
 	this->Announce_client = this->n.serviceClient<api_application::Announce>("Announce");
+	this->Shutdown_client = this->n.serviceClient<control_application::Shutdown>("Shutdown");
 	
 	//All control variables are set to zero
 	this->shutdownStarted = 0;
@@ -679,7 +680,9 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 	{
 		if(!shutdownStarted)
 		{
-			shutdown(NULL, NULL);
+			control_application::Shutdown srv;
+			Shutdown_client.call(srv);
+			//shutdown(NULL, NULL);
 		}
 		//TODO Do we need to clean up something here? Free space, join threads ...
 	}
