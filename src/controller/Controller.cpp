@@ -219,20 +219,16 @@ void Controller::calculateMovement()
 					moveVector[1] = CALCULATE_TAKE_OLD_VALUE;
 					moveVector[2] = CALCULATE_TAKE_OLD_VALUE;
 					break;
-				case CALCULATE_START:
-					/*
-					 * While untracked:
-					 * First second: thrust THRUST_START
-					 * Next 4 seconds: thrust THRUST_STAND_STILL
-					 * After that probably an error occured and we can't say where it
-					 * it and should shutdown.
-					 */
+				case CALCULATE_START:	
+					/*TODO: adapt */
 					moveUp( i );
 					break;
 				case CALCULATE_STABILIZE:
+					/*TODO*/
 					stabilize( i );
 					break;
 				case CALCULATE_HOLD:
+					/*TODO*/
 					break;
 				case CALCULATE_MOVE:
 					moveVector[0] = target[0] - current[0];
@@ -240,11 +236,10 @@ void Controller::calculateMovement()
 					moveVector[2] = target[2] - current[2];
 					break;
 				case CALCULATE_ACTIVATED:
-					moveVector[0] = INVALID;
-					moveVector[1] = INVALID;
-					moveVector[2] = INVALID;
+					moveVector = {INVALID, INVALID, INVALID};
 					break;
 				default:
+					moveVector = {INVALID, INVALID, INVALID};
 					break;
 			}			
 			/*
@@ -257,25 +252,28 @@ void Controller::calculateMovement()
 	}	
 }
 
+/*
+ * While untracked:
+ * First second: thrust THRUST_START
+ * Next 4 seconds: thrust THRUST_STAND_STILL
+ * After that probably an error occured and we can't say where it
+ * it and should shutdown.
+ */
 void Controller::moveUp( int internId )
 {
-	getTrackedMutex.lock();
-	bool continueMoveUp = getTracked;
-	getTrackedMutex.unlock();
+	bool continueMoveUp;
+	double moveVector[3];	
 
+	getTrackedMutex.lock();
+	continueMoveUp = getTracked;
+	getTrackedMutex.unlock();	
 	if( continueMoveUp )
 	{
-		double moveVector[] = {0, 0, 100};
-
-		//Convert Movement vector to thrust, pitch... data		
-		convertMovement(moveVector);	
-
-		//Send Movement to the quadcopter
-		sendMovement();
+		moveVector = {0, 0, 100};
 	} 
 	else
 	{
-
+		moveVector = {INVALID, INVALID, INVALID};
 	}
 }
 
