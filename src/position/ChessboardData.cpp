@@ -1,8 +1,8 @@
 #include "ChessboardData.hpp"
 
 ChessboardData::ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
-               double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double horizonalBeta,
-               double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels)
+               double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double beta,
+               double epsilon, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels)
 {
     this->chessboardWidthPixels = chessboardWidthPixels;
     this->chessboardHeightPixels = chessboardHeightPixels;
@@ -10,15 +10,15 @@ ChessboardData::ChessboardData(double chessboardWidthPixels, double chessboardHe
     this->chessboardHeight = chessboardHeight;
     this->imageWidthPixel = imageWidthPixel;
     this->imageHeightPixel = imageHeightPixel;
-    this->horizonalBeta = horizonalBeta;
-    this->verticalBeta = verticalBeta;
+    this->beta = beta;
+    this->epsilon = epsilon;
     this->chessboardHorizontalOffsetPixels = chessboardHorizontalOffsetPixels;
     this->chessboardVerticalOffsetPixels = chessboardVerticalOffsetPixels;
 }
 
 ChessboardData::ChessboardData(double chessboardWidthPixels, double chessboardHeightPixels, double chessboardWidth,
-			   double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double horizonalBeta,
-               double verticalBeta, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels,
+			   double chessboardHeight, double imageWidthPixel, double imageHeightPixel, double beta,
+               double epsilon, double chessboardHorizontalOffsetPixels, double chessboardVerticalOffsetPixels,
                int numberFieldsX, int numberFieldsY, double chessFieldWidth, double chessFieldHeight)
 {
 	this->chessboardWidthPixels = chessboardWidthPixels;
