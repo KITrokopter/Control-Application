@@ -22,7 +22,7 @@ private:
 public:
     	Position();
     	Position(Engine *ep, int numberCameras);
-    	void calibrate(ChessboardData *chessboardData, int cameraId);
+        void calibrate(ChessboardData *chessboardData, int cameraId);
 	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet  	
 	Vector updatePosition(Vector quad, int cameraId, double quadcopterId);
     	Vector getPosition(int cameraId);

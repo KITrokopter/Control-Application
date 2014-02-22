@@ -49,18 +49,22 @@ void Position::loadValues(int cameraId) {
     std::string result;
     std::ostringstream id;
     id << cameraId;
-    result = "load('~/multiCalibrationResults/Calib_Results_" + id.str() + ".mat');";
+    result = "load('~/multiCalibrationResults/Calib_Results_stereo_0_" + id.str() + ".mat');";
     // loads resulting file in matlab workspace
     engEvalString(ep, result.c_str());
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) {
-    loadValues(cameraId);
-    quad.putVariable("quad", ep);
-    engEvalString(ep, "pos = quad * rodrigues(omc_1) + Tc_1;");
-    mxArray *position = engGetVariable(ep, "pos");
-    Vector pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
-    (quadPos[quadcopterId])[cameraId] = pos;
+    if (cameraId != 0) {
+        loadValues(cameraId);
+        quad.putVariable("quad", ep);
+        engEvalString(ep, "pos = quad * rodrigues(omc__left_1) + Tc_1;");
+        mxArray *position = engGetVariable(ep, "pos");
+        Vector pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
+        (quadPos[quadcopterId])[cameraId] = pos;
+    } else {
+        (quadPos[quadcopterId])[cameraId] = quad.add(getOrientation(cameraId));
+    }
     if (quadPos[quadcopterId].size() < numberCameras) {
         /// default value, when not all cameras did track it
         return *(new Vector(NAN, NAN, NAN));
@@ -88,15 +92,25 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
 }
 
 Vector Position::getPosition(int cameraId) {
-    loadValues(cameraId);
-    mxArray *tV = engGetVariable(ep, "Tc_1");
-    Vector translation = *(new Vector(mxGetPr(tV)[0], mxGetPr(tV)[1], mxGetPr(tV)[2]));
-    return translation;
+    if (cameraId != 0) {
+        loadValues(cameraId);
+        mxArray *tV = engGetVariable(ep, "Tc_left_1");
+        Vector translation = *(new Vector(mxGetPr(tV)[0], mxGetPr(tV)[1], mxGetPr(tV)[2]));
+        return translation;
+     } else {
+        return *(new Vector(0, 0, 0));
+    }
 }
 
 Vector Position::getOrientation(int cameraId) {
-    loadValues(cameraId);
-    mxArray *oV = engGetVariable(ep, "omc_1");
-    Vector orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
-    return orientation;
+    if (cameraId != 0) {
+        loadValues(cameraId);
+        mxArray *oV = engGetVariable(ep, "omc_left_1");
+        Vector orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
+        return orientation;
+    } else {
+        // loads resulting file in matlab workspace
+        engEvalString(ep, "load('~/multicalibrationResults/Calib_Results_0.mat');");
+
+    }
 }
