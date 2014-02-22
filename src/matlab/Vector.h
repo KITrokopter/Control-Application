@@ -31,6 +31,12 @@ public:
 	Vector cross(Vector v);
 	bool equals(Vector v);
 	std::string toString();
+	
+	/**
+	 * Returns true if the vector contains no NaN values.
+	 * @return True if the vector contains no NaN values.
+	 */
+	bool isValid();
 };
 
 #endif /* VECTOR_H_ */
