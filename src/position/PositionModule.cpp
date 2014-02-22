@@ -256,8 +256,8 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 		pictureCache[msg.ID] = image;
 		pictureTimes[msg.ID] = msg.timestamp;
 	}
-			
-					pictureCacheMutex.unlock();
+	
+	pictureCacheMutex.unlock();
 }
 
 // Topic
@@ -274,7 +274,22 @@ void PositionModule::systemCallback(const api_application::System &msg)
 void PositionModule::rawPositionCallback(const camera_application::RawPosition &msg)
 {
  	// TODO: Calculate position in our coordinate system.
+	// TODO: Is this coordinate change correct for amcctoolbox?
 	Vector cameraVector(1, msg.xPosition, msg.yPosition);
+	Vector result = tracker.updatePosition(cameraVector, msg.ID, msg.quadcopterId);
+	
+	std::vector<Vector> positions;
+	std::vector<int> ids;
+	std::vector<int> updates;
+	positions.push_back(result);
+	ids.push_back(msg.quadcopterId);
+	updates.push_back(1);
+	
+	if (result.isValid()) {
+		receiver->updatePosition(positions, ids, updates);
+	} else {
+		ROS_DEBUG("Not enough information to get position of quadcopter %d", msg.quadcopterId);
+	}
 }
 
 void PositionModule::setPictureSendingActivated(bool activated)
