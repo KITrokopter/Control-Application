@@ -3,8 +3,9 @@
 #include <assert.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string>
-#include <map>
+#include <algorithm>
 
 #include <ros/console.h>
 #include <opencv2/highgui/highgui.hpp>
@@ -101,7 +102,25 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 // Service
 bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req, control_application::TakeCalibrationPicture::Response &res)
 {
+	ROS_DEBUG("Taking calibration picture. Have %ld cameras.", camNoToNetId.size());
+	
 	pictureCacheMutex.lock();
+	
+	// Build net id -> cam no map.
+	if (camNoToNetId.size() != netIdToCamNo.size()) {
+		// If already built, there are already images on the disk with wrong ids, so return an error.
+		if (netIdToCamNo.size() != 0) {
+			ROS_ERROR("Got new cameras after taking first calibration picture!");
+			return false;
+		}
+		
+		std::sort(camNoToNetId.begin(), camNoToNetId.end());
+		netIdToCamNo.clear();
+		
+		for (int i = 0; i < camNoToNetId.size(); i++) {
+			netIdToCamNo[camNoToNetId[i]] = i;
+		}
+	}
 	
 	int id = 0;
 	std::map<int, cv::Mat*> goodPictures;
@@ -147,6 +166,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			return false;
 		}
 		
+		id = 0;
 		for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
 			std::stringstream ss;
 			ss << "~/calibrationImages/cam" << id << "_image" << calibrationPictureCount << ".png";
@@ -165,6 +185,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			}
 			
 			res.images.push_back(img);
+			res.ids.push_back(it->first);
 		}
 	
 		calibrationPictureCount++;
@@ -177,23 +198,45 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 bool PositionModule::calculateCalibrationCallback(control_application::CalculateCalibration::Request &req, control_application::CalculateCalibration::Response &res)
 {
 	if (!isCalibrating) {
+		ROS_ERROR("Cannot calculate calibration! Start calibration first.");
 		return false;
 	}
 	
-	// TODO: Do stuff with danis code...
+	if (netIdToCamNo.size() < 2) {
+		ROS_ERROR("Have not enough images for calibration (Have %ld)!", netIdToCamNo.size());
+	}
+	
+	ChessboardData data(boardSize.width, boardSize.height, realSize.width / (boardSize.width - 1), realSize.height / (boardSize.height - 1));
+	tracker.calibrate(&data, netIdToCamNo.size());
 	
 	isCalibrating = false;
+	
+	system("rm -rf ~/calibrationImages/*");
+	
 	return true;
 }
 
 // Topic
 void PositionModule::pictureCallback(const camera_application::Picture &msg)
 {
+	pictureCacheMutex.lock();
+	
+	bool idKnown = false;
+	
+	// Insert camera id, if not already there.
+	for (int i = 0; i < camNoToNetId.size(); i++) {
+		if (camNoToNetId[i] == msg.ID) {
+			idKnown = true;
+			break;
+		}
+	}
+	
+	if (!idKnown) {
+		camNoToNetId.push_back(msg.ID);
+	}
+	
 	if (isCalibrating)
 	{
-		pictureCacheMutex.lock();
-		
-		// Don't know if it works that way and I really can randomly insert now...
 		pictureCache.reserve(msg.ID + 1);
 		pictureTimes.reserve(msg.ID + 1);
 		
@@ -212,15 +255,19 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 		
 		pictureCache[msg.ID] = image;
 		pictureTimes[msg.ID] = msg.timestamp;
-		
-		pictureCacheMutex.unlock();
 	}
+			
+					pictureCacheMutex.unlock();
 }
 
 // Topic
 void PositionModule::systemCallback(const api_application::System &msg)
 {
 	isRunning = msg.command == 1;
+	
+	if (!isRunning) {
+		ros::shutdown();
+	}
 }
 
 // Topic

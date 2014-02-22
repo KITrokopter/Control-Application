@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <opencv2/core/core.hpp>
 #include <vector>
+#include <map>
 #include <inttypes.h>
 
 #include "IPositionReceiver.hpp"
@@ -35,6 +36,10 @@ private:
 	
 	// Tracking
 	Position tracker;
+	/// Maps network ids to camera numbers for the tracker.
+	std::map<int, int> netIdToCamNo;
+	/// Maps camera numbers to net ids.
+	std::vector<int> camNoToNetId;
 	
 	// ROS network
 	ros::ServiceServer startCalibrationService;

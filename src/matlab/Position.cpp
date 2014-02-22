@@ -23,8 +23,8 @@ Position::Position()
     } else {
         this->ep = ep;
     }
-    calib = *(new AmccCalibration());
-    Vector nan = *(new Vector(NAN, NAN, NAN));
+    calib = AmccCalibration();
+    Vector nan(NAN, NAN, NAN);
     for (int i = 0; i < 50; i++) {
         oldPos[i] = nan;
     }
@@ -34,15 +34,15 @@ Position::Position(Engine *ep, int numberCameras)
 {
     this->numberCameras = numberCameras;
     this->ep = ep;
-    calib = *(new AmccCalibration(ep));
-    Vector nan = *(new Vector(NAN, NAN, NAN));
+    calib = AmccCalibration(ep);
+    Vector nan(NAN, NAN, NAN);
     for (int i = 0; i < 50; i++) {
         oldPos[i] = nan;
     }
 }
 
-void Position::calibrate(ChessboardData *chessboardData, int cameraId) {
-    calib.multiCameraCalibration(numberCameras, chessboardData->getChessboardWidth(), chessboardData->getChessboardHeight(), chessboardData->getNumberFieldsX(), chessboardData->getNumberFieldsY());
+void Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
+    calib.multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
 }
 
 void Position::loadValues(int cameraId) {
