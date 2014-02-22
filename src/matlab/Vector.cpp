@@ -109,3 +109,7 @@ std::string Vector::toString() {
 	ss << v1 << "/" << v2 << "/" << v3;
 	return ss.str();
 }
+
+bool Vector::isValid() {
+	return !(isnan(v1) || isnan(v2) || isnan(v3));
+}

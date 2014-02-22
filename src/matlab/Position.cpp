@@ -23,8 +23,8 @@ Position::Position()
     } else {
         this->ep = ep;
     }
-    calib = *(new AmccCalibration());
-    Vector nan = *(new Vector(NAN, NAN, NAN));
+    calib = AmccCalibration();
+    Vector nan(NAN, NAN, NAN);
     for (int i = 0; i < 50; i++) {
         oldPos[i] = nan;
     }
@@ -34,8 +34,8 @@ Position::Position(Engine *ep, int numberCameras)
 {
     this->numberCameras = numberCameras;
     this->ep = ep;
-    calib = *(new AmccCalibration(ep));
-    Vector nan = *(new Vector(NAN, NAN, NAN));
+    calib = AmccCalibration(ep);
+    Vector nan(NAN, NAN, NAN);
     for (int i = 0; i < 50; i++) {
         oldPos[i] = nan;
     }

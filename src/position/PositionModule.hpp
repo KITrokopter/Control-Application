@@ -4,10 +4,10 @@
 #include <ros/ros.h>
 #include <opencv2/core/core.hpp>
 #include <vector>
+#include <map>
 #include <inttypes.h>
 
 #include "IPositionReceiver.hpp"
-#include "CvChessboardDetector.hpp"
 #include "../KitrokopterMessages.hpp"
 #include "control_application/StartCalibration.h"
 #include "control_application/TakeCalibrationPicture.h"
@@ -33,10 +33,13 @@ private:
 	Mutex pictureCacheMutex;
 	std::vector<cv::Mat*> pictureCache;
 	std::vector<uint64_t> pictureTimes;
-	CvChessboardDetector chessboardDetector;
 	
 	// Tracking
 	Position tracker;
+	/// Maps network ids to camera numbers for the tracker.
+	std::map<int, int> netIdToCamNo;
+	/// Maps camera numbers to net ids.
+	std::vector<int> camNoToNetId;
 	
 	// ROS network
 	ros::ServiceServer startCalibrationService;

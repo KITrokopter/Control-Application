@@ -19,10 +19,12 @@ private:
 	std::vector< std::vector <Vector> > quadPos;
 	// as quadcopterId is between 0 and 50, all positions from 0 to 49 get default values.
 	std::vector<Vector> oldPos;
+	
+	void loadValues(int cameraId);
 public:
     	Position();
     	Position(Engine *ep, int numberCameras);
-        bool calibrate(ChessboardData *chessboardData);
+        bool calibrate(ChessboardData *chessboardData, int numberCameras);
 	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet  	
     Vector updatePosition(Vector quad, int cameraId, double quadcopterId);
         Vector getPosition(int cameraId);
