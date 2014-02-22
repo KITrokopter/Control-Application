@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <string>
+#include <map>
 
 #include <ros/console.h>
 #include <opencv2/highgui/highgui.hpp>
@@ -14,9 +15,6 @@
 #include "api_application/Announce.h"
 
 #include "../matlab/Vector.h"
-
-// Use to set that we want to use amcctoolbox for calibration.
-// #define AMCCTOOLBOX
 
 PositionModule::PositionModule(IPositionReceiver* receiver)
 {
@@ -106,19 +104,14 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 	pictureCacheMutex.lock();
 	
 	int id = 0;
+	std::map<int, cv::Mat*> goodPictures;
 	
 	for (std::vector<cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++, id++)
 	{
 		if (*it != 0)
 		{
-			#ifdef AMCCTOOLBOX
-			// TODO: check if image is "good"
 			std::vector<cv::Point2f> corners;
 			bool foundAllCorners = cv::findChessboardCorners(**it, boardSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-			#else
-			ChessboardData *chessboardData = chessboardDetector.detectChessboard(*it, boardSize, realSize);
-			bool foundAllCorners = chessboardData != 0;
-			#endif
 			
 			if (!foundAllCorners)
 			{
@@ -128,46 +121,54 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			else
 			{
 				ROS_INFO("Took good picture (id %d)", id);
-				
-				#ifdef AMCCTOOLBOX
-				// Create directory for images.
-				int error = mkdir("~/calibrationImages", 770);
-				
-				if (error != 0 && error != EEXIST)
-				{
-					ROS_ERROR("Could not create directory for calibration images: %d", error);
-					pictureCacheMutex.unlock();
-					return false;
-				}
-				
-				std::stringstream ss;
-				ss << "~/calibrationImages/cam" << id << "_image" << calibrationPictureCount << ".png";
-				
-				cv::imwrite(ss.str(), **it);
-				#else
-				tracker.calibrate(chessboardData, id);
-				#endif
-				
-				sensor_msgs::Image img;
-				img.width = 640;
-				img.height = 480;
-				img.step = 3 * 640;
-				
-				for (int i = 0; i < 640 * 480 * 3; i++)
-				{
-					img.data[i] = (*it)->data[i];
-				}
-				
-				res.images.push_back(img);
+				goodPictures[id] = *it;
 			}
 			
-			delete *it;
+			// Remove image from image cache.
 			*it = 0;
 		}
 	}
 	
-	calibrationPictureCount++;
 	pictureCacheMutex.unlock();
+	
+	if (goodPictures.size() >= 2) {
+		// Create directory for images.
+		int error = mkdir("~/calibrationImages", 770);
+		
+		if (error != 0 && error != EEXIST)
+		{
+			ROS_ERROR("Could not create directory for calibration images: %d", error);
+			
+			// Delete images.
+			for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
+				delete it->second;
+			}
+			
+			return false;
+		}
+		
+		for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
+			std::stringstream ss;
+			ss << "~/calibrationImages/cam" << id << "_image" << calibrationPictureCount << ".png";
+			
+			cv::imwrite(ss.str(), *(it->second));
+			
+			sensor_msgs::Image img;
+			img.width = 640;
+			img.height = 480;
+			img.step = 3 * 640;
+			img.data.reserve(img.step * img.height);
+			
+			for (int i = 0; i < 640 * 480 * 3; i++)
+			{
+				img.data[i] = it->second->data[i];
+			}
+			
+			res.images.push_back(img);
+		}
+	
+		calibrationPictureCount++;
+	}
 	
 	return true;
 }
@@ -175,8 +176,13 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 // Service
 bool PositionModule::calculateCalibrationCallback(control_application::CalculateCalibration::Request &req, control_application::CalculateCalibration::Response &res)
 {
+	if (!isCalibrating) {
+		return false;
+	}
+	
 	// TODO: Do stuff with danis code...
 	
+	isCalibrating = false;
 	return true;
 }
 

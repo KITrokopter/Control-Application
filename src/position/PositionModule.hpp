@@ -7,7 +7,6 @@
 #include <inttypes.h>
 
 #include "IPositionReceiver.hpp"
-#include "CvChessboardDetector.hpp"
 #include "../KitrokopterMessages.hpp"
 #include "control_application/StartCalibration.h"
 #include "control_application/TakeCalibrationPicture.h"
@@ -33,7 +32,6 @@ private:
 	Mutex pictureCacheMutex;
 	std::vector<cv::Mat*> pictureCache;
 	std::vector<uint64_t> pictureTimes;
-	CvChessboardDetector chessboardDetector;
 	
 	// Tracking
 	Position tracker;

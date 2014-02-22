@@ -135,7 +135,6 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
   src/position/PositionModule.cpp
-  src/position/CvChessboardDetector.cpp
   src/position/ChessboardData.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
@@ -189,7 +188,6 @@ add_executable(position_module
 	src/position/tmpmain.cpp
 	src/position/PositionModule.cpp
 	src/position/DummyPositionReceiver.cpp
-	src/position/CvChessboardDetector.cpp
 	src/position/ChessboardData.cpp
 	src/KitrokopterMessages.cpp
 	src/matlab/Vector.cpp
