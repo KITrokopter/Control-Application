@@ -206,7 +206,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		ROS_ERROR("Have not enough images for calibration (Have %ld)!", netIdToCamNo.size());
 	}
 	
-	ChessboardData data(boardSize.width, boardSize.height, realSize.width / (boardSize.width - 1), realSize.height / (boardSize.height - 1));
+	ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
 	tracker.calibrate(&data, netIdToCamNo.size());
 	
 	isCalibrating = false;
