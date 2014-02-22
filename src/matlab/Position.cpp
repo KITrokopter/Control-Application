@@ -41,7 +41,7 @@ Position::Position(Engine *ep, int numberCameras)
     }
 }
 
-void Position::calibrate(ChessboardData *chessboardData, int cameraId) {
+void Position::calibrate(ChessboardData *chessboardData) {
     calib.multiCameraCalibration(numberCameras, chessboardData->getChessboardWidth(), chessboardData->getChessboardHeight(), chessboardData->getNumberFieldsX(), chessboardData->getNumberFieldsY());
 }
 
@@ -55,7 +55,10 @@ void Position::loadValues(int cameraId) {
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) {
-    if (cameraId != 0) {
+    if (cameraId == -1) {
+        return *(new Vector(NAN, NAN, NAN));
+    }
+    else if (cameraId != 0) {
         loadValues(cameraId);
         quad.putVariable("quad", ep);
         engEvalString(ep, "pos = quad * rodrigues(omc__left_1) + Tc_1;");
@@ -92,7 +95,10 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
 }
 
 Vector Position::getPosition(int cameraId) {
-    if (cameraId != 0) {
+    if (cameraId == -1) {
+        return *(new Vector(NAN, NAN, NAN));
+    }
+    else if (cameraId != 0) {
         loadValues(cameraId);
         mxArray *tV = engGetVariable(ep, "Tc_left_1");
         Vector translation = *(new Vector(mxGetPr(tV)[0], mxGetPr(tV)[1], mxGetPr(tV)[2]));
@@ -103,14 +109,18 @@ Vector Position::getPosition(int cameraId) {
 }
 
 Vector Position::getOrientation(int cameraId) {
-    if (cameraId != 0) {
+    mxArray *oV;
+    if (cameraId == -1) {
+        return *(new Vector(NAN, NAN, NAN));
+    }
+    else if (cameraId != 0) {
         loadValues(cameraId);
-        mxArray *oV = engGetVariable(ep, "omc_left_1");
-        Vector orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
-        return orientation;
+        oV = engGetVariable(ep, "omc_left_1");
     } else {
         // loads resulting file in matlab workspace
         engEvalString(ep, "load('~/multicalibrationResults/Calib_Results_0.mat');");
-
+        oV = engGetVariable(ep, "omc_1");
     }
+    Vector orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
+    return orientation;
 }
