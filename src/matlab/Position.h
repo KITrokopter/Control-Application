@@ -19,8 +19,6 @@ private:
 	std::vector< std::vector <Vector> > quadPos;
 	// as quadcopterId is between 0 and 50, all positions from 0 to 49 get default values.
 	std::vector<Vector> oldPos;
-	
-	void loadValues(int cameraId);
 public:
     	Position();
     	Position(Engine *ep, int numberCameras);

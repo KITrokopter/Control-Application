@@ -41,8 +41,8 @@ Position::Position(Engine *ep, int numberCameras)
     }
 }
 
-bool Position::calibrate(ChessboardData *chessboardData) {
-    calib.multiCameraCalibration(numberCameras, chessboardData->getChessboardWidth(), chessboardData->getChessboardHeight(), chessboardData->getNumberFieldsX(), chessboardData->getNumberFieldsY());
+bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
+    calib.multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
     return true;
 }
 
