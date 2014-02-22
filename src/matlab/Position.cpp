@@ -43,6 +43,26 @@ Position::Position(Engine *ep, int numberCameras)
 
 bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     calib.multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
+    mxArray *good;
+    std::string load;
+    std::ostringstream id;
+    load = "try load('~/multiCalibrationResults/Calib_Results_0.mat'); worked = 1; catch worked = 0; end";
+    engEvalString(ep, load.c_str());
+    good = engGetVariable(ep, "worked");
+    double result = mxGetPr(good)[0];
+    if (result == 0) {
+        return false;
+    }
+    for (int i = 1; i < numberCameras; i++) {
+        id << i;
+        load = "try load('~/multiCalibrationResults/Calib_Results_stereo_0_" + id.str() + ".mat'); worked = 1; catch worked = 0; end";
+        engEvalString(ep, load.c_str());
+        good = engGetVariable(ep, "worked");
+        result = mxGetPr(good)[0];
+        if (result == 0) {
+            return false;
+        }
+    }
     return true;
 }
 
@@ -66,6 +86,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         mxArray *position = engGetVariable(ep, "pos");
         Vector pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
         (quadPos[quadcopterId])[cameraId] = pos;
+        mxDestroyArray(position);
     } else {
         (quadPos[quadcopterId])[cameraId] = quad.add(getOrientation(cameraId));
     }
