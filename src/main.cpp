@@ -12,8 +12,12 @@ int main(int argc, char **argv)
 	IPositionReceiver* receiver = new Controller();
 	PositionModule p(receiver);
 	
-	// DO STUFF
-	ros::spin();
+	if (p.isInitialized()) {
+		// DO STUFF
+		ros::spin();
+	} else {
+		ros::shutdown();
+	}
 	
 	while (ros::ok())
 	{
