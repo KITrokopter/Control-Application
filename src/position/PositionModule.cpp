@@ -286,7 +286,7 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
 	updates.push_back(1);
 	
 	if (result.isValid()) {
-		receiver->updatePosition(positions, ids, updates);
+		receiver->updatePositions(positions, ids, updates);
 	} else {
 		ROS_DEBUG("Not enough information to get position of quadcopter %d", msg.quadcopterId);
 	}
