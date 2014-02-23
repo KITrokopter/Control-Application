@@ -28,7 +28,7 @@ Position::Position()
     Vector nan = *(new Vector(NAN, NAN, NAN));
     // if quadcopter maximal amount is higher than 50, you should change the range of i
     for (int i = 0; i < 50; i++) {
-        oldPos[i] = nan;
+        oldPos.push_back(nan);
     }
 
 }
@@ -40,7 +40,7 @@ Position::Position(Engine *ep, int numberCameras)
     calib = AmccCalibration(ep);
     Vector nan = *(new Vector(NAN, NAN, NAN));
     for (int i = 0; i < 50; i++) {
-        oldPos[i] = nan;
+        oldPos.push_back(nan);
     }
 }
 
@@ -53,20 +53,26 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     engEvalString(ep, load.c_str());
     good = engGetVariable(ep, "worked");
     double result = mxGetPr(good)[0];
+    bool ok = true;
     if (result == 0) {
-        return false;
-    }
-    for (int i = 1; i < numberCameras; i++) {
-        id << i;
-        load = "try load('~/multiCalibrationResults/Calib_Results_stereo_0_" + id.str() + ".mat'); worked = 1; catch worked = 0; end";
-        engEvalString(ep, load.c_str());
-        good = engGetVariable(ep, "worked");
-        result = mxGetPr(good)[0];
-        if (result == 0) {
-            return false;
+        printf("Matrix 0\n");
+        ok = false;
+    } else {
+        for (int i = 1; i < numberCameras; i++) {
+            id << i;
+            load = "try load('~/multiCalibrationResults/Calib_Results_stereo_0_" + id.str() + ".mat'); worked = 1; catch worked = 0; end";
+            engEvalString(ep, load.c_str());
+            good = engGetVariable(ep, "worked");
+            result = mxGetPr(good)[0];
+            if (result == 0) {
+                printf("%d\n", i);
+                ok = false;
+            }
+            id.str("");
+            id.clear();
         }
     }
-    return true;
+    return ok;
 }
 
 double Position::getAngle(Vector u, Vector v) {

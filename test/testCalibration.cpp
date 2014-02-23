@@ -1,23 +1,19 @@
-#include "../src/matlab/Vector.h"
-#include "../src/matlab/Line.h"
-#include "../src/matlab/engine.h"
-#include "../src/matlab/AmccCalibration.h"
-#include "../src/matlab/Matlab.h"
-#include "../src/matlab/TrackingArea.h"
-#include "../src/matlab/profiling.hpp"
-#include "../src/matlab/Position.h"
-#include "../src/position/ChessboardData.hpp"
+#include "Vector.h"
+#include "Line.h"
+#include "engine.h"
+#include "AmccCalibration.h"
+#include "Matlab.h"
+#include "TrackingArea.h"
+#include "profiling.hpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
 #include <math.h>
 
-bool calibrate(Matlab *m) {
-    Position *h = new Position(m->getEngine(), 3);
-    ChessboardData *c = new ChessboardData(7, 7, 10, 10);
-    bool ok = h->calibrate(c, 3);
-    return ok;
+void calibrate(Matlab *m) {
+    AmccCalibration *h = new AmccCalibration(m->getEngine());
+    h->multiCameraCalibration(2, 30, 30, 11, 8);
 }
 
 void tracking(Matlab *m) {
@@ -31,19 +27,12 @@ void tracking(Matlab *m) {
     Vector *d4 = new Vector(-10, 10, 10);
     Vector cameraPosition[4] = {*c1, *c2, *c3, *c4};
     Vector cameraDirection[4] = {*d1, *d2, *d3, *d4};
-    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 15, m->getEngine());
+    t = new TrackingArea(cameraPosition, cameraDirection, 4, 15, m->getEngine());
     printf("[%f %f %f], [%f %f %f], [%f %f %f], [%f, %f, %f], [%f, %f, %f] is the tracking area\n", t->getA1().getV1(), t->getA1().getV2(),t->getA1().getV3(), t->getA2().getV1(), t->getA2().getV2(), t->getA2().getV3(), t->getA3().getV1(), t->getA3().getV2(), t->getA3().getV3(), t->getA4().getV1(), t->getA4().getV2(), t->getA4().getV3(), t->getB1().getV1(), t->getB1().getV2(), t->getB1().getV3());
 
 }
 
 int main(int argc, char** argv) {
     Matlab *m = new Matlab();
-
-    bool ok = calibrate(m);
-    if (ok == true) {
-        printf("success\n");
-    } else {
-        printf("fail\n");
-    }
-    m->destroyMatlab();
+    calibrate(m);
 }
