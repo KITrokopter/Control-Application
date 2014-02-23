@@ -282,8 +282,33 @@ void Controller::calculateMovement()
  * After that probably an error occured and we can't say where it
  * it and should shutdown.
  */
+void Controller::moveUp()
+{
+	/* Move Up All */
+	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
+	{
+		quadcopterMovementStatus[i] = CALCULATE_START;
+	}
+}
+
+void Controller::moveUp(std::vector<int> ids)
+{
+	/* Move Up all mentioned */
+	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
+	{
+		for(unsigned int k = 0; k < ids.size(); k++)
+		{
+			if( quadcopters[i] == ids[i] )
+			{
+				quadcopterMovementStatus[i] = CALCULATE_START;
+			}
+		}			
+	}
+}
+
 void Controller::moveUp( int internId )
 {
+	/* The actual calculation of "moving up" */
 	bool continueMoveUp;
 	double moveVector[3];	
 
@@ -304,23 +329,14 @@ void Controller::moveUp( int internId )
 	}
 }
 
-void Controller::moveUpNoArg()
-{
-	moveUp(this->idsToGetTracked);
-}
-
-void Controller::moveUp(std::vector<int> ids)
-{
-	/*TODO: delete or use? */
-}
 
 void Controller::stabilize( int internId )
 {
-
+	/* TODO */
 }
 void Controller::hold( int internId )
 {
-
+	/* TODO */
 }
 
 /*

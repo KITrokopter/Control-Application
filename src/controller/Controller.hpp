@@ -146,11 +146,9 @@ private:
 	std::vector<std::string> idString;
 	std::vector<int> idsToGetTracked;
 
-	//Control variables
-	//Array of tracked quadcopters
-	std::vector<bool> tracked;
-	//Set when we are in the shutdown process
-	bool shutdownStarted;
+	/* Control variables */	
+	std::vector<bool> tracked; //Array of tracked quadcopters	
+	bool shutdownStarted; //Set when we are in the shutdown process
 	bool getTracked;
 	bool receivedQuadcopters;
 	
@@ -174,7 +172,7 @@ private:
      */
     ros::NodeHandle n;
 
-	//Subscriber
+	/* Subscriber */
 	//Subscriber for the MoveFormation data
 	ros::Subscriber MoveFormation_sub;
 	//Subscriber for Formation data from API
@@ -200,7 +198,7 @@ private:
 	//Service for setting the quadcopter ids
 	ros::ServiceServer QuadID_srv;
 
-	//Clients
+	/* Clients */
 	//ros::ServiceClient FindAll_client;
 	ros::ServiceClient Blink_client;
 	ros::ServiceClient Announce_client;
