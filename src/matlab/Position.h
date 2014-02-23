@@ -17,9 +17,9 @@ private:
 	int numberCameras;
 	/// (quadPos[i])[j] is the position of quadrocopter with ID i and camera with ID j
 	std::vector< std::vector <Vector> > quadPos;
-	// as quadcopterId is between 0 and 50, all positions from 0 to 49 get default values.
 	std::vector<Vector> oldPos;
 public:
+	// maximal amount of quadcopters is 50
     	Position();
     	Position(Engine *ep, int numberCameras);
         bool calibrate(ChessboardData *chessboardData, int numberCameras);

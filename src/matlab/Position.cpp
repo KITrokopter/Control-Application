@@ -25,10 +25,12 @@ Position::Position()
         this->ep = ep;
     }
     calib = AmccCalibration();
-    Vector nan(NAN, NAN, NAN);
+    Vector nan = *(new Vector(NAN, NAN, NAN));
+    // if quadcopter maximal amount is higher than 50, you should change the range of i
     for (int i = 0; i < 50; i++) {
         oldPos[i] = nan;
     }
+
 }
 
 Position::Position(Engine *ep, int numberCameras)
@@ -36,7 +38,7 @@ Position::Position(Engine *ep, int numberCameras)
     this->numberCameras = numberCameras;
     this->ep = ep;
     calib = AmccCalibration(ep);
-    Vector nan(NAN, NAN, NAN);
+    Vector nan = *(new Vector(NAN, NAN, NAN));
     for (int i = 0; i < 50; i++) {
         oldPos[i] = nan;
     }
@@ -156,6 +158,7 @@ void Position::loadValues(int cameraId) {
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) {
+    Vector pos;
     if (cameraId == -1) {
         Vector nan = *(new Vector(NAN, NAN, NAN));
         return nan;
@@ -165,38 +168,57 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         quad.putVariable("quad", ep);
         engEvalString(ep, "pos = quad * rodrigues(omc__left_1) + Tc_1;");
         mxArray *position = engGetVariable(ep, "pos");
-        Vector pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
+        pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
+        pos = getCoordinationTransformation(pos, cameraId);
+        // save result
         (quadPos[quadcopterId])[cameraId] = pos;
         mxDestroyArray(position);
     } else {
-        (quadPos[quadcopterId])[cameraId] = quad.add(getOrientation(cameraId));
+        //?? waiting for response of developer...
+        //pos = quad.add(getOrientation(cameraId));
+        pos = getCoordinationTransformation(quad, cameraId);
+        // save result
+        (quadPos[quadcopterId])[cameraId] = pos;
     }
-    // controlling whether all cameras already tracked the quadcopter
+
+    // controlling whether all cameras already tracked the quadcopter once
     if (quadPos[quadcopterId].size() < numberCameras) {
         /// default value, when not all cameras did track it
         Vector nan = *(new Vector(NAN, NAN, NAN));
         return nan;
     } else {
-        Line *quadPositions = new Line[numberCameras];
-        for (int i = 0; i < numberCameras; i++) {
-            Vector position = getPosition(cameraId);
-            Vector orientation = getOrientation(cameraId);
-            quadPositions[i] = *(new Line(position, orientation));
-        }
-        Matlab *m = new Matlab(ep);
-        Vector quadPosition = m->interpolateLines(quadPositions, numberCameras);
-        // moving vector = oldPosition - actual position
-        Vector movement;
-        if (oldPos[quadcopterId].equals(*(new Vector(NAN, NAN, NAN)))) {
-            /// default value at the first time when it is tracked.
+        // not calculated before, first time
+        if (oldPos[quadcopterId].isValid()) {
+
+            // building lines from camera position to quadrocopter position
+            Line *quadPositions = new Line[numberCameras];
+            for (int i = 0; i < numberCameras; i++) {
+                Vector position = getPosition(cameraId);
+                quadPositions[i] = *(new Line(position, quadPos[quadcopterId][cameraId].add(position.mult(-1))));
+            }
+
+            Matlab *m = new Matlab(ep);
+            Vector quadPosition = m->interpolateLines(quadPositions, numberCameras);
+
+            oldPos[quadcopterId] = quadPosition;
+
+            //return nan, as no earlier position is known, so the movement can't be calculated
             Vector nan = *(new Vector(NAN, NAN, NAN));
-            movement = nan;
+            return nan;
         } else {
-            movement = oldPos[quadcopterId].add(quadPosition.mult(-1));
+            Matlab *m = new Matlab(ep);
+            // interpolation factor has to be tested.
+            Vector position = getPosition(cameraId);
+            // line from camera to tracked object
+            Line tracked = *(new Line(position, pos.add(position.mult(-1))));
+            // calulating actual pos
+            Vector newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
+            // calculating movement = newPos - oldPos
+            Vector movement = newPos.add(oldPos[quadcopterId].mult(-1));
+            // saving new Pos
+            oldPos[quadcopterId] = newPos;
+            return movement;
         }
-        oldPos[quadcopterId] = quadPosition;
-        quadPos.clear();
-        return movement;
     }
 }
 

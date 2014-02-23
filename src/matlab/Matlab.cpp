@@ -143,7 +143,7 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 }
 
 /*
- * calculates the vector that is in average nearest to all lines
+ * calculates the vector that is nearest to all lines
  */
 Vector Matlab::interpolateLines(Line *lines, int quantity) {
     Vector *points = new Vector[2*quantity];
