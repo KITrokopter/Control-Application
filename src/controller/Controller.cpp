@@ -179,11 +179,12 @@ void Controller::stopReachTrackedArea()
  */	
 void Controller::calculateMovement()
 {
+	bool inShutdown = false;
+	shutdownMutex.lock();
+	inShutdown = shutdownStarted;
+	shutdownMutex.unlock();
 	
 	/* As long as we are not in the shutdown process, calculate new Movement data */
-	shutdownMutex.lock();
-	bool inShutdown = shutdownStarted;
-	shutdownMutex.unlock();
 	while(!inShutdown)
 	{
 		if(!checkInput())
@@ -194,6 +195,16 @@ void Controller::calculateMovement()
 		double moveVector[3];
 		for(int i = 0; i < this->amount; i++)
 		{	
+			/* Shutdown */
+			shutdownMutex.lock();
+			inShutdown = shutdownStarted;
+			shutdownMutex.unlock();
+			if( inShutdown )
+			{
+				return;
+			}
+
+			/* Battery */
 			if(this->battery_status[i] < LOW_BATTERY)
 			{
 				std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
@@ -208,6 +219,8 @@ void Controller::calculateMovement()
 				shutdownFormation();*/
 				return;
 			}
+
+			/* Calculation */
 			tarPosMutex.lock();
 			double * const target = this->listTargets.back()[i].getPosition();
 			tarPosMutex.unlock();
@@ -232,7 +245,8 @@ void Controller::calculateMovement()
 					stabilize( i );
 					break;
 				case CALCULATE_HOLD:
-					/*TODO*/
+					
+					/*TODO hold and (if in shutdown) do it fast*/
 					break;
 				case CALCULATE_MOVE:
 					moveVector[0] = target[0] - current[0];
@@ -255,7 +269,8 @@ void Controller::calculateMovement()
 			 * Variation 2: convert movement, save movement and send all
 			 */
 			convertMovement(moveVector);
-			sendMovement();
+			/*TODO: Variation 2 */
+			sendMovementAll();
 		}
 	}	
 }
@@ -559,22 +574,20 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
  */
 void Controller::shutdownFormation()
 {
-	//Shutdown process is started
+	/* Start shutdown process */
 	shutdownMutex.lock();
 	this->shutdownStarted = 1;
 	shutdownMutex.unlock();
-	//Bring all quadcopters to a stand
-	for(int i = 0; i < this->amount; i++)
-	{
-		this->id = this->quadcopters[i];
-		this->thrust = THRUST_STAND_STILL;
-		this->yawrate = 0;
-		this->pitch = 0;
-		this->roll = 0;
-	}	
-	sendMovementAll();	/*FIXME while testing */
 	
-	//Decline each quadcopter till it's not tracked anymore and then shutdown motor
+	/* Bring all quadcopters to a hold */	
+	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
+	{
+		quadcopterMovementStatus[i] = CALCULATE_HOLD;
+	}
+
+	/* Decline */
+	/*
+	 //Decline each quadcopter till it's not tracked anymore and then shutdown motor
 	for(int i = 0; i < this->amount; i++)
 	{
 		this->id = this->quadcopters[i];
@@ -591,6 +604,7 @@ void Controller::shutdownFormation()
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
 	shutdownMutex.unlock();
+	*/
 }
 
 /*
