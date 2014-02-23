@@ -35,7 +35,9 @@ Controller::Controller()
 	this->Shutdown_client = this->n.serviceClient<control_application::Shutdown>("Shutdown");
 	
 	//All control variables are set to zero
+	shutdownMutex.lock();
 	this->shutdownStarted = 0;
+	shutdownMutex.unlock();
 	this->receivedQuadcopters = 0;
 }
 
@@ -179,7 +181,10 @@ void Controller::calculateMovement()
 {
 	
 	/* As long as we are not in the shutdown process, calculate new Movement data */
-	while(!shutdownStarted)
+	shutdownMutex.lock();
+	bool inShutdown = shutdownStarted;
+	shutdownMutex.unlock();
+	while(!inShutdown)
 	{
 		if(!checkInput())
 		{
@@ -203,8 +208,6 @@ void Controller::calculateMovement()
 				shutdownFormation();*/
 				return;
 			}
-			//Gets the right hardware id/ String id
-			this->id = this->quadcopters[i];
 			tarPosMutex.lock();
 			double * const target = this->listTargets.back()[i].getPosition();
 			tarPosMutex.unlock();
@@ -389,7 +392,7 @@ void Controller::convertMovement(double* vector)
  * Creates a Ros message for the movement of the quadcopter and sends this 
  * to the quadcopter modul
  */
-void Controller::sendMovement()
+/*void Controller::sendMovement()
 {
 	//Creates a message for quadcopter Movement and sends it via Ros
 	control_application::quadcopter_movement msg;
@@ -398,7 +401,7 @@ void Controller::sendMovement()
 	msg.pitch = this->pitch;
 	msg.yaw = this->yawrate;
 	this->Movement_pub[id].publish(msg);	
-}
+}*/
 
 /*
  * Creates a Ros message for the movement of each quadcopter and sends this 
@@ -414,7 +417,7 @@ void Controller::sendMovementAll()
 		msg.roll = this->movementAll[i].getRoll();
 		msg.pitch = this->movementAll[i].getPitch();
 		msg.yaw = this->movementAll[i].getYawrate();
-	this->Movement_pub[id].publish(msg);
+		this->Movement_pub[i].publish(msg);		/*FIXME while testing*/
 	}
 }
 
@@ -557,7 +560,9 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 void Controller::shutdownFormation()
 {
 	//Shutdown process is started
+	shutdownMutex.lock();
 	this->shutdownStarted = 1;
+	shutdownMutex.unlock();
 	//Bring all quadcopters to a stand
 	for(int i = 0; i < this->amount; i++)
 	{
@@ -566,9 +571,9 @@ void Controller::shutdownFormation()
 		this->yawrate = 0;
 		this->pitch = 0;
 		this->roll = 0;
-		this->shutdownStarted = 0;
-		sendMovement();
-	}
+	}	
+	sendMovementAll();	/*FIXME while testing */
+	
 	//Decline each quadcopter till it's not tracked anymore and then shutdown motor
 	for(int i = 0; i < this->amount; i++)
 	{
@@ -583,6 +588,9 @@ void Controller::shutdownFormation()
 		this->thrust = THRUST_MIN;
 		sendMovement();
 	}
+	shutdownMutex.lock();
+	this->shutdownStarted = 0;
+	shutdownMutex.unlock();
 }
 
 /*
@@ -682,7 +690,10 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 	}
 	if(msg->command == 2)
 	{
-		if(!shutdownStarted)
+		shutdownMutex.lock();
+		bool inShutdown = shutdownStarted;
+		shutdownMutex.unlock();
+		if(!inShutdown)
 		{
 			control_application::Shutdown srv;
 			Shutdown_client.call(srv);

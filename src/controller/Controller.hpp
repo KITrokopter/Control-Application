@@ -107,14 +107,8 @@ protected:
 	void hold( int internId );
 
 private:
-	/*  */
 
 	/* Position */
-	//std::vector<Position6DOF> targetPosition;
-	//std::vector<Position6DOF> currentPosition;
-	//std::vector<rpy-values> sentMovement;
-	//TODO Where are those lists filled/ updated? FIFO? Latest element last?
-	//TODO Include time somehow or how do we check if there hasn't been any input?
 	std::list<std::vector<Position6DOF> > listPositions;
 	std::list<std::vector<Position6DOF> > listTargets;
 	std::list<std::vector<Position6DOF> > listSendTargets;
@@ -145,7 +139,6 @@ private:
 	std::vector<MovementQuadruple> movementAll;
 
 	/* Received data */ 
-	int id;
 	//Arrays for quadcopters sorted by intern id
 	std::vector<float> pitch_stab;
 	std::vector<float> roll_stab;
