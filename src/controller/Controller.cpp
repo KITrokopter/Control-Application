@@ -531,11 +531,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 	for(int i = 0; i < this->amount; i++)
 	{
 		//Starting/ Inclining process
-		this->id = this->quadcopters[i];
-		this->thrust = THRUST_START;
-		this->yawrate = 0;
-		this->pitch = 0;
-		this->roll = 0;
+		moveUp(); /*FIXME to test */
 		//Calculate the wanted position for quadcopter i
 		double * pos = formPos[i].getPosition();
 		double target[3];

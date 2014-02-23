@@ -75,9 +75,9 @@ public:
 	void sendMovementAll();
 	void calculateMovement();
 	void reachTrackedArea(std::vector<int> ids);
-	void moveUp(std::vector<int> ids);
-	void moveUp( int internId );
-	void moveUpNoArg();
+	void moveUp();	// move up all
+	void moveUp(std::vector<int> ids);	// move up mentioned in ids
+	void moveUp( int internId );	// the calculation function
 
 	/* Formation also services*/
 	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
