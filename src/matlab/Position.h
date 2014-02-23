@@ -23,10 +23,14 @@ public:
     	Position();
     	Position(Engine *ep, int numberCameras);
         bool calibrate(ChessboardData *chessboardData, int numberCameras);
-	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet  	
-    Vector updatePosition(Vector quad, int cameraId, double quadcopterId);
-        Vector getPosition(int cameraId);
-        Vector getOrientation(int cameraId);
+	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet
+	double getAngle(Vector u, Vector v);
+	Vector getCoordinationTransformation(Vector w, int cameraId);	
+    	Vector updatePosition(Vector quad, int cameraId, double quadcopterId);
+        Vector getPositionInCameraCoordination(int cameraId);
+        Vector getOrientationInCameraCoordination(int cameraId);
+	Vector getPosition(int cameraId);
+	Vector getOrientation(int cameraId);
 	void loadValues(int cameraId);
 };
 

@@ -197,6 +197,7 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
 }
 
 /**
+ * Warning: Only working, if line g and E1 or line g.getA() + r * (directV2-g.getA()) intersects!!
  * @brief Matlab::getIntersectionLine
  * @param f Line, that is positionated in plain E1
  * @param directV1 Point, that is not in line f and is on the plain E1
