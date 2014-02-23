@@ -3,35 +3,35 @@
 #include "Formation.hpp"
 #include "Position6DOF.hpp"
 #include "MovementQuadruple.hpp"
+#include "Mutex.hpp"
 #include "ros/ros.h"
-//Ros messages/services
 #include "api_application/MoveFormation.h"	// ? (D)
-#include "../matlab/Vector.h"
-#include "../matlab/TrackingArea.h"
-#include "control_application/quadcopter_movement.h"		// ? (D)
 #include "api_application/SetFormation.h"
 #include "api_application/Message.h"
 #include "api_application/Announce.h"
 #include "api_application/System.h"
-#include "quadcopter_application/find_all.h"
-#include "quadcopter_application/blink.h"
-#include "quadcopter_application/quadcopter_status.h"
+#include "control_application/quadcopter_movement.h"		// ? (D)
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
+#include "quadcopter_application/find_all.h"
+#include "quadcopter_application/blink.h"
+#include "quadcopter_application/quadcopter_status.h"
 #include "../position/IPositionReceiver.hpp"
-#include <stdio.h>
-#include <unistd.h>
-#include <math.h>
-#include <string>
-#include <vector>
-#include <pthread.h>
-#include <list>
-#include "Mutex.hpp"
-#include <cmath>
-#include <time.h>
-#include <sstream>
+#include "../matlab/Vector.h"
+#include "../matlab/TrackingArea.h"
 #include <boost/bind.hpp>
+#include <cmath>
+#include <list>
+#include <math.h>
+#include <pthread.h>
+#include <sstream>
+#include <stdio.h>
+#include <string>
+#include <time.h>
+#include <unistd.h>
+#include <vector>
+//Ros messages/services
 
 #define THRUST_MIN 10001
 #define THRUST_STAND_STILL 18001
@@ -41,10 +41,8 @@
 #define ROLL_STEP 2
 #define PITCH_STEP 2
 #define INVALID -1
-//TODO 100% = 1?
-#define LOW_BATTERY 0.05
-//In seconds
-#define TIME_UPDATED 1
+#define LOW_BATTERY 0.05 //TODO 100% = 1?
+#define TIME_UPDATED 1 //In seconds
 
 /* For calculateMovement */
 #define CALCULATE_NONE 0 // Unset
@@ -56,13 +54,13 @@
 
 #define CALCULATE_TAKE_OLD_VALUE -5
 
-/* Used for lists */
-#define MAX_NUMBER_QUADCOPTER 10
+#define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
 
 #define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
+
 class Formation;
 class Controller : public IPositionReceiver {
-//class Controller {
+	
 public:
 	Controller();
 
@@ -74,7 +72,6 @@ public:
 	Position6DOF* getTargetPosition();
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
-	void sendMovement();
 	void sendMovementAll();
 	void calculateMovement();
 	void reachTrackedArea(std::vector<int> ids);

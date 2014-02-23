@@ -529,7 +529,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		//As long as the quadcopter isn't tracked, incline
 		while(!this->tracked[i])
 		{
-			sendMovement();
+			sendMovementAll();
 		}
 		//If this is the first tracked quadcopter set it as a reference point for all the others
 		if( i == 0)
@@ -595,11 +595,11 @@ void Controller::shutdownFormation()
 		while(tracked[i] != INVALID)
 		{
 			this->thrust = THRUST_DECLINE;
-			sendMovement();
+			sendMovementAll();
 		}
 		//Shutdown crazyflie after having left the tracking area.
 		this->thrust = THRUST_MIN;
-		sendMovement();
+		sendMovementAll();
 	}
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
