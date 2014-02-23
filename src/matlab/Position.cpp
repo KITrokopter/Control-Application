@@ -98,14 +98,17 @@ Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
         Vector v = c.add(a.mult(-1));
         Line cameras = *(new Line(a, u));
         // calculates intersection line of plain of cameras in reality and plain of cameras in coordination system
-        Vector origin = *(new Vector(0, 0, 0));
-        Vector x = *(new Vector(1, 0, 0));
-        Vector y = *(new Vector(0, 1, 0));
+
+       Vector origin = *(new Vector(1000, 1000, 0));
+        Vector x = *(new Vector(-1, 0, 0));
+        Vector y = *(new Vector(0, -1, 0));
         Line xAxis = *(new Line(origin, x));
         Line intersectionLine = m->getIntersectionLine(cameras, c, xAxis, y);
+        printf("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
 
         // get translation vector of the perpendicular point between intersection line and origin
         Vector translation = m->perpFootOneLine(intersectionLine, origin);
+        printf("translation vector: [%f, %f, %f]\n", translation.getV1(), translation.getV2(), translation.getV3());
 
         // calculating angel xAxis and translation
         double angle = getAngle(x, intersectionLine.getU());
@@ -143,11 +146,13 @@ Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
         // add translation
         translation.putVariable("translationVector", ep);
         engEvalString(ep, "translatedVector = cameraCoordinationPos + translationVector");
+        mxArray *result = engGetVariable(ep, "translatedVector");
+        Vector r = *(new Vector(mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]));
 
         // calculate Rx * Rz * translatedVector
-        engEvalString(ep, "result = Rx * Rz * translatedVector;");
-        mxArray *result = engGetVariable(ep, "result");
-        Vector r = *(new Vector(mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]));
+        engEvalString(ep, "result = Rx * Rz * translatedVector';");
+        result = engGetVariable(ep, "result");
+        r = *(new Vector(mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]));
         mxDestroyArray(result);
         return r;
     }

@@ -223,6 +223,7 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     mxArray *x = engGetVariable(ep, "x");
     // point on the intersectionline
     Vector intersection1 = g.getA().add(g.getU().mult(mxGetPr(x)[2]));
+
     Vector w = directV2.add(g.getA().mult(-1));
     w.putVariable("w", ep);
     // E1 == g.getA() + r * (directV2 - g.getA())
@@ -234,6 +235,7 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     x = engGetVariable(ep, "x");
     // point on the intersectionline
     Vector intersection2 = g.getA().add(g.getU().mult(mxGetPr(x)[2]));
+
     Line *intersectionLine = new Line(intersection1, (intersection2.add(intersection1.mult(-1))));
     mxDestroyArray(x);
     return *intersectionLine;
