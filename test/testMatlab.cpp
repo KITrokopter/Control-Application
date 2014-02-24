@@ -25,7 +25,9 @@ bool calibrate(Matlab *m) {
     cam0 = h->getPosition(0);
     printf("[%f, %f, %f]\n", cam0.getV1(), cam0.getV2(), cam0.getV3());*/
     Vector cam1 = h->getPosition(1);
-    printf("[%f, %f, %f]\n", cam1.getV1(), cam1.getV2(), cam1.getV3());
+    printf("cam 1 is [%f, %f, %f]\n", cam1.getV1(), cam1.getV2(), cam1.getV3());
+    Vector cam2 = h->getPosition(2);
+    printf("cam 2 is [%f, %f, %f]\n", cam2.getV1(), cam2.getV2(), cam2.getV3());
     ///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     return true;
 }

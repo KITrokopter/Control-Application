@@ -223,11 +223,8 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     mxArray *x = engGetVariable(ep, "x");
     // point on the intersectionline
     Vector intersection1 = g.getA().add(g.getU().mult(mxGetPr(x)[2]));
-    printf("results perp1: (r, s, t) = (%f, %f, %f)\n", mxGetPr(x)[0], mxGetPr(x)[1], mxGetPr(x)[2]);
-    printf("intersection1: [%f, %f, %f]\n", intersection1.getV1(), intersection1.getV2(), intersection1.getV3());
 
     Vector w = directV2.add(g.getA().mult(-1));
-    printf("should be [0, -1, 0] is [%f, %f, %f]\n", w.getV1(), w.getV2(), w.getV3());
     w.putVariable("w", ep);
     // E1 == g.getA() + r * (directV2 - g.getA())
     engEvalString(ep, "A = [u(1) v(1) -w(1); u(2) v(2) -w(2); u(3) v(3) -w(3)]");
@@ -240,8 +237,6 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     x = engGetVariable(ep, "x");
     // point on the intersectionline
     Vector intersection2 = g.getA().add(w.mult(mxGetPr(x)[2]));
-    printf("results perp2: (r, s, z) = (%f, %f, %f)\n", mxGetPr(x)[0], mxGetPr(x)[1], mxGetPr(x)[2]);
-    printf("intersection2: [%f, %f, %f]\n", intersection2.getV1(), intersection2.getV2(), intersection2.getV3());
 
     Line *intersectionLine = new Line(intersection1, (intersection2.add(intersection1.mult(-1))));
     mxDestroyArray(x);

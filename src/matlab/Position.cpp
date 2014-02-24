@@ -96,8 +96,8 @@ Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
         Vector u = b.add(a.mult(-1));
         Vector v = c.add(a.mult(-1));
         Line cameras = *(new Line(a, u));
-        printf("camera 1: [%f, %f, %f]\n", b.getV1(), b.getV2(), b.getV3());
-        printf("camera 2: [%f, %f, %f]\n", c.getV1(), c.getV2(), c.getV3());
+        //printf("camera 1: [%f, %f, %f]\n", b.getV1(), b.getV2(), b.getV3());
+        //printf("camera 2: [%f, %f, %f]\n", c.getV1(), c.getV2(), c.getV3());
         // calculates intersection line of plain of cameras in reality and plain of cameras in coordination system
 
         Vector origin = *(new Vector(1, 1, 0));
@@ -107,13 +107,13 @@ Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
         Line xAxis = *(new Line(origin, x));
         // works if E isn't already on the x axis or the y axis
         Line intersectionLine = m->getIntersectionLine(cameras, c, xAxis, y);
-        printf("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
+        //printf("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
 
         // calculating angel xAxis and translation
         double angle = getAngle(x, intersectionLine.getU());
 
         // enter angle in matlab
-        double dataAngleZ[1] = {angle};
+        double dataAngleZ[1] = {-angle};
         mxArray *angZ = mxCreateDoubleMatrix(1, 1, mxREAL);
         memcpy((void *)mxGetPr(angZ), (void *)dataAngleZ, sizeof(dataAngleZ));
         engPutVariable(ep, "angleZ", angZ);
