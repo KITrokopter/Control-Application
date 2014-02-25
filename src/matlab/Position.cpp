@@ -24,7 +24,7 @@ Position::Position()
     } else {
         this->ep = ep;
     }
-    calib = AmccCalibration();
+    calib = new AmccCalibration();
     Vector nan = *(new Vector(NAN, NAN, NAN));
     // if quadcopter maximal amount is higher than 50, you should change the range of i
     for (int i = 0; i < 50; i++) {
@@ -37,9 +37,13 @@ Position::Position()
 
 Position::Position(Engine *ep, int numberCameras)
 {
+    printf("starting position constructor\n");
     this->numberCameras = numberCameras;
+    printf("before ep\n");
     this->ep = ep;
-    calib = AmccCalibration(ep);
+    printf("before pos\n");
+    calib = new AmccCalibration(ep);
+    printf("after pos\n");
     Vector nan = *(new Vector(NAN, NAN, NAN));
     for (int i = 0; i < 50; i++) {
         std::vector<Vector> h(20, nan);
@@ -50,7 +54,7 @@ Position::Position(Engine *ep, int numberCameras)
 
 bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     this->numberCameras = numberCameras;
-    calib.multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
+    calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
     mxArray *good;
     std::string load;
     std::ostringstream id;

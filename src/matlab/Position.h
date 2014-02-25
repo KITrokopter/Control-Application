@@ -13,7 +13,7 @@
 class Position {
 private: 
 	Engine *ep;
-	AmccCalibration calib;
+	AmccCalibration *calib;
 	int numberCameras;
 	/// (quadPos[i])[j] is the position of quadrocopter with ID i and camera with ID j
 	std::vector< std::vector <Vector> > quadPos;

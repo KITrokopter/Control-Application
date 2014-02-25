@@ -63,7 +63,6 @@ int main(int argc, char** argv) {
 
     //AmccCalibration *a= new AmccCalibration(m->getEngine());
     Engine *e = m->getEngine();
-    printf("after e\n");
     Position *p = new Position(e,3);
 /*
     bool ok = calibrate(m);
