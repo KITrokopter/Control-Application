@@ -46,7 +46,6 @@ Position::Position(Engine *ep, int numberCameras)
         quadPos.push_back(h);
         oldPos.push_back(nan);
     }
-    printf("worked\n");
 }
 
 bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
@@ -178,36 +177,42 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         return nan;
     }
     else if (cameraId != 0) {
-        printf("helli\n");
         loadValues(cameraId);
         quad.putVariable("quad", ep);
         engEvalString(ep, "pos = (quad * rodrigues(omc_left_1))' + Tc_left_1;");
         mxArray *position = engGetVariable(ep, "pos");
         pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
         pos = getCoordinationTransformation(pos, cameraId);
-        // save result
-        (quadPos[quadcopterId])[cameraId] = pos;
         mxDestroyArray(position);
     } else {
         pos = getCoordinationTransformation(quad, cameraId);
-        // save result
-        (quadPos[quadcopterId])[cameraId] = pos;
     }
 
     // controlling whether all cameras already tracked the quadcopter once
-    if (quadPos[quadcopterId].size() < numberCameras) {
+   /// if (quadPos[quadcopterId].size() < numberCameras) {
+    int valid = 0;
+    for (int i = 0; i < numberCameras; i++) {
+        if (quadPos[quadcopterId][i].isValid()) {
+            valid++;
+        }
+    }
+    if (valid != numberCameras) {
         /// default value, when not all cameras did track it
+        // save result
+        (quadPos[quadcopterId])[cameraId] = pos;
         Vector nan = *(new Vector(NAN, NAN, NAN));
         return nan;
     } else {
+        // save result
+        (quadPos[quadcopterId])[cameraId] = pos;
         // not calculated before, first time
-        if (oldPos[quadcopterId].isValid()) {
+        if (!(oldPos[quadcopterId].isValid())) {
 
-            // building lines from camera position to quadrocopter position
+            // building lines from camera position to quadcopter position
             Line *quadPositions = new Line[numberCameras];
             for (int i = 0; i < numberCameras; i++) {
-                Vector position = getPosition(cameraId);
-                quadPositions[i] = *(new Line(position, quadPos[quadcopterId][cameraId].add(position.mult(-1))));
+                Vector position = getPosition(i);
+                quadPositions[i] = *(new Line(position, (quadPos[quadcopterId])[i].add(position.mult(-1))));
             }
 
             Matlab *m = new Matlab(ep);

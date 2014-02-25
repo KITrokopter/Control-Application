@@ -36,7 +36,9 @@ bool calibrate(Matlab *m) {
     h->updatePosition(x, 2, 1);
     Vector y = *(new Vector(1, 2, 4));
     Vector movement = h->updatePosition(y, 0, 1);
-    printf("Quadcopter 1 moved in [%f, %f, %f] direction", movement.getV1(), movement.getV2(), movement.getV3());
+    y = *(new Vector(1, 2, 5));
+    movement = h->updatePosition(y, 0, 1);
+    printf("Quadcopter 1 moved in direction [%f, %f, %f]\n", movement.getV1(), movement.getV2(), movement.getV3());
     return true;
 }
 
