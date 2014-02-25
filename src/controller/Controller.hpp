@@ -5,12 +5,12 @@
 #include "MovementQuadruple.hpp"
 #include "Mutex.hpp"
 #include "ros/ros.h"
-#include "api_application/MoveFormation.h"	// ? (D)
+#include "api_application/MoveFormation.h"
 #include "api_application/SetFormation.h"
 #include "api_application/Message.h"
 #include "api_application/Announce.h"
 #include "api_application/System.h"
-#include "control_application/quadcopter_movement.h"		// ? (D)
+#include "control_application/quadcopter_movement.h"
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
@@ -45,18 +45,14 @@
 #define TIME_UPDATED 1 //In seconds
 
 /* For calculateMovement */
-#define CALCULATE_NONE 0 // Unset
-#define CALCULATE_START 1
-#define CALCULATE_STABILIZE 2
-#define CALCULATE_HOLD 3
-#define CALCULATE_MOVE 4
-#define CALCULATE_ACTIVATED 6 // QC ready to receive data from quadcoptermodul
-
-#define CALCULATE_TAKE_OLD_VALUE -5
+/*TODO choose QC for formation */
+#define CALCULATE_NONE 0 // Unused for formation
+#define CALCULATE_START 1 // Send high thrust to reach tracked area
+#define CALCULATE_STABILIZE 2 // Tries to hold position (with certain error value)
+#define CALCULATE_MOVE 3	// With target and current position
+#define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
 
 #define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
-
-#define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
 
 class Formation;
 class Controller : public IPositionReceiver {
@@ -115,7 +111,7 @@ private:
 	Formation *formation;
 	//TODO needs to be with service find all
 	int totalAmount;
-	int amount;
+	int amount;	// Needed for formation
 	std::list<std::vector<float> > formationMovement;
 	time_t lastFormationMovement;
 	time_t lastCurrent;
@@ -131,8 +127,6 @@ private:
 	std::vector<unsigned int> quadcopterMovementStatus;
 	
 	/* Set data */ 
-	int thrust;
-	float pitch, roll, yawrate;
 	std::vector<MovementQuadruple> movementAll;
 
 	/* Received data */ 
@@ -146,8 +140,8 @@ private:
 	std::vector<std::string> idString;
 	std::vector<int> idsToGetTracked;
 
-	/* Control variables */	
-	std::vector<bool> tracked; //Array of tracked quadcopters	
+	/* Control variables */
+	std::vector<bool> tracked; //Array of tracked quadcopters	FIXME
 	bool shutdownStarted; //Set when we are in the shutdown process
 	bool getTracked;
 	bool receivedQuadcopters;

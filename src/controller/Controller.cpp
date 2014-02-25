@@ -102,7 +102,9 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	{
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent);
-		newListItem.push_back( newPosition );		
+		newListItem.push_back( newPosition );	
+		/*TODO: set quadcopterMovementStatus 
+		 to CALCULATE_STABILIZE if it was CALCULATE_START before */
 	}	
 	std::size_t elements = positions.size();
 	listPositionsMutex.lock();
@@ -124,12 +126,6 @@ void Controller::reachTrackedArea(std::vector<int> ids)
 	getTracked = true;
 	getTrackedMutex.unlock();
 	
-	/* TODO: Error-handling. */
-	/* Test ... if enough time: fix it, if not: copy to private variable */
-	idsToGetTracked = ids;
-	/*
-	 std:pthread_create(&tGetTracked, NULL, startThreadMoveUp, NULL); //ids); 
-	 */
 	for(unsigned int i = 0; i < quadcopters.size(); i++)
 	{
 		for(unsigned int k = 0; k < ids.size(); k++)
@@ -228,13 +224,13 @@ void Controller::calculateMovement()
 			double * const current = this->listPositions.back()[i].getPosition();
 			curPosMutex.unlock();
 
-			/*TODO: collect and save comments at one place, in some documentation, too? */
 			switch( quadcopterMovementStatus[i] )
 			{
 				case CALCULATE_NONE:
-					moveVector[0] = CALCULATE_TAKE_OLD_VALUE;
-					moveVector[1] = CALCULATE_TAKE_OLD_VALUE;
-					moveVector[2] = CALCULATE_TAKE_OLD_VALUE;
+					/* Take old values */
+					moveVector[0] = INVALID;
+					moveVector[1] = INVALID;
+					moveVector[2] = INVALID;
 					break;
 				case CALCULATE_START:	
 					/*TODO: adapt */
@@ -244,19 +240,14 @@ void Controller::calculateMovement()
 					/*TODO*/
 					stabilize( i );
 					break;
-				case CALCULATE_HOLD:
-					
+				case CALCULATE_HOLD:					
 					/*TODO hold and (if in shutdown) do it fast*/
+					
 					break;
 				case CALCULATE_MOVE:
 					moveVector[0] = target[0] - current[0];
 					moveVector[1] = target[1] - current[1];
 					moveVector[2] = target[2] - current[2];
-					break;
-				case CALCULATE_ACTIVATED:
-					moveVector[0] = INVALID;
-					moveVector[1] = INVALID;
-					moveVector[2] = INVALID;
 					break;
 				default:
 					moveVector[0] = INVALID;
@@ -392,8 +383,6 @@ void Controller::convertMovement(double* vector)
 	else if( vector[0] == CALCULATE_TAKE_OLD_VALUE )
 	{
 		/*TODO */
-		MovementQuadruple newMovement = MovementQuadruple(0, 0.0f, 0.0f, 0.0f);
-		this->movementAll.push_back( newMovement );
 	}
 	
 	if (vector[2] > thrust_react_z_high) {
@@ -539,7 +528,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		target[1] = pos[1] * distance;
 		target[2] = pos[2] * distance;
 		//As long as the quadcopter isn't tracked, incline
-		while(!this->tracked[i])
+		while(!this->[i])
 		{
 			sendMovementAll();
 		}
