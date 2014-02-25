@@ -52,6 +52,7 @@
 #define CALCULATE_STABILIZE 2 // Tries to hold position (with certain error value)
 #define CALCULATE_MOVE 3	// With target and current position
 #define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
+#define CALCULATE_LAND 5 //Shutdown quadcopter
 
 #define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
 
@@ -65,7 +66,7 @@ public:
 	void initialize();
 
 	/* Movement and Positioning */
-	void convertMovement(double* const vector);
+	void convertMovement(double* const vector, int internId);
 	Position6DOF* getTargetPosition();
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
@@ -75,6 +76,7 @@ public:
 	void moveUp();	// move up all
 	void moveUp(std::vector<int> ids);	// move up mentioned in ids
 	void moveUp( int internId );	// the calculation function
+	void land( int internId );
 
 	/* Formation also services*/
 	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
@@ -85,6 +87,7 @@ public:
 	
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
 	
+	int getLocalId(int globalId);
 	bool checkInput();
 	void emergencyRoutine(std::string message);
 	
@@ -111,19 +114,15 @@ private:
 	//Receive data over ROS
 	Formation *formation;
 	//TODO needs to be with service find all
-	int totalAmount;
 	int amount;	// Needed for formation
 	std::list<std::vector<float> > formationMovement;
-	//TODO Array so that we can accomplish qc individual error handling
-	time_t lastFormationMovement;
-	time_t lastCurrent;
+	std::vector<time_t> lastFormationMovement;
+	std::vector<time_t> lastCurrent;
 	unsigned int senderID;
 	//TODO Set area
 	TrackingArea trackingArea;
 	
-	//Mapping of int id to string id/ hardware id   qc[id][uri/hardware id]
-	//std::vector<std::string> quadcopters;
-	//Mapping of quadcopter global id
+	//Mapping of quadcopter global id qudcopters[local id] = global id
 	std::vector<unsigned int> quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int> quadcopterMovementStatus;

@@ -98,11 +98,19 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	/* Save position vectors */	
 	std::vector<Position6DOF> newListItem;
 	this->lastCurrent = time(&this->lastCurrent);
-	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it)
+	int i = 0;
+	int id;
+	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent);
 		newListItem.push_back( newPosition );	
+		id = getLocalId(i);
+		if(this->quadcopterMovementStatus[id] == CALCULATE_START)
+		{
+		    this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
+		}
+		tracked[id] = true;
 		/*TODO: set quadcopterMovementStatus 
 		 to CALCULATE_STABILIZE if it was CALCULATE_START before */
 	}	
@@ -126,6 +134,7 @@ void Controller::reachTrackedArea(std::vector<int> ids)
 	getTracked = true;
 	getTrackedMutex.unlock();
 	
+	//TODO Use getLocalId???
 	for(unsigned int i = 0; i < quadcopters.size(); i++)
 	{
 		for(unsigned int k = 0; k < ids.size(); k++)
@@ -183,11 +192,7 @@ void Controller::calculateMovement()
 	/* As long as we are not in the shutdown process, calculate new Movement data */
 	while(!inShutdown)
 	{
-		if(!checkInput())
-		{
-			/*TODO: Goto emergency-routine*/
-			return;
-		}
+		checkInput();
 		double moveVector[3];
 		for(int i = 0; i < this->amount; i++)
 		{	
@@ -205,7 +210,6 @@ void Controller::calculateMovement()
 			{
 				std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
 				emergencyRoutine(message);
-				return;
 			}
 
 			/* Calculation */
@@ -226,7 +230,7 @@ void Controller::calculateMovement()
 					break;
 				case CALCULATE_START:	
 					/*TODO: adapt */
-					moveUp( i );
+					//moveUp( i );
 					break;
 				case CALCULATE_STABILIZE:
 					/*TODO*/
@@ -241,6 +245,9 @@ void Controller::calculateMovement()
 					moveVector[1] = target[1] - current[1];
 					moveVector[2] = target[2] - current[2];
 					break;
+				case CALCULATE_LAND:
+					land( i );
+					break;
 				default:
 					moveVector[0] = INVALID;
 					moveVector[1] = INVALID;
@@ -251,7 +258,7 @@ void Controller::calculateMovement()
 			 * Variation 1: convert movement and send movement
 			 * Variation 2: convert movement, save movement and send all
 			 */
-			convertMovement(moveVector);
+			convertMovement(moveVector, i);
 			/*TODO: Variation 2 */
 			sendMovementAll();
 		}
@@ -322,24 +329,48 @@ void Controller::hold( int internId )
 	/* TODO */
 }
 
+void Controller::land( int internId )
+{
+	int id = this->quadcopters[i];
+	//Decline until crazyflie isn't tracked anymore
+	while(tracked[i] == true)
+	{
+		this->movementAll[i].setThrust(THRUST_DECLINE);
+		sendMovementAll();
+	}
+	//Shutdown crazyflie after having left the tracking area.
+	this->movementAll[i].setThrust(THRUST_MIN);;
+	sendMovementAll();
+}
+
 /*
  * Checks if formation movement data and quadcopter positions have been received lately. Otherwise calls emergencyroutine.
  */
 bool Controller::checkInput()
 {
-	time_t currentTime = time(&currentTime);
-	if(currentTime - this->lastFormationMovement > TIME_UPDATED_END)
+	for(int i = 0; i < this->quadcopterMovementStatus.size(); i++)
 	{
-		std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED);
-		emergencyRoutine(message);
-		return false;
+		time_t currentTime = time(&currentTime);
+		if(currentTime - this->lastFormationMovement[i] > TIME_UPDATED_END)
+		{
+		      std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED);
+		      emergencyRoutine(message);
+		      return false;
+		}
+		if(currentTime - this->lastCurrent[i] > TIME_UPDATED_END)
+		{
+		      std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED);
+		      emergencyRoutine(message);
+		      tracked[i] = false;
+		      return false;
+		}
+		if(currentTime - this->lastCurrent[i] > TIME_UPDATED_CRITICAL)
+		{
+		      tracked[i] = false;
+		      return false;
+		}
 	}
-	if(currentTime - this->lastCurrent > TIME_UPDATED_END)
-	{
-		std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED);
-		emergencyRoutine(message);
-		return false;
-	}
+	
 	return true;
 }
 
@@ -361,26 +392,25 @@ void Controller::emergencyRoutine(std::string message)
 /*
  * Converts vector in yaw, pitch, roll and thrust values.
  */
-void Controller::convertMovement(double* vector)
+void Controller::convertMovement(double* const vector, int internId)
 {
 	/* conversion from vectors to thrust, yawrate, pitch... */
 	int thrust_react_z_low = -5;
 	int thrust_react_z_high = 5;
-
+	int thrust = 0;
 	if( vector[0] == INVALID )
 	{
 		MovementQuadruple newMovement = MovementQuadruple(0, 0.0f, 0.0f, 0.0f);
+		//TODO movementAll is not a list
 		this->movementAll.push_back( newMovement );
 	}
-	else if( vector[0] == CALCULATE_TAKE_OLD_VALUE )
-	{
-		/*TODO */
-	}
-	
+	MovementQuadruple * movement = this->movementAll[internId];
 	if (vector[2] > thrust_react_z_high) {
-		this->thrust += THRUST_STEP;
+		thrust = movement.getThrust() + THRUST_STEP;
+		movement.setThrust(thrust);
 	} else if (vector[2] < thrust_react_z_high) {
-		this->thrust -= THRUST_STEP;
+		thrust = movement.getThrust() - THRUST_STEP;
+		movement.setThrust(thrust);
 	} else {
 		/* Probably nothing to do here. */
 	}
@@ -394,10 +424,10 @@ void Controller::convertMovement(double* vector)
 	double ratio_roll = vector[0] / length;
 	double ratio_pitch = vector[1] / length;
 
-	this->roll = ratio_roll + ROLL_STEP;
-	this->pitch = ratio_pitch + PITCH_STEP;
+	movement.setRoll(ratio_roll + ROLL_STEP);
+	movement.setPitch(ratio_pitch + PITCH_STEP);
 
-	this->yawrate = 0.0;
+	movement.setYawrate(0.0);
 }
 
 /*
@@ -471,16 +501,28 @@ void Controller::setTargetPosition()
 	tarPosMutex.unlock();
 }
 
+int Controller::getLocalId(int globalId)
+{
+  for(int i = 0; i < this->quadcopters.size() ; i++ )
+  {
+	if(globalId == this->quadcopters[i])
+	{
+	  return i;
+	}
+  }
+  return -1;
+}
 /*
  * Service to set Quadcopter IDs
  */
 bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res)
 {
-	this->totalAmount = req.amount;
 	for(int i = 0; i < req.amount; i++)
 	{
 		this->quadcopters[i] = req.quadcoptersId[i];
 		this->quadcopterMovementStatus.push_back( CALCULATE_NONE );
+		this->movementAll[i] = MovementQuadruple(0, 0, 0, 0);
+		
 	}
 	receivedQuadcopters = true;
 	return true;
@@ -501,12 +543,11 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 	double * first;
 	std::vector<Position6DOF> newElement;
 	this->listTargets.push_back(newElement);
-	//this->listTargets.emplace_back();
 	//Start one quadcopter after another
 	for(int i = 0; i < this->amount; i++)
 	{
 		//Starting/ Inclining process
-		moveUp(); /*FIXME to test */
+		quadcopterMovementStatus[i] = CALCULATE_START;
 		//Calculate the wanted position for quadcopter i
 		double * pos = formPos[i].getPosition();
 		double target[3];
@@ -514,8 +555,10 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		target[1] = pos[1] * distance;
 		target[2] = pos[2] * distance;
 		//As long as the quadcopter isn't tracked, incline
-		while(!this->[i])
+		while(this->quadcopterMovementStatus[i] == CALCULATE_START)
 		{
+			//TODO When working right, do nothing here and just wait till it's tracked
+			this->movementAll[i] = MovementQuadruple(THRUST_START, 0, 0, 0);
 			sendMovementAll();
 		}
 		//If this is the first tracked quadcopter set it as a reference point for all the others
@@ -523,8 +566,10 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		{
 			curPosMutex.lock();
 			first = listPositions.back()[0].getPosition();
-			//first = currentPosition[0].getPosition();
 			curPosMutex.unlock();
+			tarPosMutex.lock();
+			this->listTargets.back()[0].setPosition(first);
+			tarPosMutex.unlock();
 		}
 		else
 		{
@@ -535,17 +580,19 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 			tarPosMutex.lock();
 			this->listTargets.back()[i].setPosition(target);
 			tarPosMutex.unlock();
-			//Calculate Movement to the wanted position + convert it + send it
-			//calculateMovement();
+			this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
+			//TODO When to switch back to HOLD?
 		}
 		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
-		//target[0] = 0;
+		tarPosMutex.lock();
+		target = this->listTargets.back()[i].getPosition(target);
+		tarPosMutex.unlock();
 		target[1] += distance;
-		//target[2] = 0;
 		tarPosMutex.lock();
 		this->listTargets.back()[i].setPosition(target);
 		tarPosMutex.unlock();
-		//calculateMovement();
+		this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
+		//TODO When to switch back to HOLD?
 	}
 	return true;
 }
@@ -573,25 +620,16 @@ void Controller::shutdownFormation()
 	}
 
 	/* Decline */
-	/*
 	 //Decline each quadcopter till it's not tracked anymore and then shutdown motor
-	for(int i = 0; i < this->amount; i++)
+	for(int i = 0; i < quadcopterMovementStatus.size(); i++)
 	{
-		this->id = this->quadcopters[i];
-		//Decline until crazyflie isn't tracked anymore
-		while(tracked[i] != INVALID)
-		{
-			this->thrust = THRUST_DECLINE;
-			sendMovementAll();
-		}
-		//Shutdown crazyflie after having left the tracking area.
-		this->thrust = THRUST_MIN;
-		sendMovementAll();
+		quadcopterMovementStatus[i] = CALCULATE_LAND;
+		
 	}
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
 	shutdownMutex.unlock();
-	*/
+	
 }
 
 /*
@@ -662,7 +700,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 	//Initialize tracked (no quadcopter is tracked at the beginning)
 	for(int i = 0; i < this->amount; i++)
 	{
-		this->tracked[i] = 0;
+		this->tracked[i] = false;
 	}
 }
 
@@ -672,7 +710,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr)
 {
 	//Intern mapping
-	int quaId = quadcopters[topicNr];
+	int quaId = this->getLocalId(topicNr);
 	this->battery_status[quaId] = msg->battery_status;
 	this->roll_stab[quaId] = msg->stabilizer_roll;
 	this->pitch_stab[quaId] = msg->stabilizer_pitch;
