@@ -42,7 +42,8 @@
 #define PITCH_STEP 2
 #define INVALID -1
 #define LOW_BATTERY 0.05 //TODO 100% = 1?
-#define TIME_UPDATED 1 //In seconds
+#define TIME_UPDATED_END 1 //In seconds
+#define TIME_UPDATE_CRITICAL 0.2 //In seconds
 
 /* For calculateMovement */
 /*TODO choose QC for formation */
@@ -113,6 +114,7 @@ private:
 	int totalAmount;
 	int amount;	// Needed for formation
 	std::list<std::vector<float> > formationMovement;
+	//TODO Array so that we can accomplish qc individual error handling
 	time_t lastFormationMovement;
 	time_t lastCurrent;
 	unsigned int senderID;

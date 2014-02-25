@@ -13,7 +13,6 @@ Controller::Controller()
 	this->MoveFormation_sub = this->n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
 	//Subscriber for the SetFormation data of the Quadcopters (100 is the max. buffered messages)
 	this->SetFormation_sub = this->n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
-	//TODO multiple topics
 	//Subscriber for the quadcopter status data of the Quadcopters (1000 is the max. buffered messages)
 	this->System_sub = this->n.subscribe("System", 1000, &Controller::SystemCallback, this);
 
@@ -71,6 +70,7 @@ void Controller::initialize()
 	{
 		this->senderID = srv.response.id;
 	}
+	//TODO What if service hasn't been called yet?
 	if(receivedQuadcopters)
 	{
 		//Generate Subscribers and Publisher
@@ -205,14 +205,6 @@ void Controller::calculateMovement()
 			{
 				std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
 				emergencyRoutine(message);
-				/*api_application::Message msg;
-				//TODO What's our sender ID?
-				msg.senderID = this->senderID;
-				//Type 2 is an warning message
-				msg.type = 2;
-				msg.message = "Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY;
-				this->Message_pub.publish(msg);
-				shutdownFormation();*/
 				return;
 			}
 
@@ -336,13 +328,13 @@ void Controller::hold( int internId )
 bool Controller::checkInput()
 {
 	time_t currentTime = time(&currentTime);
-	if(currentTime - this->lastFormationMovement < TIME_UPDATED)
+	if(currentTime - this->lastFormationMovement > TIME_UPDATED_END)
 	{
 		std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED);
 		emergencyRoutine(message);
 		return false;
 	}
-	if(currentTime - this->lastCurrent < TIME_UPDATED)
+	if(currentTime - this->lastCurrent > TIME_UPDATED_END)
 	{
 		std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED);
 		emergencyRoutine(message);
@@ -467,12 +459,6 @@ void Controller::setTargetPosition()
 		Vector vector = Vector(targetNew[0],targetNew[1],targetNew[2]);
 		if(!this->trackingArea.contains(vector))
 		{
-			/*api_application::Message msg;
-			msg.senderID = this->senderID;
-			//Type 1 is an message
-			msg.type = 1;
-			msg.message = "Formation Movement is invalid. Quadcopter %i would leave Tracking Area.\n", i;
-			this->Message_pub.publish(msg);*/
 			std::string message("Formation Movement is invalid. Quadcopter %i would leave Tracking Area.\n", i);
 			emergencyRoutine(message);
 			return;
