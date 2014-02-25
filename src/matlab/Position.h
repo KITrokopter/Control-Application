@@ -19,12 +19,13 @@ private:
 	std::vector< std::vector <Vector> > quadPos;
 	std::vector<Vector> oldPos;
 public:
-	// maximal amount of quadcopters is 50
+	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
     	Position();
     	Position(Engine *ep, int numberCameras);
         bool calibrate(ChessboardData *chessboardData, int numberCameras);
 	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet
 	double getAngle(Vector u, Vector v);
+	void setNumberCameras(int numberCameras);	
 	Vector getCoordinationTransformation(Vector w, int cameraId);	
     	Vector updatePosition(Vector quad, int cameraId, double quadcopterId);
         Vector getPositionInCameraCoordination(int cameraId);

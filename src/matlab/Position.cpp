@@ -28,6 +28,8 @@ Position::Position()
     Vector nan = *(new Vector(NAN, NAN, NAN));
     // if quadcopter maximal amount is higher than 50, you should change the range of i
     for (int i = 0; i < 50; i++) {
+        std::vector<Vector> h(20, nan);
+        quadPos.push_back(h);
         oldPos.push_back(nan);
     }
 
@@ -40,11 +42,15 @@ Position::Position(Engine *ep, int numberCameras)
     calib = AmccCalibration(ep);
     Vector nan = *(new Vector(NAN, NAN, NAN));
     for (int i = 0; i < 50; i++) {
+        std::vector<Vector> h(20, nan);
+        quadPos.push_back(h);
         oldPos.push_back(nan);
     }
+    printf("worked\n");
 }
 
 bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
+    this->numberCameras = numberCameras;
     calib.multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
     mxArray *good;
     std::string load;
@@ -152,6 +158,10 @@ Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
 
 }
 
+void Position::setNumberCameras(int numberCameras) {
+    this->numberCameras = numberCameras;
+}
+
 void Position::loadValues(int cameraId) {
     std::string result;
     std::ostringstream id;
@@ -168,9 +178,10 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         return nan;
     }
     else if (cameraId != 0) {
+        printf("helli\n");
         loadValues(cameraId);
         quad.putVariable("quad", ep);
-        engEvalString(ep, "pos = quad * rodrigues(omc__left_1) + Tc_1;");
+        engEvalString(ep, "pos = (quad * rodrigues(omc_left_1))' + Tc_left_1;");
         mxArray *position = engGetVariable(ep, "pos");
         pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
         pos = getCoordinationTransformation(pos, cameraId);
