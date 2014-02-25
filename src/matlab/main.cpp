@@ -15,9 +15,15 @@
 int main(int argc, char** argv)
 {
     Matlab *m = new Matlab();
-
-    AmccCalibration *h = new AmccCalibration(m->getEngine());
-    h->multiCameraCalibration(2, 30, 30, 11, 8);
+    printf("Starting");
+    /*AmccCalibration *h = new AmccCalibration(m->getEngine());
+    bool x = h->multiCameraCalibration(2, 30, 30, 7, 7);
+    if (x) {
+        printf("YEAH!\n");
+    }
+    else {
+        printf("No :(\n");
+    }*/
 
     /*//Lotfußpunkt (6, 3, 1)
     Vector* a = new Vector(-2, 1, 7);
@@ -75,7 +81,7 @@ int main(int argc, char** argv)
     Vector *g1 = new Vector(2, 2, 11);
     Line u = m->getIntersectionLine(*f, *f1, *g, *g1);
     printf("a is [%f, %f, %f], should be [2, 2, 2], u is [%f, %f, %f], should be [0, -1, 3]\n", u.getA().getV1(), u.getA().getV2(), u.getA().getV3(),u.getU().getV1(), u.getU().getV2(), u.getU().getV3());
-*/
+
     Vector *a1 = new Vector(0, 0, 0);
     Vector *a2 = new Vector(0, 1, 0);
     Vector *a3 = new Vector(1, 1, 0);
@@ -107,7 +113,7 @@ int main(int argc, char** argv)
     Vector cameraDirection[4] = {*d1, *d2, *d3, *d4};
     t = new TrackingArea(cameraPosition, cameraDirection, 4, 15, m->getEngine());
     printf("[%f %f %f], [%f %f %f], [%f %f %f], [%f, %f, %f], [%f, %f, %f] is the tracking area\n", t->getA1().getV1(), t->getA1().getV2(),t->getA1().getV3(), t->getA2().getV1(), t->getA2().getV2(), t->getA2().getV3(), t->getA3().getV1(), t->getA3().getV2(), t->getA3().getV3(), t->getA4().getV1(), t->getA4().getV2(), t->getA4().getV3(), t->getB1().getV1(), t->getB1().getV2(), t->getB1().getV3());
-
+*/
 /*
     Line *f = new Line(*a1, *a3);
     Line *g = new Line(*b1, *b2);

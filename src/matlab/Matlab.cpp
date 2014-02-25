@@ -143,7 +143,7 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 }
 
 /*
- * calculates the vector that is in average nearest to all lines
+ * calculates the vector that is nearest to all lines
  */
 Vector Matlab::interpolateLines(Line *lines, int quantity) {
     Vector *points = new Vector[2*quantity];
@@ -197,6 +197,7 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
 }
 
 /**
+ * Warning: Only working, if line g and E1 or line g.getA() + r * (directV2-g.getA()) intersects!!
  * @brief Matlab::getIntersectionLine
  * @param f Line, that is positionated in plain E1
  * @param directV1 Point, that is not in line f and is on the plain E1
@@ -222,17 +223,21 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     mxArray *x = engGetVariable(ep, "x");
     // point on the intersectionline
     Vector intersection1 = g.getA().add(g.getU().mult(mxGetPr(x)[2]));
+
     Vector w = directV2.add(g.getA().mult(-1));
     w.putVariable("w", ep);
     // E1 == g.getA() + r * (directV2 - g.getA())
     engEvalString(ep, "A = [u(1) v(1) -w(1); u(2) v(2) -w(2); u(3) v(3) -w(3)]");
+
     engEvalString(ep, "diff = b - a");
     engEvalString(ep, "bb = [diff(1); diff(2); diff(3)]");
-    // x = (r, s, t)
+
+    // x = (r, s, z)
     engEvalString(ep, "x = inv(A) * bb");
     x = engGetVariable(ep, "x");
     // point on the intersectionline
-    Vector intersection2 = g.getA().add(g.getU().mult(mxGetPr(x)[2]));
+    Vector intersection2 = g.getA().add(w.mult(mxGetPr(x)[2]));
+
     Line *intersectionLine = new Line(intersection1, (intersection2.add(intersection1.mult(-1))));
     mxDestroyArray(x);
     return *intersectionLine;

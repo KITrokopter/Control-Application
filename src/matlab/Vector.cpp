@@ -53,11 +53,13 @@ Vector Vector::add(Vector a) {
     double v1 = this->v1 + a.getV1();
     double v2 = this->v2 + a.getV2();
     double v3 = this->v3 + a.getV3();
-    return *(new Vector(v1, v2, v3));
+    Vector v = *(new Vector(v1, v2, v3));
+    return v;
 }
 
 Vector Vector::mult(double a) {
-    return *(new Vector(this->v1 * a, this->v2 * a, this->v3 * a));
+    Vector v = *(new Vector(this->v1 * a, this->v2 * a, this->v3 * a));
+    return v;
 }
 
 int Vector::scalarMult(Vector a) {
@@ -92,8 +94,8 @@ void Vector::putVariable(std::string a, Engine *ep) {
 }
 
 Vector Vector::cross(Vector v) {
-    Vector *cross = new Vector(v.getV2()*v3 - v.getV3()*v2, v.getV3()*v1 - v.getV1()*v3, v.getV1()*v2 -v.getV2()*v1);
-    return *cross;
+    Vector cross = *(new Vector(v.getV2()*v3 - v.getV3()*v2, v.getV3()*v1 - v.getV1()*v3, v.getV1()*v2 -v.getV2()*v1));
+    return cross;
 }
 
 bool Vector::equals(Vector v) {

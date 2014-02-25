@@ -36,28 +36,28 @@ AmccCalibration::AmccCalibration(Engine *ep) {
 void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLengthX, double squareLengthY, int numberSquareCornersX, int numberSquareCornersY) {
     mxArray *slx, *sly, *nscx, *nscy, *nc;
 
-    int dataSlx[1] = {squareLengthX};
+    double dataSlx[1] = {squareLengthX};
     slx = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(slx), (void *)dataSlx, sizeof(dataSlx));
     engPutVariable(ep, "dX", slx);
 
-    int dataSly[1] = {squareLengthY};
+    double dataSly[1] = {squareLengthY};
     sly = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(sly), (void *)dataSly, sizeof(dataSly));
     engPutVariable(ep, "dY", sly);
 
-    int dataNscx[1] = {numberSquareCornersX};
-    nscx = mxCreateNumericMatrix(1, 1, mxSINGLE_CLASS, mxREAL);
+    double dataNscx[1] = {numberSquareCornersX};
+    nscx = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(nscx), (void *)dataNscx, sizeof(dataNscx));
     engPutVariable(ep, "nx_crnrs", nscx);
 
-    int dataNscy[1] = {numberSquareCornersY};
-    nscy = mxCreateNumericMatrix(1, 1, mxSINGLE_CLASS, mxREAL);
+    double dataNscy[1] = {numberSquareCornersY};
+    nscy = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(nscy), (void *)dataNscy, sizeof(dataNscy));
     engPutVariable(ep, "ny_crnrs", nscy);
 
-    int dataNc[1] = {numberCameras};
-    nc = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
+    double dataNc[1] = {numberCameras};
+    nc = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(nc), (void *)dataNc, sizeof(dataNc));
     engPutVariable(ep, "nc", nc);
 
@@ -68,7 +68,22 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     engEvalString(ep, "output_dir = '~/multiCalibrationResults/';");
 
     // Image format: jpeg, bmp, tiff, png etc.
-    engEvalString(ep, "format_image = 'png'");
+    // engEvalString(ep, "format_image = 'png'");
+
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //SHOULD BE DELETED JUST FOR TESTING!!!!!!!!!!!!!!!!!!!!!!!!!
+    engEvalString(ep, "format_image = 'jpeg'");
 
     // tolerance in pixels of reprojection of checkerboard corners
     engEvalString(ep, "proj_tol = 2.0;");
@@ -76,7 +91,7 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     // The index of the cameras to calibrate. In this example we are calibrating four cameras with sequential naming.
     // camera_vec = [0 1 2 3]; % version 1.2 and before
     // camera_vec = [0 1; 0 2; 0 3]';
-    engEvalString(ep, "camera_vec = [zeros(1,(nc), 'single'); (1:(cast(nc, 'single')))]'");
+    engEvalString(ep, "camera_vec = [zeros(1,(nc - 1), 'single'); (1:(cast(nc - 1, 'single')))]");
 
     // The index of the cameras to be rotated (1 for rotating 180 degrees)
     // rotcam = [0 0 0 0]; % version 1.2 and before
@@ -90,12 +105,14 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     std::string cam_names;
     cam_names = "cam_names = [";
     std::ostringstream id;
-    for (int i = 1; i < numberCameras; i++) {
+    for (int i = 0; i < (numberCameras - 1); i++) {
         id << i;
-        cam_names = cam_names + "'" + id.str() + "', ";
+        cam_names = cam_names + "'cam" + id.str() + "_image'; ";
+        id.str("");
+        id.clear();
     }
-    id << numberCameras;
-    cam_names = cam_names + "'" + id.str() + "'];";
+    id << (numberCameras - 1);
+    cam_names = cam_names + "'cam" + id.str() + "_image'];";
     // the base naming convention for the calibration images (not strictly required), will default to the 'camX_image' convention if not used.
     // cam_names = ['cam0_image', 'cam1_image', 'cam2_image', 'cam3_image']; % version 1.2 and before
     engEvalString(ep, cam_names.c_str());
