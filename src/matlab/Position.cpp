@@ -37,13 +37,9 @@ Position::Position()
 
 Position::Position(Engine *ep, int numberCameras)
 {
-    printf("starting position constructor\n");
     this->numberCameras = numberCameras;
-    printf("before ep\n");
     this->ep = ep;
-    printf("before pos\n");
     calib = new AmccCalibration(ep);
-    printf("after pos\n");
     Vector nan = *(new Vector(NAN, NAN, NAN));
     for (int i = 0; i < 50; i++) {
         std::vector<Vector> h(20, nan);

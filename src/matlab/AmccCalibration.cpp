@@ -29,9 +29,7 @@ AmccCalibration::AmccCalibration() {
 }
 
 AmccCalibration::AmccCalibration(Engine *ep) {
-    printf("before\n");
     this->ep = ep;
-    printf("after\n");
 }
 
 //M. Warren, D. McKinnon, B. Upcroft, "Online Calibration of Stereo Rigs for Long-Term Autonomy", in International Conference on Robotics and Automation, Karlsruhe, Germany, 2013.
