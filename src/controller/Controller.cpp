@@ -35,7 +35,9 @@ Controller::Controller()
 	this->Shutdown_client = this->n.serviceClient<control_application::Shutdown>("Shutdown");
 	
 	//All control variables are set to zero
+	shutdownMutex.lock();
 	this->shutdownStarted = 0;
+	shutdownMutex.unlock();
 	this->receivedQuadcopters = 0;
 }
 
@@ -177,9 +179,13 @@ void Controller::stopReachTrackedArea()
  */	
 void Controller::calculateMovement()
 {
+	bool inShutdown = false;
+	shutdownMutex.lock();
+	inShutdown = shutdownStarted;
+	shutdownMutex.unlock();
 	
 	/* As long as we are not in the shutdown process, calculate new Movement data */
-	while(!shutdownStarted)
+	while(!inShutdown)
 	{
 		if(!checkInput())
 		{
@@ -189,6 +195,16 @@ void Controller::calculateMovement()
 		double moveVector[3];
 		for(int i = 0; i < this->amount; i++)
 		{	
+			/* Shutdown */
+			shutdownMutex.lock();
+			inShutdown = shutdownStarted;
+			shutdownMutex.unlock();
+			if( inShutdown )
+			{
+				return;
+			}
+
+			/* Battery */
 			if(this->battery_status[i] < LOW_BATTERY)
 			{
 				std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
@@ -203,8 +219,8 @@ void Controller::calculateMovement()
 				shutdownFormation();*/
 				return;
 			}
-			//Gets the right hardware id/ String id
-			this->id = this->quadcopters[i];
+
+			/* Calculation */
 			tarPosMutex.lock();
 			double * const target = this->listTargets.back()[i].getPosition();
 			tarPosMutex.unlock();
@@ -229,7 +245,8 @@ void Controller::calculateMovement()
 					stabilize( i );
 					break;
 				case CALCULATE_HOLD:
-					/*TODO*/
+					
+					/*TODO hold and (if in shutdown) do it fast*/
 					break;
 				case CALCULATE_MOVE:
 					moveVector[0] = target[0] - current[0];
@@ -252,7 +269,8 @@ void Controller::calculateMovement()
 			 * Variation 2: convert movement, save movement and send all
 			 */
 			convertMovement(moveVector);
-			sendMovement();
+			/*TODO: Variation 2 */
+			sendMovementAll();
 		}
 	}	
 }
@@ -264,8 +282,33 @@ void Controller::calculateMovement()
  * After that probably an error occured and we can't say where it
  * it and should shutdown.
  */
+void Controller::moveUp()
+{
+	/* Move Up All */
+	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
+	{
+		quadcopterMovementStatus[i] = CALCULATE_START;
+	}
+}
+
+void Controller::moveUp(std::vector<int> ids)
+{
+	/* Move Up all mentioned */
+	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
+	{
+		for(unsigned int k = 0; k < ids.size(); k++)
+		{
+			if( quadcopters[i] == ids[i] )
+			{
+				quadcopterMovementStatus[i] = CALCULATE_START;
+			}
+		}			
+	}
+}
+
 void Controller::moveUp( int internId )
 {
+	/* The actual calculation of "moving up" */
 	bool continueMoveUp;
 	double moveVector[3];	
 
@@ -286,23 +329,14 @@ void Controller::moveUp( int internId )
 	}
 }
 
-void Controller::moveUpNoArg()
-{
-	moveUp(this->idsToGetTracked);
-}
-
-void Controller::moveUp(std::vector<int> ids)
-{
-	/*TODO: delete or use? */
-}
 
 void Controller::stabilize( int internId )
 {
-
+	/* TODO */
 }
 void Controller::hold( int internId )
 {
-
+	/* TODO */
 }
 
 /*
@@ -389,7 +423,7 @@ void Controller::convertMovement(double* vector)
  * Creates a Ros message for the movement of the quadcopter and sends this 
  * to the quadcopter modul
  */
-void Controller::sendMovement()
+/*void Controller::sendMovement()
 {
 	//Creates a message for quadcopter Movement and sends it via Ros
 	control_application::quadcopter_movement msg;
@@ -398,7 +432,7 @@ void Controller::sendMovement()
 	msg.pitch = this->pitch;
 	msg.yaw = this->yawrate;
 	this->Movement_pub[id].publish(msg);	
-}
+}*/
 
 /*
  * Creates a Ros message for the movement of each quadcopter and sends this 
@@ -414,7 +448,7 @@ void Controller::sendMovementAll()
 		msg.roll = this->movementAll[i].getRoll();
 		msg.pitch = this->movementAll[i].getPitch();
 		msg.yaw = this->movementAll[i].getYawrate();
-	this->Movement_pub[id].publish(msg);
+		this->Movement_pub[i].publish(msg);		/*FIXME while testing*/
 	}
 }
 
@@ -497,11 +531,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 	for(int i = 0; i < this->amount; i++)
 	{
 		//Starting/ Inclining process
-		this->id = this->quadcopters[i];
-		this->thrust = THRUST_START;
-		this->yawrate = 0;
-		this->pitch = 0;
-		this->roll = 0;
+		moveUp(); /*FIXME to test */
 		//Calculate the wanted position for quadcopter i
 		double * pos = formPos[i].getPosition();
 		double target[3];
@@ -511,7 +541,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		//As long as the quadcopter isn't tracked, incline
 		while(!this->tracked[i])
 		{
-			sendMovement();
+			sendMovementAll();
 		}
 		//If this is the first tracked quadcopter set it as a reference point for all the others
 		if( i == 0)
@@ -556,20 +586,20 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
  */
 void Controller::shutdownFormation()
 {
-	//Shutdown process is started
+	/* Start shutdown process */
+	shutdownMutex.lock();
 	this->shutdownStarted = 1;
-	//Bring all quadcopters to a stand
-	for(int i = 0; i < this->amount; i++)
+	shutdownMutex.unlock();
+	
+	/* Bring all quadcopters to a hold */	
+	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
 	{
-		this->id = this->quadcopters[i];
-		this->thrust = THRUST_STAND_STILL;
-		this->yawrate = 0;
-		this->pitch = 0;
-		this->roll = 0;
-		this->shutdownStarted = 0;
-		sendMovement();
+		quadcopterMovementStatus[i] = CALCULATE_HOLD;
 	}
-	//Decline each quadcopter till it's not tracked anymore and then shutdown motor
+
+	/* Decline */
+	/*
+	 //Decline each quadcopter till it's not tracked anymore and then shutdown motor
 	for(int i = 0; i < this->amount; i++)
 	{
 		this->id = this->quadcopters[i];
@@ -577,12 +607,16 @@ void Controller::shutdownFormation()
 		while(tracked[i] != INVALID)
 		{
 			this->thrust = THRUST_DECLINE;
-			sendMovement();
+			sendMovementAll();
 		}
 		//Shutdown crazyflie after having left the tracking area.
 		this->thrust = THRUST_MIN;
-		sendMovement();
+		sendMovementAll();
 	}
+	shutdownMutex.lock();
+	this->shutdownStarted = 0;
+	shutdownMutex.unlock();
+	*/
 }
 
 /*
@@ -682,7 +716,10 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 	}
 	if(msg->command == 2)
 	{
-		if(!shutdownStarted)
+		shutdownMutex.lock();
+		bool inShutdown = shutdownStarted;
+		shutdownMutex.unlock();
+		if(!inShutdown)
 		{
 			control_application::Shutdown srv;
 			Shutdown_client.call(srv);
