@@ -62,7 +62,6 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     double result = mxGetPr(good)[0];
     bool ok = true;
     if (result == 0) {
-        printf("Matrix 0\n");
         ok = false;
     } else {
         for (int i = 1; i < numberCameras; i++) {
