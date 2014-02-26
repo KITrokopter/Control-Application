@@ -1,12 +1,16 @@
 #include "helpers/MovementGenerator.hpp"
-#include "../src/position/DummyPositionReceiver.hpp"
+#include "../src/controller/Controller.hpp"
 
 #include <iostream>
 
 int main(int argc, char** argv) {
 	std::cout << "Start profile_control" << std::endl;
-	
-	DummyPositionReceiver *receiver = new DummyPositionReceiver();
+
+	/*
+	 * TODO: needs to be initialized
+	 * Controller instead of DummyPositionReceiver
+	 */
+	Controller *receiver = new Controller(); 
 	
 	std::vector<Vector> from;
 	std::vector<Vector> to;
