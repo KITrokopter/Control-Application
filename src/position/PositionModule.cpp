@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string>
 #include <algorithm>
+#include <iostream>
 
 #include <ros/console.h>
 #include <opencv2/highgui/highgui.hpp>
@@ -17,10 +18,17 @@
 
 #include "../matlab/Vector.h"
 
-PositionModule::PositionModule(IPositionReceiver* receiver)
+// Use this to test if images are saved properly, when you only have one camera.
+#define SINGLE_CAMERA_CALIBRATION
+
+PositionModule::PositionModule(IPositionReceiver* receiver) : 
+	pictureCache(50), // Assume we never have 50 or more modules running on the network.
+	pictureTimes(50)
 {
 	assert(receiver != 0);
 	this->receiver = receiver;
+	
+	ROS_DEBUG("Initializing PositionModule");
 	
 	_isInitialized = true;
 	isCalibrating = false;
@@ -40,7 +48,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver)
 	this->calculateCalibrationService = n.advertiseService("CalculateCalibration", &PositionModule::calculateCalibrationCallback, this);
 	
 	// Advertise myself to API
-	ros::ServiceClient announceClient = n.serviceClient<api_application::Announce>("Announce");
+	ros::ServiceClient announceClient = n.serviceClient<api_application::Announce>("announce");
 	
 	api_application::Announce announce;
 	announce.request.type = 3; // 3 means position module
@@ -69,7 +77,9 @@ PositionModule::PositionModule(IPositionReceiver* receiver)
 	
 	if (_isInitialized)
 	{
-		ROS_DEBUG("PositionModule initialized.");
+		ROS_DEBUG("PositionModule initialized");
+	} else {
+		ROS_ERROR("Could not initialize PositionModule!");
 	}
 }
 
@@ -79,7 +89,7 @@ PositionModule::~PositionModule()
 	
 	// TODO: Free picture cache.
 	
-	ROS_DEBUG("PositionModule destroyed.");
+	ROS_DEBUG("PositionModule destroyed");
 }
 
 // Service
@@ -89,6 +99,8 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	
 	if (!isCalibrating)
 	{
+		ROS_INFO("Starting multi camera calibration process");
+		
 		setPictureSendingActivated(true);
 		calibrationPictureCount = 0;
 		boardSize = cv::Size(req.chessboardWidth, req.chessboardHeight);
@@ -135,28 +147,34 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			if (!foundAllCorners)
 			{
 				ROS_INFO("Took bad picture (id %d)", id);
+				delete *it;
+				*it = 0;
 				continue;
 			}
 			else
 			{
 				ROS_INFO("Took good picture (id %d)", id);
 				goodPictures[id] = *it;
+				
+				// Remove image from image cache.
+				*it = 0;
 			}
-			
-			// Remove image from image cache.
-			*it = 0;
 		}
 	}
 	
 	pictureCacheMutex.unlock();
 	
+	#ifdef SINGLE_CAMERA_CALIBRATION
+	if (goodPictures.size() >= 1) {
+	#else
 	if (goodPictures.size() >= 2) {
+	#endif
 		// Create directory for images.
-		int error = mkdir("~/calibrationImages", 770);
+		int error = mkdir("/tmp/calibrationImages", 0777);
 		
-		if (error != 0 && error != EEXIST)
+		if (error != 0 && errno != EEXIST)
 		{
-			ROS_ERROR("Could not create directory for calibration images: %d", error);
+			ROS_ERROR("Could not create directory for calibration images (/tmp/calibrationImages): %d", errno);
 			
 			// Delete images.
 			for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
@@ -167,11 +185,12 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		}
 		
 		id = 0;
-		for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
+		for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++, id++) {
 			std::stringstream ss;
-			ss << "~/calibrationImages/cam" << id << "_image" << calibrationPictureCount << ".png";
+			ss << "/tmp/calibrationImages/cam" << id << "_image" << calibrationPictureCount << ".png";
 			
-			cv::imwrite(ss.str(), *(it->second));
+			// Save picture on disk for amcctoolbox.
+			std::cout << "Saving picture: " << cv::imwrite(ss.str(), *(it->second)) << std::endl;
 			
 			sensor_msgs::Image img;
 			img.width = 640;
@@ -186,8 +205,10 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			
 			res.images.push_back(img);
 			res.ids.push_back(it->first);
+			
+			delete it->second;
 		}
-	
+		
 		calibrationPictureCount++;
 	}
 	
@@ -211,7 +232,8 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	
 	isCalibrating = false;
 	
-	system("rm -rf ~/calibrationImages/*");
+	system("rm -rf /tmp/calibrationImages/*");
+	system("rm -rf /tmp/calibrationResult/*");
 	
 	return true;
 }
@@ -219,6 +241,8 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 // Topic
 void PositionModule::pictureCallback(const camera_application::Picture &msg)
 {
+	assert(msg.ID < 50);
+	
 	pictureCacheMutex.lock();
 	
 	bool idKnown = false;
@@ -237,13 +261,12 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	
 	if (isCalibrating)
 	{
-		pictureCache.reserve(msg.ID + 1);
-		pictureTimes.reserve(msg.ID + 1);
-		
+		// Will crash here, if more than 49 modules are used.
 		if (pictureCache[msg.ID] != 0)
 		{
 			delete pictureCache[msg.ID];
 			pictureCache[msg.ID] = 0;
+			
 		}
 		
 		cv::Mat* image = new cv::Mat(cv::Size(640, 480), CV_8UC3);
@@ -264,6 +287,12 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 void PositionModule::systemCallback(const api_application::System &msg)
 {
 	isRunning = msg.command == 1;
+	
+	if (isRunning) {
+		ROS_INFO("Tracking started");
+	} else {
+		ROS_INFO("Tracking stopped");
+	}
 	
 	if (!isRunning) {
 		ros::shutdown();

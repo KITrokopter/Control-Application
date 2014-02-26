@@ -147,6 +147,7 @@ add_dependencies(control_application
   control_application_generate_messages_cpp
   api_application_generate_messages_cpp
   camera_application_generate_messages_cpp
+  quadcopter_application_generate_messages_cpp
 )
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -218,6 +219,7 @@ add_dependencies(profile_control
   control_application_generate_messages_cpp
   api_application_generate_messages_cpp
   camera_application_generate_messages_cpp
+  quadcopter_application_generate_messages_cpp
 )
 
 target_link_libraries(profile_control
@@ -246,6 +248,7 @@ add_dependencies(position_module
 	control_application_generate_messages_cpp
 	api_application_generate_messages_cpp
 	camera_application_generate_messages_cpp
+	quadcopter_application_generate_messages_cpp
 )
 
 target_link_libraries(position_module

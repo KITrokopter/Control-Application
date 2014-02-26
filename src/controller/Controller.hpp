@@ -14,7 +14,7 @@
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
-#include "quadcopter_application/find_all.h"
+//#include "quadcopter_application/find_all.h"
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "../position/IPositionReceiver.hpp"
