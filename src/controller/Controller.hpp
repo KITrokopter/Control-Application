@@ -123,7 +123,7 @@ private:
 	TrackingArea trackingArea;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
-	std::vector<unsigned int> quadcopters;
+	std::vector<unsigned long int> quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int> quadcopterMovementStatus;
 	
@@ -175,14 +175,14 @@ private:
 	ros::Subscriber SetFormation_sub;
 	//Subscriber for Quadcopter data from QuadcopterModul
 	//ros::Subscriber QuadStatus_sub;
-	std::vector<ros::Subscriber> QuadStatus_sub;
+	ros::Subscriber QuadStatus_sub[10];
 	//Subscriber to System topic (Sends the start and end of the system)
 	ros::Subscriber System_sub;
 
 	/* Publisher */
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	//ros::Publisher Movement_pub;
-	std::vector<ros::Publisher> Movement_pub;
+	ros::Publisher Movement_pub[10];
 	//Publisher for Message to API
 	ros::Publisher Message_pub;
 

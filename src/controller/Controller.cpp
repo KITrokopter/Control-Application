@@ -52,6 +52,13 @@ Controller::Controller()
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
 	shutdownMutex.unlock();
+	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
+	{
+		this->quadcopters.push_back(0);
+		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
+		MovementQuadruple init = MovementQuadruple(0,0,0,0);
+		this->movementAll.push_back(init);
+	}
 }
 
 void Controller::initialize()
@@ -497,17 +504,21 @@ int Controller::getLocalId(int globalId)
  */
 bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res)
 {
-	ROS_INFO("Service setQuadcopters has been called amount %u", req.amount);
-	for(int i = 0; i < req.amount; i++)
+	ROS_INFO("Service setQuadcopters has been called amount %i", req.amount);
+	unsigned long int i;
+	for( i = 0; i < req.amount; i++)
 	{
-		ROS_INFO("Array %u", req.quadcoptersId[i]);
-		this->quadcopters[i] = req.quadcoptersId[i];
+		ROS_INFO("Array %lu", req.quadcoptersId[i]);
+		this->quadcopters[i] =  req.quadcoptersId[i];
+		ROS_INFO("TEST!");
 		this->quadcopterMovementStatus[i] = CALCULATE_NONE;
+		ROS_INFO("TEST@");
 		this->movementAll[i] = MovementQuadruple(0, 0, 0, 0);
-		
+		ROS_INFO("TEST3");
 	}
+	ROS_INFO("FIRST PART DONE");
 	//Generate Subscribers and Publisher
-	for(int i = 0; i < this->quadcopters.size(); i++)
+	for(int i = 0; i < req.amount; i++)
 	{
 		//Subscriber to quadcopter status
 		std::stringstream topicNameQS;
