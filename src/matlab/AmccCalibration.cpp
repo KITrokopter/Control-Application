@@ -109,8 +109,8 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     engEvalString(ep, "batch = false;");
 
 
-    engEvalString(ep, "test = 'auto_multi_calibrator_efficient(' + camera_vec + input_dir + output_dir + format_image + dX + dY+ nx_crnrs + ny_crnrs + proj_tol + rotcam + cam_names + fisheye + k3_enable + batch;");
-    engEvalString(ep, "disp(test);");
+    //engEvalString(ep, "test = 'auto_multi_calibrator_efficient(' + camera_vec + input_dir + output_dir + format_image + dX + dY+ nx_crnrs + ny_crnrs + proj_tol + rotcam + cam_names + fisheye + k3_enable + batch;");
+    //engEvalString(ep, "disp(test);");
 
 
     // Perform the calibration
