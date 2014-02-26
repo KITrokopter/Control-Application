@@ -248,6 +248,8 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	int camNumber = camNoToNetId.size();
 	pictureCacheMutex.unlock();
 	
+	// Delete old calibration results.
+	system("rm -rf /tmp/calibrationResult/*");
 	bool ok = tracker.calibrate(&data, camNoToNetId.size());
 	
 	if (ok) {
@@ -259,8 +261,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	isCalibrating = false;
 	
 	// TODO make not uncommented
-	//system("rm -rf /tmp/calibrationImages/*");
-	//system("rm -rf /tmp/calibrationResult/*");
+	system("rm -rf /tmp/calibrationImages/*");
 	
 	return ok;
 }
