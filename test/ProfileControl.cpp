@@ -4,6 +4,8 @@
 #include <iostream>
 
 int main(int argc, char** argv) {
+	ros::init(argc, argv, "profile_control_node");
+	
 	std::cout << "Start profile_control" << std::endl;
 
 	/*
@@ -25,6 +27,8 @@ int main(int argc, char** argv) {
 	to.push_back(Vector(2, 1, 1));
 	from.push_back(Vector(1, 1, 1));
 	to.push_back(Vector(2, 2, 2));
+
+	ros::spin();
 	
 	// See MovementGenerator.hpp
 	MovementGenerator generator(receiver, from, to, 0.05, 0.1, 0.01, 150, 30);
