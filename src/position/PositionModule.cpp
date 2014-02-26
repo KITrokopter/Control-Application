@@ -19,7 +19,7 @@
 #include "../matlab/Vector.h"
 
 // Use this to test if images are saved properly, when you only have one camera.
-#define SINGLE_CAMERA_CALIBRATION
+//#define SINGLE_CAMERA_CALIBRATION
 
 PositionModule::PositionModule(IPositionReceiver* receiver) : 
 	pictureCache(50), // Assume we never have 50 or more modules running on the network.
@@ -253,8 +253,9 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	
 	isCalibrating = false;
 	
-	system("rm -rf /tmp/calibrationImages/*");
-	system("rm -rf /tmp/calibrationResult/*");
+	// TODO make not uncommented
+	//system("rm -rf /tmp/calibrationImages/*");
+	//system("rm -rf /tmp/calibrationResult/*");
 	
 	return ok;
 }
