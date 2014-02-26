@@ -94,7 +94,7 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     ROS_DEBUG("number cameras: %d", numberCameras);
     for (int i = 0; i < numberCameras; i++) {
         id << i;
-        cam_names = cam_names + "'cam" + id.str() + "_image'";
+        cam_names = cam_names + "'cam" + id.str() + "_image';";
         id.str("");
         id.clear();
     }

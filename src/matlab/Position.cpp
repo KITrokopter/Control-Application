@@ -62,6 +62,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     double result = mxGetPr(good)[0];
     bool ok = true;
     if (result == 0) {
+        ROS_DEBUG("can't find camera calibration of camera 0\n");
         ok = false;
     } else {
         for (int i = 1; i < numberCameras; i++) {
@@ -71,7 +72,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
             good = engGetVariable(ep, "worked");
             result = mxGetPr(good)[0];
             if (result == 0) {
-                printf("%d\n", i);
+                ROS_DEBUG("can't find camera calibration of camera %d\n", i);
                 ok = false;
             }
             id.str("");
