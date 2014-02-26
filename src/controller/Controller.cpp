@@ -92,6 +92,7 @@ void Controller::initialize()
 		}
 	}
 	getTracked = false;
+	ROS_INFO("Initialize done");
 }
 
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
@@ -520,7 +521,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	{
 		this->quadcopters[i] = req.quadcoptersId[i];
 		this->quadcopterMovementStatus.push_back( CALCULATE_NONE );
-		this->movementAll[i] = MovementQuadruple(0, 0, 0, 0);
+		//this->movementAll[i] = MovementQuadruple(0, 0, 0, 0);
 		
 	}
 	receivedQuadcopters = true;
