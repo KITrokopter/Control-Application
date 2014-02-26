@@ -581,13 +581,13 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		}
 		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
 		tarPosMutex.lock();
-		target = this->listTargets.back()[i].getPosition();
+		double* pointer = this->listTargets.back()[i].getPosition();
 		tarPosMutex.unlock();
-		target[0] += 0;
-		target[1] += distance;
-		target[2] += 0;
+		pointer[0] += 0;
+		pointer[1] += distance;
+		pointer[2] += 0;
 		tarPosMutex.lock();
-		this->listTargets.back()[i].setPosition(target);
+		this->listTargets.back()[i].setPosition(pointer);
 		tarPosMutex.unlock();
 		this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
 		//TODO When to switch back to HOLD?
