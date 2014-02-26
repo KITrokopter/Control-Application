@@ -1,5 +1,11 @@
 #include "Controller.hpp"
 
+void* startThread(void* something)
+{
+	Controller *someOther = (Controller *) something; 
+	someOther->calculateMovement();
+}
+
 Controller::Controller()
 {
 	/**
@@ -38,13 +44,16 @@ Controller::Controller()
 	this->shutdownStarted = 0;
 	shutdownMutex.unlock();
 	this->receivedQuadcopters = 0;
+
+	
+	/* TODO: Error-handling. */
+	pthread_create(&tCalc, NULL, startThread, this);
+
+	shutdownMutex.lock();
+	this->shutdownStarted = 0;
+	shutdownMutex.unlock();
 }
 
-void* startThread(void* something)
-{
-	Controller *someOther = (Controller *) something; 
-	someOther->calculateMovement();
-}
 
 void Controller::initialize()
 {
@@ -57,12 +66,6 @@ void Controller::initialize()
 	 * Leave function and wait to be called by position-instance.
 	 */
 
-	/* TODO: Error-handling. */
-	pthread_create(&tCalc, NULL, startThread, this);
-
-	shutdownMutex.lock();
-	this->shutdownStarted = 0;
-	shutdownMutex.unlock();
 	api_application::Announce srv;
 	srv.request.type = 2;
 	//srv.request.camera_id = 0;
