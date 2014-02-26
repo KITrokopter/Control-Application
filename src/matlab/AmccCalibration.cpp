@@ -62,28 +62,13 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     engPutVariable(ep, "nc", nc);
 
     // Where the images are (forward slashes only, and must include a trailing slash)
-    engEvalString(ep, "input_dir = '~/calibrationImages/';");
+    engEvalString(ep, "input_dir = '/tmp/calibrationImages';");
 
     // Where the data will be saved (forward slashes only, and must include a trailing slash). This folder should already exist
-    engEvalString(ep, "output_dir = '~/multiCalibrationResults/';");
+    engEvalString(ep, "output_dir = '/tmp/calibrationResult';");
 
     // Image format: jpeg, bmp, tiff, png etc.
-    // engEvalString(ep, "format_image = 'png'");
-
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //SHOULD BE DELETED JUST FOR TESTING!!!!!!!!!!!!!!!!!!!!!!!!!
-    engEvalString(ep, "format_image = 'jpeg'");
+    engEvalString(ep, "format_image = 'png'");
 
     // tolerance in pixels of reprojection of checkerboard corners
     engEvalString(ep, "proj_tol = 2.0;");

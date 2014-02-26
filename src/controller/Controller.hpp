@@ -5,12 +5,12 @@
 #include "MovementQuadruple.hpp"
 #include "Mutex.hpp"
 #include "ros/ros.h"
-#include "api_application/MoveFormation.h"	// ? (D)
+#include "api_application/MoveFormation.h"
 #include "api_application/SetFormation.h"
 #include "api_application/Message.h"
 #include "api_application/Announce.h"
 #include "api_application/System.h"
-#include "control_application/quadcopter_movement.h"		// ? (D)
+#include "control_application/quadcopter_movement.h"
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
@@ -42,21 +42,19 @@
 #define PITCH_STEP 2
 #define INVALID -1
 #define LOW_BATTERY 0.05 //TODO 100% = 1?
-#define TIME_UPDATED 1 //In seconds
+#define TIME_UPDATED_END 1 //In seconds
+#define TIME_UPDATED_CRITICAL 0.2 //In seconds
 
 /* For calculateMovement */
-#define CALCULATE_NONE 0 // Unset
-#define CALCULATE_START 1
-#define CALCULATE_STABILIZE 2
-#define CALCULATE_HOLD 3
-#define CALCULATE_MOVE 4
-#define CALCULATE_ACTIVATED 6 // QC ready to receive data from quadcoptermodul
-
-#define CALCULATE_TAKE_OLD_VALUE -5
+/*TODO choose QC for formation */
+#define CALCULATE_NONE 0 // Unused for formation
+#define CALCULATE_START 1 // Send high thrust to reach tracked area
+#define CALCULATE_STABILIZE 2 // Tries to hold position (with certain error value)
+#define CALCULATE_MOVE 3	// With target and current position
+#define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
+#define CALCULATE_LAND 5 //Shutdown quadcopter
 
 #define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
-
-#define POS_CHECK (current[0] != target[0]) || (current[1] != target[1]) || (current[2] != target[2])
 
 class Formation;
 class Controller : public IPositionReceiver {
@@ -68,7 +66,7 @@ public:
 	void initialize();
 
 	/* Movement and Positioning */
-	void convertMovement(double* const vector);
+	void convertMovement(double* const vector, int internId);
 	Position6DOF* getTargetPosition();
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
@@ -78,6 +76,7 @@ public:
 	void moveUp();	// move up all
 	void moveUp(std::vector<int> ids);	// move up mentioned in ids
 	void moveUp( int internId );	// the calculation function
+	void land( int internId );
 
 	/* Formation also services*/
 	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
@@ -88,6 +87,7 @@ public:
 	
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
 	
+	int getLocalId(int globalId);
 	bool checkInput();
 	void emergencyRoutine(std::string message);
 	
@@ -114,25 +114,20 @@ private:
 	//Receive data over ROS
 	Formation *formation;
 	//TODO needs to be with service find all
-	int totalAmount;
-	int amount;
+	int amount;	// Needed for formation
 	std::list<std::vector<float> > formationMovement;
 	time_t lastFormationMovement;
-	time_t lastCurrent;
+	std::vector<time_t> lastCurrent;
 	unsigned int senderID;
 	//TODO Set area
 	TrackingArea trackingArea;
 	
-	//Mapping of int id to string id/ hardware id   qc[id][uri/hardware id]
-	//std::vector<std::string> quadcopters;
-	//Mapping of quadcopter global id
+	//Mapping of quadcopter global id qudcopters[local id] = global id
 	std::vector<unsigned int> quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int> quadcopterMovementStatus;
 	
 	/* Set data */ 
-	int thrust;
-	float pitch, roll, yawrate;
 	std::vector<MovementQuadruple> movementAll;
 
 	/* Received data */ 
@@ -146,8 +141,8 @@ private:
 	std::vector<std::string> idString;
 	std::vector<int> idsToGetTracked;
 
-	/* Control variables */	
-	std::vector<bool> tracked; //Array of tracked quadcopters	
+	/* Control variables */
+	std::vector<bool> tracked; //Array of tracked quadcopters	FIXME
 	bool shutdownStarted; //Set when we are in the shutdown process
 	bool getTracked;
 	bool receivedQuadcopters;
