@@ -50,7 +50,13 @@ Position::Position(Engine *ep, int numberCameras)
 }
 
 bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
+
     this->numberCameras = numberCameras;
+    if (numberCameras < 3) {
+        ROS_ERROR("Not enough cameras!");
+        return false;
+    }
+
     calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
 
     mxArray *good;
@@ -62,7 +68,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     double result = mxGetPr(good)[0];
     bool ok = true;
     if (result == 0) {
-        ROS_DEBUG("can't find camera calibration of camera 0\n");
+        ROS_DEBUG("Can't find camera calibration of camera 0");
         ok = false;
     } else {
         for (int i = 1; i < numberCameras; i++) {
@@ -72,7 +78,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
             good = engGetVariable(ep, "worked");
             result = mxGetPr(good)[0];
             if (result == 0) {
-                ROS_DEBUG("can't find camera calibration of camera %d\n", i);
+                ROS_DEBUG("Can't find camera calibration of camera %d", i);
                 ok = false;
             }
             id.str("");
@@ -166,7 +172,7 @@ void Position::setNumberCameras(int numberCameras) {
 
 void Position::loadValues(int cameraId) {
     if (cameraId == 0) {
-        result = "load('/tmp/calibrationResult/Calib_Results_0.mat');";
+        std::string result = "load('/tmp/calibrationResult/Calib_Results_0.mat');";
         // loads resulting file in matlab workspace
         engEvalString(ep, result.c_str());
     } else {
@@ -181,6 +187,7 @@ void Position::loadValues(int cameraId) {
 
 Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) {
     Vector pos;
+    ROS_DEBUG("camera id is %d", cameraId);
     if (cameraId == -1) {
         Vector nan = *(new Vector(NAN, NAN, NAN));
         return nan;
@@ -194,7 +201,9 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         pos = getCoordinationTransformation(pos, cameraId);
         mxDestroyArray(position);
     } else {
+        ROS_DEBUG("coordination transformation beginning with camera id %d\n", cameraId);
         pos = getCoordinationTransformation(quad, cameraId);
+        ROS_DEBUG("coordination transformation finished\n");
     }
 
     // controlling whether all cameras already tracked the quadcopter once
