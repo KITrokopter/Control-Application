@@ -516,6 +516,7 @@ int Controller::getLocalId(int globalId)
  */
 bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res)
 {
+	ROS_INFO("Service setQuadcopters has been called");
 	for(int i = 0; i < req.amount; i++)
 	{
 		this->quadcopters[i] = req.quadcoptersId[i];
@@ -535,6 +536,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
  */
 bool Controller::buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res)
 {
+	ROS_INFO("Service buildFormation has been called");
 	//Get the formation Positions and the distance.
 	Position6DOF* const formPos = this->formation->getPosition();
 	double distance = this->formation->getDistance();
@@ -641,6 +643,7 @@ void Controller::shutdownFormation()
  */
 bool Controller::shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res)
 {
+	ROS_INFO("Service shutdown has been called");
 	shutdownFormation ();
 	void *resultCalc;
 	pthread_join(tCalc, &resultCalc);
@@ -657,7 +660,7 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 */
 void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
 {
-	ROS_INFO("I heard: %f", msg->xMovement);
+	ROS_INFO("I heard Movement. xMovement: %f", msg->xMovement);
 	//float movement[3];
 	std::vector<float> movement;
 	movement.push_back( msg->xMovement );
@@ -679,6 +682,7 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 */
 void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
 {
+	ROS_INFO("I heard Formation. amount: %i", msg->amount);
 	this->formation->setDistance(msg->distance);
 	this->formation->setAmount(msg->amount);
 	this->amount = msg->amount;
@@ -710,6 +714,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
  */
 void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr)
 {
+	ROS_INFO("I heard Quadcopter Status. topicNr: %i", topicNr);
 	//Intern mapping
 	int quaId = this->getLocalId(topicNr);
 	this->battery_status[quaId] = msg->battery_status;
@@ -724,6 +729,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
  */
 void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 {
+	ROS_INFO("I heard System. Status: %i", msg->command);
 	if(msg->command == 1)
 	{
 		initialize();
