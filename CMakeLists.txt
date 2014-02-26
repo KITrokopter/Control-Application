@@ -168,7 +168,7 @@ add_executable(profile_control
 	test/ProfileControl.cpp
 	test/helpers/MovementGenerator.cpp
 	src/matlab/Vector.cpp
-	src/position/DummyPositionReceiver.cpp
+	src/controller/Controller.cpp
 )
 
 add_dependencies(profile_control
