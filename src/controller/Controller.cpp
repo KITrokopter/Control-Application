@@ -1,5 +1,11 @@
 #include "Controller.hpp"
 
+void* startThread(void* something)
+{
+	Controller *someOther = (Controller *) something; 
+	someOther->calculateMovement();
+}
+
 Controller::Controller()
 {
 	/**
@@ -48,11 +54,6 @@ Controller::Controller()
 	shutdownMutex.unlock();
 }
 
-void* startThread(void* something)
-{
-	Controller *someOther = (Controller *) something; 
-	someOther->calculateMovement();
-}
 
 void Controller::initialize()
 {
