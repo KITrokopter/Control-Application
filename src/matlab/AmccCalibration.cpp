@@ -94,7 +94,7 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     ROS_DEBUG("number cameras: %d", numberCameras);
     for (int i = 0; i < numberCameras; i++) {
         id << i;
-        cam_names = cam_names + "'cam" + id.str() + "_image'; ";
+        cam_names = cam_names + "'cam" + id.str() + "_image'";
         id.str("");
         id.clear();
     }
@@ -110,7 +110,7 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
 
 
     //engEvalString(ep, "test = 'auto_multi_calibrator_efficient(' + camera_vec + input_dir + output_dir + format_image + dX + dY+ nx_crnrs + ny_crnrs + proj_tol + rotcam + cam_names + fisheye + k3_enable + batch;");
-    //engEvalString(ep, "disp(test);");
+    //git addengEvalString(ep, "disp(test);");
 
 
     // Perform the calibration
