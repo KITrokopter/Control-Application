@@ -184,6 +184,20 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			return false;
 		}
 		
+		error = mkdir("/tmp/calibrationResult", 0777);
+		
+		if (error != 0 && errno != EEXIST)
+		{
+			ROS_ERROR("Could not create directory for calibration images (/tmp/calibrationResult): %d", errno);
+			
+			// Delete images.
+			for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
+				delete it->second;
+			}
+			
+			return false;
+		}
+		
 		id = 0;
 		for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++, id++) {
 			std::stringstream ss;
@@ -219,7 +233,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 bool PositionModule::calculateCalibrationCallback(control_application::CalculateCalibration::Request &req, control_application::CalculateCalibration::Response &res)
 {
 	if (!isCalibrating) {
-		ROS_ERROR("Cannot calculate calibration! Start calibration first.");
+		ROS_ERROR("Cannot calculate calibration! Start calibration first!");
 		return false;
 	}
 	
@@ -227,15 +241,22 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		ROS_ERROR("Have not enough images for calibration (Have %ld)!", netIdToCamNo.size());
 	}
 	
+	ROS_INFO("Calculating multi camera calibration. This could take up to 2 hours");
 	ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
-	tracker.calibrate(&data, netIdToCamNo.size());
+	bool ok = tracker.calibrate(&data, netIdToCamNo.size());
+	
+	if (ok) {
+		ROS_INFO("Finished multi camera calibration");
+	} else {
+		ROS_ERROR("Calibration failed!");
+	}
 	
 	isCalibrating = false;
 	
 	system("rm -rf /tmp/calibrationImages/*");
 	system("rm -rf /tmp/calibrationResult/*");
 	
-	return true;
+	return ok;
 }
 
 // Topic
