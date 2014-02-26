@@ -212,7 +212,23 @@ add_executable(profile_control
 	test/ProfileControl.cpp
 	test/helpers/MovementGenerator.cpp
 	src/matlab/Vector.cpp
-	src/position/DummyPositionReceiver.cpp
+	src/controller/Controller.cpp
+	src/controller/Position6DOF.cpp
+	src/controller/Formation.cpp
+	src/controller/MovementQuadruple.cpp
+	src/controller/Mutex.cpp
+	src/matlab/Matlab.cpp 
+	src/matlab/Vector.cpp 
+	src/matlab/Line.cpp
+	src/matlab/profiling.cpp
+	src/matlab/TrackingArea.cpp
+	src/matlab/Calibration.cpp
+	src/matlab/CameraData.cpp
+	src/matlab/Position.cpp
+	src/matlab/AmccCalibration.cpp
+	src/position/PositionModule.cpp
+	src/position/ChessboardData.cpp
+	src/KitrokopterMessages.cpp
 )
 
 add_dependencies(profile_control
@@ -227,6 +243,10 @@ target_link_libraries(profile_control
   ${MATLAB_PATH}/bin/glnxa64/libeng.so
   ${MATLAB_PATH}/bin/glnxa64/libmx.so
   ${MATLAB_PATH}/bin/glnxa64/libmat.so
+  libopencv_core.so
+  libopencv_highgui.so
+  libopencv_calib3d.so
+  libopencv_imgproc.so
 )
 
 add_executable(position_module
