@@ -423,11 +423,7 @@ void Controller::convertMovement(double* const vector, int internId)
 
 	double ratio_roll = vector[0] / length;
 	double ratio_pitch = vector[1] / length;
-
-	movement->setRoll(ratio_roll + ROLL_STEP);
-	movement->setPitch(ratio_pitch + PITCH_STEP);
-
-	movement->setYawrate(0.0);
+	movement->setRollPitchYawrate(	ratio_roll + ROLL_STEP, ratio_pitch + PITCH_STEP, 0.0);
 }
 
 /*
@@ -587,7 +583,9 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		tarPosMutex.lock();
 		target = this->listTargets.back()[i].getPosition();
 		tarPosMutex.unlock();
+		target[0] += 0;
 		target[1] += distance;
+		target[2] += 0;
 		tarPosMutex.lock();
 		this->listTargets.back()[i].setPosition(target);
 		tarPosMutex.unlock();
