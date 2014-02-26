@@ -43,7 +43,7 @@
 #define INVALID -1
 #define LOW_BATTERY 0.05 //TODO 100% = 1?
 #define TIME_UPDATED_END 1 //In seconds
-#define TIME_UPDATE_CRITICAL 0.2 //In seconds
+#define TIME_UPDATED_CRITICAL 0.2 //In seconds
 
 /* For calculateMovement */
 /*TODO choose QC for formation */
@@ -116,7 +116,7 @@ private:
 	//TODO needs to be with service find all
 	int amount;	// Needed for formation
 	std::list<std::vector<float> > formationMovement;
-	std::vector<time_t> lastFormationMovement;
+	time_t lastFormationMovement;
 	std::vector<time_t> lastCurrent;
 	unsigned int senderID;
 	//TODO Set area

@@ -74,7 +74,7 @@ void Controller::initialize()
 	if(receivedQuadcopters)
 	{
 		//Generate Subscribers and Publisher
-		for(int i = 0; i < this->totalAmount; i++)
+		for(int i = 0; i < this->quadcopters.size(); i++)
 		{
 			//Subscriber to quadcopter status
 			std::stringstream topicNameQS;
@@ -97,15 +97,15 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		
 	/* Save position vectors */	
 	std::vector<Position6DOF> newListItem;
-	this->lastCurrent = time(&this->lastCurrent);
 	int i = 0;
 	int id;
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
-		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
-		newPosition.setTimestamp(this->lastCurrent);
-		newListItem.push_back( newPosition );	
 		id = getLocalId(i);
+		this->lastCurrent[id] = time(&this->lastCurrent[id]);
+		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
+		newPosition.setTimestamp(this->lastCurrent[id]);
+		newListItem.push_back( newPosition );
 		if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 		{
 		    this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
@@ -162,7 +162,8 @@ void Controller::stopReachTrackedArea()
 		
 		if( quadcopterMovementStatus[i] == CALCULATE_START )
 		{
-			quadcopterMovementStatus[i] = CALCULATE_ACTIVATED;
+			//TODO We took Activated out of the header
+			//quadcopterMovementStatus[i] = CALCULATE_ACTIVATED;
 		}
 	}
 	
@@ -331,15 +332,14 @@ void Controller::hold( int internId )
 
 void Controller::land( int internId )
 {
-	int id = this->quadcopters[i];
 	//Decline until crazyflie isn't tracked anymore
-	while(tracked[i] == true)
+	while(tracked[internId] == true)
 	{
-		this->movementAll[i].setThrust(THRUST_DECLINE);
+		this->movementAll[internId].setThrust(THRUST_DECLINE);
 		sendMovementAll();
 	}
 	//Shutdown crazyflie after having left the tracking area.
-	this->movementAll[i].setThrust(THRUST_MIN);;
+	this->movementAll[internId].setThrust(THRUST_MIN);;
 	sendMovementAll();
 }
 
@@ -351,15 +351,15 @@ bool Controller::checkInput()
 	for(int i = 0; i < this->quadcopterMovementStatus.size(); i++)
 	{
 		time_t currentTime = time(&currentTime);
-		if(currentTime - this->lastFormationMovement[i] > TIME_UPDATED_END)
+		if(currentTime - this->lastFormationMovement > TIME_UPDATED_END)
 		{
-		      std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED);
+		      std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		      emergencyRoutine(message);
 		      return false;
 		}
 		if(currentTime - this->lastCurrent[i] > TIME_UPDATED_END)
 		{
-		      std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED);
+		      std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		      emergencyRoutine(message);
 		      tracked[i] = false;
 		      return false;
@@ -404,13 +404,13 @@ void Controller::convertMovement(double* const vector, int internId)
 		//TODO movementAll is not a list
 		this->movementAll.push_back( newMovement );
 	}
-	MovementQuadruple * movement = this->movementAll[internId];
+	MovementQuadruple * movement = &(this->movementAll[internId]);
 	if (vector[2] > thrust_react_z_high) {
-		thrust = movement.getThrust() + THRUST_STEP;
-		movement.setThrust(thrust);
+		thrust = movement->getThrust() + THRUST_STEP;
+		movement->setThrust(thrust);
 	} else if (vector[2] < thrust_react_z_high) {
-		thrust = movement.getThrust() - THRUST_STEP;
-		movement.setThrust(thrust);
+		thrust = movement->getThrust() - THRUST_STEP;
+		movement->setThrust(thrust);
 	} else {
 		/* Probably nothing to do here. */
 	}
@@ -424,10 +424,10 @@ void Controller::convertMovement(double* const vector, int internId)
 	double ratio_roll = vector[0] / length;
 	double ratio_pitch = vector[1] / length;
 
-	movement.setRoll(ratio_roll + ROLL_STEP);
-	movement.setPitch(ratio_pitch + PITCH_STEP);
+	movement->setRoll(ratio_roll + ROLL_STEP);
+	movement->setPitch(ratio_pitch + PITCH_STEP);
 
-	movement.setYawrate(0.0);
+	movement->setYawrate(0.0);
 }
 
 /*
@@ -585,7 +585,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		}
 		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
 		tarPosMutex.lock();
-		target = this->listTargets.back()[i].getPosition(target);
+		target = this->listTargets.back()[i].getPosition();
 		tarPosMutex.unlock();
 		target[1] += distance;
 		tarPosMutex.lock();
