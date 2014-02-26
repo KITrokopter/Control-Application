@@ -497,9 +497,10 @@ int Controller::getLocalId(int globalId)
  */
 bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res)
 {
-	ROS_INFO("Service setQuadcopters has been called");
+	ROS_INFO("Service setQuadcopters has been called amount %i", req.amount);
 	for(int i = 0; i < req.amount; i++)
 	{
+		ROS_INFO("Array %i", req.quadcoptersId[i]);
 		this->quadcopters[i] = req.quadcoptersId[i];
 		this->quadcopterMovementStatus[i] = CALCULATE_NONE;
 		this->movementAll[i] = MovementQuadruple(0, 0, 0, 0);
