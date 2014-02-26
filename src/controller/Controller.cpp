@@ -740,6 +740,7 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 		shutdownMutex.unlock();
 		if(!inShutdown)
 		{
+			ROS_INFO("I want to shutdown");
 			control_application::Shutdown srv;
 			Shutdown_client.call(srv);
 			//shutdown(NULL, NULL);
