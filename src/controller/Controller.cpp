@@ -72,25 +72,6 @@ void Controller::initialize()
 	{
 		this->senderID = srv.response.id;
 	}
-	//TODO What if service hasn't been called yet?
-	if(receivedQuadcopters)
-	{
-		//Generate Subscribers and Publisher
-		for(int i = 0; i < this->quadcopters.size(); i++)
-		{
-			//Subscriber to quadcopter status
-			std::stringstream topicNameQS;
-  			topicNameQS << "quadcopter_status_" << i;
-			this->QuadStatus_sub[i] = this->n.subscribe<quadcopter_application::quadcopter_status>(topicNameQS.str().c_str(), 1000, boost::bind(&Controller::QuadStatusCallback, this, _1, i));
-
-			//Publisher of Movement			
-			std::stringstream topicNameMov;
-  			topicNameMov << "quadcopter_movement_" << i;
-			//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
-			this->Movement_pub[i] = this->n.advertise<control_application::quadcopter_movement>(topicNameMov.str().c_str(), 1000);
-			
-		}
-	}
 	getTracked = false;
 	ROS_INFO("Initialize done");
 }
@@ -520,9 +501,25 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	for(int i = 0; i < req.amount; i++)
 	{
 		this->quadcopters[i] = req.quadcoptersId[i];
-		this->quadcopterMovementStatus.push_back( CALCULATE_NONE );
-		//this->movementAll[i] = MovementQuadruple(0, 0, 0, 0);
+		this->quadcopterMovementStatus[i] = CALCULATE_NONE;
+		this->movementAll[i] = MovementQuadruple(0, 0, 0, 0);
 		
+	}
+	//Generate Subscribers and Publisher
+	for(int i = 0; i < this->quadcopters.size(); i++)
+	{
+		//Subscriber to quadcopter status
+		std::stringstream topicNameQS;
+  		topicNameQS << "quadcopter_status_" << i;
+		this->QuadStatus_sub[i] = this->n.subscribe<quadcopter_application::quadcopter_status>(topicNameQS.str().c_str(), 1000, boost::bind(&Controller::QuadStatusCallback, this, _1, i));
+		ROS_INFO("QCStatus Topics have been initialized");
+		//Publisher of Movement			
+		std::stringstream topicNameMov;
+  		topicNameMov << "quadcopter_movement_" << i;
+		//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
+		this->Movement_pub[i] = this->n.advertise<control_application::quadcopter_movement>(topicNameMov.str().c_str(), 1000);
+		ROS_INFO("QCMovement Topics have been initialized");
+			
 	}
 	receivedQuadcopters = true;
 	return true;
@@ -536,6 +533,11 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
  */
 bool Controller::buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res)
 {
+	//TODO check if setquadcopters/ setformation
+	while(!receivedQuadcopters || !receivedFormation)
+	{
+	  //wait
+	}
 	ROS_INFO("Service buildFormation has been called");
 	//Get the formation Positions and the distance.
 	Position6DOF* const formPos = this->formation->getPosition();
@@ -582,7 +584,6 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 			this->listTargets.back()[i].setPosition(target);
 			tarPosMutex.unlock();
 			this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
-			//TODO When to switch back to HOLD?
 		}
 		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
 		tarPosMutex.lock();
@@ -595,7 +596,6 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
 		this->listTargets.back()[i].setPosition(pointer);
 		tarPosMutex.unlock();
 		this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
-		//TODO When to switch back to HOLD?
 	}
 	return true;
 }
@@ -619,7 +619,7 @@ void Controller::shutdownFormation()
 	/* Bring all quadcopters to a hold */	
 	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
 	{
-		quadcopterMovementStatus[i] = CALCULATE_HOLD;
+		quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
 	}
 
 	/* Decline */

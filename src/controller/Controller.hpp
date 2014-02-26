@@ -146,6 +146,7 @@ private:
 	bool shutdownStarted; //Set when we are in the shutdown process
 	bool getTracked;
 	bool receivedQuadcopters;
+	bool receivedFormation;
 	
 	/* Mutex */
 	Mutex curPosMutex;
