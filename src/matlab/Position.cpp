@@ -165,12 +165,18 @@ void Position::setNumberCameras(int numberCameras) {
 }
 
 void Position::loadValues(int cameraId) {
-    std::string result;
-    std::ostringstream id;
-    id << cameraId;
-    result = "load('/tmp/calibrationResult/Calib_Results_stereo_0_" + id.str() + ".mat');";
-    // loads resulting file in matlab workspace
-    engEvalString(ep, result.c_str());
+    if (cameraId == 0) {
+        result = "load('/tmp/calibrationResult/Calib_Results_0.mat');";
+        // loads resulting file in matlab workspace
+        engEvalString(ep, result.c_str());
+    } else {
+        std::string result;
+        std::ostringstream id;
+        id << cameraId;
+        result = "load('/tmp/calibrationResult/Calib_Results_stereo_0_" + id.str() + ".mat');";
+        // loads resulting file in matlab workspace
+        engEvalString(ep, result.c_str());
+    }
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) {
