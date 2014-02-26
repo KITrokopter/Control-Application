@@ -623,6 +623,7 @@ bool Controller::buildFormation(control_application::BuildFormation::Request  &r
  */
 void Controller::shutdownFormation()
 {
+	ROS_INFO("ShutdownFormation started");
 	/* Start shutdown process */
 	shutdownMutex.lock();
 	this->shutdownStarted = 1;
