@@ -13,6 +13,7 @@
 #include <vector>
 #include <cmath>
 #include <math.h>
+#include <ros/ros.h>
 
 Position::Position()
 {
@@ -51,10 +52,11 @@ Position::Position(Engine *ep, int numberCameras)
 bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     this->numberCameras = numberCameras;
     calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
+
     mxArray *good;
     std::string load;
     std::ostringstream id;
-    load = "try load('~/multiCalibrationResults/Calib_Results_0.mat'); worked = 1; catch worked = 0; end";
+    load = "try load('/tmp/calibrationResult/Calib_Results_0.mat'); worked = 1; catch worked = 0; end";
     engEvalString(ep, load.c_str());
     good = engGetVariable(ep, "worked");
     double result = mxGetPr(good)[0];
@@ -65,7 +67,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     } else {
         for (int i = 1; i < numberCameras; i++) {
             id << i;
-            load = "try load('~/multiCalibrationResults/Calib_Results_stereo_0_" + id.str() + ".mat'); worked = 1; catch worked = 0; end";
+            load = "try load('/tmp/calibrationResult/Calib_Results_stereo_0_" + id.str() + ".mat'); worked = 1; catch worked = 0; end";
             engEvalString(ep, load.c_str());
             good = engGetVariable(ep, "worked");
             result = mxGetPr(good)[0];
@@ -77,6 +79,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
             id.clear();
         }
     }
+    ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
     return ok;
 }
 
@@ -165,7 +168,7 @@ void Position::loadValues(int cameraId) {
     std::string result;
     std::ostringstream id;
     id << cameraId;
-    result = "load('~/multiCalibrationResults/Calib_Results_stereo_0_" + id.str() + ".mat');";
+    result = "load('/tmp/calibrationResult/Calib_Results_stereo_0_" + id.str() + ".mat');";
     // loads resulting file in matlab workspace
     engEvalString(ep, result.c_str());
 }
