@@ -33,6 +33,7 @@ Position::Position()
         quadPos.push_back(h);
         oldPos.push_back(nan);
     }
+    this->transformed = false;
 
 }
 
@@ -47,6 +48,7 @@ Position::Position(Engine *ep, int numberCameras)
         quadPos.push_back(h);
         oldPos.push_back(nan);
     }
+    this->transformed = false;
 }
 
 bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
@@ -85,6 +87,15 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
             id.clear();
         }
     }
+
+    // saves all position and orientation vectors in matlab
+    if (ok) {
+        for (int i = 0; i < numberCameras; i++) {
+            getOrientation(i);
+            getPosition(i);
+        }
+    }
+
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
     return ok;
 }
@@ -95,72 +106,83 @@ double Position::getAngle(Vector u, Vector v) {
     return acos(angle);
 }
 
+
+
 // calculates Vector in the calibration coordination of camera 0 in the real camera coordination
 Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
     if (cameraId == -1) {
         Vector nan = *(new Vector(NAN, NAN, NAN));
         return nan;
     } else {
-        // Plain of the cameras E = a + r * u + s * (c - a)
-        // as a is always the origin, E intersects the xy-plain in the origin => translation vector is not neccesary
-        Matlab *m = new Matlab(ep);
-        Vector a = getPositionInCameraCoordination(0);
-        Vector b = getPositionInCameraCoordination(1);
-        Vector c = getPositionInCameraCoordination(2);
-        Vector u = b.add(a.mult(-1));
-        Vector v = c.add(a.mult(-1));
-        Line cameras = *(new Line(a, u));
-        //printf("camera 1: [%f, %f, %f]\n", b.getV1(), b.getV2(), b.getV3());
-        //printf("camera 2: [%f, %f, %f]\n", c.getV1(), c.getV2(), c.getV3());
-        // calculates intersection line of plain of cameras in reality and plain of cameras in coordination system
+        if (transformed == false) {
+            // Plain of the cameras E = a + r * u + s * (c - a)
+            // as a is always the origin, E intersects the xy-plain in the origin => translation vector is not neccesary
+            Matlab *m = new Matlab(ep);
+            Vector a = getPositionInCameraCoordination(0);
+            Vector b = getPositionInCameraCoordination(1);
+            Vector c = getPositionInCameraCoordination(2);
+            Vector u = b.add(a.mult(-1));
+            Vector v = c.add(a.mult(-1));
 
-        Vector origin = *(new Vector(1, 1, 0));
-        Vector x = *(new Vector(-1, 0, 0));
-        // as the method calculates y - origin = (0, -1, 0)
-        Vector y = *(new Vector(1, 0, 0));
-        Line xAxis = *(new Line(origin, x));
-        // works if E isn't already on the x axis or the y axis
-        Line intersectionLine = m->getIntersectionLine(cameras, c, xAxis, y);
-        //printf("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
+            Line cameras = *(new Line(a, u));
+            //printf("camera 1: [%f, %f, %f]\n", b.getV1(), b.getV2(), b.getV3());
+            //printf("camera 2: [%f, %f, %f]\n", c.getV1(), c.getV2(), c.getV3());
+            // calculates intersection line of plain of cameras in reality and plain of cameras in coordination system
 
-        // calculating angel xAxis and translation
-        double angle = getAngle(x, intersectionLine.getU());
+            Vector origin = *(new Vector(1, 1, 0));
+            Vector x = *(new Vector(-1, 0, 0));
+            // as the method calculates y - origin = (0, -1, 0)
+            Vector y = *(new Vector(1, 0, 0));
+            Line xAxis = *(new Line(origin, x));
+            // works if E isn't already on the x axis or the y axis
+            Line intersectionLine = m->getIntersectionLine(cameras, c, xAxis, y);
+            //printf("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
 
-        // enter angle in matlab
-        double dataAngleZ[1] = {-angle};
-        mxArray *angZ = mxCreateDoubleMatrix(1, 1, mxREAL);
-        memcpy((void *)mxGetPr(angZ), (void *)dataAngleZ, sizeof(dataAngleZ));
-        engPutVariable(ep, "angleZ", angZ);
-        mxDestroyArray(angZ);
+            // calculating angel xAxis and translation
+            double angle = getAngle(x, intersectionLine.getU());
 
-        // calculating rotationmatrix of z axis
-        engEvalString(ep, "Rz = [cos(angleZ) -sin(angleZ) 0; sin(angleZ) cos(angleZ) 0; 0 0 1];");
+            // enter angle in matlab
+            double dataAngleZ[1] = {-angle};
+            mxArray *angZ = mxCreateDoubleMatrix(1, 1, mxREAL);
+            memcpy((void *)mxGetPr(angZ), (void *)dataAngleZ, sizeof(dataAngleZ));
+            engPutVariable(ep, "angleZ", angZ);
+            mxDestroyArray(angZ);
 
-        // calculating angle between xy-plain and E (plain of cameras)
-        // normal vector of xy plain
-        Vector nxy = *(new Vector(0, 0, 1));
-        // normal Vector of E
-        Vector ncam = v.cross(u);
+            // calculating rotationmatrix of z axis
+            engEvalString(ep, "rotationMatrixZ = [cos(angleZ) -sin(angleZ) 0; sin(angleZ) cos(angleZ) 0; 0 0 1];");
 
-        angle = getAngle(nxy, ncam);
+            // calculating angle between xy-plain and E (plain of cameras)
+            // normal vector of xy plain
+            Vector nxy = *(new Vector(0, 0, 1));
+            // normal Vector of E
+            Vector ncam = v.cross(u);
 
-        // enter angle in matlab
-        double dataAngleX[1] = {angle};
-        mxArray *angX = mxCreateDoubleMatrix(1, 1, mxREAL);
-        memcpy((void *)mxGetPr(angX), (void *)dataAngleX, sizeof(dataAngleX));
-        engPutVariable(ep, "angleX", angX);
-        mxDestroyArray(angX);
+            angle = getAngle(nxy, ncam);
 
-        // calculating rotationmatrix of x axis
-        engEvalString(ep, "Rx = [1 0 0; 0 cos(angleX) -sin(angleX); 0 sin(angleX) cos(angleX)];");
+            // enter angle in matlab
+            double dataAngleX[1] = {angle};
+            mxArray *angX = mxCreateDoubleMatrix(1, 1, mxREAL);
+            memcpy((void *)mxGetPr(angX), (void *)dataAngleX, sizeof(dataAngleX));
+            engPutVariable(ep, "angleX", angX);
+            mxDestroyArray(angX);
+
+            // calculating rotationmatrix of x axis
+            engEvalString(ep, "rotationMatrixX = [1 0 0; 0 cos(angleX) -sin(angleX); 0 sin(angleX) cos(angleX)];");
+
+
+            /*
+             * rotationMatrixX and rotationMatrixZ should be saved in matlab, so they don't need to be calculated all the time.
+             */
+            this->transformed = true;
+       }
 
         w.putVariable("cameraCoordinationPos", ep);
-
-        // calculate Rx * Rz * vector in camera system 0
-        engEvalString(ep, "result = Rx * Rz * cameraCoordinationPos';");
+        // calculate rotationMatrixX * rotationMatrixZ * vector in camera system 0
+        engEvalString(ep, "result = rotationMatrixX * rotationMatrixZ * cameraCoordinationPos';");
         mxArray* result = engGetVariable(ep, "result");
         Vector r = *(new Vector(mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]));
         mxDestroyArray(result);
+        // the rotationvectors are calculated only once;
         return r;
     }
 
@@ -193,6 +215,9 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         return nan;
     }
     else if (cameraId != 0) {
+
+        //// SHOULDN'T BE LOADED ALL THE TIME!!!
+
         loadValues(cameraId);
         quad.putVariable("quad", ep);
         engEvalString(ep, "pos = (quad * rodrigues(omc_left_1))' + Tc_left_1;");
@@ -276,6 +301,13 @@ Vector Position::getPositionInCameraCoordination(int cameraId) {
 
 Vector Position::getPosition(int cameraId) {
     Vector v = getPositionInCameraCoordination(cameraId);
+    std::string var;
+    std::ostringstream id;
+    id << cameraId;
+    var = "cameraPosition_" + id.str();
+    id.str("");
+    id.clear();
+    v.putVariable(var.c_str(), ep);
     return getCoordinationTransformation(v, cameraId);
 }
 
@@ -298,5 +330,12 @@ Vector Position::getOrientationInCameraCoordination(int cameraId) {
 
 Vector Position::getOrientation(int cameraId) {
     Vector v = getOrientationInCameraCoordination(cameraId);
+    std::string var;
+    std::ostringstream id;
+    id << cameraId;
+    var = "cameraOrientation_" + id.str();
+    id.str("");
+    id.clear();
+    v.putVariable(var.c_str(), ep);
     return getCoordinationTransformation(v, cameraId);
 }
