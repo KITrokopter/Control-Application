@@ -19,7 +19,7 @@
 #include "../matlab/Vector.h"
 
 // Use this to test if images are saved properly, when you only have one camera.
-#define SINGLE_CAMERA_CALIBRATION
+//#define SINGLE_CAMERA_CALIBRATION
 
 PositionModule::PositionModule(IPositionReceiver* receiver) : 
 	pictureCache(50), // Assume we never have 50 or more modules running on the network.
@@ -243,7 +243,14 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	
 	ROS_INFO("Calculating multi camera calibration. This could take up to 2 hours");
 	ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
-	bool ok = tracker.calibrate(&data, netIdToCamNo.size());
+	
+	pictureCacheMutex.lock();
+	int camNumber = camNoToNetId.size();
+	pictureCacheMutex.unlock();
+	
+	// Delete old calibration results.
+	system("rm -rf /tmp/calibrationResult/*");
+	bool ok = tracker.calibrate(&data, camNoToNetId.size());
 	
 	if (ok) {
 		ROS_INFO("Finished multi camera calibration");
@@ -253,8 +260,8 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	
 	isCalibrating = false;
 	
+	// TODO make not uncommented
 	system("rm -rf /tmp/calibrationImages/*");
-	system("rm -rf /tmp/calibrationResult/*");
 	
 	return ok;
 }
@@ -325,8 +332,9 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
 {
  	// TODO: Calculate position in our coordinate system.
 	// TODO: Is this coordinate change correct for amcctoolbox?
-	Vector cameraVector(1, msg.xPosition, msg.yPosition);
-	Vector result = tracker.updatePosition(cameraVector, msg.ID, msg.quadcopterId);
+	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
+	ROS_DEBUG("msg.ID: %d netIdToCamNo[msg.ID]: %d msg.quadcopterId: %d", msg.ID, netIdToCamNo[msg.ID], msg.quadcopterId);
+	Vector result = tracker.updatePosition(cameraVector, netIdToCamNo[msg.ID], msg.quadcopterId);
 	
 	std::vector<Vector> positions;
 	std::vector<int> ids;
