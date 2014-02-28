@@ -182,7 +182,6 @@ Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
         mxArray* result = engGetVariable(ep, "result");
         Vector r = *(new Vector(mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]));
         mxDestroyArray(result);
-        // the rotationvectors are calculated only once;
         return r;
     }
 
@@ -300,15 +299,48 @@ Vector Position::getPositionInCameraCoordination(int cameraId) {
 }
 
 Vector Position::getPosition(int cameraId) {
-    Vector v = getPositionInCameraCoordination(cameraId);
-    std::string var;
-    std::ostringstream id;
-    id << cameraId;
-    var = "cameraPosition_" + id.str();
-    id.str("");
-    id.clear();
-    v.putVariable(var.c_str(), ep);
-    return getCoordinationTransformation(v, cameraId);
+    Vector translation;
+    if (cameraId == -1) {
+        translation = *(new Vector(NAN, NAN, NAN));
+    }
+    else if (!(transformed)) {
+        if (cameraId == 0) {
+            // camera 0 is at the origin and looks down the positive z axis
+            translation = *(new Vector(0, 0, 0));
+            Vector v = getCoordinationTransformation(translation,cameraId);
+            std::string var;
+            std::ostringstream id;
+            id << cameraId;
+            var = "cameraPosition_" + id.str();
+            id.str("");
+            id.clear();
+            v.putVariable(var.c_str(), ep);
+            translation = v;
+        } else {
+            loadValues(cameraId);
+            mxArray *tV = engGetVariable(ep, "Tc_left_1");
+            translation = *(new Vector(mxGetPr(tV)[0], mxGetPr(tV)[1], mxGetPr(tV)[2]));
+            Vector v = getCoordinationTransformation(translation, cameraId);
+            std::string var;
+            std::ostringstream id;
+            id << cameraId;
+            var = "cameraPosition_" + id.str();
+            id.str("");
+            id.clear();
+            v.putVariable(var.c_str(), ep);
+        }
+     } else {
+        std::string var;
+        std::ostringstream id;
+        id << cameraId;
+        var = "cameraPosition_" + id.str();
+        id.str("");
+        id.clear();
+        mxArray* trans = engGetVariable(ep, var.c_str());
+        translation = *(new Vector(mxGetPr(trans)[0], mxGetPr(trans)[1], mxGetPr(trans)[2]));
+        mxDestroyArray(trans);
+    }
+    return translation;
 }
 
 Vector Position::getOrientationInCameraCoordination(int cameraId) {
@@ -329,13 +361,53 @@ Vector Position::getOrientationInCameraCoordination(int cameraId) {
 }
 
 Vector Position::getOrientation(int cameraId) {
-    Vector v = getOrientationInCameraCoordination(cameraId);
-    std::string var;
-    std::ostringstream id;
-    id << cameraId;
-    var = "cameraOrientation_" + id.str();
-    id.str("");
-    id.clear();
-    v.putVariable(var.c_str(), ep);
-    return getCoordinationTransformation(v, cameraId);
+    Vector orientation;
+    if (cameraId != -1) {
+        orientation = *(new Vector(NAN, NAN, NAN));
+    }
+    else {
+        if (!(transformed)) {
+            if (cameraId == 0) {
+                // camera 0 is at the origin and looks down the positive z axis
+                orientation = *(new Vector(0, 0, 1));
+                // saving orientation in cameraOrientation_cameraIs
+                Vector v = getCoordinationTransformation(v, cameraId);
+                std::string var;
+                std::ostringstream id;
+                id << cameraId;
+                var = "cameraOrientation_" + id.str();
+                id.str("");
+                id.clear();
+                v.putVariable(var.c_str(), ep);
+                orientation = v;
+            }
+            else {
+                loadValues(cameraId);
+                mxArray *oV = engGetVariable(ep, "omc_left_1");
+                orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
+                mxDestroyArray(oV);
+                // saving orientation in cameraOrientation_cameraIs
+                Vector v = getCoordinationTransformation(v, cameraId);
+                std::string var;
+                std::ostringstream id;
+                id << cameraId;
+                var = "cameraOrientation_" + id.str();
+                id.str("");
+                id.clear();
+                v.putVariable(var.c_str(), ep);
+                orientation = v;
+            }
+        } else {
+            std::string var;
+            std::ostringstream id;
+            id << cameraId;
+            var = "cameraOrientation_" + id.str();
+            id.str("");
+            id.clear();
+            mxArray* oV = engGetVariable(ep, var.c_str());
+            orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
+            mxDestroyArray(oV);
+        }
+    }
+    return orientation;
 }

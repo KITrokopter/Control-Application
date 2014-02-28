@@ -60,16 +60,16 @@ void tracking(Matlab *m) {
 
 int main(int argc, char** argv) {
     Matlab *m = new Matlab();
-
+    printf("Hallo das ist ein Test\n");
     //AmccCalibration *a= new AmccCalibration(m->getEngine());
     Engine *e = m->getEngine();
     Position *p = new Position(e,3);
-/*
+
     bool ok = calibrate(m);
     if (ok == true) {
         printf("success\n");
     } else {
         printf("fail\n");
-    }*/
+    }
     m->destroyMatlab();
 }
