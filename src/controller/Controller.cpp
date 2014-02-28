@@ -45,7 +45,11 @@ Controller::Controller()
 	shutdownMutex.unlock();
 	this->receivedQuadcopters = 0;
 
-	
+
+	/*
+	 * Start using threads here.
+	 * tCalc- Calculating the output
+	 */	
 	/* TODO: Error-handling. */
 	pthread_create(&tCalc, NULL, startThread, this);
 
@@ -63,15 +67,6 @@ Controller::Controller()
 
 void Controller::initialize()
 {
-	/*
-	 * Start using threads here.
-	 * tGet- One waiting to set and send new positions
-	 * tCalc- One calculating the output
-	 * 
-	 * tGet is not a new thread, implemented as parent. 
-	 * Leave function and wait to be called by position-instance.
-	 */
-
 	api_application::Announce srv;
 	srv.request.type = 2;
 	//srv.request.camera_id = 0;
@@ -97,13 +92,22 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
 		newListItem.push_back( newPosition );
-		if(this->quadcopterMovementStatus[id] == CALCULATE_START)
+		
+		
+		if( it->getV1() != INVALID ) 
+		{			
+			if( tracked[id] == false )
+			{
+				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
+				{
+					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
+				}
+			}
+			tracked[id] = true;
+		} else
 		{
-		    this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
+			tracked[id] = false;
 		}
-		tracked[id] = true;
-		/*TODO: set quadcopterMovementStatus 
-		 to CALCULATE_STABILIZE if it was CALCULATE_START before */
 	}	
 	std::size_t elements = positions.size();
 	listPositionsMutex.lock();
