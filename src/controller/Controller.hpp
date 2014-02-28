@@ -101,7 +101,10 @@ protected:
 	
 	void stopReachTrackedArea();
 	void stabilize( int internId );
+	bool isStable( int internId );
 	void hold( int internId );
+
+	void listCleanup();	/* TODO */
 
 private:
 

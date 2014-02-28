@@ -92,8 +92,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
 		newListItem.push_back( newPosition );
-		
-		
+				
 		if( it->getV1() != INVALID ) 
 		{			
 			if( tracked[id] == false )
@@ -113,6 +112,8 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	listPositionsMutex.lock();
 	this->listPositions.push_back(newListItem);
 	listPositionsMutex.unlock();
+
+	listCleanup();
 }
 
 /*
@@ -315,11 +316,62 @@ void Controller::moveUp( int internId )
 	}
 }
 
-
 void Controller::stabilize( int internId )
 {
 	/* TODO */
 }
+
+bool Controller::isStable( int internId )
+{
+	/* 
+	 * Compare latest position of QC with 
+	 * position of QC "compareTimeX"-elements before. 
+	 * Assumption: 30 Elements ~ 1 sec.
+	 */
+	int compareTime[3] = { 1, 5, 50 };
+
+    if( this->listPositions.size() > compareTime[2] )
+    {
+		bool valueInSphere[3];
+		/* Reverse iterator to the reverse end */
+		int counter = 0;
+		std::list<std::vector<Position6DOF> >::reverse_iterator rit = this->listPositions.rbegin();
+		for( ; rit != this->listPositions.rend(); ++rit )
+		{
+			if( counter == compareTime[0] )
+			{
+				/* TODO */
+				/*  if (|| listPositions.end - rit.?? || )
+				 * 		valueInSphere[i] == true
+					 else
+					 	return false
+				*/
+			}
+			if( counter == compareTime[1] )
+			{
+
+			}
+			if( counter == compareTime[2] )
+			{
+
+			}
+			counter++;
+		}
+		return true;
+    } else if ( this->listPositions.size() > compareTime[1] )
+    {
+		/* Possible to work with available information? */
+		return false;
+    } else if ( this->listPositions.size() > compareTime[0] )
+    {
+		return false;
+    } else
+    {
+        /* No information to work with, start emergency routine? */
+        return false;
+    }
+}
+
 void Controller::hold( int internId )
 {
 	/* TODO */
@@ -503,6 +555,18 @@ int Controller::getLocalId(int globalId)
   }
   return -1;
 }
+
+/* 
+ * Garbage collection of our lists. Should remove elements, that have been added
+ * too far ago ~ keep only the last 30 elements or so.
+ * Called from: updatePositions() ?
+ */
+void Controller::listCleanup()
+{
+	/* TODO */	
+}
+
+
 /*
  * Service to set Quadcopter IDs
  */
