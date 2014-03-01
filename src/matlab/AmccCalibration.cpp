@@ -37,6 +37,8 @@ AmccCalibration::AmccCalibration(Engine *ep) {
 void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLengthX, double squareLengthY, int numberSquareCornersX, int numberSquareCornersY) {
     mxArray *slx, *sly, *nscx, *nscy, *nc;
 
+    engEvalString(ep, "diary('/tmp/calibrationImages/log');");
+
     double dataSlx[1] = {squareLengthX};
     slx = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(slx), (void *)dataSlx, sizeof(dataSlx));
@@ -108,10 +110,12 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     // indicate whether or not to use the batch mode of the stereo calibrator (not strictly required)
     engEvalString(ep, "batch = false;");
 
-    engEvalString(ep, "diary('/tmp/calibrationImages/log');");
 
     // Perform the calibration
     engEvalString(ep, "auto_multi_calibrator_efficient(camera_vec, input_dir, output_dir, format_image, dX, dY, nx_crnrs, ny_crnrs, proj_tol, rotcam, cam_names, fisheye, k3_enable, batch);");
+
+    engEvalString(ep, "diary off;");
+
     mxDestroyArray(slx);
     mxDestroyArray(sly);
     mxDestroyArray(nc);
