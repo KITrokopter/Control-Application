@@ -108,10 +108,7 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     // indicate whether or not to use the batch mode of the stereo calibrator (not strictly required)
     engEvalString(ep, "batch = false;");
 
-
-    //engEvalString(ep, "test = 'auto_multi_calibrator_efficient(' + camera_vec + input_dir + output_dir + format_image + dX + dY+ nx_crnrs + ny_crnrs + proj_tol + rotcam + cam_names + fisheye + k3_enable + batch;");
-    //git addengEvalString(ep, "disp(test);");
-
+    engEvalString(ep, "diary('/tmp/calibrationImages/log');");
 
     // Perform the calibration
     engEvalString(ep, "auto_multi_calibrator_efficient(camera_vec, input_dir, output_dir, format_image, dX, dY, nx_crnrs, ny_crnrs, proj_tol, rotcam, cam_names, fisheye, k3_enable, batch);");
