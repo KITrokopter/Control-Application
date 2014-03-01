@@ -97,6 +97,15 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
+
+    Vector v0 = getPosition(0);
+    Vector v1 = getPosition(1);
+    Vector v2 = getPosition(2);
+
+    ROS_DEBUG("Distance between camera 0 and 1 is %f", v0.add(v1.mult(-1)).getLength());
+    ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
+    ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
+
     return ok;
 }
 
