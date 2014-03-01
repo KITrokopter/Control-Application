@@ -255,14 +255,14 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	
 	if (ok) {
 		ROS_INFO("Finished multi camera calibration");
+		
+		// TODO make not uncommented
+		system("rm -rf /tmp/calibrationImages/*");
 	} else {
 		ROS_ERROR("Calibration failed!");
 	}
 	
 	isCalibrating = false;
-	
-	// TODO make not uncommented
-	system("rm -rf /tmp/calibrationImages/*");
 	
 	return ok;
 }
