@@ -234,20 +234,20 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 // Service
 bool PositionModule::calculateCalibrationCallback(control_application::CalculateCalibration::Request &req, control_application::CalculateCalibration::Response &res)
 {
-	if (!isCalibrating) {
+	/*if (!isCalibrating) {
 		ROS_ERROR("Cannot calculate calibration! Start calibration first!");
 		return false;
 	}
 	
 	if (netIdToCamNo.size() < 2) {
 		ROS_ERROR("Have not enough images for calibration (Have %ld)!", netIdToCamNo.size());
-	}
+	}*/
 	
 	ROS_INFO("Calculating multi camera calibration. This could take up to 2 hours");
 	ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
 	
 	pictureCacheMutex.lock();
-	int camNumber = camNoToNetId.size();
+	int camNumber = 3; //camNoToNetId.size();
 	pictureCacheMutex.unlock();
 	
 	// Delete old calibration results.
