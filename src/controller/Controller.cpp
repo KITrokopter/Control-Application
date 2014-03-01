@@ -51,6 +51,7 @@ Controller::Controller()
 	this->BuildFormationstarted = false;
 	this->buildFormationMutex.unlock();
 
+	ROS_INFO("ROS stuff set up");
 	/*
 	 * Start using threads here.
 	 * tCalc- Calculating the output
