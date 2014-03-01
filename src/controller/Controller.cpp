@@ -58,7 +58,7 @@ Controller::Controller()
 	 */	
 	/* TODO: Error-handling. */
 	pthread_create(&tCalc, NULL, startThread, this);
-
+	ROS_INFO("Threads set up");
 	shutdownMutex.lock();
 	this->shutdownStarted = 0;
 	shutdownMutex.unlock();
@@ -69,6 +69,7 @@ Controller::Controller()
 		MovementQuadruple init = MovementQuadruple(0,0,0,0);
 		this->movementAll.push_back(init);
 	}
+	ROS_INFO("Constructing done");
 }
 
 void Controller::initialize()
@@ -203,7 +204,6 @@ void Controller::calculateMovement()
 	/* As long as we are not in the shutdown process, calculate new Movement data */
 	while(!inShutdown)
 	{
-		checkInput();
 		double moveVector[3];
 		int amount = quadcopterMovementStatus.size();
 		for(int i = 0; i < amount; i++)
@@ -259,6 +259,7 @@ void Controller::calculateMovement()
 					moveVector[1] = target[1] - current[1];
 					moveVector[2] = target[2] - current[2];
 					convertMovement(moveVector, i);
+					checkInput();
 					break;
 				case CALCULATE_LAND:
 					land( i );
