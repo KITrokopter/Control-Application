@@ -132,6 +132,8 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		for (int i = 0; i < camNoToNetId.size(); i++) {
 			netIdToCamNo[camNoToNetId[i]] = i;
 		}
+		
+		ROS_INFO("Got %ld cameras", netIdToCamNo.size());
 	}
 	
 	int id = 0;
@@ -198,10 +200,9 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			return false;
 		}
 		
-		id = 0;
-		for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++, id++) {
+		for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
 			std::stringstream ss;
-			ss << "/tmp/calibrationImages/cam" << id << "_image" << calibrationPictureCount << ".png";
+			ss << "/tmp/calibrationImages/cam" << it->first << "_image" << calibrationPictureCount << ".png";
 			
 			// Save picture on disk for amcctoolbox.
 			std::cout << "Saving picture: " << cv::imwrite(ss.str(), *(it->second)) << std::endl;
