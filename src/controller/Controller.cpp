@@ -50,7 +50,7 @@ Controller::Controller()
 	this->buildFormationMutex.lock();
 	this->BuildFormationstarted = false;
 	this->buildFormationMutex.unlock();
-
+	this->formation = new Formation();
 	ROS_INFO("ROS stuff set up");
 	/*
 	 * Start using threads here.
@@ -253,6 +253,7 @@ void Controller::calculateMovement()
 					moveVector[1] = target[1] - current[1];
 					moveVector[2] = target[2] - current[2];
 					convertMovement(moveVector, i);
+					sendMovementAll();
 					break;
 				case CALCULATE_LAND:
 					land( i );
@@ -268,7 +269,7 @@ void Controller::calculateMovement()
 			 * Variation 2: convert movement, save movement and send all
 			 */
 			/*TODO: Variation 2 */
-			sendMovementAll();
+			
 		}
 	}	
 }
@@ -453,6 +454,7 @@ bool Controller::checkInput()
  */
 void Controller::emergencyRoutine(std::string message)
 {
+	ROS_INFO("Emergency Routine calles");
 	api_application::Message msg;
 	msg.senderID = this->senderID;
 	//Type 2 is a warning message
@@ -726,6 +728,7 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
 	this->buildFormationMutex.unlock();
 	//Just for testing
 	buildFormation();
+	return true;
 }
 
 /*
@@ -817,21 +820,28 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 	//TODO Delete when list arrays are converted to arrays list and target array size is used
 	this->amount = msg->amount;
 	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
-	Position6DOF formPos[msg->amount];
+	ROS_INFO("Setting Formation");
+	Position6DOF * formPos;
 	for(int i = 0; i < msg->amount; i++)
 	{
 		double pos[3], ori[3];
 		pos[0] = msg->xPositions[i];
 		pos[1] = msg->yPositions[i];
 		pos[2] = msg->zPositions[i];
+		ROS_INFO("TEST0");
 		formPos[i].setPosition(pos);
+		ROS_INFO("TEST1");
 		//Depends on the calculation of target and current position
 		//ori[0] = msg->
 		//ori[1] = msg->
 		//ori[2] = msg->
 		//formPos[i].setOrientation(ori);
 	}
+	ROS_INFO("TEST3");
+	ROS_INFO("%f", formPos[2].getPosition()[2]);
+	ROS_INFO("%i", this->formation->getAmount());
 	this->formation->setPosition(formPos);
+	ROS_INFO("Formation Position set");
 	//Initialize tracked (no quadcopter is tracked at the beginning)
 	for(int i = 0; i < msg->amount; i++)
 	{
@@ -839,6 +849,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		tracked[i] = false;
 		trackedArrayMutex.unlock();
 	}
+	ROS_INFO("Tracked set");
 	receivedFormMutex.lock();
 	receivedFormation = true;
 	receivedFormMutex.unlock();
