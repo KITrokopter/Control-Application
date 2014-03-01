@@ -119,7 +119,7 @@ private:
 	//Receive data over ROS
 	Formation *formation;
 	//TODO needs to be with service find all
-	//int amount;	// Needed for formation
+	int amount;	// Needed for formation
 	//TODO Do we need timestamp here?
 	std::list<float[3] > formationMovement;
 	time_t lastFormationMovement;

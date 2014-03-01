@@ -638,9 +638,9 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
  */
 void Controller::buildFormation()
 {
+	bool condition;
 	do
-	{
-	      bool condition;
+	{	      
 	      receivedQCMutex.lock();
 	      receivedFormMutex.lock();
 	      condition = !receivedQuadcopters || !receivedFormation ;
@@ -708,7 +708,6 @@ void Controller::buildFormation()
 		tarPosMutex.unlock();
 		this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
 	}
-	return true;
 }
 
 
@@ -787,7 +786,7 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 {
 	ROS_INFO("I heard Movement. xMovement: %f", msg->xMovement);
 	//float movement[3];
-	std::vector<float> movement;
+	float[3] movement;
 	movement.push_back( msg->xMovement );
 	movement.push_back( msg->yMovement );
 	movement.push_back( msg->zMovement );
