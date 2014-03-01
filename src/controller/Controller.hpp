@@ -77,9 +77,10 @@ public:
 	void moveUp(std::vector<int> ids);	// move up mentioned in ids
 	void moveUp( int internId );	// the calculation function
 	void land( int internId );
-
+	void buildFormation;
+	
 	/* Formation also services*/
-	bool buildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
+	bool startBuildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
 	void shutdownFormation();
 
 	/* Service to set Quadcopter IDs*/
@@ -109,6 +110,7 @@ protected:
 private:
 
 	/* Position */
+	//FIXME list of arrays to arrays of lists. + not dynamic but static
 	std::list<std::vector<Position6DOF> > listPositions;
 	std::list<std::vector<Position6DOF> > listTargets;
 	std::list<std::vector<Position6DOF> > listSendTargets;
@@ -117,47 +119,56 @@ private:
 	//Receive data over ROS
 	Formation *formation;
 	//TODO needs to be with service find all
-	int amount;	// Needed for formation
-	std::list<std::vector<float> > formationMovement;
+	//int amount;	// Needed for formation
+	//TODO Do we need timestamp here?
+	std::list<float[3] > formationMovement;
 	time_t lastFormationMovement;
-	std::vector<time_t> lastCurrent;
+	time_t lastCurrent[MAX_NUMBER_QUADCOPTER];
 	unsigned int senderID;
 	//TODO Set area
 	TrackingArea trackingArea;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
-	std::vector<unsigned long int> quadcopters;
+	unsigned long int quadcopters[MAX_NUMBER_QUADCOPTER];
 	/* For calculateMovement, using local id from mapping before. */
-	std::vector<unsigned int> quadcopterMovementStatus;
+	unsigned int quadcopterMovementStatus[MAX_NUMBER_QUADCOPTER];
 	
 	/* Set data */ 
-	std::vector<MovementQuadruple> movementAll;
+	MovementQuadruple movementAll[MAX_NUMBER_QUADCOPTER];
 
 	/* Received data */ 
 	//Arrays for quadcopters sorted by intern id
-	std::vector<float> pitch_stab;
-	std::vector<float> roll_stab;
-	std::vector<float> yaw_stab;
-	std::vector<unsigned int> thrust_stab;
-	std::vector<float> battery_status;
-	int startProcess;
-	std::vector<std::string> idString;
-	std::vector<int> idsToGetTracked;
+	float pitch_stab[MAX_NUMBER_QUADCOPTER];
+	float roll_stab[MAX_NUMBER_QUADCOPTER];
+	float yaw_stab[MAX_NUMBER_QUADCOPTER];
+	unsigned int thrust_stab[MAX_NUMBER_QUADCOPTER];
+	float battery_status[MAX_NUMBER_QUADCOPTER];
+	int startProcess[MAX_NUMBER_QUADCOPTER];
+	//TODO Still Needed?
+	//std::string idString[MAX_NUMBER_QUADCOPTER];
+	//TODO What's that?
+	//int idsToGetTracked[MAX_NUMBER_QUADCOPTER];
 
 	/* Control variables */
-	std::vector<bool> tracked; //Array of tracked quadcopters	FIXME
+	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters	FIXME
 	bool shutdownStarted; //Set when we are in the shutdown process
 	bool getTracked;
 	bool receivedQuadcopters;
 	bool receivedFormation;
+	bool BuildFormationstarted;
 	
 	/* Mutex */
 	Mutex curPosMutex;
 	Mutex tarPosMutex;
 	Mutex shutdownMutex;
 	Mutex formMovMutex;
+	//FIXME difference to curPosMutex? 
 	Mutex listPositionsMutex;
 	Mutex getTrackedMutex;
+	Mutex buildFormationMutex;
+	Mutex trackedArrayMutex;
+	Mutex receivedQCMutex;
+	Mutex receivedFormMutex;
 
 	/* Threads */
 	pthread_t tCalc;
