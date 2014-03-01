@@ -150,11 +150,11 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			if (!foundAllCorners)
 			{
 				ROS_INFO("Took bad picture (id %d)", id);
-				goodPictures++;
 			}
 			else
 			{
 				ROS_INFO("Took good picture (id %d)", id);
+				goodPictures++;
 			}
 			
 			pictureMap[id] = *it;
@@ -251,13 +251,11 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	
 	// Delete old calibration results.
 	system("rm -rf /tmp/calibrationResult/*");
+	system("rm -rf /tmp/calibrationImages/*");
 	bool ok = tracker.calibrate(&data, camNoToNetId.size());
 	
 	if (ok) {
 		ROS_INFO("Finished multi camera calibration");
-		
-		// TODO make not uncommented
-		system("rm -rf /tmp/calibrationImages/*");
 	} else {
 		ROS_ERROR("Calibration failed!");
 	}
