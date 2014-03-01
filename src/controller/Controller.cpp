@@ -217,13 +217,7 @@ void Controller::calculateMovement()
 				return;
 			}
 
-			/* Battery */
-			if(this->battery_status[i] < LOW_BATTERY)
-			{
-				std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
-				emergencyRoutine(message);
-			}
-
+			checkInput();
 			/* Calculation */
 			tarPosMutex.lock();
 			double * const target = this->listTargets.back()[i].getPosition();
@@ -259,7 +253,6 @@ void Controller::calculateMovement()
 					moveVector[1] = target[1] - current[1];
 					moveVector[2] = target[2] - current[2];
 					convertMovement(moveVector, i);
-					checkInput();
 					break;
 				case CALCULATE_LAND:
 					land( i );
@@ -417,6 +410,16 @@ bool Controller::checkInput()
 	//TODO What about QuadStatus? Emergency routine for transfer stop/lack?
 	for(int i = 0; i < this->quadcopterMovementStatus.size(); i++)
 	{
+		/* Battery */
+		if(this->battery_status[i] < LOW_BATTERY && quadcopterMovementStatus[i] != CALCULATE_NONE)
+		{
+			std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
+			emergencyRoutine(message);
+		}
+		if(quadcopterMovementStatus[i] != CALCULATE_MOVE && quadcopterMovementStatus[i] != CALCULATE_STABILIZE)
+		{
+			continue;
+		}
 		time_t currentTime = time(&currentTime);
 		if(currentTime - this->lastFormationMovement > TIME_UPDATED_END)
 		{
