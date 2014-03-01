@@ -252,7 +252,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	
 	// Delete old calibration results.
 	system("rm -rf /tmp/calibrationResult/*");
-	bool ok = tracker.calibrate(&data, camNoToNetId.size());
+	bool ok = tracker.calibrate(&data, camNumber);
 	
 	if (ok) {
 		ROS_INFO("Finished multi camera calibration");
