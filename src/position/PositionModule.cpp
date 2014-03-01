@@ -101,6 +101,7 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	{
 		ROS_INFO("Starting multi camera calibration process");
 		
+		system("rm -rf /tmp/calibrationImages/*");
 		setPictureSendingActivated(true);
 		calibrationPictureCount = 0;
 		boardSize = cv::Size(req.chessboardWidth, req.chessboardHeight);
@@ -251,7 +252,6 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	
 	// Delete old calibration results.
 	system("rm -rf /tmp/calibrationResult/*");
-	system("rm -rf /tmp/calibrationImages/*");
 	bool ok = tracker.calibrate(&data, camNoToNetId.size());
 	
 	if (ok) {
