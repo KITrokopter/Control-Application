@@ -77,7 +77,7 @@ public:
 	void moveUp(std::vector<int> ids);	// move up mentioned in ids
 	void moveUp( int internId );	// the calculation function
 	void land( int internId );
-	void buildFormation;
+	void buildFormation();
 	
 	/* Formation also services*/
 	bool startBuildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
@@ -129,12 +129,12 @@ private:
 	TrackingArea trackingArea;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
-	unsigned long int quadcopters[MAX_NUMBER_QUADCOPTER];
+	std::vector<unsigned long int > quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
-	unsigned int quadcopterMovementStatus[MAX_NUMBER_QUADCOPTER];
+	std::vector<unsigned int > quadcopterMovementStatus;
 	
 	/* Set data */ 
-	MovementQuadruple movementAll[MAX_NUMBER_QUADCOPTER];
+	std::vector<MovementQuadruple > movementAll;
 
 	/* Received data */ 
 	//Arrays for quadcopters sorted by intern id

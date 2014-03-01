@@ -101,9 +101,9 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		if( it->getV1() != INVALID ) 
 		{	
 			trackedArrayMutex.lock();
-			bool tracked = tracked[id];
+			bool track = this->tracked[id];
 			trackedArrayMutex.unlock();
-			if( tracked == false )
+			if( track == false )
 			{
 				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 				{
@@ -111,12 +111,12 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				}
 			}
 			trackedArrayMutex.lock();
-			tracked[id] = true;
+			this->tracked[id] = true;
 			trackedArrayMutex.unlock();
 		} else
 		{
 			trackedArrayMutex.lock();
-			tracked[id] = false;
+			this->tracked[id] = false;
 			trackedArrayMutex.unlock();
 		}
 	}	
