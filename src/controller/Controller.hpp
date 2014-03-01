@@ -123,7 +123,7 @@ private:
 	TrackingArea trackingArea;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
-	std::vector<unsigned int> quadcopters;
+	std::vector<unsigned long int> quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int> quadcopterMovementStatus;
 	
