@@ -137,7 +137,8 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 	}
 	
 	int id = 0;
-	std::map<int, cv::Mat*> goodPictures;
+	std::map<int, cv::Mat*> pictureMap;
+	int goodPictures = 0;
 	
 	for (std::vector<cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++, id++)
 	{
@@ -149,27 +150,26 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			if (!foundAllCorners)
 			{
 				ROS_INFO("Took bad picture (id %d)", id);
-				delete *it;
-				*it = 0;
-				continue;
+				goodPictures++;
 			}
 			else
 			{
 				ROS_INFO("Took good picture (id %d)", id);
-				goodPictures[id] = *it;
-				
-				// Remove image from image cache.
-				*it = 0;
 			}
+			
+			pictureMap[id] = *it;
+			
+			// Remove image from image cache.
+			*it = 0;
 		}
 	}
 	
 	pictureCacheMutex.unlock();
 	
 	#ifdef SINGLE_CAMERA_CALIBRATION
-	if (goodPictures.size() >= 1) {
+	if (goodPictures >= 1) {
 	#else
-	if (goodPictures.size() >= 2) {
+	if (goodPictures >= 2) {
 	#endif
 		// Create directory for images.
 		int error = mkdir("/tmp/calibrationImages", 0777);
@@ -179,7 +179,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			ROS_ERROR("Could not create directory for calibration images (/tmp/calibrationImages): %d", errno);
 			
 			// Delete images.
-			for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
+			for (std::map<int, cv::Mat*>::iterator it = pictureMap.begin(); it != pictureMap.end(); it++) {
 				delete it->second;
 			}
 			
@@ -193,14 +193,14 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			ROS_ERROR("Could not create directory for calibration images (/tmp/calibrationResult): %d", errno);
 			
 			// Delete images.
-			for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
+			for (std::map<int, cv::Mat*>::iterator it = pictureMap.begin(); it != pictureMap.end(); it++) {
 				delete it->second;
 			}
 			
 			return false;
 		}
 		
-		for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
+		for (std::map<int, cv::Mat*>::iterator it = pictureMap.begin(); it != pictureMap.end(); it++) {
 			std::stringstream ss;
 			ss << "/tmp/calibrationImages/cam" << netIdToCamNo[it->first] << "_image" << calibrationPictureCount << ".png";
 			
