@@ -202,7 +202,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		
 		for (std::map<int, cv::Mat*>::iterator it = goodPictures.begin(); it != goodPictures.end(); it++) {
 			std::stringstream ss;
-			ss << "/tmp/calibrationImages/cam" << it->first << "_image" << calibrationPictureCount << ".png";
+			ss << "/tmp/calibrationImages/cam" << netIdToCamNo[it->first] << "_image" << calibrationPictureCount << ".png";
 			
 			// Save picture on disk for amcctoolbox.
 			std::cout << "Saving picture: " << cv::imwrite(ss.str(), *(it->second)) << std::endl;
