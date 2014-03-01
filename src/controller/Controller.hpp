@@ -121,7 +121,7 @@ private:
 	//TODO needs to be with service find all
 	int amount;	// Needed for formation
 	//TODO Do we need timestamp here?
-	std::list<float[3] > formationMovement;
+	std::list<std::vector<float> > formationMovement;
 	time_t lastFormationMovement;
 	time_t lastCurrent[MAX_NUMBER_QUADCOPTER];
 	unsigned int senderID;
