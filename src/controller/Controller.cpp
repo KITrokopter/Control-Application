@@ -229,13 +229,18 @@ void Controller::calculateMovement()
 
 			checkInput();
 			/* Calculation */
-			tarPosMutex.lock();
-			double * const target = this->listTargets.back()[i].getPosition();
-			tarPosMutex.unlock();
-			curPosMutex.lock();
-			double * const current = this->listPositions.back()[i].getPosition();
-			curPosMutex.unlock();
-
+			double target[3];
+			double current[3];
+			for(int k = 0; k < 3; k++)
+			{
+				tarPosMutex.lock();
+				target[k] = this->listTargets.back()[i].getPosition()[k];
+				tarPosMutex.unlock();
+				curPosMutex.lock();
+				current[k] = this->listPositions.back()[i].getPosition()[k];
+				curPosMutex.unlock();
+			}
+	
 			switch( quadcopterMovementStatus[i] )
 			{
 				case CALCULATE_NONE:
@@ -537,8 +542,11 @@ void Controller::sendMovementAll()
 	ROS_INFO("sendMovementAll started");
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
-	for(int i = 0; i < movementAll.size(); i++)
+	ROS_INFO("amount %i",this->amount);
+	//TODO replaced MovementAll.size() with amount since we don't have IN
+	for(int i = 0; i < this->amount; i++)
 	{
+		ROS_INFO("%i",i);
 		msg.thrust = this->movementAll[i].getThrust();
 		msg.roll = this->movementAll[i].getRoll();
 		msg.pitch = this->movementAll[i].getPitch();
@@ -674,8 +682,8 @@ void Controller::buildFormation()
 	}
 	double distance = this->formation->getDistance();
 	//Pointer to the first tracked quadcopter
-	double * first;
-	std::vector<Position6DOF> newElement;
+	double first[3];
+	std::vector<Position6DOF > newElement;
 	this->listTargets.push_back(newElement);
 	int formationAmount = this->formation->getAmount();
 	//Start one quadcopter after another
@@ -694,21 +702,25 @@ void Controller::buildFormation()
 		target[2] = pos[2] * distance;
 		ROS_INFO("test2");
 		//As long as the quadcopter isn't tracked, incline
-		while(this->quadcopterMovementStatus[i] == CALCULATE_START)
+		/*while(this->quadcopterMovementStatus[i] == CALCULATE_START)
 		{
 			//TODO When working right, do nothing here and just wait till it's tracked
 			this->movementAll[i] = MovementQuadruple(THRUST_START, 0, 0, 0);
 			ROS_INFO("Moving up");
 			sendMovementAll();
-		}
+		}*/
 		ROS_INFO("Tracked");
 		//If this is the first tracked quadcopter set it as a reference point for all the others
 		if( i == 0)
 		{
 			ROS_INFO("First one");
 			curPosMutex.lock();
-			first = listPositions.back()[0].getPosition();
+			for(int k = 0; k < 3; k++)
+			{
+				first[k] = listPositions.back()[0].getPosition()[k];
+			}
 			curPosMutex.unlock();
+			ROS_INFO("First set");
 			tarPosMutex.lock();
 			this->listTargets.back()[0].setPosition(first);
 			tarPosMutex.unlock();
