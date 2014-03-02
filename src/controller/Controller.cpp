@@ -71,7 +71,7 @@ Controller::Controller()
 	}
 	
 	//Initialize tracked (no quadcopter is tracked at the beginning)
-	for(int i = 0; i < tracked.size; i++)
+	for(int i = 0; i < 10; i++)
 	{
 		trackedArrayMutex.lock();
 		tracked[i] = false;
@@ -534,6 +534,7 @@ void Controller::convertMovement(double* const vector, int internId)
  */
 void Controller::sendMovementAll()
 {
+	ROS_INFO("sendMovementAll started");
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
 	for(int i = 0; i < movementAll.size(); i++)
@@ -544,6 +545,7 @@ void Controller::sendMovementAll()
 		msg.yaw = this->movementAll[i].getYawrate();
 		this->Movement_pub[i].publish(msg);		/*FIXME while testing*/
 	}
+	ROS_INFO("sendMovementAll finished");
 }
 
 /*
@@ -664,7 +666,12 @@ void Controller::buildFormation()
 	}while(condition);
 	ROS_INFO("Service buildFormation has been called");
 	//Get the formation Positions and the distance.
-	Position6DOF* const formPos = this->formation->getPosition();
+	//Position6DOF* const formPos = this->formation->getPosition();
+	Position6DOF formPos[this->amount];
+	for( int i = 0; i < this->amount; i++)
+	{
+		formPos[i] = this->formation->getPosition()[i];		
+	}
 	double distance = this->formation->getDistance();
 	//Pointer to the first tracked quadcopter
 	double * first;
@@ -674,24 +681,31 @@ void Controller::buildFormation()
 	//Start one quadcopter after another
 	for(int i = 0; i < formationAmount; i++)
 	{
+		ROS_INFO("Starting QC %i",i);
 		//Starting/ Inclining process
 		quadcopterMovementStatus[i] = CALCULATE_START;
 		//Calculate the wanted position for quadcopter i
+		ROS_INFO("test1");
 		double * pos = formPos[i].getPosition();
 		double target[3];
+		ROS_INFO("test1,5");
 		target[0] = pos[0] * distance;
 		target[1] = pos[1] * distance;
 		target[2] = pos[2] * distance;
+		ROS_INFO("test2");
 		//As long as the quadcopter isn't tracked, incline
 		while(this->quadcopterMovementStatus[i] == CALCULATE_START)
 		{
 			//TODO When working right, do nothing here and just wait till it's tracked
 			this->movementAll[i] = MovementQuadruple(THRUST_START, 0, 0, 0);
+			ROS_INFO("Moving up");
 			sendMovementAll();
 		}
+		ROS_INFO("Tracked");
 		//If this is the first tracked quadcopter set it as a reference point for all the others
 		if( i == 0)
 		{
+			ROS_INFO("First one");
 			curPosMutex.lock();
 			first = listPositions.back()[0].getPosition();
 			curPosMutex.unlock();
@@ -702,6 +716,7 @@ void Controller::buildFormation()
 		else
 		{
 			//Set all the other positions according to the first crazyflie
+			ROS_INFO("Set the others");
 			target[0] += first[0];
 			target[1] += first[1];
 			target[2] += first[2];
@@ -710,6 +725,7 @@ void Controller::buildFormation()
 			tarPosMutex.unlock();
 			this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
 		}
+		ROS_INFO("Inclining");
 		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
 		tarPosMutex.lock();
 		double* pointer = this->listTargets.back()[i].getPosition();
@@ -721,7 +737,9 @@ void Controller::buildFormation()
 		this->listTargets.back()[i].setPosition(pointer);
 		tarPosMutex.unlock();
 		this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
+		ROS_INFO("Done with %i",i);
 	}
+	ROS_INFO("BuildFormation finished");
 }
 
 
@@ -828,11 +846,11 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 	this->amount = msg->amount;
 	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
 	ROS_INFO("Setting Formation");
-	Position6DOF * formPos;
-	//return;
+	Position6DOF formPos[msg->amount];
 	for(int i = 0; i < msg->amount; i++)
 	{
 		double pos[3], ori[3];
+		//double * pos;
 		pos[0] = msg->xPositions[i];
 		pos[1] = msg->yPositions[i];
 		pos[2] = msg->zPositions[i];
@@ -849,6 +867,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 	receivedFormation = true;
 	receivedFormMutex.unlock();
 	ROS_INFO("Set Formation done");
+	return;
 }
 
 /*
