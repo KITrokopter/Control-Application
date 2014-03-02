@@ -1,0 +1,1 @@
+rostopic pub -1 /quadcopter_status_3 quadcopter_application/quadcopter_status "{header: auto, battery_status: 10, link_quality: 1, motor_m1: 1, motor_m2: 1, motor_m3: 1, motor_m4: 1, stabilizer_roll: 0.0, stabilizer_pitch: 0.0, stabilizer_yaw: 0.0, stabilizer_thrust: 0}"
