@@ -69,6 +69,14 @@ Controller::Controller()
 		MovementQuadruple init = MovementQuadruple(0,0,0,0);
 		this->movementAll.push_back(init);
 	}
+	
+	//Initialize tracked (no quadcopter is tracked at the beginning)
+	for(int i = 0; i < tracked.size; i++)
+	{
+		trackedArrayMutex.lock();
+		tracked[i] = false;
+		trackedArrayMutex.unlock();
+	}
 	ROS_INFO("Constructing done");
 }
 
@@ -837,14 +845,6 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 	}
 	this->formation->setPosition(formPos);
 	ROS_INFO("Formation Position set");
-	//Initialize tracked (no quadcopter is tracked at the beginning)
-	for(int i = 0; i < msg->amount; i++)
-	{
-		trackedArrayMutex.lock();
-		tracked[i] = false;
-		trackedArrayMutex.unlock();
-	}
-	ROS_INFO("Tracked set");
 	receivedFormMutex.lock();
 	receivedFormation = true;
 	receivedFormMutex.unlock();
