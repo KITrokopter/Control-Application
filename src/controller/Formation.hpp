@@ -1,6 +1,8 @@
 #ifndef FORMATION_HPP
 #define FORMATION_HPP
 #include "Position6DOF.hpp"
+#include "ros/ros.h"
+#include <vector>
 
 class Formation {
 public:
@@ -15,7 +17,7 @@ public:
 private:
 	int distance;
 	int amount;
-	Position6DOF* position;
+	 Position6DOF position[10];
 };
 
 
