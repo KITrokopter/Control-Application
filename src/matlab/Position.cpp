@@ -61,7 +61,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         return false;
     }
 
-    //calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
+    calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
 
     mxArray *good;
     std::string load;
@@ -117,12 +117,6 @@ double Position::getAngle(Vector u, Vector v) {
     double angle = u.scalarMult(v)/(u.getLength() * v.getLength());
     return acos(angle);
 }
-
-
-/*
- *Rn = [(n(1)^2*(1-cos(a)) + cos(a)), (n(1)*n(2)*(1-cos(a))-n(3) * sin(a)), (n(1)*n(3)*(1-cos(a)) + n(2)*sin(a)); (n(2)*n(1)*(1-cos(a)) + n(3)*sin(a)), (n(2)^2*(1 - cos(a)) + cos(a)), (n(2) * n(3) * (1-cos(a)) - n(1) * sin(a)); (n(3) * n(1) *(1-cos(a)) - n(2) * sin(a)), (n(3) * n(2) * (1 - cos(a)) + n(1) * sin(a)), (n(3)^2 * (1-cos(a)) + cos(a))]
- */
-
 
 // calculates Vector in the calibration coordination of camera 0 in the real camera coordination
 Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
