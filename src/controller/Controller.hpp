@@ -72,10 +72,6 @@ public:
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovementAll();
 	void calculateMovement();
-	void reachTrackedArea(std::vector<int> ids);
-	void moveUp();	// move up all
-	void moveUp(std::vector<int> ids);	// move up mentioned in ids
-	void moveUp( int internId );	// the calculation function
 	void land( int internId );
 	void buildFormation();
 	
@@ -100,7 +96,9 @@ protected:
 	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
 	void SystemCallback(const api_application::System::ConstPtr& msg);
 	
-	void stopReachTrackedArea();
+	void moveUp();	// move up all
+	void moveUp(std::vector<int> ids);	// move up mentioned in ids
+	void moveUp( int internId );	// the calculation function
 	void stabilize( int internId );
 	bool isStable( int internId );
 	void hold( int internId );

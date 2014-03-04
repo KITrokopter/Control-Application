@@ -143,62 +143,6 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 
 }
 
-/*
-void* startThreadMoveUp(void* something)
-{
-	Controller* other = (Controller*) something;
-	other->moveUpNoArg();
-}
-*/
-
-void Controller::reachTrackedArea(std::vector<int> ids)
-{
-/*	getTrackedMutex.lock();
-	getTracked = true;
-	getTrackedMutex.unlock();
-	
-	//TODO Use getLocalId???
-	for(unsigned int i = 0; i < quadcopters.size(); i++)
-	{
-		for(unsigned int k = 0; k < ids.size(); k++)
-		{
-			if( quadcopters[i] == ids[k] )
-			{
-				quadcopterMovementStatus[i] = CALCULATE_START;
-			}
-		}
-	}	*/
-}
-
-void Controller::stopReachTrackedArea() 
-{
-	/*bool joinNecessary;
-
-	getTrackedMutex.lock();
-	joinNecessary = getTracked;
-	getTracked = false;
-	getTrackedMutex.unlock();
-
-	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
-	{
-		
-		if( quadcopterMovementStatus[i] == CALCULATE_START )
-		{
-			//TODO We took Activated out of the header
-			//quadcopterMovementStatus[i] = CALCULATE_ACTIVATED;
-		}
-	}*/
-	/* TODO: Error-handling. */
-		/*
-		 void *resultGetTracked;
-		pthread_join(tGetTracked, &resultGetTracked);
-		*/
-	/*if( joinNecessary )
-	{
-		
-	}*/
-}
-
 
 	
 /*
@@ -253,9 +197,7 @@ void Controller::calculateMovement()
 					break;
 				case CALCULATE_START:	
 					ROS_INFO("Start %i", i);
-					/*TODO: adapt */
-					//moveUp( i );
-					//Do nothing and wait till it's tracked
+					moveUp( i );
 					break;
 				case CALCULATE_STABILIZE:
 					ROS_INFO("Stabilize %i", i);
@@ -341,6 +283,7 @@ void Controller::moveUp( int internId )
 		moveVector[0] = 0;
 		moveVector[1] = 0;
 		moveVector[2] = 100;
+		/*TODO: convert here */
 	} 
 	else
 	{
@@ -552,14 +495,14 @@ void Controller::sendMovementAll()
 	//TODO replaced MovementAll.size() with amount since we don't have IN
 	for(int i = 0; i < this->amount; i++)
 	{
-		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE )
+		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE ) /*FIXME while testing*/
 		{
 			ROS_INFO("%i",i);
 			msg.thrust = this->movementAll[i].getThrust();
 			msg.roll = this->movementAll[i].getRoll();
 			msg.pitch = this->movementAll[i].getPitch();
 			msg.yaw = this->movementAll[i].getYawrate();
-			this->Movement_pub[i].publish(msg);		/*FIXME while testing*/
+			this->Movement_pub[i].publish(msg);		
 		}
 	}
 	ROS_INFO("sendMovementAll finished");
@@ -663,16 +606,16 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 void Controller::buildFormation()
 {
 	ROS_INFO("Service buildFormation has been called");
-	bool condition;
+	bool notEnoughData = true;
 	do
 	{	      
 	      receivedQCMutex.lock();
 	      receivedFormMutex.lock();
-	      condition = !receivedQuadcopters || !receivedFormation ;
+	      notEnoughData = !receivedQuadcopters || !receivedFormation ;
 	      receivedFormMutex.unlock();
 	      receivedQCMutex.unlock();
 	      //TODO check if setquadcopters/ setformation
-	}while(condition);
+	} while( notEnoughData );
 	//Get the formation Positions and the distance.
 	//Position6DOF* const formPos = this->formation->getPosition();
 	Position6DOF formPos[this->amount];
