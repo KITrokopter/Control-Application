@@ -68,11 +68,12 @@ Controller::Controller()
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		MovementQuadruple init = MovementQuadruple(0,0,0,0);
 		this->movementAll.push_back(init);
-	}
-	
-	//Initialize tracked (no quadcopter is tracked at the beginning)
-	for(int i = 0; i < 10; i++)
-	{
+
+		Position6DOF newPosition = Position6DOF( INVALID, INVALID, INVALID );
+		std::list<Position6DOF> newList (newPosition);
+		this->listPositions.push_back( newList );
+
+		//Initialize tracked (no quadcopter is tracked at the beginning)
 		trackedArrayMutex.lock();
 		tracked[i] = false;
 		trackedArrayMutex.unlock();
