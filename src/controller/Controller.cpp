@@ -212,29 +212,25 @@ void Controller::calculateMovement()
 	shutdownMutex.lock();
 	inShutdown = shutdownStarted;
 	shutdownMutex.unlock();
-	//TODO check for buildFormationStarted 
-	//TODO new thread for building formation
+	
 	/* As long as we are not in the shutdown process, calculate new Movement data */
 	while(!inShutdown)
 	{
 		ROS_INFO("Calculate");
-		double moveVector[3];
 		int amount = quadcopterMovementStatus.size();
-		for(int i = 0; i < amount; i++)
+		for(int i = 0; (i<amount) && (!inShutdown); i++)
 		{	
 			/* Shutdown */
 			shutdownMutex.lock();
 			inShutdown = shutdownStarted;
 			shutdownMutex.unlock();
-			if( inShutdown )
-			{
-				return;
-			}
 
 			checkInput();
+			
 			/* Calculation */
-			double target[3];
 			double current[3];
+			double target[3];
+			double moveVector[3];
 			for(int k = 0; k < 3; k++)
 			{
 				tarPosMutex.lock();
@@ -249,26 +245,30 @@ void Controller::calculateMovement()
 			{
 				case CALCULATE_NONE:
 					ROS_INFO("None %i", i);
-					/* Take old values */
-					//TODO Needed or just don't call convertMovement(moveVector)
-					moveVector[0] = INVALID;
-					moveVector[1] = INVALID;
-					moveVector[2] = INVALID;
+					/* 
+					 * Take old values
+					 * At beginning list has to be initialized with "send none".
+					 * No convertMovement has to be called. 
+					 */
 					break;
 				case CALCULATE_START:	
+					ROS_INFO("Start %i", i);
 					/*TODO: adapt */
 					//moveUp( i );
 					//Do nothing and wait till it's tracked
 					break;
 				case CALCULATE_STABILIZE:
+					ROS_INFO("Stabilize %i", i);
 					/*TODO*/
 					stabilize( i );
 					break;
-				case CALCULATE_HOLD:					
+				case CALCULATE_HOLD:	
+					ROS_INFO("Hold %i", i);				
 					/*TODO hold and (if in shutdown) do it fast*/
 					
 					break;
 				case CALCULATE_MOVE:
+					ROS_INFO("Move %i", i);
 					moveVector[0] = target[0] - current[0];
 					moveVector[1] = target[1] - current[1];
 					moveVector[2] = target[2] - current[2];
@@ -276,9 +276,11 @@ void Controller::calculateMovement()
 					sendMovementAll();
 					break;
 				case CALCULATE_LAND:
+					ROS_INFO("Land %i", i);
 					land( i );
 					break;
 				default:
+					ROS_INFO("Default %i", i);
 					moveVector[0] = INVALID;
 					moveVector[1] = INVALID;
 					moveVector[2] = INVALID;
@@ -550,12 +552,15 @@ void Controller::sendMovementAll()
 	//TODO replaced MovementAll.size() with amount since we don't have IN
 	for(int i = 0; i < this->amount; i++)
 	{
-		ROS_INFO("%i",i);
-		msg.thrust = this->movementAll[i].getThrust();
-		msg.roll = this->movementAll[i].getRoll();
-		msg.pitch = this->movementAll[i].getPitch();
-		msg.yaw = this->movementAll[i].getYawrate();
-		this->Movement_pub[i].publish(msg);		/*FIXME while testing*/
+		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE )
+		{
+			ROS_INFO("%i",i);
+			msg.thrust = this->movementAll[i].getThrust();
+			msg.roll = this->movementAll[i].getRoll();
+			msg.pitch = this->movementAll[i].getPitch();
+			msg.yaw = this->movementAll[i].getYawrate();
+			this->Movement_pub[i].publish(msg);		/*FIXME while testing*/
+		}
 	}
 	ROS_INFO("sendMovementAll finished");
 }
