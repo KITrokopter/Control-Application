@@ -64,6 +64,7 @@ Controller::Controller()
 	
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
+		/* TODO: add Mutex where necessary (and possible) */
 		this->quadcopters.push_back(0);
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		MovementQuadruple init = MovementQuadruple(0,0,0,0);
@@ -90,7 +91,9 @@ void Controller::initialize()
 	{
 		this->senderID = srv.response.id;
 	}
+	getTrackedMutex.lock();
 	getTracked = false;
+	getTrackedMutex.unlock();
 	ROS_INFO("Initialize done");
 }
 
@@ -111,11 +114,13 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				
 		if( it->getV1() != INVALID ) 
 		{	
+			/* Quadcopter is tracked */
 			trackedArrayMutex.lock();
 			bool track = this->tracked[id];
 			trackedArrayMutex.unlock();
 			if( track == false )
 			{
+				/* Quadcopter has not been tracked before */
 				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 				{
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
@@ -134,7 +139,6 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	std::size_t elements = positions.size();
 	listPositionsMutex.lock();
 	this->listPositions.push_back(newListItem); 
-	
 	listPositionsMutex.unlock();
 
 }
@@ -149,7 +153,7 @@ void* startThreadMoveUp(void* something)
 
 void Controller::reachTrackedArea(std::vector<int> ids)
 {
-	getTrackedMutex.lock();
+/*	getTrackedMutex.lock();
 	getTracked = true;
 	getTrackedMutex.unlock();
 	
@@ -163,13 +167,12 @@ void Controller::reachTrackedArea(std::vector<int> ids)
 				quadcopterMovementStatus[i] = CALCULATE_START;
 			}
 		}
-	}
-	
+	}	*/
 }
 
 void Controller::stopReachTrackedArea() 
 {
-	bool joinNecessary;
+	/*bool joinNecessary;
 
 	getTrackedMutex.lock();
 	joinNecessary = getTracked;
@@ -184,16 +187,16 @@ void Controller::stopReachTrackedArea()
 			//TODO We took Activated out of the header
 			//quadcopterMovementStatus[i] = CALCULATE_ACTIVATED;
 		}
-	}
-	
-	if( joinNecessary )
-	{
-		/* TODO: Error-handling. */
+	}*/
+	/* TODO: Error-handling. */
 		/*
 		 void *resultGetTracked;
 		pthread_join(tGetTracked, &resultGetTracked);
 		*/
-	}
+	/*if( joinNecessary )
+	{
+		
+	}*/
 }
 
 
