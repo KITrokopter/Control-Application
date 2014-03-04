@@ -48,7 +48,7 @@ Controller::Controller()
 	this->receivedQuadcopters = false;
 	receivedQCMutex.unlock();
 	this->buildFormationMutex.lock();
-	this->BuildFormationstarted = false;
+	this->buildFormationStarted = false;
 	this->buildFormationMutex.unlock();
 	this->formation = new Formation();
 	ROS_INFO("ROS stuff set up");
@@ -208,7 +208,7 @@ void Controller::calculateMovement()
 	shutdownMutex.lock();
 	inShutdown = shutdownStarted;
 	shutdownMutex.unlock();
-	//TODO check for buildformationstarted 
+	//TODO check for buildFormationStarted 
 	//TODO new thread for building formation
 	/* As long as we are not in the shutdown process, calculate new Movement data */
 	while(!inShutdown)
@@ -761,7 +761,7 @@ void Controller::buildFormation()
 bool Controller::startBuildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res)
 {
 	this->buildFormationMutex.lock();
-	this->BuildFormationstarted = true;
+	this->buildFormationStarted = true;
 	this->buildFormationMutex.unlock();
 	//Just for testing
 	buildFormation();

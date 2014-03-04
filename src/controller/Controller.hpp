@@ -110,22 +110,19 @@ protected:
 private:
 
 	/* Position */
-	//FIXME list of arrays to arrays of lists. + not dynamic but static
-	std::list<std::vector<Position6DOF> > listPositions;
-	std::list<std::vector<Position6DOF> > listTargets;
-	std::list<std::vector<Position6DOF> > listSendTargets;
+	std::vector<std::list<Position6DOF> > listPositions;
+	std::vector<std::list<Position6DOF> > listTargets;
+	std::vector<std::list<Position6DOF> > listSendTargets;
 	
 	/* Identification of Quadcopters */
 	//Receive data over ROS
 	Formation *formation;
 	//TODO needs to be with service find all
 	int amount;	// Needed for formation
-	//TODO Do we need timestamp here?
 	std::list<std::vector<float> > formationMovement;
 	time_t lastFormationMovement;
 	time_t lastCurrent[MAX_NUMBER_QUADCOPTER];
-	unsigned int senderID;
-	//TODO Set area
+	unsigned int senderID;	
 	TrackingArea trackingArea;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
@@ -155,7 +152,7 @@ private:
 	bool getTracked;
 	bool receivedQuadcopters;
 	bool receivedFormation;
-	bool BuildFormationstarted;
+	bool buildFormationStarted;
 	
 	/* Mutex */
 	Mutex curPosMutex;
