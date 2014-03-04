@@ -1,9 +1,15 @@
 #include "Controller.hpp"
 
-void* startThread(void* something)
+void* startThreadCalculateMovement(void* something)
 {
 	Controller *someOther = (Controller *) something; 
 	someOther->calculateMovement();
+}
+
+void* startThreadBuildFormation(void* something)
+{
+	Controller *someOther = (Controller *) something; 
+	someOther->buildFormation();
 }
 
 Controller::Controller()
@@ -52,16 +58,10 @@ Controller::Controller()
 	this->buildFormationMutex.unlock();
 	this->formation = new Formation();
 	ROS_INFO("ROS stuff set up");
-	/*
-	 * Start using threads here.
-	 * tCalc- Calculating the output
-	 */	
 	/* TODO: Error-handling. */
-	pthread_create(&tCalc, NULL, startThread, this);
-	ROS_INFO("Threads set up");
-	shutdownMutex.lock();
-	this->shutdownStarted = 0;
-	shutdownMutex.unlock();
+	pthread_create(&tCalculateMovement, NULL, startThreadCalculateMovement, this);
+	ROS_INFO("Thread tCalculateMovement set up");
+	
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
 		this->quadcopters.push_back(0);
@@ -132,10 +132,10 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	}	
 	std::size_t elements = positions.size();
 	listPositionsMutex.lock();
-	this->listPositions.push_back(newListItem);
+	this->listPositions.push_back(newListItem); 
+	
 	listPositionsMutex.unlock();
 
-	listCleanup();
 }
 
 /*
@@ -204,7 +204,7 @@ void Controller::stopReachTrackedArea()
 void Controller::calculateMovement()
 {
 	ROS_INFO("Calculation started");
-	bool inShutdown = false;
+	bool inShutdown;
 	shutdownMutex.lock();
 	inShutdown = shutdownStarted;
 	shutdownMutex.unlock();
@@ -607,15 +607,6 @@ int Controller::getLocalId(int globalId)
   return -1;
 }
 
-/* 
- * Garbage collection of our lists. Should remove elements, that have been added
- * too far ago ~ keep only the last 30 elements or so.
- * Called from: updatePositions() ?
- */
-void Controller::listCleanup()
-{
-	/* TODO */	
-}
 
 
 /*
@@ -662,6 +653,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
  */
 void Controller::buildFormation()
 {
+	ROS_INFO("Service buildFormation has been called");
 	bool condition;
 	do
 	{	      
@@ -672,13 +664,12 @@ void Controller::buildFormation()
 	      receivedQCMutex.unlock();
 	      //TODO check if setquadcopters/ setformation
 	}while(condition);
-	ROS_INFO("Service buildFormation has been called");
 	//Get the formation Positions and the distance.
 	//Position6DOF* const formPos = this->formation->getPosition();
 	Position6DOF formPos[this->amount];
 	for( int i = 0; i < this->amount; i++)
 	{
-		formPos[i] = this->formation->getPosition()[i];		
+		formPos[i] = this->formation->getPosition()[i];	 //TODO @Carina: why [i] ?	
 	}
 	double distance = this->formation->getDistance();
 	//Pointer to the first tracked quadcopter
@@ -762,10 +753,11 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
 {
 	this->buildFormationMutex.lock();
 	this->buildFormationStarted = true;
-	this->buildFormationMutex.unlock();
-	//Just for testing
-	buildFormation();
+	this->buildFormationMutex.unlock();	
+	pthread_create(&tBuildFormation, NULL, startThreadBuildFormation, this);
+	ROS_INFO("Thread tBuildFormation set up");
 	return true;
+	/* TODO @Carina: what was "just for testing" ? */
 }
 
 /*
@@ -779,10 +771,9 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
  */
 void Controller::shutdownFormation()
 {
-	ROS_INFO("ShutdownFormation started");
-	/* Start shutdown process */
+	ROS_INFO("ShutdownFormation started");	
 	shutdownMutex.lock();
-	this->shutdownStarted = 1;
+	this->shutdownStarted = 1; /* Start shutdown process */
 	shutdownMutex.unlock();
 	
 	/* Bring all quadcopters to a hold */	
@@ -790,6 +781,8 @@ void Controller::shutdownFormation()
 	{
 		quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
 	}
+
+	//usleep( 1000000 ); //FIXME usleep is no option, implement stabilize in land?
 
 	/* Decline */
 	 //Decline each quadcopter till it's not tracked anymore and then shutdown motor
@@ -815,7 +808,7 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 	ROS_INFO("Service shutdown has been called");
 	shutdownFormation ();
 	void *resultCalc;
-	pthread_join(tCalc, &resultCalc);
+	pthread_join(tCalculateMovement, &resultCalc);
 	
 	/* Unneccessary if move is not in loop */
 	//void *resultSend;
@@ -852,8 +845,11 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
 {
 	ROS_INFO("I heard Formation. amount: %i", msg->amount);
+	formMovMutex.lock();
 	this->formation->setDistance(msg->distance);
 	this->formation->setAmount(msg->amount);
+	formMovMutex.unlock();
+	
 	//TODO Delete when list arrays are converted to arrays list and target array size is used
 	this->amount = msg->amount;
 	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
@@ -873,7 +869,9 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		//ori[2] = 0;
 		//formPos[i].setOrientation(ori);
 	}
+	formMovMutex.lock();
 	this->formation->setPosition(formPos);
+	formMovMutex.unlock();
 	ROS_INFO("Formation Position set");
 	receivedFormMutex.lock();
 	receivedFormation = true;

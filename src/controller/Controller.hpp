@@ -168,9 +168,8 @@ private:
 	Mutex receivedFormMutex;
 
 	/* Threads */
-	pthread_t tCalc;
-	pthread_t tSend;
-	pthread_t tGetTracked;
+	pthread_t tCalculateMovement;
+	pthread_t tBuildFormation;
 
 	/**
   	 * NodeHandle is the main access point to communications with the ROS system.
