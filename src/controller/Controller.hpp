@@ -150,7 +150,8 @@ private:
 	bool getTracked;
 	bool receivedQuadcopters;
 	bool receivedFormation;
-	bool buildFormationStarted;
+	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
+	bool buildFormationFinished;
 	
 	/* Mutex */
 	Mutex curPosMutex;
@@ -164,6 +165,7 @@ private:
 	Mutex trackedArrayMutex;
 	Mutex receivedQCMutex;
 	Mutex receivedFormMutex;
+	Mutex receivedQCStMutex;
 
 	/* Threads */
 	pthread_t tCalculateMovement;
