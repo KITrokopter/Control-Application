@@ -200,11 +200,17 @@ void Position::setNumberCameras(int numberCameras) {
     this->numberCameras = numberCameras;
 }
 
-void Position::loadValues(int cameraId) {
+int Position::loadValues(int cameraId) {
+    int i;
+    mxArray* notSupp;
     if (cameraId == 0) {
-        std::string result = "load('/tmp/calibrationResult/Calib_Results_0.mat');";
         // loads resulting file in matlab workspace
-        engEvalString(ep, result.c_str());
+        engEvalString(ep, "load('/tmp/calibrationResult/Calib_Results_0.mat');");
+        engEvalString(ep, "load('/tmp/calibrationResult/cam0_suppress_list.mat')");
+        engEvalString(ep, "notSuppressed = 1;");
+        engEvalString(ep, "while (cam0_suppress_list(notSuppressed) == 0) notSuppressed = notSuppressed + 1; end");
+        notSupp = engGetVariable(ep, "notSuppressed");
+        i = mxGetPr(notSupp)[0];
     } else {
         std::string result;
         std::ostringstream id;
@@ -212,7 +218,16 @@ void Position::loadValues(int cameraId) {
         result = "load('/tmp/calibrationResult/Calib_Results_stereo_0_" + id.str() + ".mat');";
         // loads resulting file in matlab workspace
         engEvalString(ep, result.c_str());
+        result = "load('/tmp/calibrationResult/cam" + id.str() + "_suppress_list.mat')";
+        engEvalString(ep, result.c_str());
+        engEvalString(ep, "notSuppressed = 1;");
+        result = "while (cam" + id.str() + "_suppress_list(notSuppressed) == 0) notSuppressed = notSuppressed + 1; end";
+        engEvalString(ep, result.c_str());
+        notSupp = engGetVariable(ep, "notSuppressed");
+        i = mxGetPr(notSupp)[0];
     }
+    mxDestroyArray(notSupp);
+    return i;
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) {
@@ -291,15 +306,21 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
     }
 }
 
+
 Vector Position::getPositionInCameraCoordination(int cameraId) {
     Vector translation;
     if (cameraId == -1) {
         translation = *(new Vector(NAN, NAN, NAN));
     }
     else if (cameraId != 0) {
-        loadValues(cameraId);
-        mxArray *tV = engGetVariable(ep, "Tc_left_1");
+        int i = loadValues(cameraId);
+        std::string result;
+        std::ostringstream notSuppressed;
+        notSuppressed << i;
+        result = "Tc_left_" + notSuppressed.str();
+        mxArray *tV = engGetVariable(ep, result.c_str());
         translation = *(new Vector(mxGetPr(tV)[0], mxGetPr(tV)[1], mxGetPr(tV)[2]));
+        mxDestroyArray(tV);
      } else {
         // camera 0 is at the origin and looks down the positive z axis
         translation = *(new Vector(0, 0, 0));
@@ -326,9 +347,7 @@ Vector Position::getPosition(int cameraId) {
             v.putVariable(var.c_str(), ep);
             translation = v;
         } else {
-            loadValues(cameraId);
-            mxArray *tV = engGetVariable(ep, "Tc_left_1");
-            translation = *(new Vector(mxGetPr(tV)[0], mxGetPr(tV)[1], mxGetPr(tV)[2]));
+            translation = getPositionInCameraCoordination(cameraId);
             Vector v = getCoordinationTransformation(translation, cameraId);
             std::string var;
             std::ostringstream id;
@@ -358,8 +377,12 @@ Vector Position::getOrientationInCameraCoordination(int cameraId) {
         orientation = *(new Vector(NAN, NAN, NAN));
     }
     else if (cameraId != 0) {
-        loadValues(cameraId);
-        mxArray *oV = engGetVariable(ep, "omc_left_1");
+        int i = loadValues(cameraId);
+        std::string result;
+        std::ostringstream notSuppressed;
+        notSuppressed << i;
+        result = "omc_left_" + notSuppressed.str();
+        mxArray *oV = engGetVariable(ep, result.c_str());
         orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
         mxDestroyArray(oV);
     } else {
@@ -377,10 +400,9 @@ Vector Position::getOrientation(int cameraId) {
     else {
         if (!(transformed)) {
             if (cameraId == 0) {
-                // camera 0 is at the origin and looks down the positive z axis
-                orientation = *(new Vector(0, 0, 1));
+                orientation = getOrientationInCameraCoordination(cameraId);
                 // saving orientation in cameraOrientation_cameraIs
-                Vector v = getCoordinationTransformation(v, cameraId);
+                Vector v = getCoordinationTransformation(orientation, cameraId);
                 std::string var;
                 std::ostringstream id;
                 id << cameraId;
@@ -391,12 +413,9 @@ Vector Position::getOrientation(int cameraId) {
                 orientation = v;
             }
             else {
-                loadValues(cameraId);
-                mxArray *oV = engGetVariable(ep, "omc_left_1");
-                orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
-                mxDestroyArray(oV);
-                // saving orientation in cameraOrientation_cameraIs
-                Vector v = getCoordinationTransformation(v, cameraId);
+                orientation = getOrientationInCameraCoordination(cameraId);
+                // saving orientation in cameraOrientation_cameraIds
+                Vector v = getCoordinationTransformation(orientation, cameraId);
                 std::string var;
                 std::ostringstream id;
                 id << cameraId;
