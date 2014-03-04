@@ -15,8 +15,10 @@ private:
 	Engine *ep;
 	AmccCalibration *calib;
 	int numberCameras;
-	// saves whether the cameras are calibrated or not;
+	// saves whether the cameras are multicalibrated or not;
 	bool transformed;
+	// saves whether the position and translation is calculated of all cameras;
+	bool calibrated;
 	/// (quadPos[i])[j] is the position of quadrocopter with ID i and camera with ID j
 	std::vector< std::vector <Vector> > quadPos;
 	std::vector<Vector> oldPos;
