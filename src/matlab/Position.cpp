@@ -238,12 +238,12 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         return nan;
     }
     else if (cameraId != 0) {
-
-        //// SHOULDN'T BE LOADED ALL THE TIME!!!
-
-        loadValues(cameraId);
+        std::string result;
+        std::ostringstream id;
+        id << cameraId;
         quad.putVariable("quad", ep);
-        engEvalString(ep, "pos = (quad * rodrigues(omc_left_1))' + Tc_left_1;");
+        result = "pos = (quad * rotMatCamCoord_" + id.str() + "' + transVectCamCoord_" + id.str();
+        engEvalString(ep, result.c_str());
         mxArray *position = engGetVariable(ep, "pos");
         pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
         pos = getCoordinationTransformation(pos, cameraId);
@@ -319,11 +319,16 @@ Vector Position::getPositionInCameraCoordination(int cameraId) {
         notSuppressed << i;
         result = "Tc_left_" + notSuppressed.str();
         mxArray *tV = engGetVariable(ep, result.c_str());
+        std::ostringstream id;
+        id << cameraId;
+        result = "transVectCamCoord_" + id.str() + " = Tc_left_" + notSuppressed.str();
+        engEvalString(ep, result.c_str());
         translation = *(new Vector(mxGetPr(tV)[0], mxGetPr(tV)[1], mxGetPr(tV)[2]));
         mxDestroyArray(tV);
      } else {
         // camera 0 is at the origin and looks down the positive z axis
         translation = *(new Vector(0, 0, 0));
+        engEvalString(ep, "transVectCamCoord_0 = [0, 0, 0]");
     }
     return translation;
 }
@@ -383,11 +388,16 @@ Vector Position::getOrientationInCameraCoordination(int cameraId) {
         notSuppressed << i;
         result = "omc_left_" + notSuppressed.str();
         mxArray *oV = engGetVariable(ep, result.c_str());
+        std::ostringstream id;
+        id << cameraId;
+        result = "rotMatCamCoord_" + id.str() + " = rodrigues(omc_left_" + notSuppressed.str() + ");";
+        engEvalString(ep, result.c_str());
         orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
         mxDestroyArray(oV);
     } else {
         // camera 0 is at the origin and looks down the positive z axis
         orientation = *(new Vector(0, 0, 1));
+        engEvalString(ep, "rotMatCamCoord_0 = rodrigues([0, 0, 1])");
     }
     return orientation;
 }

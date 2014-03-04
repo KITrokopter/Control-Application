@@ -27,6 +27,13 @@ private:
 		cameraOrientation_cameraId: real orientation of camera with cameraId
 		rotationMatrixX: rotationmatrix of x axis to calculated camera system of camera 0 to real coordination system
 		rotationMatrixZ: rotationmatrix of z axis to calculated camera system of camera 0 to real coordination system
+
+		camera values in camera coordination system with cameraId
+		rotMaxCamCoord_cameraId
+		transVectCamCoord_cameraId
+
+
+		camera values in real coordinationsystem
 		rotationMatrixCamera_cameraId: rotationmatrix of camera with cameraId, is rodrigues(omc_left_1)
 		translationVectorCamera_cameraId: translation vector of camera with cameraId, is Tc_left_1
 	*/
