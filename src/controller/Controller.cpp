@@ -52,9 +52,6 @@ Controller::Controller()
 	this->receivedQuadcopters = false; // received no quadcopters
 	this->receivedQCMutex.unlock();
 	
-	this->receivedQCStMutex.lock();
-	this->receivedQuadStatus = false; // received no quadcopter status information
-	this->receivedQCStMutex.unlock();
 	
 	this->buildFormationMutex.lock();
 	this->buildFormationFinished = false; // has not built formation
@@ -71,7 +68,6 @@ Controller::Controller()
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
 		/* TODO: add Mutex where necessary (and possible) */
-		this->
 		this->quadcopters.push_back(0);
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		MovementQuadruple init = MovementQuadruple(0,0,0,0);
@@ -468,8 +464,8 @@ void Controller::sendMovementAll()
 	ROS_INFO("sendMovementAll started");
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
-	ROS_INFO("amount %lu",this->MovementAll.size());
-	for(int i = 0; i < MovementAll.size(); i++)
+	ROS_INFO("amount %lu",this-movementAll.size());
+	for(int i = 0; i < movementAll.size(); i++)
 	{
 		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE ) /*FIXME while testing*/
 		{
@@ -552,15 +548,18 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		ROS_INFO("Array %lu", req.quadcoptersId[i]);
 		this->quadcopters.push_back(req.quadcoptersId[i]);
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
-		MovementQuadruple newMoveQuad = MovementQuadruple(0, 0, 0, 0)
+		MovementQuadruple newMoveQuad = MovementQuadruple(0, 0, 0, 0);
 		this->movementAll.push_back(newMoveQuad);
 		
 		//Initialization of Arrays of Lists
 		std::list<Position6DOF> newEmptyList;
 		this->listPositionsMutex.lock();
 		this->listTargetsMutex.lock();
+		this->receivedQCStMutex.lock();
 		this->listPositions.push_back(newEmptyList);
-		this->listTargets.push_back(newEmptyList);
+		this->listTargets.push_back(newEmptyList);	      
+		this->receivedQuadStatus[i] = false; // received no quadcopter status information
+		this->receivedQCStMutex.unlock();
 		this->listTargetsMutex.unlock();
 		this->listPositionsMutex.unlock();
 		ROS_INFO("Initialization done");
@@ -619,10 +618,6 @@ void Controller::buildFormation()
 	double distance = this->formation->getDistance();
 	//Pointer to the first tracked quadcopter
 	double first[3];
-	std::vector<Position6DOF > newElement;
-	this->listTargetsMutex.lock();
-	this->listTargets.push_back(newElement);
-	this->listTargetsMutex.unlock();
 	//Start one quadcopter after another
 	for(int i = 0; i < formationAmount; i++)
 	{
@@ -705,7 +700,7 @@ void Controller::buildFormation()
 		element.setPosition(pointer);
 		this->listTargetsMutex.lock();
 		//this->listTargets.back()[i].setPosition(pointer);
-		this->listTargets.[i].push_back(element);
+		this->listTargets[i].push_back(element);
 		this->listTargetsMutex.unlock();
 		this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
 		ROS_INFO("Done with %i",i);
@@ -808,7 +803,7 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 	//calculate and set a new target position each time there is new data
 	this->buildFormationMutex.lock();
 	bool build = buildFormationFinished;
-	this->buildFormationFinished.unlock();
+	this->buildFormationMutex.unlock();
 	if(build)
 	{
 		setTargetPosition();
@@ -821,10 +816,10 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
 {
 	ROS_INFO("I heard Formation. amount: %i", msg->amount);
-	formMovMutex.lock();
+	formationMovement.lock();
 	this->formation->setDistance(msg->distance);
 	this->formation->setAmount(msg->amount);
-	formMovMutex.unlock();
+	formationMovement.unlock();
 	
 	//TODO Delete when list arrays are converted to arrays list and target array size is used
 	//this->amount = msg->amount;
@@ -845,9 +840,9 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		//ori[2] = 0;
 		//formPos[i].setOrientation(ori);
 	}
-	formMovMutex.lock();
+	formationMovementMutex.lock();
 	this->formation->setPosition(formPos);
-	formMovMutex.unlock();
+	formationMovementMutex.unlock();
 	ROS_INFO("Formation Position set");
 	receivedFormMutex.lock();
 	receivedFormation = true;
