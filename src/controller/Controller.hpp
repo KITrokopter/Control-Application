@@ -154,7 +154,7 @@ private:
 	
 	/* Mutex */
 	Mutex shutdownMutex;
-	Mutex formMovMutex;
+	Mutex formationMovementMutex;
 	Mutex listPositionsMutex;
 	Mutes listTargetsMutex;
 	Mutex buildFormationMutex;
@@ -163,6 +163,8 @@ private:
 	Mutex receivedQCMutex;
 	Mutex receivedFormMutex;
 	Mutex receivedQCStMutex;
+	Mutex lastFormationMovementMutex;
+	Mutex lastCurrentMutex;
 
 	/* Threads */
 	pthread_t tCalculateMovement;

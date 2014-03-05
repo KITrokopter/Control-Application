@@ -106,9 +106,11 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
+		this->lastCurrentMutex.lock();
 		this->lastCurrent[id] = time(&this->lastCurrent[id]);
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
+		this->lastCurrentMutex.unlock();
 		newListItem.push_back( newPosition );
 				
 		if( it->getV1() != INVALID ) 
