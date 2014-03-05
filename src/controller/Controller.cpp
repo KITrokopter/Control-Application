@@ -63,9 +63,6 @@ Controller::Controller()
 	this->formation = new Formation();
 	
 	ROS_INFO("ROS stuff set up");
-	/* TODO: Error-handling. */
-	pthread_create(&tCalculateMovement, NULL, startThreadCalculateMovement, this);
-	ROS_INFO("Thread tCalculateMovement set up");
 	
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
@@ -252,17 +249,15 @@ void Controller::calculateMovement()
  */
 void Controller::moveUp( int internId )
 {
-	/* The actual calculation of "moving up" */
-	bool continueMoveUp;
 	double moveVector[3];	
-
+	
 	stopFormationMutex.lock();
-	continueMoveUp = buildFormationStop;
+	bool continueMoveUp = buildFormationStop;
 	stopFormationMutex.unlock();	
 	if( continueMoveUp )
 	{
-		
-		/*TODO: convert here */
+		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
+		movementAll[interId] = newMovement;
 	} 
 }
 
@@ -448,21 +443,6 @@ void Controller::convertMovement(double* const vector, int internId)
 }
 
 /*
- * Creates a Ros message for the movement of the quadcopter and sends this 
- * to the quadcopter modul
- */
-/*void Controller::sendMovement()
-{
-	//Creates a message for quadcopter Movement and sends it via Ros
-	control_application::quadcopter_movement msg;
-	msg.thrust = this->thrust;
-	msg.roll = this->roll;
-	msg.pitch = this->pitch;
-	msg.yaw = this->yawrate;
-	this->Movement_pub[id].publish(msg);	
-}*/
-
-/*
  * Creates a Ros message for the movement of each quadcopter and sends this 
  * to the quadcopter modul
  */
@@ -580,6 +560,11 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	receivedQCMutex.lock();
 	receivedQuadcopters = true;
 	receivedQCMutex.unlock();
+	
+	/* TODO: Error-handling. */
+	pthread_create(&tCalculateMovement, NULL, startThreadCalculateMovement, this);
+	ROS_INFO("Thread tCalculateMovement set up");
+	
 	return true;
 }
 
