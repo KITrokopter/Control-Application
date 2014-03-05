@@ -267,6 +267,17 @@ void Controller::moveUp( int internId )
 void Controller::stabilize( int internId )
 {
 	/* TODO */
+	/*
+	 * Delta der Position berechnen
+	 * 	falls nicht möglich: sende alten Wert (return)
+	 *
+	 * Delta der Beschleunigung berechnen
+	 *	falls nicht möglich: sende alten Wert (return) oder schätze ?
+	 * 
+	 * Geschwindigkeit und Beschleunigung der letzten x Male berechnen, Werte 
+	 * dementsprechend für Interpolation setzen (die Raten)
+	 *
+	 */
 }
 
 bool Controller::isStable( int internId )
