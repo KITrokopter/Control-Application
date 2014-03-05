@@ -87,9 +87,9 @@ void Controller::initialize()
 	{
 		this->senderID = srv.response.id;
 	}
-	getTrackedMutex.lock();
-	getTracked = false;
-	getTrackedMutex.unlock();
+	stopFormationMutex.lock();
+	buildFormationStop = true;
+	stopFormationMutex.unlock();
 	ROS_INFO("Initialize done");
 }
 
@@ -254,25 +254,14 @@ void Controller::moveUp( int internId )
 	bool continueMoveUp;
 	double moveVector[3];	
 
-	getTrackedMutex.lock();
-	//TODO Whats the purpose of getTracked? Shouldn't all qc in start get tracked?
-	continueMoveUp = getTracked;
-	getTrackedMutex.unlock();	
+	stopFormationMutex.lock();
+	continueMoveUp = buildFormationStop;
+	stopFormationMutex.unlock();	
 	if( continueMoveUp )
 	{
-		moveVector[0] = 0;
-		moveVector[1] = 0;
-		moveVector[2] = 100;
+		
 		/*TODO: convert here */
 	} 
-	else
-	{
-		moveVector[0] = INVALID;
-		moveVector[1] = INVALID;
-		moveVector[2] = INVALID;
-	}
-	convertMovement(moveVector, internId);
-	sendMovementAll();
 }
 
 void Controller::stabilize( int internId )

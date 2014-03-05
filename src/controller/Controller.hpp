@@ -147,14 +147,20 @@ private:
 	/* Control variables */
 	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters	FIXME
 	bool shutdownStarted; //Set when we are in the shutdown process
-	bool buildFormationStop;
 	bool receivedQuadcopters;
 	bool receivedFormation;
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
 	bool buildFormationFinished;
+	bool buildFormationStop;
 
 	/* TODO getTracked zu buildFormationStop
+	 * TODO moveUp
+	 * TODO updatePosition iterator (list array)
+	 * TODO isStable
+	 * TODO stabilizer
 	 * 
+	 * 
+	 * /
 	
 	/* Mutex */
 	Mutex curPosMutex;
@@ -163,8 +169,8 @@ private:
 	Mutex formMovMutex;
 	//FIXME difference to curPosMutex? 
 	Mutex listPositionsMutex;
-	Mutex getTrackedMutex;
 	Mutex buildFormationMutex;
+	Mutex stopFormationMutex;
 	Mutex trackedArrayMutex;
 	Mutex receivedQCMutex;
 	Mutex receivedFormMutex;
