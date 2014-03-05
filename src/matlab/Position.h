@@ -15,8 +15,10 @@ private:
 	Engine *ep;
 	AmccCalibration *calib;
 	int numberCameras;
-	// saves whether the cameras are calibrated or not;
+	// saves whether the cameras are multicalibrated or not;
 	bool transformed;
+	// saves whether the position and translation is calculated of all cameras;
+	bool calibrated;
 	/// (quadPos[i])[j] is the position of quadrocopter with ID i and camera with ID j
 	std::vector< std::vector <Vector> > quadPos;
 	std::vector<Vector> oldPos;
@@ -29,12 +31,12 @@ private:
 		rotationMatrixZ: rotationmatrix of z axis to calculated camera system of camera 0 to real coordination system
 
 		camera values in camera coordination system with cameraId
-		rotMaxCamCoord_cameraId
+		rotMatCamCoord_cameraId: rodrigues(omc_left_x)
 		transVectCamCoord_cameraId
 
 
 		camera values in real coordinationsystem
-		rotationMatrixCamera_cameraId: rotationmatrix of camera with cameraId, is rodrigues(omc_left_1)
+		rotationMatrixCamera_cameraId: rotationmatrix of camera with cameraId, is rodrigues(omc_left_x)
 		translationVectorCamera_cameraId: translation vector of camera with cameraId, is Tc_left_1
 	*/
 
