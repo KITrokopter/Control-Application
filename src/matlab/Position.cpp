@@ -62,6 +62,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     AmccCalibration *calib = new AmccCalibration(ep);
     calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
 
+    // checking whether calibration did work (trying to load all output files)
     mxArray *good;
     std::string load;
     std::ostringstream id;
@@ -112,7 +113,6 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
 
-
     return ok;
 }
 
@@ -155,7 +155,7 @@ void Position::angleTry(int sign) {
     engEvalString(ep, "rotationMatrix = [(n(1)^2*(1-cos(a)) + cos(a)), (n(1)*n(2)*(1-cos(a))-n(3) * sin(a)), (n(1)*n(3)*(1-cos(a)) + n(2)*sin(a)); (n(2)*n(1)*(1-cos(a)) + n(3)*sin(a)), (n(2)^2*(1 - cos(a)) + cos(a)), (n(2) * n(3) * (1-cos(a)) - n(1) * sin(a)); (n(3) * n(1) *(1-cos(a)) - n(2) * sin(a)), (n(3) * n(2) * (1 - cos(a)) + n(1) * sin(a)), (n(3)^2 * (1-cos(a)) + cos(a))]");
 }
 
-// calculates Vector in the calibration coordination of camera 0 in the real camera coordination
+// calculates Vector in the calibration coordinate of camera 0 in the real camera coordination
 Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
     if (cameraId == -1) {
         Vector nan = *(new Vector(NAN, NAN, NAN));
@@ -163,11 +163,14 @@ Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
     } else {
         if (transformed == false) {
             angleTry(1);
+
+            // checking, whether the result of the z value is nearly 0, if you rotate the first camera in coordinate system of camera 0
             Vector firstCam = getPositionInCameraCoordination(1);
             firstCam.putVariable("firstCam", ep);
             engEvalString(ep, "result = rotationMatrix * firstCam';");
             mxArray* result = engGetVariable(ep, "result");
             if (!((mxGetPr(result)[2] < 0.5) && (mxGetPr(result)[2] > -0.5))) {
+                // if value is wrong, the angle has to be negativ
                 angleTry(-1);
             }
             this->transformed = true;

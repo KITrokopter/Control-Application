@@ -53,25 +53,32 @@ public:
 	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
     	Position();
     	Position(Engine *ep, int numberCameras);
-	
-        bool calibrate(ChessboardData *chessboardData, int numberCameras);
-	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet
-	double getAngle(Vector u, Vector v);
-	void setNumberCameras(int numberCameras);	
-	Vector getCoordinationTransformation(Vector w, int cameraId);	
-    	Vector updatePosition(Vector quad, int cameraId, double quadcopterId);
-	/// should only be called once
-        Vector getPositionInCameraCoordination(int cameraId);
-	/// should only be called once        
-	Vector getOrientationInCameraCoordination(int cameraId);
-	/// should only be called once, value is saved in variable cameraPosition_cameraId
-	Vector getPosition(int cameraId);
-	/// should only be called once, value is saved in variable cameraOrientation_cameraId
-	Vector getOrientation(int cameraId);
-	/// transforming with positiv or negative angle (sign should only be -1 or 1)	
-	void angleTry(int sign);
 
-    void loadValues(int cameraId);
+	// calibrating with amcc toolbox, saving matlab variables in workspace after calibration
+        bool calibrate(ChessboardData *chessboardData, int numberCameras);
+	// calculating angle between vector u and vector v
+	double getAngle(Vector u, Vector v);
+	// setter
+	void setNumberCameras(int numberCameras);
+
+	// transforming coordinate system with positiv or negative angle (sign should only be -1 or 1)	
+	void angleTry(int sign);	
+	// transforming coordinate system of camera 0 to coordinate system where all cameras are on the xy-plane 
+	Vector getCoordinationTransformation(Vector w, int cameraId);
+
+	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet	
+    	Vector updatePosition(Vector quad, int cameraId, double quadcopterId);
+	/// should only be called once, loads the output of the position of a camera in coordinate system of camera 0
+        Vector getPositionInCameraCoordination(int cameraId);
+	/// should only be called once, loads the output of the orientation of a camera in coordinate system of camera 0   
+	Vector getOrientationInCameraCoordination(int cameraId);
+	/// should only be called once, value is saved in variable cameraPosition_cameraId, is in real coordinate system
+	Vector getPosition(int cameraId);
+	/// should only be called once, value is saved in variable cameraOrientation_cameraId, is in real coordinate system
+	Vector getOrientation(int cameraId);
+	
+	// loads values of amcc toolbox calibration of camera with cameraId in matlab workspace
+    	void loadValues(int cameraId);
 };
 
 #endif // POSITION_H //
