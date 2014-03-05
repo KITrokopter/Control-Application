@@ -16,7 +16,7 @@
 bool calibrate(Matlab *m) {
     Position *h = new Position(m->getEngine(), 3);
     ChessboardData *c = new ChessboardData(7, 7, 57, 57);
-    //bool ok = h->calibrate(c, 3);
+    bool ok = h->calibrate(c, 3);
     /*Vector cam0 = h->getPositionInCameraCoordination(0);
     printf("[%f, %f, %f]\n", cam0.getV1(), cam0.getV2(), cam0.getV3());
     Vector cam1 = h->getPositionInCameraCoordination(1);
@@ -39,7 +39,7 @@ bool calibrate(Matlab *m) {
     y = *(new Vector(1, 2, 5));
     movement = h->updatePosition(y, 0, 1);
     printf("Quadcopter 1 moved in direction [%f, %f, %f]\n", movement.getV1(), movement.getV2(), movement.getV3());
-    return true;
+    return ok;
 }
 
 void tracking(Matlab *m) {
@@ -60,16 +60,16 @@ void tracking(Matlab *m) {
 
 int main(int argc, char** argv) {
     Matlab *m = new Matlab();
-
+    printf("Hallo das ist ein Test\n");
     //AmccCalibration *a= new AmccCalibration(m->getEngine());
     Engine *e = m->getEngine();
     Position *p = new Position(e,3);
-/*
+
     bool ok = calibrate(m);
     if (ok == true) {
         printf("success\n");
     } else {
         printf("fail\n");
-    }*/
+    }
     m->destroyMatlab();
 }
