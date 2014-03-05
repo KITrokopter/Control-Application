@@ -135,10 +135,19 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			trackedArrayMutex.unlock();
 		}
 	}	
-	std::size_t elements = positions.size();
-	listPositionsMutex.lock();
-	this->listPositions.push_back(newListItem); 
-	listPositionsMutex.unlock();
+	//std::size_t elements = positions.size();
+	int localId = getLocalId( id );
+	this->listPositionsMutex.lock();
+	this->listPositions[localId].push_back( newPosition ); 
+	while( this->listPositions[localId].size() > 30 )
+	{
+		// Remove oldest elements
+		this->listPositions[localId].erase( this->listPositions[localId].begin() );
+	}
+	this->listPositionsMutex.unlock();
+
+	
+>>>>>>> f1a8e2271033675d295f1fd56d61c1c45020468c
 
 }
 
