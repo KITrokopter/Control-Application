@@ -53,6 +53,8 @@
 #define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
 #define CALCULATE_LAND 5 //Shutdown quadcopter
 
+#define RANGE_STABLE 0.1 // Distance of two points to be considered "equal" in meters
+
 #define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
 
 class Formation;

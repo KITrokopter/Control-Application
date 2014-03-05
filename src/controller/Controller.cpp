@@ -293,20 +293,24 @@ bool Controller::isStable( int internId )
 		{
 			if( counter == compareTime[0] )
 			{
-				/* TODO */
-				/*  if (|| listPositions.end - rit.?? || )
-				 * 		valueInSphere[i] == true
-					 else
-					 	return false
-				*/
+				if( !closeToTarget( listPositions[internId].back, *rit ) )
+				{
+					return false;
+				}
 			}
 			if( counter == compareTime[1] )
 			{
-
+				if( !closeToTarget( listPositions[internId].back, *rit ) )
+				{
+					return false;
+				}
 			}
 			if( counter == compareTime[2] )
 			{
-
+				if( !closeToTarget( listPositions[internId].back, *rit ) )
+				{
+					return false;
+				}
 			}
 			counter++;
 		}
