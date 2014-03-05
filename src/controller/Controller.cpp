@@ -47,14 +47,21 @@ Controller::Controller()
 	this->shutdownMutex.lock();
 	this->shutdownStarted = false;	// shutdown not started
 	this->shutdownMutex.unlock();
+	
 	this->receivedQCMutex.lock();
 	this->receivedQuadcopters = false; // received no quadcopters
 	this->receivedQCMutex.unlock();
+	
+	this->receivedQCStMutex.lock();
+	this->receivedQuadStatus = false; // received no quadcopter status information
+	this->receivedQCStMutex.unlock();
+	
 	this->buildFormationMutex.lock();
 	this->buildFormationFinished = false; // has not built formation
 	this->buildFormationMutex.unlock();
+	
 	this->stopFormationMutex.lock();
-	this->buildFormationStop = true; // buildFormation has not been started
+	this->buildFormationStop = true; // buildFormation has not been stopped
 	this->stopFormationMutex.unlock();
 	
 	this->formation = new Formation();
@@ -64,6 +71,7 @@ Controller::Controller()
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
 		/* TODO: add Mutex where necessary (and possible) */
+		this->
 		this->quadcopters.push_back(0);
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		MovementQuadruple init = MovementQuadruple(0,0,0,0);
@@ -89,16 +97,19 @@ void Controller::initialize()
 }
 
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
-{		
+{
+		
 	/* Save position vectors */	
-	//std::list<Position6DOF> newVectorItem;
+	std::vector<Position6DOF> newListItem;
 	int i = 0;
+	int id;
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
-		int id = getLocalId( ids[i]) ;
+		id = getLocalId(i);
 		this->lastCurrent[id] = time(&this->lastCurrent[id]);
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
+		newListItem.push_back( newPosition );
 				
 		if( it->getV1() != INVALID ) 
 		{	
@@ -124,17 +135,10 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			trackedArrayMutex.unlock();
 		}
 	}	
-	//std::size_t elements = positions.size();
-	int localId = getLocalId( id );
-	this->listPositionsMutex.lock();
-	this->listPositions[getLocalId(id)].push_back( newPosition ); 
-	if( this->listPositions[localId].size() > 30 )
-	{
-		// Remove oldest elements
-	}
-	this->listPositionsMutex.unlock();
-
-	
+	std::size_t elements = positions.size();
+	listPositionsMutex.lock();
+	this->listPositions.push_back(newListItem); 
+	listPositionsMutex.unlock();
 
 }
 
@@ -156,18 +160,18 @@ void Controller::calculateMovement()
 	while(!inShutdown)
 	{
 		ROS_INFO("Calculate");
-		int amount = this->quadcopterMovementStatus.size();
+		int amount = quadcopterMovementStatus.size();
 		for(int i = 0; (i < amount) && (!inShutdown); i++)
 		{	
 			/* Shutdown */
-			this->shutdownMutex.lock();
+			shutdownMutex.lock();
 			inShutdown = shutdownStarted;
-			this->shutdownMutex.unlock();
-			this->receivedFormMutex.lock();
-			this->receivedQCMutex.lock();
+			shutdownMutex.unlock();
+			receivedFormMutex.lock();
+			receivedQCMutex.lock();
 			bool enoughData = this->receivedFormation && this->receivedQuadcopters;
-			this->receivedFormMutex.unlock();
-			this->receivedQCMutex.unlock();
+			receivedFormMutex.unlock();
+			receivedQCMutex.unlock();
 			if( enoughData)
 			{
 				checkInput();
@@ -319,12 +323,14 @@ void Controller::hold( int internId )
 
 void Controller::land( int internId )
 {
+	this->trackedArrayMutex.lock();
 	//Decline until crazyflie isn't tracked anymore
 	while(tracked[internId] == true)
 	{
 		this->movementAll[internId].setThrust(THRUST_DECLINE);
 		sendMovementAll();
 	}
+	this->trackedArrayMutex.unlock();
 	//Shutdown crazyflie after having left the tracking area.
 	this->movementAll[internId].setThrust(THRUST_MIN);
 }
@@ -338,9 +344,10 @@ bool Controller::checkInput()
 	for(int i = 0; i < this->quadcopterMovementStatus.size(); i++)
 	{
 		this->receivedQCStMutex.lock();
-		if(!this->receivedQuadStatus[i])
+		bool save = !this->receivedQuadStatus[i];
+		this->receivedQCStMutex.unlock();
+		if(save)
 		{
-			this->receivedQCStMutex.unlock();
 			continue;
 		}
 		/* Battery */
@@ -354,13 +361,19 @@ bool Controller::checkInput()
 			continue;
 		}
 		time_t currentTime = time(&currentTime);
-		if(currentTime - this->lastFormationMovement > TIME_UPDATED_END)
+		this->lastFormationMovementMutex.lock();
+		time_t lastForm = this->lastFormationMovement;
+		this->lastFormationMovementMutex.unlock();
+		if(currentTime - lastForm > TIME_UPDATED_END)
 		{
 		      std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		      emergencyRoutine(message);
 		      return false;
 		}
-		if(currentTime - this->lastCurrent[i] > TIME_UPDATED_END)
+		this->lastCurrentMutex.lock();
+		time_t lastCur = this->lastCurrent[i];
+		this->lastCurrentMutex.unlock();
+		if(currentTime - lastCur > TIME_UPDATED_END)
 		{
 		      std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		      emergencyRoutine(message);
@@ -369,7 +382,7 @@ bool Controller::checkInput()
 		      trackedArrayMutex.unlock();
 		      return false;
 		}
-		if(currentTime - this->lastCurrent[i] > TIME_UPDATED_CRITICAL)
+		if(currentTime - lastCur > TIME_UPDATED_CRITICAL)
 		{
 		      trackedArrayMutex.lock();
 		      tracked[i] = false;
@@ -478,11 +491,11 @@ void Controller::setTargetPosition()
 		}
 		this->listTargetsMutex.unlock();
 		double targetNew[3];
-		this->formMovMutex.lock();
+		this->formationMovementMutex.lock();
 		targetNew[0] = targetOld[0] + this->formationMovement.back()[0];
 		targetNew[1] = targetOld[1] + this->formationMovement.back()[1];
 		targetNew[2] = targetOld[2] + this->formationMovement.back()[2];
-		this->formMovMutex.unlock();
+		this->formationMovementMutex.unlock();
 		//Check if new position would be in tracking area
 		Vector vector = Vector(targetNew[0],targetNew[1],targetNew[2]);
 		if(!this->trackingArea.contains(vector))
@@ -502,14 +515,14 @@ void Controller::setTargetPosition()
 
 int Controller::getLocalId(int globalId)
 {
-	for(int i = 0; i < this->quadcopters.size() ; i++ )
+  for(int i = 0; i < this->quadcopters.size() ; i++ )
+  {
+	if(globalId == this->quadcopters[i])
 	{
-		if(globalId == this->quadcopters[i])
-		{
-			return i;
-		}
+	  return i;
 	}
-	return -1;
+  }
+  return -1;
 }
 
 
@@ -584,7 +597,7 @@ void Controller::buildFormation()
 	      //TODO check if setquadcopters/ setformation
 	} while( notEnoughData );
 	//Get the formation Positions and the distance.
-	int formationAmount = this->formation.getAmount();
+	int formationAmount = this->formation->getAmount();
 	Position6DOF formPos[formationAmount];
 	for( int i = 0; i < formationAmount; i++)
 	{
@@ -594,7 +607,9 @@ void Controller::buildFormation()
 	//Pointer to the first tracked quadcopter
 	double first[3];
 	std::vector<Position6DOF > newElement;
+	this->listTargetsMutex.lock();
 	this->listTargets.push_back(newElement);
+	this->listTargetsMutex.unlock();
 	//Start one quadcopter after another
 	for(int i = 0; i < formationAmount; i++)
 	{
@@ -771,10 +786,12 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 	/*movement[0] = msg->xMovement;
 	movement[1] = msg->yMovement;
 	movement[2] = msg->zMovement;*/
-	formMovMutex.lock();
+	this->formationMovementMutex.lock();
 	this->formationMovement.push_back(movement);
-	formMovMutex.unlock();	
+	this->formationMovementMutex.unlock();	
+	this->lastFormationMovementMutex.lock();
 	this->lastFormationMovement = time(&this->lastFormationMovement);
+	this->lastFormationMovementMutex.unlock();
 	//calculate and set a new target position each time there is new data
 	this->buildFormationMutex.lock();
 	bool build = buildFormationFinished;
@@ -797,7 +814,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 	formMovMutex.unlock();
 	
 	//TODO Delete when list arrays are converted to arrays list and target array size is used
-	this->amount = msg->amount;
+	//this->amount = msg->amount;
 	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
 	ROS_INFO("Setting Formation");
 	Position6DOF formPos[msg->amount];
