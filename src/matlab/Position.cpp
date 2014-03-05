@@ -274,11 +274,9 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
             Line tracked = *(new Line(position, pos.add(position.mult(-1))));
             // calulating actual pos
             Vector newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
-            // calculating movement = newPos - oldPos
-            Vector movement = newPos.add(oldPos[quadcopterId].mult(-1));
             // saving new Pos
             oldPos[quadcopterId] = newPos;
-            return movement;
+            return newPos;
         }
     }
 }
