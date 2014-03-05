@@ -134,17 +134,16 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			this->tracked[id] = false;
 			trackedArrayMutex.unlock();
 		}
+		this->listPositionsMutex.lock();
+		this->listPositions[id].push_back( newPosition ); 
+		while( this->listPositions[id].size() > 30 )
+		{
+			// Remove oldest elements
+			this->listPositions[id].erase( this->listPositions[id].begin() );
+		}
+		this->listPositionsMutex.unlock();
 	}	
-	//std::size_t elements = positions.size();
-	int localId = getLocalId( id );
-	this->listPositionsMutex.lock();
-	this->listPositions[localId].push_back( newPosition ); 
-	while( this->listPositions[localId].size() > 30 )
-	{
-		// Remove oldest elements
-		this->listPositions[localId].erase( this->listPositions[localId].begin() );
-	}
-	this->listPositionsMutex.unlock();
+	
 }
 
 
@@ -692,7 +691,7 @@ void Controller::buildFormation()
 		//double* pointer = this->listTargets.back()[i].getPosition();
 		for(int k = 0; k < 3; k++)
 		{
-			pointer[k] = this->listTargets.[i]back().getPosition()[k];
+			pointer[k] = this->listTargets[i].back().getPosition()[k];
 		}
 		this->listTargetsMutex.unlock();
 		pointer[0] += 0;
@@ -818,10 +817,8 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
 {
 	ROS_INFO("I heard Formation. amount: %i", msg->amount);
-	formationMovement.lock();
 	this->formation->setDistance(msg->distance);
 	this->formation->setAmount(msg->amount);
-	formationMovement.unlock();
 	
 	//TODO Delete when list arrays are converted to arrays list and target array size is used
 	//this->amount = msg->amount;
@@ -842,9 +839,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		//ori[2] = 0;
 		//formPos[i].setOrientation(ori);
 	}
-	formationMovementMutex.lock();
 	this->formation->setPosition(formPos);
-	formationMovementMutex.unlock();
 	ROS_INFO("Formation Position set");
 	receivedFormMutex.lock();
 	receivedFormation = true;
