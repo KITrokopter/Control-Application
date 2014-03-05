@@ -70,10 +70,6 @@ Controller::Controller()
 		MovementQuadruple init = MovementQuadruple(0,0,0,0);
 		this->movementAll.push_back(init);
 
-		Position6DOF newPosition = Position6DOF( INVALID, INVALID, INVALID );
-		std::list<Position6DOF> newList (newPosition);
-		this->listPositions.push_back( newList );
-
 		//Initialize tracked (no quadcopter is tracked at the beginning)
 		trackedArrayMutex.lock();
 		tracked[i] = false;
@@ -170,11 +166,9 @@ void Controller::calculateMovement()
 			shutdownMutex.unlock();
 			receivedFormMutex.lock();
 			receivedQCMutex.lock();
-			receivedQuadStatus.lock();
 			bool enoughData = this->receivedFormation && this->receivedQuadcopters;
 			receivedFormMutex.unlock();
 			receivedQCMutex.unlock();
-			receivedQuadStatus.unlock();
 			if( enoughData)
 			{
 				checkInput();
@@ -254,32 +248,6 @@ void Controller::calculateMovement()
  * After that probably an error occured and we can't say where it
  * it and should shutdown.
  */
-//FIXME DELETE
-void Controller::moveUp()
-{
-	/* Move Up All */
-	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
-	{
-		quadcopterMovementStatus[i] = CALCULATE_START;
-	}
-}
-
-//FIXME DELETE
-void Controller::moveUp(std::vector<int> ids)
-{
-	/* Move Up all mentioned */
-	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
-	{
-		for(unsigned int k = 0; k < ids.size(); k++)
-		{
-			if( quadcopters[i] == ids[i] )
-			{
-				quadcopterMovementStatus[i] = CALCULATE_START;
-			}
-		}			
-	}
-}
-
 void Controller::moveUp( int internId )
 {
 	/* The actual calculation of "moving up" */
@@ -373,6 +341,7 @@ void Controller::land( int internId )
 	//Decline until crazyflie isn't tracked anymore
 	while(tracked[internId] == true)
 	{
+		//TODO Possible to set thrust like that? What about the others? All set to zero?
 		this->movementAll[internId].setThrust(THRUST_DECLINE);
 		sendMovementAll();
 	}
@@ -591,13 +560,17 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	for( i = 0; i < req.amount; i++)
 	{
 		ROS_INFO("Array %lu", req.quadcoptersId[i]);
-		this->quadcopters[i] =  req.quadcoptersId[i];
-		this->quadcopterMovementStatus[i] = CALCULATE_NONE;
-		this->movementAll[i] = MovementQuadruple(0, 0, 0, 0);
-	}
-	//Generate Subscribers and Publisher
-	for(int i = 0; i < req.amount; i++)
-	{
+		this->quadcopters.push_back(req.quadcoptersId[i]);
+		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
+		MovementQuadruple newMoveQuad = MovementQuadruple(0, 0, 0, 0)
+		this->movementAll.push_back(newMoveQuad);
+		
+		//Initialization of Arrays of Lists
+		std::list<Position6DOF> newEmptyList;
+		this->listPositions.push_back(newEmptyList);
+		this->listTargets.push_back(newEmptyList);
+		ROS_INFO("Initialization done");
+		
 		//Subscriber to quadcopter status
 		std::stringstream topicNameQS;
 		int id = this->quadcopters[i];
@@ -610,12 +583,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 		this->Movement_pub[i] = this->n.advertise<control_application::quadcopter_movement>(topicNameMov.str().c_str(), 1000);
 		ROS_INFO("QCMovement Topics have been initialized");
-		//Initialization of Arrays of Lists
-		std::list<Position6DOF> list;
-		this->listPositions[i] = list;
-		this->listTargets[i] = list;
-		this->listSendTargets[i] = list;
-		ROS_INFO("Initialization done");
+		
 			
 	}
 	receivedQCMutex.lock();
@@ -647,7 +615,7 @@ void Controller::buildFormation()
 	Position6DOF formPos[this->amount];
 	for( int i = 0; i < this->amount; i++)
 	{
-		formPos[i] = this->formation->getPosition()[i];	 //TODO @Carina: why [i] ?	
+		formPos[i] = this->formation->getPosition()[i];	
 	}
 	double distance = this->formation->getDistance();
 	//Pointer to the first tracked quadcopter
@@ -731,8 +699,8 @@ void Controller::buildFormation()
 		}
 		tarPosMutex.unlock();
 		pointer[0] += 0;
-		pointer[1] += distance;
-		pointer[2] += 0;
+		pointer[1] += 0;
+		pointer[2] += distance;
 		Position6DOF element;
 		element.setPosition(pointer);
 		tarPosMutex.lock();
@@ -758,7 +726,6 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
 	pthread_create(&tBuildFormation, NULL, startThreadBuildFormation, this);
 	ROS_INFO("Thread tBuildFormation set up");
 	return true;
-	/* TODO @Carina: what was "just for testing" ? */
 }
 
 /*
