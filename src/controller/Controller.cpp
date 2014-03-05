@@ -47,16 +47,21 @@ Controller::Controller()
 	this->Shutdown_client = this->n.serviceClient<control_application::Shutdown>("Shutdown");
 	
 	//All control variables are set to zero
-	shutdownMutex.lock();
-	this->shutdownStarted = false;
-	shutdownMutex.unlock();
-	receivedQCMutex.lock();
-	this->receivedQuadcopters = false;
-	receivedQCMutex.unlock();
+	this->shutdownMutex.lock();
+	this->shutdownStarted = false;	// shutdown not started
+	this->shutdownMutex.unlock();
+	this->receivedQCMutex.lock();
+	this->receivedQuadcopters = false; // received no quadcopters
+	this->receivedQCMutex.unlock();
 	this->buildFormationMutex.lock();
-	this->buildFormationFinished = false;
+	this->buildFormationFinished = false; // has not built formation
 	this->buildFormationMutex.unlock();
+	this->stopFormationMutex.lock();
+	this->buildFormationStop = true; // buildFormation has not been started
+	this->stopFormationMutex.unlock();
+	
 	this->formation = new Formation();
+	
 	ROS_INFO("ROS stuff set up");
 	/* TODO: Error-handling. */
 	pthread_create(&tCalculateMovement, NULL, startThreadCalculateMovement, this);
@@ -87,9 +92,6 @@ void Controller::initialize()
 	{
 		this->senderID = srv.response.id;
 	}
-	stopFormationMutex.lock();
-	buildFormationStop = true;
-	stopFormationMutex.unlock();
 	ROS_INFO("Initialize done");
 }
 
