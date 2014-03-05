@@ -145,10 +145,6 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		this->listPositions[localId].erase( this->listPositions[localId].begin() );
 	}
 	this->listPositionsMutex.unlock();
-
-	
->>>>>>> f1a8e2271033675d295f1fd56d61c1c45020468c
-
 }
 
 
