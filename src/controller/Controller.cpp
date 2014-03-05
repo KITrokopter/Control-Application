@@ -279,7 +279,7 @@ bool Controller::isStable( int internId )
 	int compareTime[3] = { 1, 5, 50 };
 	
 	this->listPositionsMutex.unlock();
-	int sizeOfListPositions = this->listPositions[internId].size();
+	size_t sizeOfListPositions = this->listPositions[internId].size();
 	this->listPositionsMutex.unlock();
     if( sizeOfListPositions > compareTime[2] )
     {
@@ -465,7 +465,7 @@ void Controller::sendMovementAll()
 	ROS_INFO("sendMovementAll started");
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
-	ROS_INFO("amount %lu",this-movementAll.size());
+	ROS_INFO("amount %zu",this-movementAll.size());
 	for(int i = 0; i < movementAll.size(); i++)
 	{
 		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE ) /*FIXME while testing*/
