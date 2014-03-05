@@ -179,12 +179,12 @@ void Controller::calculateMovement()
 			double moveVector[3];
 			for(int k = 0; k < 3; k++)
 			{
-				tarPosMutex.lock();
+				this->listTargetsMutex.lock();
 				target[k] = this->listTargets[i].back().getPosition()[k];
-				tarPosMutex.unlock();
-				curPosMutex.lock();
+				this->listTargetsMutex.unlock();
+				this->listPositionsMutex.lock();
 				current[k] = this->listPositions[i].back().getPosition()[k];
-				curPosMutex.unlock();
+				this->listPositionsMutex.unlock();
 			}
 	
 			switch( quadcopterMovementStatus[i] )
@@ -322,7 +322,6 @@ void Controller::land( int internId )
 	//Decline until crazyflie isn't tracked anymore
 	while(tracked[internId] == true)
 	{
-		//TODO Possible to set thrust like that? What about the others? All set to zero?
 		this->movementAll[internId].setThrust(THRUST_DECLINE);
 		sendMovementAll();
 	}
@@ -443,9 +442,8 @@ void Controller::sendMovementAll()
 	ROS_INFO("sendMovementAll started");
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
-	ROS_INFO("amount %i",this->amount);
-	//TODO replaced MovementAll.size() with amount since we don't have IN
-	for(int i = 0; i < this->amount; i++)
+	ROS_INFO("amount %lu",this->MovementAll.size());
+	for(int i = 0; i < MovementAll.size(); i++)
 	{
 		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE ) /*FIXME while testing*/
 		{
@@ -468,18 +466,17 @@ void Controller::setTargetPosition()
 	
 	time_t currentTime = time(&currentTime);
 	Position6DOF newTarget;
-	//FIXME Replace this->amount with size of targetArray
 	//Iterate over all quadcopters in formation and set new target considering old target and formation Movement
-	for(int i = 0; i < this->amount; i++)
+	for(int i = 0; i < this->listTargets.size(); i++)
 	{
-		this->tarPosMutex.lock();
+		this->listTargetsMutex.lock();
 		Position6DOF latestTarget = this->listTargets[i].back();
 		double targetOld[3];
 		for(int k = 0; k < 3; k++)
 		{
 			targetOld[k] = latestTarget.getPosition()[k];
 		}
-		this->tarPosMutex.unlock();
+		this->listTargetsMutex.unlock();
 		double targetNew[3];
 		this->formMovMutex.lock();
 		targetNew[0] = targetOld[0] + this->formationMovement.back()[0];
@@ -496,9 +493,9 @@ void Controller::setTargetPosition()
 		}
 		newTarget.setPosition(targetNew);
 		newTarget.setTimestamp(currentTime);
-		this->tarPosMutex.lock();
+		this->listTargetsMutex.lock();
 		this->listTargets[i].push_back(newTarget);
-		this->tarPosMutex.unlock();
+		this->listTargetsMutex.unlock();
 	}
 	
 }
@@ -587,9 +584,9 @@ void Controller::buildFormation()
 	      //TODO check if setquadcopters/ setformation
 	} while( notEnoughData );
 	//Get the formation Positions and the distance.
-	//Position6DOF* const formPos = this->formation->getPosition();
-	Position6DOF formPos[this->amount];
-	for( int i = 0; i < this->amount; i++)
+	int formationAmount = this->formation.getAmount();
+	Position6DOF formPos[formationAmount];
+	for( int i = 0; i < formationAmount; i++)
 	{
 		formPos[i] = this->formation->getPosition()[i];	
 	}
@@ -598,7 +595,6 @@ void Controller::buildFormation()
 	double first[3];
 	std::vector<Position6DOF > newElement;
 	this->listTargets.push_back(newElement);
-	int formationAmount = this->formation->getAmount();
 	//Start one quadcopter after another
 	for(int i = 0; i < formationAmount; i++)
 	{
@@ -634,7 +630,7 @@ void Controller::buildFormation()
 		if( i == 0)
 		{
 			ROS_INFO("First one");
-			curPosMutex.lock();
+			this->listPositionsMutex.lock();
 			if(!listPositions[0].empty())
 			{
 				for(int k = 0; k < 3; k++)
@@ -642,13 +638,13 @@ void Controller::buildFormation()
 					first[k] = listPositions[0].back().getPosition()[k];
 				}
 			}
-			curPosMutex.unlock();
+			this->listPositionsMutex.unlock();
 			ROS_INFO("First set");
 			Position6DOF firstElement;
 			firstElement.setPosition(first);
-			tarPosMutex.lock();
+			this->listTargetsMutex.lock();
 			this->listTargets[0].push_back(firstElement);
-			tarPosMutex.unlock();
+			this->listTargetsMutex.unlock();
 		}
 		else
 		{
@@ -659,30 +655,30 @@ void Controller::buildFormation()
 			target[2] += first[2];
 			Position6DOF targetElement;
 			targetElement.setPosition(target);
-			tarPosMutex.lock();
+			this->listTargetsMutex.lock();
 			this->listTargets[i].push_back(targetElement);
-			tarPosMutex.unlock();
+			this->listTargetsMutex.unlock();
 			this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
 		}
 		ROS_INFO("Inclining");
 		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
 		double pointer[3];
-		tarPosMutex.lock();
+		this->listTargetsMutex.lock();
 		//double* pointer = this->listTargets.back()[i].getPosition();
 		for(int k = 0; k < 3; k++)
 		{
 			pointer[k] = this->listTargets.[i]back().getPosition()[k];
 		}
-		tarPosMutex.unlock();
+		this->listTargetsMutex.unlock();
 		pointer[0] += 0;
 		pointer[1] += 0;
 		pointer[2] += distance;
 		Position6DOF element;
 		element.setPosition(pointer);
-		tarPosMutex.lock();
+		this->listTargetsMutex.lock();
 		//this->listTargets.back()[i].setPosition(pointer);
 		this->listTargets.[i].push_back(element);
-		tarPosMutex.unlock();
+		this->listTargetsMutex.unlock();
 		this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
 		ROS_INFO("Done with %i",i);
 	}
