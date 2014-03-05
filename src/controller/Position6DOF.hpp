@@ -1,6 +1,7 @@
 #ifndef POSITION6DOF_HPP
 #define POSITION6DOF_HPP
 #include <time.h>
+#include <cmath>
 
 
 class Position6DOF {
@@ -15,6 +16,8 @@ public:
 	Position6DOF(double x, double y, double z, double xOrientation, double yOrientation, double zOrientation);
 	Position6DOF(double x, double y, double z);
 	Position6DOF(){};
+
+	double getAbsoluteDistance( Position6DOF otherPosition );
 
 private:
 	double position[3];

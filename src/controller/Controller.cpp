@@ -1,5 +1,7 @@
 #include "Controller.hpp"
 
+bool closeToTarget( Position6DOF position1, Position6DOF position2 );
+
 void* startThreadCalculateMovement(void* something)
 {
 	Controller *someOther = (Controller *) something; 
@@ -893,4 +895,16 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 		}
 		//TODO Do we need to clean up something here? Free space, join threads ...
 	}
+}
+
+
+/* HELPER FUNCTIONS */
+bool closeToTarget( Position6DOF position1, Position6DOF position2 )
+{
+	double distance = position1.getAbsoluteDistance( position2 );
+	if( distance < RANGE_STABLE )
+	{
+		return true;
+	}
+	return false;
 }
