@@ -106,9 +106,11 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
+		this->lastCurrentMutex.lock();
 		this->lastCurrent[id] = time(&this->lastCurrent[id]);
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
+		this->lastCurrentMutex.unlock();
 		newListItem.push_back( newPosition );
 				
 		if( it->getV1() != INVALID ) 
@@ -135,19 +137,10 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			trackedArrayMutex.unlock();
 		}
 	}	
-	//std::size_t elements = positions.size();
-	int localId = getLocalId( id );
-	this->listPositionsMutex.lock();
-	this->listPositions[localId].push_back( newPosition ); 
-	while( this->listPositions[localId].size() > 30 )
-	{
-		// Remove oldest elements
-		this->listPositions[localId].erase( this->listPositions[localId].begin() );
-	}
-	this->listPositionsMutex.unlock();
-
-	
->>>>>>> f1a8e2271033675d295f1fd56d61c1c45020468c
+	std::size_t elements = positions.size();
+	listPositionsMutex.lock();
+	this->listPositions.push_back(newListItem); 
+	listPositionsMutex.unlock();
 
 }
 
