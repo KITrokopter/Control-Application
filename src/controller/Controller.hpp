@@ -110,7 +110,6 @@ private:
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;
-	std::vector<std::list<Position6DOF> > listSendTargets;
 	
 	/* Identification of Quadcopters */
 	//Receive data over ROS
@@ -138,14 +137,9 @@ private:
 	float yaw_stab[MAX_NUMBER_QUADCOPTER];
 	unsigned int thrust_stab[MAX_NUMBER_QUADCOPTER];
 	float battery_status[MAX_NUMBER_QUADCOPTER];
-	int startProcess[MAX_NUMBER_QUADCOPTER];
-	//TODO Still Needed?
-	//std::string idString[MAX_NUMBER_QUADCOPTER];
-	//TODO What's that?
-	//int idsToGetTracked[MAX_NUMBER_QUADCOPTER];
 
 	/* Control variables */
-	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters	FIXME
+	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters
 	bool shutdownStarted; //Set when we are in the shutdown process
 	bool getTracked;
 	bool receivedQuadcopters;
@@ -154,12 +148,11 @@ private:
 	bool buildFormationFinished;
 	
 	/* Mutex */
-	Mutex curPosMutex;
-	Mutex tarPosMutex;
 	Mutex shutdownMutex;
 	Mutex formMovMutex;
 	//FIXME difference to curPosMutex? 
 	Mutex listPositionsMutex;
+	Mutes listTargetsMutex;
 	Mutex getTrackedMutex;
 	Mutex buildFormationMutex;
 	Mutex trackedArrayMutex;
@@ -205,8 +198,6 @@ private:
 	ros::ServiceServer QuadID_srv;
 
 	/* Clients */
-	//ros::ServiceClient FindAll_client;
-	ros::ServiceClient Blink_client;
 	ros::ServiceClient Announce_client;
 	ros::ServiceClient Shutdown_client;
 
