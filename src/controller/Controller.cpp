@@ -89,19 +89,16 @@ void Controller::initialize()
 }
 
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
-{
-		
+{		
 	/* Save position vectors */	
-	std::vector<Position6DOF> newListItem;
+	//std::list<Position6DOF> newVectorItem;
 	int i = 0;
-	int id;
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
-		id = getLocalId(i);
+		int id = getLocalId( ids[i]) ;
 		this->lastCurrent[id] = time(&this->lastCurrent[id]);
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
-		newListItem.push_back( newPosition );
 				
 		if( it->getV1() != INVALID ) 
 		{	
@@ -127,10 +124,17 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			trackedArrayMutex.unlock();
 		}
 	}	
-	std::size_t elements = positions.size();
-	listPositionsMutex.lock();
-	this->listPositions.push_back(newListItem); 
-	listPositionsMutex.unlock();
+	//std::size_t elements = positions.size();
+	int localId = getLocalId( id );
+	this->listPositionsMutex.lock();
+	this->listPositions[getLocalId(id)].push_back( newPosition ); 
+	if( this->listPositions[localId].size() > 30 )
+	{
+		// Remove oldest elements
+	}
+	this->listPositionsMutex.unlock();
+
+	
 
 }
 
@@ -152,18 +156,18 @@ void Controller::calculateMovement()
 	while(!inShutdown)
 	{
 		ROS_INFO("Calculate");
-		int amount = quadcopterMovementStatus.size();
+		int amount = this->quadcopterMovementStatus.size();
 		for(int i = 0; (i < amount) && (!inShutdown); i++)
 		{	
 			/* Shutdown */
-			shutdownMutex.lock();
+			this->shutdownMutex.lock();
 			inShutdown = shutdownStarted;
-			shutdownMutex.unlock();
-			receivedFormMutex.lock();
-			receivedQCMutex.lock();
+			this->shutdownMutex.unlock();
+			this->receivedFormMutex.lock();
+			this->receivedQCMutex.lock();
 			bool enoughData = this->receivedFormation && this->receivedQuadcopters;
-			receivedFormMutex.unlock();
-			receivedQCMutex.unlock();
+			this->receivedFormMutex.unlock();
+			this->receivedQCMutex.unlock();
 			if( enoughData)
 			{
 				checkInput();
@@ -501,14 +505,14 @@ void Controller::setTargetPosition()
 
 int Controller::getLocalId(int globalId)
 {
-  for(int i = 0; i < this->quadcopters.size() ; i++ )
-  {
-	if(globalId == this->quadcopters[i])
+	for(int i = 0; i < this->quadcopters.size() ; i++ )
 	{
-	  return i;
+		if(globalId == this->quadcopters[i])
+		{
+			return i;
+		}
 	}
-  }
-  return -1;
+	return -1;
 }
 
 
