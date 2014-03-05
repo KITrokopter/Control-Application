@@ -128,9 +128,10 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	int localId = getLocalId( id );
 	this->listPositionsMutex.lock();
 	this->listPositions[getLocalId(id)].push_back( newPosition ); 
-	if( this->listPositions[localId].size() > 30 )
+	while( this->listPositions[localId].size() > 30 )
 	{
 		// Remove oldest elements
+		this->listPositions[localId].erase( this->listPositions[localId].begin() );
 	}
 	this->listPositionsMutex.unlock();
 
