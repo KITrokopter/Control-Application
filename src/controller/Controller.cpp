@@ -40,9 +40,6 @@ Controller::Controller()
 	
 
 	//Client
-	//this->FindAll_client = this->n.serviceClient<quadcopter_application::find_all>("find_all");
-	//TODO Can we delete Blink?
-	this->Blink_client = this->n.serviceClient<quadcopter_application::blink>("blink");
 	this->Announce_client = this->n.serviceClient<api_application::Announce>("Announce");
 	this->Shutdown_client = this->n.serviceClient<control_application::Shutdown>("Shutdown");
 	
@@ -84,7 +81,6 @@ void Controller::initialize()
 {
 	api_application::Announce srv;
 	srv.request.type = 2;
-	//srv.request.camera_id = 0;
 	if(Announce_client.call(srv))
 	{
 		this->senderID = srv.response.id;
@@ -157,7 +153,7 @@ void Controller::calculateMovement()
 	{
 		ROS_INFO("Calculate");
 		int amount = quadcopterMovementStatus.size();
-		for(int i = 0; (i<amount) && (!inShutdown); i++)
+		for(int i = 0; (i < amount) && (!inShutdown); i++)
 		{	
 			/* Shutdown */
 			shutdownMutex.lock();
@@ -180,10 +176,10 @@ void Controller::calculateMovement()
 			for(int k = 0; k < 3; k++)
 			{
 				tarPosMutex.lock();
-				target[k] = this->listTargets.back()[i].getPosition()[k];
+				target[k] = this->listTargets[i].back().getPosition()[k];
 				tarPosMutex.unlock();
 				curPosMutex.lock();
-				current[k] = this->listPositions.back()[i].getPosition()[k];
+				current[k] = this->listPositions[i].back().getPosition()[k];
 				curPosMutex.unlock();
 			}
 	
@@ -217,7 +213,6 @@ void Controller::calculateMovement()
 					moveVector[1] = target[1] - current[1];
 					moveVector[2] = target[2] - current[2];
 					convertMovement(moveVector, i);
-					sendMovementAll();
 					break;
 				case CALCULATE_LAND:
 					ROS_INFO("Land %i", i);
@@ -229,12 +224,8 @@ void Controller::calculateMovement()
 					moveVector[1] = INVALID;
 					moveVector[2] = INVALID;
 					break;
-			}			
-			/*
-			 * Variation 1: convert movement and send movement
-			 * Variation 2: convert movement, save movement and send all
-			 */
-			/*TODO: Variation 2 */
+			}
+			sendMovementAll();
 			
 		}
 	}	
@@ -275,13 +266,13 @@ bool Controller::isStable( int internId )
 	 */
 	int compareTime[3] = { 1, 5, 50 };
 
-    if( this->listPositions.size() > compareTime[2] )
+    if( this->listPositions[internId].size() > compareTime[2] )
     {
 		bool valueInSphere[3];
 		/* Reverse iterator to the reverse end */
 		int counter = 0;
-		std::list<std::vector<Position6DOF> >::reverse_iterator rit = this->listPositions.rbegin();
-		for( ; rit != this->listPositions.rend(); ++rit )
+		std::list<std::vector<Position6DOF> >::reverse_iterator rit = this->listPositions[internId].rbegin();
+		for( ; rit != this->listPositions[internId].rend(); ++rit )
 		{
 			if( counter == compareTime[0] )
 			{
@@ -303,11 +294,11 @@ bool Controller::isStable( int internId )
 			counter++;
 		}
 		return true;
-    } else if ( this->listPositions.size() > compareTime[1] )
+    } else if ( this->listPositions[internId].size() > compareTime[1] )
     {
 		/* Possible to work with available information? */
 		return false;
-    } else if ( this->listPositions.size() > compareTime[0] )
+    } else if ( this->listPositions[internId].size() > compareTime[0] )
     {
 		return false;
     } else
@@ -332,9 +323,7 @@ void Controller::land( int internId )
 		sendMovementAll();
 	}
 	//Shutdown crazyflie after having left the tracking area.
-	this->movementAll[internId].setThrust(THRUST_MIN);;
-	//TODO needed here?
-	sendMovementAll();
+	this->movementAll[internId].setThrust(THRUST_MIN);
 }
 
 /*
@@ -417,7 +406,6 @@ void Controller::convertMovement(double* const vector, int internId)
 	if( vector[0] == INVALID )
 	{
 		MovementQuadruple newMovement = MovementQuadruple(0, 0.0f, 0.0f, 0.0f);
-		//TODO movementAll is not a list
 		this->movementAll.push_back( newMovement );
 	}
 	MovementQuadruple * movement = &(this->movementAll[internId]);
@@ -473,24 +461,27 @@ void Controller::sendMovementAll()
  */
 void Controller::setTargetPosition()
 {
-	tarPosMutex.lock();
-	std::vector<Position6DOF> latestTargets = this->listTargets.back();
-	tarPosMutex.unlock();
+	
 	time_t currentTime = time(&currentTime);
-	std::vector<Position6DOF> newTargets;
+	Position6DOF newTarget;
 	//FIXME Replace this->amount with size of targetArray
 	//Iterate over all quadcopters in formation and set new target considering old target and formation Movement
 	for(int i = 0; i < this->amount; i++)
 	{
-		tarPosMutex.lock();
-		double * const targetOld = latestTargets[i].getPosition();
-		tarPosMutex.unlock();
+		this->tarPosMutex.lock();
+		Position6DOF latestTarget = this->listTargets[i].back();
+		double targetOld[3];
+		for(int k = 0; k < 3; k++)
+		{
+			targetOld[k] = latestTarget.getPosition()[k];
+		}
+		this->tarPosMutex.unlock();
 		double targetNew[3];
-		formMovMutex.lock();
+		this->formMovMutex.lock();
 		targetNew[0] = targetOld[0] + this->formationMovement.back()[0];
 		targetNew[1] = targetOld[1] + this->formationMovement.back()[1];
 		targetNew[2] = targetOld[2] + this->formationMovement.back()[2];
-		formMovMutex.unlock();
+		this->formMovMutex.unlock();
 		//Check if new position would be in tracking area
 		Vector vector = Vector(targetNew[0],targetNew[1],targetNew[2]);
 		if(!this->trackingArea.contains(vector))
@@ -499,12 +490,13 @@ void Controller::setTargetPosition()
 			emergencyRoutine(message);
 			return;
 		}
-		newTargets[i].setPosition(targetNew);
-		newTargets[i].setTimestamp(currentTime);
+		newTarget.setPosition(targetNew);
+		newTarget.setTimestamp(currentTime);
+		this->tarPosMutex.lock();
+		this->listTargets[i].push_back(newTarget);
+		this->tarPosMutex.unlock();
 	}
-	tarPosMutex.lock();
-	this->listTargets.push_back(newTargets);
-	tarPosMutex.unlock();
+	
 }
 
 int Controller::getLocalId(int globalId)
@@ -538,8 +530,12 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		
 		//Initialization of Arrays of Lists
 		std::list<Position6DOF> newEmptyList;
+		this->listPositionsMutex.lock();
+		this->listTargetsMutex.lock();
 		this->listPositions.push_back(newEmptyList);
 		this->listTargets.push_back(newEmptyList);
+		this->listTargetsMutex.unlock();
+		this->listPositionsMutex.unlock();
 		ROS_INFO("Initialization done");
 		
 		//Subscriber to quadcopter status
@@ -723,7 +719,7 @@ void Controller::shutdownFormation()
 	/* Bring all quadcopters to a hold */	
 	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
 	{
-		quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
+		quadcopterMovementStatus[i] = CALCULATE_HOLD;
 	}
 
 	//usleep( 1000000 ); //FIXME usleep is no option, implement stabilize in land?
