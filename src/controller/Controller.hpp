@@ -46,7 +46,6 @@
 #define TIME_UPDATED_CRITICAL 0.2 //In seconds
 
 /* For calculateMovement */
-/*TODO choose QC for formation */
 #define CALCULATE_NONE 0 // Unused for formation
 #define CALCULATE_START 1 // Send high thrust to reach tracked area
 #define CALCULATE_STABILIZE 2 // Tries to hold position (with certain error value)
@@ -156,7 +155,6 @@ private:
 	/* Mutex */
 	Mutex shutdownMutex;
 	Mutex formMovMutex;
-	//FIXME difference to curPosMutex? 
 	Mutex listPositionsMutex;
 	Mutes listTargetsMutex;
 	Mutex buildFormationMutex;
@@ -171,11 +169,11 @@ private:
 	pthread_t tBuildFormation;
 
 	/**
-  	 * NodeHandle is the main access point to communications with the ROS system.
-	 * The first NodeHandle constructed will fully initialize this node, and the last
-     * NodeHandle destructed will close down the node.
-     */
-    ros::NodeHandle n;
+  	* NodeHandle is the main access point to communications with the ROS system.
+	* The first NodeHandle constructed will fully initialize this node, and the last
+	* NodeHandle destructed will close down the node.
+	*/
+	ros::NodeHandle n;
 
 	/* Subscriber */
 	//Subscriber for the MoveFormation data
