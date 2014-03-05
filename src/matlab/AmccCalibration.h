@@ -14,10 +14,17 @@
 class AmccCalibration {
 private: Engine *ep;
 public:
+	// empty constructor
 	AmccCalibration();
+	// constructor with engine of Matlab window
 	AmccCalibration(Engine *ep);
-	// sqareLengthX: length of each square of the checkboard in X direction (mm)
-	// number of square corners of the checkerboard in the X direction
+	/*
+	 * numberCameras: number of cameras that should be calibrated
+	 * sqareLengthX: length of each square of the checkboard in X direction (mm)
+	 * sqareLengthY: length of each square of the checkboard in Y direction (mm)
+	 * number of square corners of the checkerboard in the X direction
+	 * number of square corners of the checkerboard in the Y direction
+	*/
 	void multiCameraCalibration(int numberCameras, double squareLengthX, double squareLengthY, int numberSquareCornersX, int numberSquareCornersY);
 };
 
