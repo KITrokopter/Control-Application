@@ -133,11 +133,16 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			trackedArrayMutex.unlock();
 		}
 	}	
-	std::size_t elements = positions.size();
-	listPositionsMutex.lock();
-	this->listPositions.push_back(newListItem); 
-	listPositionsMutex.unlock();
-
+	//std::size_t elements = positions.size();
+	int localId = getLocalId( id );
+	this->listPositionsMutex.lock();
+	this->listPositions[localId].push_back( newPosition ); 
+	while( this->listPositions[localId].size() > 30 )
+	{
+		// Remove oldest elements
+		this->listPositions[localId].erase( this->listPositions[localId].begin() );
+	}
+	this->listPositionsMutex.unlock();
 }
 
 
@@ -271,13 +276,15 @@ bool Controller::isStable( int internId )
 	 * Assumption: 30 Elements ~ 1 sec.
 	 */
 	int compareTime[3] = { 1, 5, 50 };
-
-    if( this->listPositions[internId].size() > compareTime[2] )
+	
+	this->listPositionsMutex.unlock();
+	int sizeOfListPositions = this->listPositions[internId].size();
+	this->listPositionsMutex.unlock();
+    if( sizeOfListPositions > compareTime[2] )
     {
-		bool valueInSphere[3];
 		/* Reverse iterator to the reverse end */
 		int counter = 0;
-		std::list<std::vector<Position6DOF> >::reverse_iterator rit = this->listPositions[internId].rbegin();
+		std::list<Position6DOF>::reverse_iterator rit = this->listPositions[internId].rbegin();
 		for( ; rit != this->listPositions[internId].rend(); ++rit )
 		{
 			if( counter == compareTime[0] )
@@ -300,11 +307,11 @@ bool Controller::isStable( int internId )
 			counter++;
 		}
 		return true;
-    } else if ( this->listPositions[internId].size() > compareTime[1] )
+    } else if ( sizeOfListPositions > compareTime[1] )
     {
 		/* Possible to work with available information? */
 		return false;
-    } else if ( this->listPositions[internId].size() > compareTime[0] )
+    } else if ( sizeOfListPositions) > compareTime[0] )
     {
 		return false;
     } else
