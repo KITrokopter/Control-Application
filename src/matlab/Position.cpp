@@ -122,6 +122,39 @@ double Position::getAngle(Vector u, Vector v) {
     return acos(angle);
 }
 
+void Position::angleTry(int sign) {
+    // Plain of the cameras E = a + r * u + s * (c - a)
+    // as a is always the origin, E intersects the xy-plain in the origin => translation vector is not neccesary
+    Matlab *m = new Matlab(ep);
+    Vector a = getPositionInCameraCoordination(0);
+    Vector b = getPositionInCameraCoordination(1);
+    Vector c = getPositionInCameraCoordination(2);
+    Vector u = b.add(a.mult(-1));
+    Vector v = c.add(a.mult(-1));
+
+    Line cameras = *(new Line(a, u));
+    // calculates intersection line of plain of cameras in reality and plane of cameras in coordination system
+
+    Vector origin = *(new Vector(1, 1, 0));
+    Vector x = *(new Vector(-1, 0, 0));
+    // as the method calculates y - origin = (0, -1, 0)
+    Vector y = *(new Vector(1, 0, 0));
+    Line xAxis = *(new Line(origin, x));
+    // works if E isn't already on the x axis or the y axis
+    Line intersectionLine = m->getIntersectionLine(cameras, c, xAxis, y);
+    //printf("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
+
+
+    Vector n = intersectionLine.getU().mult(1/intersectionLine.getU().getLength());
+    n.putVariable("n", ep);
+    double angle = getAngle(*(new Vector(0, 0, 1)), b.cross(c));
+    double dataAngle[1] = {sign * angle};
+    mxArray *ang = mxCreateDoubleMatrix(1, 1, mxREAL);
+    memcpy((void *)mxGetPr(ang), (void *)dataAngle, sizeof(dataAngle));
+    engPutVariable(ep, "a", ang);
+    engEvalString(ep, "rotationMatrix = [(n(1)^2*(1-cos(a)) + cos(a)), (n(1)*n(2)*(1-cos(a))-n(3) * sin(a)), (n(1)*n(3)*(1-cos(a)) + n(2)*sin(a)); (n(2)*n(1)*(1-cos(a)) + n(3)*sin(a)), (n(2)^2*(1 - cos(a)) + cos(a)), (n(2) * n(3) * (1-cos(a)) - n(1) * sin(a)); (n(3) * n(1) *(1-cos(a)) - n(2) * sin(a)), (n(3) * n(2) * (1 - cos(a)) + n(1) * sin(a)), (n(3)^2 * (1-cos(a)) + cos(a))]");
+}
+
 // calculates Vector in the calibration coordination of camera 0 in the real camera coordination
 Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
     if (cameraId == -1) {
@@ -129,38 +162,14 @@ Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
         return nan;
     } else {
         if (transformed == false) {
-            // Plain of the cameras E = a + r * u + s * (c - a)
-            // as a is always the origin, E intersects the xy-plain in the origin => translation vector is not neccesary
-            Matlab *m = new Matlab(ep);
-            Vector a = getPositionInCameraCoordination(0);
-            Vector b = getPositionInCameraCoordination(1);
-            Vector c = getPositionInCameraCoordination(2);
-            Vector u = b.add(a.mult(-1));
-            Vector v = c.add(a.mult(-1));
-
-            Line cameras = *(new Line(a, u));
-            //printf("camera 1: [%f, %f, %f]\n", b.getV1(), b.getV2(), b.getV3());
-            //printf("camera 2: [%f, %f, %f]\n", c.getV1(), c.getV2(), c.getV3());
-            // calculates intersection line of plain of cameras in reality and plain of cameras in coordination system
-
-            Vector origin = *(new Vector(1, 1, 0));
-            Vector x = *(new Vector(-1, 0, 0));
-            // as the method calculates y - origin = (0, -1, 0)
-            Vector y = *(new Vector(1, 0, 0));
-            Line xAxis = *(new Line(origin, x));
-            // works if E isn't already on the x axis or the y axis
-            Line intersectionLine = m->getIntersectionLine(cameras, c, xAxis, y);
-            //printf("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
-
-
-            Vector n = intersectionLine.getU().mult(1/intersectionLine.getU().getLength());
-            n.putVariable("n", ep);
-            double angle = getAngle(*(new Vector(0, 0, 1)), b.cross(c));
-            double dataAngle[1] = {angle};
-            mxArray *ang = mxCreateDoubleMatrix(1, 1, mxREAL);
-            memcpy((void *)mxGetPr(ang), (void *)dataAngle, sizeof(dataAngle));
-            engPutVariable(ep, "a", ang);
-            engEvalString(ep, "rotationMatrix = [(n(1)^2*(1-cos(a)) + cos(a)), (n(1)*n(2)*(1-cos(a))-n(3) * sin(a)), (n(1)*n(3)*(1-cos(a)) + n(2)*sin(a)); (n(2)*n(1)*(1-cos(a)) + n(3)*sin(a)), (n(2)^2*(1 - cos(a)) + cos(a)), (n(2) * n(3) * (1-cos(a)) - n(1) * sin(a)); (n(3) * n(1) *(1-cos(a)) - n(2) * sin(a)), (n(3) * n(2) * (1 - cos(a)) + n(1) * sin(a)), (n(3)^2 * (1-cos(a)) + cos(a))]");
+            angleTry(1);
+            Vector firstCam = getPositionInCameraCoordination(1);
+            firstCam.putVariable("firstCam", ep);
+            engEvalString(ep, "result = rotationMatrix * firstCam';");
+            mxArray* result = engGetVariable(ep, "result");
+            if (!((mxGetPr(result)[2] < 0.5) && (mxGetPr(result)[2] > -0.5))) {
+                angleTry(-1);
+            }
             this->transformed = true;
        }
 
@@ -319,6 +328,7 @@ Vector Position::getPosition(int cameraId) {
             id.str("");
             id.clear();
             v.putVariable(var.c_str(), ep);
+            translation = v;
         }
      } else {
         std::string var;

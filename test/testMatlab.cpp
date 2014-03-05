@@ -60,13 +60,18 @@ void tracking(Matlab *m) {
 
 int main(int argc, char** argv) {
     Matlab *m = new Matlab();
-    Engine *e = m->getEngine();
-
-    bool ok = calibrate(m);
+    Position *p = new Position(m->getEngine(), 3);
+    Vector first = p->getPositionInCameraCoordination(1);
+    Vector second = p->getPosition(2);
+    printf("[%f, %f, %f] is pos 1\n", first.getV1(), first.getV2(), first.getV3());
+    printf("[%f, %f, %f] is pos 2\n", second.getV1(), second.getV2(), second.getV3());
+    Vector transformed = p->getCoordinationTransformation(first, 1);
+    printf("transformed [%f, %f, %f]\n", transformed.getV1(), transformed.getV2(), transformed.getV3());
+    /*bool ok = calibrate(m);
     if (ok == true) {
         printf("success\n");
     } else {
         printf("fail\n");
-    }
+    }*/
     m->destroyMatlab();
 }

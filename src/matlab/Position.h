@@ -68,6 +68,8 @@ public:
 	Vector getPosition(int cameraId);
 	/// should only be called once, value is saved in variable cameraOrientation_cameraId
 	Vector getOrientation(int cameraId);
+	/// transforming with positiv or negative angle (sign should only be -1 or 1)	
+	void angleTry(int sign);
 
     void loadValues(int cameraId);
 };
