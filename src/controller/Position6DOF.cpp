@@ -21,18 +21,18 @@ Position6DOF::Position6DOF(double x, double y, double z)
 	orientation[2] = 0;
 }
 
-double* const Position6DOF::getPosition()
+double* Position6DOF::getPosition()
 {
 	return position;
 }
 
 
- double* const Position6DOF::getOrientation()
+ double* Position6DOF::getOrientation()
 {
 	return orientation;
 }
 
-void Position6DOF::setPosition(double* const position)
+void Position6DOF::setPosition(double* position)
 {
 	for(int i = 0; i < 3; i++)
 	{	
@@ -41,7 +41,7 @@ void Position6DOF::setPosition(double* const position)
 	
 }
 
-void Position6DOF::setOrientation( double* const orientation)
+void Position6DOF::setOrientation( double* orientation)
 {
 	for(int i = 0; i < 3; i++)
 	{	
