@@ -147,11 +147,14 @@ private:
 	/* Control variables */
 	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters	FIXME
 	bool shutdownStarted; //Set when we are in the shutdown process
-	bool getTracked;
+	bool buildFormationStop;
 	bool receivedQuadcopters;
 	bool receivedFormation;
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
 	bool buildFormationFinished;
+
+	/* TODO getTracked zu buildFormationStop
+	 * 
 	
 	/* Mutex */
 	Mutex curPosMutex;
