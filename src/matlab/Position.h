@@ -68,8 +68,8 @@ public:
 	Vector getPosition(int cameraId);
 	/// should only be called once, value is saved in variable cameraOrientation_cameraId
 	Vector getOrientation(int cameraId);
-    // returns value of image, that is not suppressed
-    int loadValues(int cameraId);
+
+    void loadValues(int cameraId);
 };
 
 #endif // POSITION_H //
