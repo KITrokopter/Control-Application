@@ -156,7 +156,7 @@ private:
 	Mutex shutdownMutex;
 	Mutex formationMovementMutex;
 	Mutex listPositionsMutex;
-	Mutes listTargetsMutex;
+	Mutex listTargetsMutex;
 	Mutex buildFormationMutex;
 	Mutex stopFormationMutex;
 	Mutex trackedArrayMutex;
