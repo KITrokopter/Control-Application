@@ -25,7 +25,6 @@ Position::Position()
     } else {
         this->ep = ep;
     }
-    calib = new AmccCalibration();
     Vector nan = *(new Vector(NAN, NAN, NAN));
     // if quadcopter maximal amount is higher than 50, you should change the range of i
     for (int i = 0; i < 50; i++) {
@@ -42,7 +41,6 @@ Position::Position(Engine *ep, int numberCameras)
 {
     this->numberCameras = numberCameras;
     this->ep = ep;
-    calib = new AmccCalibration(ep);
     Vector nan = *(new Vector(NAN, NAN, NAN));
     for (int i = 0; i < 50; i++) {
         std::vector<Vector> h(20, nan);
@@ -60,7 +58,8 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_ERROR("Not enough cameras!");
         return false;
     }
-
+    
+    AmccCalibration *calib = new AmccCalibration(ep);
     calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
 
     mxArray *good;
