@@ -130,8 +130,6 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/Line.cpp
   src/matlab/profiling.cpp
   src/matlab/TrackingArea.cpp
-  src/matlab/Calibration.cpp
-  src/matlab/CameraData.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
   src/position/PositionModule.cpp
@@ -173,8 +171,6 @@ add_executable(control_application_test_calibration_node
   src/matlab/Line.cpp
   src/matlab/profiling.cpp
   src/matlab/TrackingArea.cpp
-  src/matlab/Calibration.cpp
-  src/matlab/CameraData.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
   src/position/PositionModule.cpp
@@ -222,8 +218,6 @@ add_executable(profile_control
 	src/matlab/Line.cpp
 	src/matlab/profiling.cpp
 	src/matlab/TrackingArea.cpp
-	src/matlab/Calibration.cpp
-	src/matlab/CameraData.cpp
 	src/matlab/Position.cpp
 	src/matlab/AmccCalibration.cpp
 	src/position/PositionModule.cpp
@@ -259,7 +253,6 @@ add_executable(position_module
 	src/matlab/Line.cpp
 	src/matlab/Matlab.cpp
 	src/matlab/Position.cpp
-	src/matlab/Calibration.cpp
 	src/matlab/AmccCalibration.cpp
 	src/controller/Mutex.cpp
 )

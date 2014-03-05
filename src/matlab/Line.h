@@ -10,7 +10,11 @@
 #include "Vector.h"
 
 class Line {
-private: Vector a, u;
+private:/*
+	 * a is point on line
+	 * u is direction vector of line
+	 */ 
+	Vector a, u;
 public:
 	Line();
 	Line(Vector a, Vector u);

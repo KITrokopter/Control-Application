@@ -25,7 +25,6 @@ Position::Position()
     } else {
         this->ep = ep;
     }
-    calib = new AmccCalibration();
     Vector nan = *(new Vector(NAN, NAN, NAN));
     // if quadcopter maximal amount is higher than 50, you should change the range of i
     for (int i = 0; i < 50; i++) {
@@ -42,7 +41,6 @@ Position::Position(Engine *ep, int numberCameras)
 {
     this->numberCameras = numberCameras;
     this->ep = ep;
-    calib = new AmccCalibration(ep);
     Vector nan = *(new Vector(NAN, NAN, NAN));
     for (int i = 0; i < 50; i++) {
         std::vector<Vector> h(20, nan);
@@ -60,7 +58,8 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_ERROR("Not enough cameras!");
         return false;
     }
-
+    
+    AmccCalibration *calib = new AmccCalibration(ep);
     calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
 
     mxArray *good;
@@ -96,14 +95,19 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
             getOrientation(i);
             getPosition(i);
         }
+        this->calibrated = true;
         Vector v0 = getPosition(0);
         Vector v1 = getPosition(1);
         Vector v2 = getPosition(2);
 
+        ROS_DEBUG("Position camera 0: [%f, %f, %f]", v0.getV1(), v0.getV2(), v0.getV3());
+        ROS_DEBUG("Position camera 1: [%f, %f, %f]", v1.getV1(), v1.getV2(), v1.getV3());
+        ROS_DEBUG("Position camera 2: [%f, %f, %f]", v2.getV1(), v2.getV2(), v2.getV3());
+
+
         ROS_DEBUG("Distance between camera 0 and 1 is %f", v0.add(v1.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
-        this->calibrated = true;
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
@@ -175,17 +179,12 @@ void Position::setNumberCameras(int numberCameras) {
     this->numberCameras = numberCameras;
 }
 
-int Position::loadValues(int cameraId) {
+void Position::loadValues(int cameraId) {
     int i;
     mxArray* notSupp;
     if (cameraId == 0) {
         // loads resulting file in matlab workspace
         engEvalString(ep, "load('/tmp/calibrationResult/Calib_Results_0.mat');");
-        engEvalString(ep, "load('/tmp/calibrationResult/cam0_suppress_list.mat')");
-        engEvalString(ep, "notSuppressed = 1;");
-        engEvalString(ep, "while (cam0_suppress_list(notSuppressed) == 0) notSuppressed = notSuppressed + 1; end");
-        notSupp = engGetVariable(ep, "notSuppressed");
-        i = mxGetPr(notSupp)[0];
     } else {
         std::string result;
         std::ostringstream id;
@@ -193,16 +192,7 @@ int Position::loadValues(int cameraId) {
         result = "load('/tmp/calibrationResult/Calib_Results_stereo_0_" + id.str() + ".mat');";
         // loads resulting file in matlab workspace
         engEvalString(ep, result.c_str());
-        result = "load('/tmp/calibrationResult/cam" + id.str() + "_suppress_list.mat')";
-        engEvalString(ep, result.c_str());
-        engEvalString(ep, "notSuppressed = 1;");
-        result = "while (cam" + id.str() + "_suppress_list(notSuppressed) == 0) notSuppressed = notSuppressed + 1; end";
-        engEvalString(ep, result.c_str());
-        notSupp = engGetVariable(ep, "notSuppressed");
-        i = mxGetPr(notSupp)[0];
     }
-    mxDestroyArray(notSupp);
-    return i;
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) {
@@ -217,7 +207,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         std::ostringstream id;
         id << cameraId;
         quad.putVariable("quad", ep);
-        result = "pos = (quad * rotMatCamCoord_" + id.str() + ")' + transVectCamCoord_" + id.str();
+        result = "pos = (quad * rodrigues(rotMatCamCoord_" + id.str() + "))' + transVectCamCoord_" + id.str();
         engEvalString(ep, result.c_str());
         mxArray *position = engGetVariable(ep, "pos");
         pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
@@ -288,15 +278,12 @@ Vector Position::getPositionInCameraCoordination(int cameraId) {
         translation = *(new Vector(NAN, NAN, NAN));
     }
     else if (cameraId != 0) {
-        int i = loadValues(cameraId);
+        loadValues(cameraId);
         std::string result;
-        std::ostringstream notSuppressed;
-        notSuppressed << i;
-        result = "Tc_left_" + notSuppressed.str();
-        mxArray *tV = engGetVariable(ep, result.c_str());
+        mxArray *tV = engGetVariable(ep, "T");
         std::ostringstream id;
         id << cameraId;
-        result = "transVectCamCoord_" + id.str() + " = Tc_left_" + notSuppressed.str();
+        result = "transVectCamCoord_" + id.str() + " = T";
         engEvalString(ep, result.c_str());
         translation = *(new Vector(mxGetPr(tV)[0], mxGetPr(tV)[1], mxGetPr(tV)[2]));
         mxDestroyArray(tV);
@@ -353,22 +340,19 @@ Vector Position::getOrientationInCameraCoordination(int cameraId) {
         orientation = *(new Vector(NAN, NAN, NAN));
     }
     else if (cameraId != 0) {
-        int i = loadValues(cameraId);
+        loadValues(cameraId);
         std::string result;
-        std::ostringstream notSuppressed;
-        notSuppressed << i;
-        result = "omc_left_" + notSuppressed.str();
-        mxArray *oV = engGetVariable(ep, result.c_str());
         std::ostringstream id;
         id << cameraId;
-        result = "rotMatCamCoord_" + id.str() + " = rodrigues(omc_left_" + notSuppressed.str() + ");";
+        result = "rotMatCamCoord_" + id.str() + " = R;";
         engEvalString(ep, result.c_str());
+        mxArray *oV = engGetVariable(ep, "R");
         orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
         mxDestroyArray(oV);
     } else {
         // camera 0 is at the origin and looks down the positive z axis
         orientation = *(new Vector(0, 0, 1));
-        engEvalString(ep, "rotMatCamCoord_0 = rodrigues([0, 0, 1])");
+        engEvalString(ep, "rotMatCamCoord_0 = [0, 0, 1]");
     }
     return orientation;
 }
