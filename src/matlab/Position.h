@@ -12,38 +12,48 @@
 
 class Position {
 private: 
+	// enigne pointer to matlab application
 	Engine *ep;
-	AmccCalibration *calib;
+	// number of cameras
 	int numberCameras;
 	// saves whether the cameras are multicalibrated or not;
 	bool transformed;
 	// saves whether the position and translation is calculated of all cameras;
 	bool calibrated;
-	/// (quadPos[i])[j] is the position of quadrocopter with ID i and camera with ID j
+	/* 
+	 * (quadPos[i])[j] is the position of quadrocopter with ID i and camera with ID j
+	 *  default value is nan, maximum amount of quadcopter is 50, of cameras is 20
+	 */
 	std::vector< std::vector <Vector> > quadPos;
+	/* 
+	 * oldPos[i] is the last calculated position of quadcopter with ID i, default value is nan
+	 * maximum amount of quadcopters is 50
+	 */ 
 	std::vector<Vector> oldPos;
 
 	/* 
-		Variables in matlab:
+		Variables saved in matlab:
+
 		cameraPosition_cameraId: real position of camera with cameraId
 		cameraOrientation_cameraId: real orientation of camera with cameraId
-		rotationMatrixX: rotationmatrix of x axis to calculated camera system of camera 0 to real coordination system
-		rotationMatrixZ: rotationmatrix of z axis to calculated camera system of camera 0 to real coordination system
 
-		camera values in camera coordination system with cameraId
+		rotationMatrix: rotationmatrix to calculate camera system of camera 0 to real coordinate system
+
+		camera values in camera coordinate system with cameraId
 		rotMatCamCoord_cameraId: rodrigues(omc_left_x)
 		transVectCamCoord_cameraId
 
-
 		camera values in real coordinationsystem
 		rotationMatrixCamera_cameraId: rotationmatrix of camera with cameraId, is rodrigues(omc_left_x)
-		translationVectorCamera_cameraId: translation vector of camera with cameraId, is Tc_left_1
+		translationVectorCamera_cameraId: translation vector of camera with cameraId, is Tc_left_x
+		(x is first not supressed image)
 	*/
 
 public:
 	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
     	Position();
     	Position(Engine *ep, int numberCameras);
+	
         bool calibrate(ChessboardData *chessboardData, int numberCameras);
 	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet
 	double getAngle(Vector u, Vector v);

@@ -37,8 +37,11 @@ AmccCalibration::AmccCalibration(Engine *ep) {
 void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLengthX, double squareLengthY, int numberSquareCornersX, int numberSquareCornersY) {
     mxArray *slx, *sly, *nscx, *nscy, *nc;
 
+    // for debuging saves Matlab log in input folder
     engEvalString(ep, "diary('/tmp/calibrationImages/log');");
 
+
+    // input of parameters
     double dataSlx[1] = {squareLengthX};
     slx = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(slx), (void *)dataSlx, sizeof(dataSlx));
@@ -77,12 +80,10 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     engEvalString(ep, "proj_tol = 2.0;");
 
     // The index of the cameras to calibrate. In this example we are calibrating four cameras with sequential naming.
-    // camera_vec = [0 1 2 3]; % version 1.2 and before
     // camera_vec = [0 1; 0 2; 0 3]';
     engEvalString(ep, "camera_vec = [zeros(1,(nc - 1), 'single'); (1:(cast(nc - 1, 'single')))]");
 
     // The index of the cameras to be rotated (1 for rotating 180 degrees)
-    // rotcam = [0 0 0 0]; % version 1.2 and before
     engEvalString(ep, "rotcam = zeros(2, (nc - 1), 'single');");
 
     // indicate whether or not to use the fisheye calibration routine (not strictly required).
@@ -90,6 +91,7 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
 
     // indicate whether or not to use the third radial distortion term when doing a projective calibration (not strictly required)
     engEvalString(ep, "k3_enable = false;");
+
     std::string cam_names;
     cam_names = "cam_names = [";
     std::ostringstream id;
@@ -102,20 +104,19 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     }
     cam_names = cam_names + "];";
 
-    ROS_DEBUG("%s", cam_names.c_str());
     // the base naming convention for the calibration images (not strictly required), will default to the 'camX_image' convention if not used.
-    // cam_names = ['cam0_image', 'cam1_image', 'cam2_image', 'cam3_image']; % version 1.2 and before
     engEvalString(ep, cam_names.c_str());
 
     // indicate whether or not to use the batch mode of the stereo calibrator (not strictly required)
     engEvalString(ep, "batch = false;");
 
-
     // Perform the calibration
     engEvalString(ep, "auto_multi_calibrator_efficient(camera_vec, input_dir, output_dir, format_image, dX, dY, nx_crnrs, ny_crnrs, proj_tol, rotcam, cam_names, fisheye, k3_enable, batch);");
 
+    // saves the rest of log of matlab
     engEvalString(ep, "diary off;");
 
+    // destroys mxArrays
     mxDestroyArray(slx);
     mxDestroyArray(sly);
     mxDestroyArray(nc);

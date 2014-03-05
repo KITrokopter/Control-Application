@@ -37,9 +37,6 @@ Engine* Matlab::getEngine() {
     return this->ep;
 }
 
-/*
- * calculates the perpendicular point of Point b and Line f
- */
 Vector Matlab::perpFootOneLine(Line f, Vector b) {
     f.getA().putVariable("a", ep);
     f.getU().putVariable("u", ep);
@@ -67,14 +64,6 @@ Vector Matlab::perpFootOneLine(Line f, Vector b) {
 	mxDestroyArray(result);
 	return *perpFoot;
 }
-
-/*
-  Both Lines are defined by f = a + r*u, g = b + s*v, u and v are already direction vectors.
-  You have to creat a Vector** instance, so the result can be saved in it.
-  returns 0 if parallel, result isn't changed
-	  1 if f and g intersect, result[0] is intersection point
-	  2 if f and g are scew, result[0] is perpFoot of f, result[1] is perpFoot of g
-*/
 
 int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
     f.getA().putVariable("a", ep);
@@ -142,10 +131,8 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 	return 2;
 }
 
-/*
- * calculates the vector that is nearest to all lines
- */
 Vector Matlab::interpolateLines(Line *lines, int quantity) {
+    // saving perpendicular foot points of all lines of array lines
     Vector *points = new Vector[2*quantity];
 	int pos = 0;
 	int intersects;
@@ -164,6 +151,7 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 			}
 		}
     }
+    // calculating average of all points in array points
     double v1 = 0;
     double v2 = 0;
     double v3 = 0;
@@ -179,16 +167,8 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
     return *approximated;
 }
 
-/**
- * @brief Matlab::interpolateLine
- * @param line line where the quadcopter is
- * @param quadPos position of quadcopter
- * @param interpolationFactor interpolationFactor
- * @return vector that is in average nearest to point and line.
- */
 Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
     Vector newPos = perpFootOneLine(line, quadPos);
-	//interpolatedNewPos = newPos * interpolationFactor + quadPos * (1 - interpolationFactor)
 	double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
 	double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
 	double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
@@ -196,17 +176,7 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
 	return *interpolatedNewPos;
 }
 
-/**
- * Warning: Only working, if line g and E1 or line g.getA() + r * (directV2-g.getA()) intersects!!
- * @brief Matlab::getIntersectionLine
- * @param f Line, that is positionated in plain E1
- * @param directV1 Point, that is not in line f and is on the plain E1
- * E1 = f.getA() + r*f.getU() + s*(directV1 - f.getA())
- * @param g Line that is positionated in plain E2
- * @param directV2 point, that is not in line g and is on the plain E2
- * E2 = g.getA() + t* g.getU() + z * (directV2-g.getA())
- * @return intersection line of E1 and E2
- */
+
 Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {
     f.getA().putVariable("a", ep);
     f.getU().putVariable("u", ep);
