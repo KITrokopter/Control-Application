@@ -114,8 +114,7 @@ private:
 	/* Identification of Quadcopters */
 	//Receive data over ROS
 	Formation *formation;
-	//TODO needs to be with service find all
-	int amount;	// Needed for formation
+	//int amount;	// Needed for formation
 	std::list<std::vector<float> > formationMovement;
 	time_t lastFormationMovement;
 	time_t lastCurrent[MAX_NUMBER_QUADCOPTER];
