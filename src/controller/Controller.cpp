@@ -92,47 +92,59 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 {
 		
 	ROS_INFO("Update Position");
+	if(!receivedQuadcopters || !receivedFormation)
+	{
+		return;
+	}
 	/* Save position vectors */	
 	std::vector<Position6DOF> newListItem;
 	int i = 0;
-	int id;
+	int id = 0;
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
+		ROS_INFO("Global id is %i",i);
+		ROS_INFO("Local Id is %i", id);
 		this->lastCurrentMutex.lock();
 		this->lastCurrent[id] = time(&this->lastCurrent[id]);
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
 		this->lastCurrentMutex.unlock();
 		newListItem.push_back( newPosition );
-				
+		
 		if( it->getV1() != INVALID ) 
 		{	
+			ROS_INFO("Valid");
 			/* Quadcopter is tracked */
 			trackedArrayMutex.lock();
 			bool track = this->tracked[id];
 			trackedArrayMutex.unlock();
 			if( track == false )
 			{
+				ROS_INFO("track false");
 				/* Quadcopter has not been tracked before */
 				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 				{
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
 				}
 			}
+			ROS_INFO("tracked id");
 			trackedArrayMutex.lock();
 			this->tracked[id] = true;
 			trackedArrayMutex.unlock();
 		} else
 		{
+			ROS_INFO("Invaldi");
 			trackedArrayMutex.lock();
 			this->tracked[id] = false;
 			trackedArrayMutex.unlock();
 		}
+		ROS_INFO("Push back");
 		this->listPositionsMutex.lock();
 		this->listPositions[id].push_back( newPosition ); 
 		while( this->listPositions[id].size() > 30 )
 		{
+			ROS_INFO("erasing");
 			// Remove oldest elements
 			this->listPositions[id].erase( this->listPositions[id].begin() );
 		}
