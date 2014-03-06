@@ -355,9 +355,10 @@ Vector Position::getOrientationInCameraCoordination(int cameraId) {
         std::string result;
         std::ostringstream id;
         id << cameraId;
-        result = "rotMatCamCoord_" + id.str() + " = R;";
+        result = "rotMatCamCoord_" + id.str() + " = rodrigues(R);";
         engEvalString(ep, result.c_str());
-        mxArray *oV = engGetVariable(ep, "R");
+        result = "rotMatCamCoord_" + id.str();
+        mxArray *oV = engGetVariable(ep, result.c_str());
         orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
         mxDestroyArray(oV);
     } else {
