@@ -69,12 +69,6 @@ Controller::Controller()
 	
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
-		/* TODO: add Mutex where necessary (and possible) */
-		this->quadcopters.push_back(0);
-		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
-		MovementQuadruple init = MovementQuadruple(0,0,0,0);
-		this->movementAll.push_back(init);
-
 		//Initialize tracked (no quadcopter is tracked at the beginning)
 		trackedArrayMutex.lock();
 		tracked[i] = false;
@@ -97,6 +91,7 @@ void Controller::initialize()
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
 {
 		
+	ROS_INFO("Update Position");
 	/* Save position vectors */	
 	std::vector<Position6DOF> newListItem;
 	int i = 0;
@@ -163,7 +158,7 @@ void Controller::calculateMovement()
 	/* As long as we are not in the shutdown process, calculate new Movement data */
 	while(!inShutdown)
 	{
-		ROS_INFO("Calculate");
+		//ROS_INFO("Calculate");
 		int amount = quadcopterMovementStatus.size();
 		for(int i = 0; (i < amount) && (!inShutdown); i++)
 		{	
@@ -198,7 +193,7 @@ void Controller::calculateMovement()
 			switch( quadcopterMovementStatus[i] )
 			{
 				case CALCULATE_NONE:
-					ROS_INFO("None %i", i);
+					//ROS_INFO("None %i", i);
 					/* 
 					 * Take old values
 					 * At beginning list has to be initialized with "send none".
@@ -206,7 +201,7 @@ void Controller::calculateMovement()
 					 */
 					break;
 				case CALCULATE_START:	
-					ROS_INFO("Start %i", i);
+					//ROS_INFO("Start %i", i);
 					moveUp( i );
 					break;
 				case CALCULATE_STABILIZE:
@@ -440,11 +435,6 @@ void Controller::convertMovement(double* const vector, int internId)
 	int thrust_react_z_low = -5;
 	int thrust_react_z_high = 5;
 	int thrust = 0;
-	if( vector[0] == INVALID )
-	{
-		MovementQuadruple newMovement = MovementQuadruple(0, 0.0f, 0.0f, 0.0f);
-		this->movementAll.push_back( newMovement );
-	}
 	MovementQuadruple * movement = &(this->movementAll[internId]);
 	if (vector[2] > thrust_react_z_high) {
 		thrust = movement->getThrust() + THRUST_STEP;
@@ -473,10 +463,10 @@ void Controller::convertMovement(double* const vector, int internId)
  */
 void Controller::sendMovementAll()
 {
-	ROS_INFO("sendMovementAll started");
+	//ROS_INFO("sendMovementAll started");
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
-	ROS_INFO("amount %zu",this->movementAll.size());
+	//ROS_INFO("amount %zu",this->movementAll.size());
 	
 	time_t currentTime = time(&currentTime);
 	std::vector< MovementQuadruple > newListElement;
@@ -494,7 +484,7 @@ void Controller::sendMovementAll()
 			newListElement.push_back( this->movementAll[i] );
 		}
 	}
-	ROS_INFO("sendMovementAll finished");
+	//ROS_INFO("sendMovementAll finished");
 }
 
 /*
@@ -565,6 +555,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		ROS_INFO("Array %lu", req.quadcoptersId[i]);
 		this->quadcopters.push_back(req.quadcoptersId[i]);
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
+		ROS_INFO("Size of MovementAll %zu", movementAll.size());
 		MovementQuadruple newMoveQuad = MovementQuadruple(0, 0, 0, 0);
 		this->movementAll.push_back(newMoveQuad);
 		

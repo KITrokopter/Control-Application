@@ -1,6 +1,6 @@
 #include "helpers/MovementGenerator.hpp"
 #include "../src/controller/Controller.hpp"
-
+#include "ros/ros.h"
 #include <iostream>
 
 int main(int argc, char** argv) {
@@ -27,8 +27,13 @@ int main(int argc, char** argv) {
 	to.push_back(Vector(2, 1, 1));
 	from.push_back(Vector(1, 1, 1));
 	to.push_back(Vector(2, 2, 2));
-
-	ros::spin();
+		
+	ROS_INFO("Spinning");
+	/*ros::AsyncSpinner spinner(1); // Use 4 threads
+	spinner.start();
+	ros::waitForShutdown();*/
+	ros::MultiThreadedSpinner spinner(2); // Use 4 threads
+	spinner.spin(); // spin() will not return until the node has been shutdown
 	
 	// See MovementGenerator.hpp
 	MovementGenerator generator(receiver, from, to, 0.05, 0.1, 0.01, 150, 30);
