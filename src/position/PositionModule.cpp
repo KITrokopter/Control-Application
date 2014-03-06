@@ -349,9 +349,13 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
 	ROS_DEBUG("msg.ID: %d netIdToCamNo[msg.ID]: %d msg.quadcopterId: %d", msg.ID, netIdToCamNo[msg.ID], msg.quadcopterId);
 	
+	#ifdef QC_PROFILE
 	long int trackingClock = getNanoTime();
+	#endif
 	Vector result = tracker.updatePosition(cameraVector, netIdToCamNo[msg.ID], msg.quadcopterId);
+	#ifdef QC_PROFILE
 	timeLog.push_back(getNanoTime() - trackingClock);
+	#endif
 	
 	std::vector<Vector> positions;
 	std::vector<int> ids;
