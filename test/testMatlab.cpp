@@ -17,12 +17,8 @@ bool calibrate(Matlab *m) {
     Position *h = new Position(m->getEngine(), 3);
     ChessboardData *c = new ChessboardData(7, 7, 57, 57);
     bool ok = h->calibrate(c, 3);
-    /*Vector cam0 = h->getPositionInCameraCoordination(0);
+    Vector cam0 = h->getPosition(0);
     printf("[%f, %f, %f]\n", cam0.getV1(), cam0.getV2(), cam0.getV3());
-    Vector cam1 = h->getPositionInCameraCoordination(1);
-    printf("[%f, %f, %f]\n", cam1.getV1(), cam1.getV2(), cam1.getV3());
-    cam0 = h->getPosition(0);
-    printf("[%f, %f, %f]\n", cam0.getV1(), cam0.getV2(), cam0.getV3());*/
     h->setNumberCameras(3);
     Vector cam1 = h->getPosition(1);
     printf("cam 1 is [%f, %f, %f]\n", cam1.getV1(), cam1.getV2(), cam1.getV3());
@@ -35,10 +31,8 @@ bool calibrate(Matlab *m) {
     x = *(new Vector(1, 3, 2));
     h->updatePosition(x, 2, 1);
     Vector y = *(new Vector(1, 2, 4));
-    Vector movement = h->updatePosition(y, 0, 1);
-    y = *(new Vector(1, 2, 5));
-    movement = h->updatePosition(y, 0, 1);
-    printf("Quadcopter 1 moved in direction [%f, %f, %f]\n", movement.getV1(), movement.getV2(), movement.getV3());
+    Vector pos = h->updatePosition(y, 0, 1);
+    printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
     return ok;
 }
 
@@ -60,13 +54,6 @@ void tracking(Matlab *m) {
 
 int main(int argc, char** argv) {
     Matlab *m = new Matlab();
-    Position *p = new Position(m->getEngine(), 3);
-    Vector first = p->getPositionInCameraCoordination(1);
-    Vector second = p->getPosition(2);
-    printf("[%f, %f, %f] is pos 1\n", first.getV1(), first.getV2(), first.getV3());
-    printf("[%f, %f, %f] is pos 2\n", second.getV1(), second.getV2(), second.getV3());
-    Vector transformed = p->getCoordinationTransformation(first, 1);
-    printf("transformed [%f, %f, %f]\n", transformed.getV1(), transformed.getV2(), transformed.getV3());
     /*bool ok = calibrate(m);
     if (ok == true) {
         printf("success\n");

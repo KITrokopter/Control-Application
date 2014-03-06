@@ -5,8 +5,8 @@
  *      Author: daniela
  */
 
-#include "Vector.h"
 #include "Matrix.h"
+#include "Vector.h"
 
 Matrix::Matrix() {
     this->m11 = 0;
@@ -38,4 +38,40 @@ Vector Matrix::mult(Vector a) {
     double v3 = m31 * a.getV1() + m32 * a.getV2() + m33 * a.getV3();
     Vector *product = new Vector(v1, v2, v3);
     return *product;
+}
+
+double Matrix::getM11() {
+    return this->m11;
+}
+
+double Matrix::getM12() {
+    return this->m12;
+}
+
+double Matrix::getM13() {
+    return this->m13;
+}
+
+double Matrix::getM21() {
+    return this->m21;
+}
+
+double Matrix::getM22() {
+    return this->m22;
+}
+
+double Matrix::getM23() {
+    return this->m23;
+}
+
+double Matrix::getM31() {
+    return this->m31;
+}
+
+double Matrix::getM32() {
+    return this->m32;
+}
+
+double Matrix::getM33() {
+    return this->m33;
 }

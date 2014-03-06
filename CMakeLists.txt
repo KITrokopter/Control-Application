@@ -210,7 +210,6 @@ target_link_libraries(control_application_test_calibration_node
 add_executable(profile_control
 	test/ProfileControl.cpp
 	test/helpers/MovementGenerator.cpp
-	src/matlab/Vector.cpp
 	src/controller/Controller.cpp
 	src/controller/Position6DOF.cpp
 	src/controller/Formation.cpp

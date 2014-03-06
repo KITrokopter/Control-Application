@@ -62,6 +62,14 @@ Vector Vector::mult(double a) {
     return v;
 }
 
+Vector Vector::mult(Matrix A) {
+    double a1 = v1 * A.getM11() + v2 * A.getM21() + v3 * A.getM31();
+    double a2 = v1 * A.getM12() + v2 * A.getM22() + v3 * A.getM32();
+    double a3 = v1 * A.getM13() + v2 * A.getM23() + v3 * A.getM33();
+    Vector result = *(new Vector(a1, a2, a3));
+    return result;
+}
+
 int Vector::scalarMult(Vector a) {
     return (this->v1*a.getV1() + this->v2*a.getV2() + this->v3*a.getV3());
 }
