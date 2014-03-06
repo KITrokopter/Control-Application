@@ -1,9 +1,10 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
 #include "Formation.hpp"
-#include "Position6DOF.hpp"
+#include "Interpolator.hpp"
 #include "MovementQuadruple.hpp"
 #include "Mutex.hpp"
+#include "Position6DOF.hpp"
 #include "ros/ros.h"
 #include "api_application/MoveFormation.h"
 #include "api_application/SetFormation.h"

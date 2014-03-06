@@ -273,6 +273,12 @@ void Controller::stabilize( int internId )
 	 * dementsprechend für Interpolation setzen (die Raten)
 	 *
 	 */
+	Interpolator interpolator = Interpolator();
+	
+	MovementQuadruple newMovement;
+	this->listPositionsMutex.lock(); 
+	newMovement = interpolator.calculateNextMQ(this->listPositions[internId], this->movementAll[internId]);
+	this->listPositionsMutex.unlock();
 }
 
 bool Controller::isStable( int internId )
@@ -344,7 +350,6 @@ void Controller::land( int internId )
 	while(tracked[internId] == true)
 	{
 		this->movementAll[internId].setThrust(THRUST_DECLINE);
-		sendMovementAll();
 	}
 	this->trackedArrayMutex.unlock();
 	//Shutdown crazyflie after having left the tracking area.
