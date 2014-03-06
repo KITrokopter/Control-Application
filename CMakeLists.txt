@@ -173,6 +173,7 @@ add_executable(control_application_test_calibration_node
   src/matlab/TrackingArea.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
+  src/matlab/profiling.cpp
   src/position/PositionModule.cpp
   src/position/ChessboardData.cpp
   src/controller/Controller.cpp
@@ -254,6 +255,7 @@ add_executable(position_module
 	src/matlab/Matlab.cpp
 	src/matlab/Position.cpp
 	src/matlab/AmccCalibration.cpp
+	src/matlab/profiling.cpp
 	src/controller/Mutex.cpp
 )
 

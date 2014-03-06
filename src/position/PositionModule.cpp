@@ -17,6 +17,7 @@
 #include "api_application/Announce.h"
 
 #include "../matlab/Vector.h"
+#include "../matlab/profiling.hpp"
 
 // Use this to test if images are saved properly, when you only have one camera.
 //#define SINGLE_CAMERA_CALIBRATION
@@ -81,11 +82,18 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	} else {
 		ROS_ERROR("Could not initialize PositionModule!");
 	}
+	
+	log.open("/var/log/position_module.log");
+	
+	if (!log.is_open()) {
+		ROS_ERROR("Could not open log file!");
+	}
 }
 
 PositionModule::~PositionModule()
 {
 	msg->~KitrokopterMessages();
+	log.close();
 	
 	// TODO: Free picture cache.
 	
@@ -323,6 +331,12 @@ void PositionModule::systemCallback(const api_application::System &msg)
 	}
 	
 	if (!isRunning) {
+		int counter = 0;
+		
+		for (std::vector<long int>::iterator it = timeLog.begin(); it != timeLog.end(); it++) {
+			log << counter << ", " << *it << std::endl;
+		}
+		
 		ros::shutdown();
 	}
 }
@@ -334,7 +348,10 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
 	// TODO: Is this coordinate change correct for amcctoolbox?
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
 	ROS_DEBUG("msg.ID: %d netIdToCamNo[msg.ID]: %d msg.quadcopterId: %d", msg.ID, netIdToCamNo[msg.ID], msg.quadcopterId);
+	
+	long int trackingClock = getNanoTime();
 	Vector result = tracker.updatePosition(cameraVector, netIdToCamNo[msg.ID], msg.quadcopterId);
+	timeLog.push_back(getNanoTime() - trackingClock);
 	
 	std::vector<Vector> positions;
 	std::vector<int> ids;

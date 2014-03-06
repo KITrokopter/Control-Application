@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 #include <inttypes.h>
+#include <iostream>
+#include <fstream>
 
 #include "IPositionReceiver.hpp"
 #include "../KitrokopterMessages.hpp"
@@ -68,6 +70,10 @@ private:
 	// ROS wrappers
 	void setPictureSendingActivated(bool activated);
 	void sendPing();
+	
+	// Logging
+	std::ofstream log;
+	std::vector<long int> timeLog;
 	
 public:
 	PositionModule(IPositionReceiver* receiver);
