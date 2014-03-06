@@ -46,6 +46,7 @@ public:
 	Vector getPerpPointPlane(Vector a, Vector u, Vector v, Vector x);
     bool inCameraRange(Vector *cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep);
     void setTrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Engine *ep);
+	void printTrackingArea();
 };
 
 #endif /* TRACKINGAREA_H_ */
