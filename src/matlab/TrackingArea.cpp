@@ -290,3 +290,7 @@ void TrackingArea::setTrackingArea(Vector* cameraPosition, Vector* cameraDirecti
     setB3(*(new Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange)));
     setB4(*(new Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange)));
 }
+
+void TrackingArea::printTrackingArea() {
+    printf("Tracking area is from [%f, %f, %f] to [%f, %f, %f], cube is of size %f.\n", a1.getV1(), a1.getV2(), a1.getV3(), b3.getV1(), b3.getV2(), b3.getV3(), a1.add(a2.mult(-1)).getLength());
+}
