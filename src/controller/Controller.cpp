@@ -472,7 +472,7 @@ void Controller::sendMovementAll()
 	std::vector< MovementQuadruple > newListElement;
 	for(int i = 0; i < movementAll.size(); i++)
 	{
-		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE ) /*FIXME while testing*/
+		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE )
 		{
 			ROS_INFO("%i",i);
 			msg.thrust = this->movementAll[i].getThrust();
@@ -481,7 +481,14 @@ void Controller::sendMovementAll()
 			msg.yaw = this->movementAll[i].getYawrate();
 			this->Movement_pub[i].publish(msg);		
 			this->movementAll[i].setTimestamp( currentTime );
-			newListElement.push_back( this->movementAll[i] );
+
+			// Save Element (TODO only if not too young)
+			this->listSentQuadruples[i].push_back( this->movementAll[i] );
+			if( this->listSentQuadruples[i].size() > 5 )
+			{
+				// Remove oldest elements
+				this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
+			}
 		}
 	}
 	//ROS_INFO("sendMovementAll finished");
@@ -560,16 +567,19 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->movementAll.push_back(newMoveQuad);
 		
 		//Initialization of Arrays of Lists
-		std::list<Position6DOF> newEmptyList;
+		std::list<Position6DOF> newEmptyListPosition;
 		this->listPositionsMutex.lock();
 		this->listTargetsMutex.lock();
 		this->receivedQCStMutex.lock();
-		this->listPositions.push_back(newEmptyList);
-		this->listTargets.push_back(newEmptyList);	      
+		this->listPositions.push_back(newEmptyListPosition);
+		this->listTargets.push_back(newEmptyListPosition);	      
 		this->receivedQuadStatus[i] = false; // received no quadcopter status information
 		this->receivedQCStMutex.unlock();
 		this->listTargetsMutex.unlock();
 		this->listPositionsMutex.unlock();
+
+		std::list<MovementQuadruple> newEmptyListMovement;		
+		this->listSentQuadruples.push_back(newEmptyListMovement);
 		ROS_INFO("Initialization done");
 		
 		//Subscriber to quadcopter status
@@ -583,9 +593,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
   		topicNameMov << "quadcopter_movement_" << id;
 		//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 		this->Movement_pub[i] = this->n.advertise<control_application::quadcopter_movement>(topicNameMov.str().c_str(), 1000);
-		ROS_INFO("QCMovement Topics have been initialized");
-		
-			
+		ROS_INFO("QCMovement Topics have been initialized");			
 	}
 	receivedQCMutex.lock();
 	receivedQuadcopters = true;

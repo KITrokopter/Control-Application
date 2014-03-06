@@ -109,7 +109,7 @@ private:
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;
-	std::vector<std::list<MovementQuadruple> > listSentQuadruple;
+	std::vector<std::list<MovementQuadruple> > listSentQuadruples;
 	
 	/* Identification of Quadcopters */
 	//Receive data over ROS
