@@ -207,12 +207,11 @@ void Position::loadValues(int cameraId) {
     }
 }
 
-Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) {
+Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
     Vector pos;
-    ROS_DEBUG("camera id is %d", cameraId);
     if (cameraId == -1) {
-        Vector nan = *(new Vector(NAN, NAN, NAN));
-        return nan;
+        Vector pos = *(new Vector(NAN, NAN, NAN));
+        return pos;
     }
     else if (cameraId != 0) {
         std::string result;
@@ -226,9 +225,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         pos = getCoordinationTransformation(pos, cameraId);
         mxDestroyArray(position);
     } else {
-        ROS_DEBUG("coordination transformation beginning with camera id %d\n", cameraId);
         pos = getCoordinationTransformation(quad, cameraId);
-        ROS_DEBUG("coordination transformation finished\n");
     }
 
     // controlling whether all cameras already tracked the quadcopter once
@@ -243,12 +240,13 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
         /// default value, when not all cameras did track it
         // save result
         (quadPos[quadcopterId])[cameraId] = pos;
+        ROS_DEBUG("Not all cameras did track quadcopter %d yet. Camera %d tracked it at position [%f, %f, %f]\n", quadcopterId, cameraId, pos.getV1(), pos.getV2(), pos.getV3());
         Vector nan = *(new Vector(NAN, NAN, NAN));
         return nan;
     } else {
         // save result
         (quadPos[quadcopterId])[cameraId] = pos;
-        // not calculated before, first time
+        // not calculated before, first time calculating
         if (!(oldPos[quadcopterId].isValid())) {
 
             // building lines from camera position to quadcopter position
@@ -262,10 +260,9 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
             Vector quadPosition = m->interpolateLines(quadPositions, numberCameras);
 
             oldPos[quadcopterId] = quadPosition;
+            ROS_DEBUG("First seen position of quadcopter %d is [%f, %f, %f]\n", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3());
 
-            //return nan, as no earlier position is known, so the movement can't be calculated
-            Vector nan = *(new Vector(NAN, NAN, NAN));
-            return nan;
+            return quadPosition;
         } else {
             Matlab *m = new Matlab(ep);
             // interpolation factor has to be tested.
@@ -275,6 +272,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, double quadcopterId) 
             // calulating actual pos
             Vector newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
             // saving new Pos
+            ROS_DEBUG("New position of quadcopter %d is [%f, %f, %f]\n", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3());
             oldPos[quadcopterId] = newPos;
             return newPos;
         }

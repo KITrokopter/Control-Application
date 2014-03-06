@@ -67,7 +67,7 @@ public:
 	Vector getCoordinationTransformation(Vector w, int cameraId);
 
 	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet	
-    	Vector updatePosition(Vector quad, int cameraId, double quadcopterId);
+        Vector updatePosition(Vector quad, int cameraId, int quadcopterId);
 	/// should only be called once, loads the output of the position of a camera in coordinate system of camera 0
         Vector getPositionInCameraCoordination(int cameraId);
 	/// should only be called once, loads the output of the orientation of a camera in coordinate system of camera 0   
