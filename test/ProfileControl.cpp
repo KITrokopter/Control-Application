@@ -36,10 +36,10 @@ int main(int argc, char** argv) {
 	//ros::MultiThreadedSpinner spinner(2); // Use 4 threads
 	//spinner.spin(); // spin() will not return until the node has been shutdown
 	
-	usleep(100000000);	
+	usleep(50000000);	
 	
 	// See MovementGenerator.hpp
-	MovementGenerator generator(receiver, from, to, 0.05, 0.1, 0.01, 600, 30);
+	MovementGenerator generator(receiver, from, to, 0.05, 0.1, 0.01, 25, 10);
 	ROS_INFO("Generating");
 	generator.run();
 	spinner.stop();

@@ -103,8 +103,12 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
-		ROS_INFO("Global id is %i",i);
-		ROS_INFO("Local Id is %i", id);
+		//ROS_INFO("Global id is %i",i);
+		//ROS_INFO("Local Id is %i", id);
+		if(id == -1)
+		{
+			continue;	
+		}
 		this->lastCurrentMutex.lock();
 		this->lastCurrent[id] = time(&this->lastCurrent[id]);
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
@@ -114,43 +118,43 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		
 		if( it->getV1() != INVALID ) 
 		{	
-			ROS_INFO("Valid");
+			//ROS_INFO("Valid");
 			/* Quadcopter is tracked */
 			trackedArrayMutex.lock();
 			bool track = this->tracked[id];
 			trackedArrayMutex.unlock();
 			if( track == false )
 			{
-				ROS_INFO("track false");
+				//ROS_INFO("track false");
 				/* Quadcopter has not been tracked before */
 				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 				{
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
 				}
 			}
-			ROS_INFO("tracked id");
+			//ROS_INFO("tracked id");
 			trackedArrayMutex.lock();
 			this->tracked[id] = true;
 			trackedArrayMutex.unlock();
 		} else
 		{
-			ROS_INFO("Invaldi");
+			//ROS_INFO("Invaldi");
 			trackedArrayMutex.lock();
 			this->tracked[id] = false;
 			trackedArrayMutex.unlock();
 		}
-		ROS_INFO("Push back");
+		//ROS_INFO("Push back");
 		this->listPositionsMutex.lock();
 		this->listPositions[id].push_back( newPosition ); 
 		while( this->listPositions[id].size() > 30 )
 		{
-			ROS_INFO("erasing");
+			//ROS_INFO("erasing");
 			// Remove oldest elements
 			this->listPositions[id].erase( this->listPositions[id].begin() );
 		}
 		this->listPositionsMutex.unlock();
 	}	
-	
+	ROS_INFO("Update Position finished");	
 }
 
 
@@ -227,7 +231,7 @@ void Controller::calculateMovement()
 					
 					break;
 				case CALCULATE_MOVE:
-					ROS_INFO("Move %i", i);
+					//ROS_INFO("Move %i", i);
 					moveVector[0] = target[0] - current[0];
 					moveVector[1] = target[1] - current[1];
 					moveVector[2] = target[2] - current[2];
