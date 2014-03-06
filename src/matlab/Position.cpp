@@ -143,10 +143,10 @@ void Position::angleTry(int sign) {
     Vector a = *(new Vector(0, 0, 0));
     loadValues(1);
     mxArray *r = engGetVariable(ep, "T");
-    b = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
+    Vector b = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
     loadValues(2);
     r = engGetVariable(ep, "T");
-    c = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
+    Vector c = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
     mxDestroyArray(r);
     Vector u = b.add(a.mult(-1));
     Vector v = c.add(a.mult(-1));
@@ -184,7 +184,7 @@ Vector Position::calculateCoordinateTransformation(Vector w, int cameraId) {
             angleTry(1);
 
             // checking, whether the result of the z value is nearly 0, if you rotate the first camera in coordinate system of camera 0
-            Vector firstCam = getPositionInCameraCoordination(1);
+            Vector firstCam = realCameraPos[1];
             firstCam.putVariable("firstCam", ep);
             engEvalString(ep, "result = rotationMatrix * firstCam';");
             mxArray* result = engGetVariable(ep, "result");
@@ -194,12 +194,12 @@ Vector Position::calculateCoordinateTransformation(Vector w, int cameraId) {
             }
             mxDestroyArray(result);
             mxArray *r = engGetVariable(ep, "rotationMatrix");
-            rotationMatrix = *(new Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxgetPr(r)[8]));
+            rotationMatrix = *(new Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxGetPr(r)[8]));
 
             this->transformed = true;
         }
         // calculate rotationMatrix * vector in camera system 0
-        return rotationMatrix.mult(w);
+        return w.aftermult(rotationMatrix);
     }
 }
 
@@ -230,7 +230,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
 
     // rotating coordinate system in coordinate system of camera 0 and then in real coordination system
     // direction = rotationMatrix * (quad * camRotMat)
-    direction = rotationMatrix.mult(quad.mult(camRotMat));
+    direction = (quad.premult(camRotMat[cameraId])).aftermult(rotationMatrix);
 
     // controlling whether all cameras already tracked the quadcopter once
     int valid = 0;
@@ -294,7 +294,7 @@ void Position::calculatePosition(int cameraId) {
             // camera 0 is at the origin and looks down the positive z axis
             camCoordCameraPos[0] = *(new Vector(0, 0, 0));
         }
-        realCameraPos[cameraId] = getCoordinationTransformation(camCoordCameraPos[cameraId], cameraId);
+        realCameraPos[cameraId] = calculateCoordinateTransformation(camCoordCameraPos[cameraId], cameraId);
     }
 }
 
@@ -307,14 +307,14 @@ void Position::calculateOrientation(int cameraId) {
         if (cameraId != 0) {
             loadValues(cameraId);
             mxArray *r = engGetVariable(ep, "R");
-            camRotMat[cameraId] = *(new Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxgetPr(r)[8]));
+            camRotMat[cameraId] = *(new Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxGetPr(r)[8]));
             engEvalString(ep, "R = rodrigues(R)");
-            camCoordCameraOrient[cameraId] = *(new Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxgetPr(r)[8]));
+            camCoordCameraOrient[cameraId] = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
         } else {
             // camera 0 is at the origin and looks down the positive z axis
             camRotMat[0] = *(new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1));
             camCoordCameraOrient[0] = *(new Vector(0, 0, 1));
-        }´
-        realCameraOrient[cameraId] = getCoordinationTransformation(camCoordCameraOrient[cameraId], cameraId);
+        }
+        realCameraOrient[cameraId] = calculateCoordinateTransformation(camCoordCameraOrient[cameraId], cameraId);
     }
 }

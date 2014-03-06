@@ -6,7 +6,6 @@
  */
 
 #include "Matrix.h"
-#include "Vector.h"
 
 Matrix::Matrix() {
     this->m11 = 0;
@@ -30,14 +29,6 @@ Matrix::Matrix(double m11, double m12, double m13, double m21, double m22, doubl
     this->m31 = m31;
     this->m32 = m32;
     this->m33 = m33;
-}
-
-Vector Matrix::mult(Vector a) {
-    double v1 = m11 * a.getV1() + m12 * a.getV2() + m13 * a.getV3();
-    double v2 = m21 * a.getV1() + m22 * a.getV2() + m23 * a.getV3();
-    double v3 = m31 * a.getV1() + m32 * a.getV2() + m33 * a.getV3();
-    Vector *product = new Vector(v1, v2, v3);
-    return *product;
 }
 
 double Matrix::getM11() {

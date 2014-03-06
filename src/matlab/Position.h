@@ -86,7 +86,7 @@ public:
 	/// should only be called once, value is saved in variable cameraPosition_cameraId, is in real coordinate system
     void calculatePosition(int cameraId);
 	/// should only be called once, value is saved in variable cameraOrientation_cameraId, is in real coordinate system
-	Vector calculateOrientation(int cameraId);
+	void calculateOrientation(int cameraId);
 	
 
 	Vector getPosition(int cameraId);
