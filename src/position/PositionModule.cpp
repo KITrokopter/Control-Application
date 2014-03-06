@@ -83,7 +83,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 		ROS_ERROR("Could not initialize PositionModule!");
 	}
 	
-	log.open("/var/log/position_module.log");
+	log.open("~/position_module.log");
 	
 	if (!log.is_open()) {
 		ROS_ERROR("Could not open log file!");
