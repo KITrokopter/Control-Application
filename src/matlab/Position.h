@@ -31,6 +31,17 @@ private:
 	 */ 
 	std::vector<Vector> oldPos;
 
+	// real position of cameras
+	std::vector<Vector> realCameraPos;
+	// real orientation of cameras
+	std::vector<Vector> realCameraOrient;
+		
+	// camera position in camera coordinate system of camera 0
+	std::vector<Vector> camCoordCameraPos;
+	// camera orientation in camera coordinate system of camera 0
+	std::vector<Vector> camCoordCameraOrient;
+	// camera rotation matrices of cameras to rotate in coordinate system of camera 0
+	
 	/* 
 		Variables saved in matlab:
 
