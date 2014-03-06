@@ -294,7 +294,7 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	
 	if (!idKnown) {
 		camNoToNetId.push_back(msg.ID);
-		ROS_DEBUG("Inserted id %d at position %d", msg.ID, camNoToNetId.size() - 1);
+		ROS_DEBUG("Inserted id %d at position %ld", msg.ID, camNoToNetId.size() - 1);
 	}
 	
 	if (isCalibrating)
