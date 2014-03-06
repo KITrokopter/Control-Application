@@ -483,7 +483,7 @@ void Controller::sendMovementAll()
 	{
 		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE ) /*FIXME while testing*/
 		{
-			ROS_INFO("%i",i);
+			//ROS_INFO("%i",i);
 			msg.thrust = this->movementAll[i].getThrust();
 			msg.roll = this->movementAll[i].getRoll();
 			msg.pitch = this->movementAll[i].getPitch();
@@ -681,6 +681,7 @@ void Controller::buildFormation()
 			Position6DOF firstElement;
 			firstElement.setPosition(first);
 			this->listTargetsMutex.lock();
+			ROS_INFO("Push back first Element");
 			this->listTargets[0].push_back(firstElement);
 			this->listTargetsMutex.unlock();
 		}

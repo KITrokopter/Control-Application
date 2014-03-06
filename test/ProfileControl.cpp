@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 	usleep(100000000);	
 	
 	// See MovementGenerator.hpp
-	MovementGenerator generator(receiver, from, to, 0.05, 0.1, 0.01, 150, 30);
+	MovementGenerator generator(receiver, from, to, 0.05, 0.1, 0.01, 600, 30);
 	ROS_INFO("Generating");
 	generator.run();
 	spinner.stop();
