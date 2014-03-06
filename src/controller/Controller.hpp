@@ -109,6 +109,7 @@ private:
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;
+	std::vector<std::list<MovementQuadruple> > listSentQuadruple;
 	
 	/* Identification of Quadcopters */
 	//Receive data over ROS
@@ -145,13 +146,8 @@ private:
 	bool buildFormationFinished;
 	bool buildFormationStop;
 
-	/* TODO getTracked zu buildFormationStop
-	 * TODO moveUp
-	 * TODO updatePosition iterator (list array)
-	 * TODO isStable
+	/* 
 	 * TODO stabilizer
-	 * 
-	 * 
 	 * /
 	
 	/* Mutex */

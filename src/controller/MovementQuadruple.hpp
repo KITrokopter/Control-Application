@@ -11,10 +11,14 @@ class MovementQuadruple
 		float getRoll();
 		float getPitch();
 		float getYawrate();
+		
+		time_t getTimestamp();
+		void setTimestamp( time_t newTimestamp );
 
 	private:
 		int thrust;
 		float roll, pitch, yawrate;
+		time_t timestamp;
 
 };
 

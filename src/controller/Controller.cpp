@@ -477,6 +477,9 @@ void Controller::sendMovementAll()
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
 	ROS_INFO("amount %zu",this->movementAll.size());
+	
+	time_t currentTime = time(&currentTime);
+	std::vector< MovementQuadruple > newListElement;
 	for(int i = 0; i < movementAll.size(); i++)
 	{
 		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE ) /*FIXME while testing*/
@@ -487,6 +490,8 @@ void Controller::sendMovementAll()
 			msg.pitch = this->movementAll[i].getPitch();
 			msg.yaw = this->movementAll[i].getYawrate();
 			this->Movement_pub[i].publish(msg);		
+			this->movementAll[i].setTimestamp( currentTime );
+			newListElement.push_back( this->movementAll[i] );
 		}
 	}
 	ROS_INFO("sendMovementAll finished");
