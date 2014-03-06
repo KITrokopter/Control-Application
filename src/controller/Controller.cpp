@@ -260,7 +260,7 @@ void Controller::moveUp( int internId )
 	if( continueMoveUp )
 	{
 		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
-		movementAll[interId] = newMovement;
+		movementAll[internId] = newMovement;
 	} 
 }
 
@@ -301,21 +301,21 @@ bool Controller::isStable( int internId )
 		{
 			if( counter == compareTime[0] )
 			{
-				if( !closeToTarget( listPositions[internId].back, *rit ) )
+				if( !closeToTarget( listPositions[internId].back(), *rit ) )
 				{
 					return false;
 				}
 			}
 			if( counter == compareTime[1] )
 			{
-				if( !closeToTarget( listPositions[internId].back, *rit ) )
+				if( !closeToTarget( listPositions[internId].back(), *rit ) )
 				{
 					return false;
 				}
 			}
 			if( counter == compareTime[2] )
 			{
-				if( !closeToTarget( listPositions[internId].back, *rit ) )
+				if( !closeToTarget( listPositions[internId].back(), *rit ) )
 				{
 					return false;
 				}
@@ -327,7 +327,7 @@ bool Controller::isStable( int internId )
     {
 		/* Possible to work with available information? */
 		return false;
-    } else if ( sizeOfListPositions) > compareTime[0] )
+    } else if ( sizeOfListPositions > compareTime[0] )
     {
 		return false;
     } else
@@ -476,7 +476,7 @@ void Controller::sendMovementAll()
 	ROS_INFO("sendMovementAll started");
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
-	ROS_INFO("amount %zu",this-movementAll.size());
+	ROS_INFO("amount %zu",this->movementAll.size());
 	for(int i = 0; i < movementAll.size(); i++)
 	{
 		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE ) /*FIXME while testing*/
