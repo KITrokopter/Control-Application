@@ -140,6 +140,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		
 		for (int i = 0; i < camNoToNetId.size(); i++) {
 			netIdToCamNo[camNoToNetId[i]] = i;
+			ROS_DEBUG("Inserted id %d for cam no %d", camNoToNetId[i], i);
 		}
 		
 		ROS_INFO("Got %ld cameras", netIdToCamNo.size());
@@ -293,6 +294,7 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	
 	if (!idKnown) {
 		camNoToNetId.push_back(msg.ID);
+		ROS_DEBUG("Inserted id %d at position %d", msg.ID, camNoToNetId.size() - 1);
 	}
 	
 	if (isCalibrating)
@@ -334,7 +336,7 @@ void PositionModule::systemCallback(const api_application::System &msg)
 		int counter = 0;
 		
 		for (std::vector<long int>::iterator it = timeLog.begin(); it != timeLog.end(); it++) {
-			log << counter << ", " << *it << std::endl;
+			log << counter++ << ", " << *it << std::endl;
 		}
 		
 		ros::shutdown();
