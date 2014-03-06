@@ -24,14 +24,12 @@ bool calibrate(Matlab *m) {
     printf("cam 1 is [%f, %f, %f]\n", cam1.getV1(), cam1.getV2(), cam1.getV3());
     Vector cam2 = h->getPosition(2);
     printf("cam 2 is [%f, %f, %f]\n", cam2.getV1(), cam2.getV2(), cam2.getV3());
-    Vector x = *(new Vector(1, 2, 3));
+    Vector x = *(new Vector(0, 1, 1));
     h->updatePosition(x, 0, 1);
-    x = *(new Vector(2, 3, 4));
+    x = *(new Vector(1, 1, 1));
     h->updatePosition(x, 1, 1);
-    x = *(new Vector(1, 3, 2));
-    h->updatePosition(x, 2, 1);
-    Vector y = *(new Vector(1, 2, 4));
-    Vector pos = h->updatePosition(y, 0, 1);
+    x = *(new Vector(-1, 1, 1));
+    Vector pos = h->updatePosition(x, 2, 1);
     printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
     return ok;
 }
@@ -54,11 +52,11 @@ void tracking(Matlab *m) {
 
 int main(int argc, char** argv) {
     Matlab *m = new Matlab();
-    /*bool ok = calibrate(m);
+    bool ok = calibrate(m);
     if (ok == true) {
         printf("success\n");
     } else {
         printf("fail\n");
-    }*/
+    }
     m->destroyMatlab();
 }

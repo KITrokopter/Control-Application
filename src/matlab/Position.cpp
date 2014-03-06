@@ -73,7 +73,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     }
     
     AmccCalibration *calib = new AmccCalibration(ep);
-    calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
+    //calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
 
     // checking whether calibration did work (trying to load all output files)
     mxArray *good;
@@ -230,7 +230,14 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
 
     // rotating coordinate system in coordinate system of camera 0 and then in real coordination system
     // direction = rotationMatrix * (quad * camRotMat)
-    direction = (quad.premult(camRotMat[cameraId])).aftermult(rotationMatrix);
+    //direction = (quad.premult(camRotMat[cameraId])).aftermult(rotationMatrix);
+    direction = quad;
+
+
+
+
+    // save result
+    (quadPos[quadcopterId])[cameraId] = direction;
 
     // controlling whether all cameras already tracked the quadcopter once
     int valid = 0;
@@ -241,14 +248,10 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
     }
     if (valid != numberCameras) {
         // default value, when not all cameras tracked it yet
-        // save result
-        (quadPos[quadcopterId])[cameraId] = direction;
         ROS_DEBUG("Not all cameras did track quadcopter %d yet. Camera %d tracked it at position [%f, %f, %f]\n", quadcopterId, cameraId, direction.getV1(), direction.getV2(), direction.getV3());
         Vector nan = *(new Vector(NAN, NAN, NAN));
         return nan;
     } else {
-        // save result
-        (quadPos[quadcopterId])[cameraId] = direction;
         // not calculated before, first time calculating
         if (!(oldPos[quadcopterId].isValid())) {
 
@@ -257,6 +260,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             for (int i = 0; i < numberCameras; i++) {
                 Vector camPos = getPosition(i);
                 quadPositions[i] = *(new Line(camPos, quadPos[quadcopterId][i]));
+                printf("%d: [%f, %f, %f] + r * [%f, %f, %f]\n", i, camPos.getV1(), camPos.getV2(), camPos.getV3(), quadPos[quadcopterId][i].getV1(), quadPos[quadcopterId][i].getV2(), quadPos[quadcopterId][i].getV3());
             }
 
             Matlab *m = new Matlab(ep);

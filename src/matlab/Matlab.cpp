@@ -72,22 +72,28 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
     g.getU().putVariable("v", ep);
     mxArray *same, *parallel;
 	engEvalString(ep, "dif = [a1 - b1, a2 - b2, a3 - b3]");
-	// checks whether the lines intersect, if so result false
+    // checks whether the lines intersect, if so result = 1
 	// checks whether a line or a row of A would be 0, so that it can't be inverted
 	engEvalString(ep, "bb = [dif(1); dif(2)];");
 	// A*x = bb, x = (r, s)
-	// checks if equation is also right for the third vectorcomponent.
-	if (((f.getU().getV1() != 0) && (g.getU().getV1() != 0)) && ((f.getU().getV2() != 0) && (g.getU().getV2() != 0)) && ((f.getU().getV1() != 0) && (f.getU().getV2() != 0)) && ((g.getU().getV1() != 0) && (g.getU().getV2() != 0))) {
+
+    // checks if equation is also right for the third vectorcomponent.
+
+    /*
+     * wrong checking!! has to check, whether first and second line/row are multiples from each other!!!
+     */
+
+    if (((f.getU().getV1() != 0) && (g.getU().getV1() != 0)) && ((f.getU().getV2() != 0) && (g.getU().getV2() != 0)) && ((f.getU().getV1() != 0) && (f.getU().getV2() != 0)) && ((g.getU().getV1() != 0) && (g.getU().getV2() != 0))) {
 		engEvalString(ep, "A = [-u1 v1; -u2 v2];");
-		engEvalString(ep, "x = A\\bb");
+        engEvalString(ep, "x = inv(A)*bb");
 		engEvalString(ep, "same = (a1+x(1)*u1 == b1 + x(2) * v1)");
 	} else if (((f.getU().getV1() != 0) && (g.getU().getV1() != 0)) && ((f.getU().getV3() != 0) && (g.getU().getV3() != 0)) && ((f.getU().getV1() != 0) && (f.getU().getV3() != 0)) && ((g.getU().getV1() != 0) && (g.getU().getV3() != 0))) {
-    		engEvalString(ep, "A = [-u1 v1; -u3 v3]");
-    		engEvalString(ep, "x = A\\bb");
+        engEvalString(ep, "A = [-u1 v1; -u3 v3]");
+        engEvalString(ep, "x = inv(A)*bb");
 		engEvalString(ep, "same = (a2+x(1)*u2 == b2 + x(2) * v2)");
-	} else {
-    		engEvalString(ep, "A = [-u2 v2; -u3 v3]"); 
-    		engEvalString(ep, "x = A\\bb");
+    } else {
+        engEvalString(ep, "A = [-u2 v2; -u3 v3]");
+        engEvalString(ep, "x = inv(A)*bb");
 		engEvalString(ep, "same = (a3+x(1)*u3 == b3 + x(2) * v3)");
 	}
 	same = engGetVariable(ep, "same");
@@ -142,11 +148,14 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
             intersects = perpFootTwoLines(lines[i], lines[j], result);
 			if (intersects == 1) {
                 points[pos] = *result[0];
+                printf("intersects: [%f, %f, %f]\n", points[pos].getV1(), points[pos].getV2(), points[pos].getV3());
 				pos++;
 			} else if (intersects == 2) {
 				points[pos] = *result[0];
+                printf("perp1: [%f, %f, %f]\n", points[pos].getV1(), points[pos].getV2(), points[pos].getV3());
 				pos++;
 				points[pos] = *result[1];
+                printf("perp2: [%f, %f, %f]\n", points[pos].getV1(), points[pos].getV2(), points[pos].getV3());
                 pos++;
 			}
 		}
