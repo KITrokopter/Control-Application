@@ -208,28 +208,34 @@ void Position::loadValues(int cameraId) {
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
-    Vector pos;
+    Vector direction;
     if (cameraId == -1) {
-        Vector pos = *(new Vector(NAN, NAN, NAN));
-        return pos;
+        Vector nan = *(new Vector(NAN, NAN, NAN));
+        return nan;
     }
+
+    /*
+     * orientation = rotationMatrix * quad
+     * Line: getPosition(cameraId) + r (rotationMatrix * quad)
+     */
+
+    // rotating coordinate system in coordinate system of camera 0 and then in real coordination system
     else if (cameraId != 0) {
         std::string result;
         std::ostringstream id;
         id << cameraId;
         quad.putVariable("quad", ep);
-        result = "pos = (quad * rodrigues(rotMatCamCoord_" + id.str() + "))' + transVectCamCoord_" + id.str();
+        result = "direction = (quad * rodrigues(rotMatCamCoord_" + id.str() + "))'";
         engEvalString(ep, result.c_str());
-        mxArray *position = engGetVariable(ep, "pos");
-        pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
-        pos = getCoordinationTransformation(pos, cameraId);
-        mxDestroyArray(position);
+        engEvalString(ep, "direction = rotationMatrix * direction");
     } else {
-        pos = getCoordinationTransformation(quad, cameraId);
+        engEvalString(ep, "direction = rotationMatrix * quad");
     }
+    mxArray *d = engGetVariable(ep, "direction");
+    direction = *(new Vector(mxGetPr(d)[0], mxGetPr(d)[1], mxGetPr(d)[2]));
+    mxDestroyArray(d);
 
     // controlling whether all cameras already tracked the quadcopter once
-   /// if (quadPos[quadcopterId].size() < numberCameras) {
     int valid = 0;
     for (int i = 0; i < numberCameras; i++) {
         if (quadPos[quadcopterId][i].isValid()) {
@@ -237,23 +243,23 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
         }
     }
     if (valid != numberCameras) {
-        /// default value, when not all cameras did track it
+        // default value, when not all cameras tracked it yet
         // save result
-        (quadPos[quadcopterId])[cameraId] = pos;
-        ROS_DEBUG("Not all cameras did track quadcopter %d yet. Camera %d tracked it at position [%f, %f, %f]\n", quadcopterId, cameraId, pos.getV1(), pos.getV2(), pos.getV3());
+        (quadPos[quadcopterId])[cameraId] = direction;
+        ROS_DEBUG("Not all cameras did track quadcopter %d yet. Camera %d tracked it at position [%f, %f, %f]\n", quadcopterId, cameraId, direction.getV1(), direction.getV2(), direction.getV3());
         Vector nan = *(new Vector(NAN, NAN, NAN));
         return nan;
     } else {
         // save result
-        (quadPos[quadcopterId])[cameraId] = pos;
+        (quadPos[quadcopterId])[cameraId] = direction;
         // not calculated before, first time calculating
         if (!(oldPos[quadcopterId].isValid())) {
 
             // building lines from camera position to quadcopter position
             Line *quadPositions = new Line[numberCameras];
             for (int i = 0; i < numberCameras; i++) {
-                Vector position = getPosition(i);
-                quadPositions[i] = *(new Line(position, (quadPos[quadcopterId])[i].add(position.mult(-1))));
+                Vector camPos = getPosition(i);
+                quadPositions[i] = *(new Line(camPos, quadPos[quadcopterId][i]));
             }
 
             Matlab *m = new Matlab(ep);
@@ -265,10 +271,11 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             return quadPosition;
         } else {
             Matlab *m = new Matlab(ep);
-            // interpolation factor has to be tested.
+
+            // interpolation factor should be tested.
             Vector position = getPosition(cameraId);
             // line from camera to tracked object
-            Line tracked = *(new Line(position, pos.add(position.mult(-1))));
+            Line tracked = *(new Line(position, direction));
             // calulating actual pos
             Vector newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
             // saving new Pos
