@@ -23,10 +23,13 @@ void TrackingWorker::run()
 {
 	ROS_INFO("Started tracking thread");
 	
+	bool receivedFirstPosition = false;
+	
 	while (!stop) {
 		CameraData data = dequeue();
 		
 		if (data.valid) {
+			receivedFirstPosition = true;
 			Vector position = tracker.updatePosition(data.cameraVector, data.camNo, data.quadcopterId);
 			
 			std::vector<Vector> positions;
@@ -41,6 +44,8 @@ void TrackingWorker::run()
 			} else {
 				ROS_DEBUG("Not enough information to get position of quadcopter %d", data.quadcopterId);
 			}
+		} else if (receivedFirstPosition == true) {
+			ROS_WARN("Position update buffer is empty!");
 		}
 	}
 	
