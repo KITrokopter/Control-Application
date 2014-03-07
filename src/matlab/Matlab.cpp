@@ -74,25 +74,32 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 	engEvalString(ep, "dif = [a1 - b1, a2 - b2, a3 - b3]");
     // checks whether the lines intersect, if so result = 1
 	// checks whether a line or a row of A would be 0, so that it can't be inverted
-	engEvalString(ep, "bb = [dif(1); dif(2)];");
-	// A*x = bb, x = (r, s)
+    engEvalString(ep, "bb = [dif(1); dif(2)];");
 
-    // checks if equation is also right for the third vectorcomponent.
 
     /*
-     * wrong checking!! has to check, whether first and second line/row are multiples from each other!!!
-     *
-     * isMultiple(v, u) {
-     *
-     *
-     *
+     * inserting if f.getU().isLinerarDependent(g.getU()) return 0
      */
 
-    if (((f.getU().getV1() != 0) && (g.getU().getV1() != 0)) && ((f.getU().getV2() != 0) && (g.getU().getV2() != 0)) && ((f.getU().getV1() != 0) && (f.getU().getV2() != 0)) && ((g.getU().getV1() != 0) && (g.getU().getV2() != 0))) {
+
+    // first checking, whether the lines are parallel
+    if ( (((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV1() != 0) && (g.getU().getV1() != 0)))
+         && (((f.getU().getV2() == 0) && (g.getU().getV2() == 0)) || ((f.getU().getV2() != 0) && (g.getU().getV2() != 0)))
+         && (((f.getU().getV3() == 0) && (g.getU().getV3() == 0)) || ((f.getU().getV3() != 0) && (g.getU().getV3() != 0))) ) {
+        return 0;
+    } else if (f.getU().getV1()/g.getU().getV1() == f.getU().getV2()/g.getU().getV2() == f.getU().getV3()/g.getU().getV3()) {
+        return 0;
+    }
+    // aren't parallel, need to check, whether intersect. has to make sure, that A has a complement.
+    // A*x = bb, x = (r, s)
+    // checks if equation is also right for the third vectorcomponent.
+    else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV2() == 0) && (g.getU().getV2() == 0))
+                 || ((f.getU().getV1() == 0) && (f.getU().getV2() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV2() == 0)))) {
 		engEvalString(ep, "A = [-u1 v1; -u2 v2];");
         engEvalString(ep, "x = inv(A)*bb");
 		engEvalString(ep, "same = (a1+x(1)*u1 == b1 + x(2) * v1)");
-	} else if (((f.getU().getV1() != 0) && (g.getU().getV1() != 0)) && ((f.getU().getV3() != 0) && (g.getU().getV3() != 0)) && ((f.getU().getV1() != 0) && (f.getU().getV3() != 0)) && ((g.getU().getV1() != 0) && (g.getU().getV3() != 0))) {
+    } else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV3() == 0) && (g.getU().getV3() == 0))
+                 || ((f.getU().getV1() == 0) && (f.getU().getV3() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV3() == 0)))) {
         engEvalString(ep, "A = [-u1 v1; -u3 v3]");
         engEvalString(ep, "x = inv(A)*bb");
 		engEvalString(ep, "same = (a2+x(1)*u2 == b2 + x(2) * v2)");
@@ -110,13 +117,7 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 		mxDestroyArray(intersectionpoint);
 		return 1;
 	}
-	// cecks whether the lines are parallel: 0 = u + r*v?
-	engEvalString(ep, "parallel = (((-u1/v1) == (-u2/v2)) && ((-u1/v1) == (-u3/v3)));");
-	parallel = engGetVariable(ep, "parallel");
-	if (mxGetPr(parallel)[0] != 0.0) {
-		mxDestroyArray(parallel);
-		return 0;
-	}
+
 	// calculating perpendicular foot points.
 	mxArray *resultf, *resultg;
 	engEvalString(ep, "n = cross(u, v);");

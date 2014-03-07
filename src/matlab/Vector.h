@@ -36,7 +36,7 @@ public:
 	Vector cross(Vector v);
 	bool equals(Vector v);
 	std::string toString();
-	
+	bool isLinearDependent(Vector u);
 	/**
 	 * Returns true if the vector contains no NaN values.
 	 * @return True if the vector contains no NaN values.
