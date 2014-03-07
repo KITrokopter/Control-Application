@@ -161,7 +161,7 @@ void Position::angleTry(int sign) {
     Line xAxis = *(new Line(origin, x));
     // works if E isn't already on the x axis or the y axis
     Line intersectionLine = m->getIntersectionLine(cameras, c, xAxis, y);
-    ROS_DEBUG("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
+    //ROS_DEBUG("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
 
 
     Vector n = intersectionLine.getU().mult(1/intersectionLine.getU().getLength());
@@ -187,16 +187,19 @@ Vector Position::calculateCoordinateTransformation(Vector w, int cameraId) {
             loadValues(1);
             mxArray *r = engGetVariable(ep, "T");
             Vector firstCam = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
-            firstCam.putVariable("firstCam", ep);
-            engEvalString(ep, "result = rotationMatrix * firstCam';");
-            r = engGetVariable(ep, "result");
-            ROS_DEBUG("first calculation of transformation matrix, camera 1 would be at position [%f, %f, %f]", mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]);
-            if (!((mxGetPr(r)[2] < 1) && (mxGetPr(r)[2] > -1))) {
-                // if value is wrong, the angle has to be negativ
-                angleTry(-1);
-            }
             r = engGetVariable(ep, "rotationMatrix");
             rotationMatrix = *(new Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxGetPr(r)[8]));
+            Vector result = firstCam.aftermult(rotationMatrix);
+
+            ROS_DEBUG("first calculation of transformation matrix, camera 1 would be at position [%f, %f, %f]", result.getV1(), result.getV2(), result.getV3());
+            if (!((result.getV3() < 1) && (result.getV3() > -1))) {
+                // if value is wrong, the angle has to be negativ
+                angleTry(-1);
+                r = engGetVariable(ep, "rotationMatrix");
+                rotationMatrix = *(new Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxGetPr(r)[8]));
+                result = firstCam.aftermult(rotationMatrix);
+                ROS_DEBUG("new calculation has result [%f, %f, %f]", result.getV1(), result.getV2(), result.getV3());
+            }
             mxDestroyArray(r);
             this->transformed = true;
         }

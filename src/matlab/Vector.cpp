@@ -131,3 +131,13 @@ std::string Vector::toString() {
 bool Vector::isValid() {
 	return !(isnan(v1) || isnan(v2) || isnan(v3));
 }
+
+bool Vector::isLinearDependent(Vector u) {
+    if ((v1 == 0) && (u.getV1() == 0) && (v2 == 0) && (u.getV2() == 0) && (v3 == 0) && (u.getV3() == 0)) {
+        return true;
+    } else if ( (((v1 == 0) && (u.getV1() == 0)) || ((v1 != 0) && (u.getV1() != 0)))
+            && (((v2 == 0) && (u.getV2() == 0)) || ((v1 != 0) && (u.getV2() != 0)))
+            && (((v3 == 0) && (u.getV3() == 0)) || ((v1 != 0) && (u.getV3() != 0))) ) {
+        return true;
+    }
+}
