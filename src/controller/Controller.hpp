@@ -148,7 +148,7 @@ private:
 	bool buildFormationStop;
 
 	/* 
-	 * TODO stabilizer
+	 * TODO time() gets time in seconds! change where necessary
 	 * /
 	
 	/* Mutex */

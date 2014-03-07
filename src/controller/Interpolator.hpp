@@ -6,10 +6,10 @@
 #include <MovementQuadruple.hpp>
 
 #define MAX_STEPS_IN_ADVANCE 1 	// How delayed is the input?
+#define MAX_NUMBER_OF_QUADCOPTER_HIGH 10
+#define MIN_TIME_TO_WAIT 500 // in ms
 
 /*
- * TODO safe sent movementQuadruples in lists/ vectors ~ 10times/sec
- * TODO give that data + positional information (latest x datasets?) to calculateNextMQ()
  * TODO linear interpolation
  * TODO test of speed, either optimize or save data-to-sent in advance
  * TODO optimize interpolation (step size time-dependant)
@@ -21,13 +21,14 @@ class Interpolator {
 public:
 	Interpolator();
 
-	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions);
+	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, int id);
 /*	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions);*/
 
 protected:
 
 private:
 
+	time_t lastUpdated[MAX_NUMBER_OF_QUADCOPTER_HIGH];
 	double speedOfChange; 	// depends on the distance of position to target
 	
 
