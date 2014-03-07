@@ -18,7 +18,7 @@ Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> se
 	}
 	
 	MovementQuadruple newMovement = sentQuadruples.back();
-	/* get current Time */
+	long int currentTime = getNanoTime();
 	
 	if( id >= MAX_NUMBER_OF_QUADCOPTER_HIGH ) 
 	{		
@@ -28,7 +28,7 @@ Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> se
 	{
 		ROS_INFO("Not enough data in calculateNextMQ.");
 		return newMovement;
-	} else if( this->lastUpdated[id] - currentTime < MIN_TIME_TO_WAIT) // FIXME
+	} else if( this->lastUpdated[id] - currentTime < MIN_TIME_TO_WAIT)
 	{
 		ROS_INFO("Take old value, changes need to be visible for calculateNextMQ.");
 		return newMovement;

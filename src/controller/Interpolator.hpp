@@ -4,11 +4,12 @@
 #include <cmath>
 #include <time.h>
 #include <sys/time.h>
-#include <MovementQuadruple.hpp>
+#include "MovementQuadruple.hpp"
+#include "../matlab/profiling.hpp"
 
 #define MAX_STEPS_IN_ADVANCE 1 	// How delayed is the input?
 #define MAX_NUMBER_OF_QUADCOPTER_HIGH 10
-#define MIN_TIME_TO_WAIT 500 // in ms
+#define MIN_TIME_TO_WAIT 500*1000*1000 // in ns
 
 /*
  * TODO linear interpolation
@@ -29,8 +30,8 @@ protected:
 
 private:
 
-	time_t lastUpdated[MAX_NUMBER_OF_QUADCOPTER_HIGH];
-	double speedOfChange; 	// depends on the distance of position to target
+	long int lastUpdated[MAX_NUMBER_OF_QUADCOPTER_HIGH];
+	double stepSizeOfChange; 	// depends on the distance of position to target
 	
 
 };
