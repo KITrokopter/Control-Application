@@ -91,54 +91,70 @@ void Controller::initialize()
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
 {
 		
-	ROS_INFO("Update Position");
+	//ROS_INFO("Update Position");
+	if(!receivedQuadcopters || !receivedFormation)
+	{
+		return;
+	}
 	/* Save position vectors */	
 	std::vector<Position6DOF> newListItem;
 	int i = 0;
-	int id;
+	int id = 0;
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
+		//ROS_INFO("Global id is %i",i);
+		//ROS_INFO("Local Id is %i", id);
+		if(id == -1)
+		{
+			continue;	
+		}
 		this->lastCurrentMutex.lock();
 		this->lastCurrent[id] = time(&this->lastCurrent[id]);
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
 		this->lastCurrentMutex.unlock();
 		newListItem.push_back( newPosition );
-				
+		
 		if( it->getV1() != INVALID ) 
 		{	
+			//ROS_INFO("Valid");
 			/* Quadcopter is tracked */
 			trackedArrayMutex.lock();
 			bool track = this->tracked[id];
 			trackedArrayMutex.unlock();
 			if( track == false )
 			{
+				//ROS_INFO("track false");
 				/* Quadcopter has not been tracked before */
 				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 				{
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
 				}
 			}
+			//ROS_INFO("tracked id");
 			trackedArrayMutex.lock();
 			this->tracked[id] = true;
 			trackedArrayMutex.unlock();
 		} else
 		{
+			//ROS_INFO("Invaldi");
 			trackedArrayMutex.lock();
 			this->tracked[id] = false;
 			trackedArrayMutex.unlock();
 		}
+		//ROS_INFO("Push back");
 		this->listPositionsMutex.lock();
 		this->listPositions[id].push_back( newPosition ); 
 		while( this->listPositions[id].size() > 30 )
 		{
+			//ROS_INFO("erasing");
 			// Remove oldest elements
 			this->listPositions[id].erase( this->listPositions[id].begin() );
 		}
 		this->listPositionsMutex.unlock();
 	}	
-	
+	//ROS_INFO("Update Position finished");	
 }
 
 
@@ -215,7 +231,7 @@ void Controller::calculateMovement()
 					
 					break;
 				case CALCULATE_MOVE:
-					ROS_INFO("Move %i", i);
+					//ROS_INFO("Move %i", i);
 					moveVector[0] = target[0] - current[0];
 					moveVector[1] = target[1] - current[1];
 					moveVector[2] = target[2] - current[2];
@@ -479,7 +495,7 @@ void Controller::sendMovementAll()
 	{
 		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE )
 		{
-			ROS_INFO("%i",i);
+			//ROS_INFO("%i",i);
 			msg.thrust = this->movementAll[i].getThrust();
 			msg.roll = this->movementAll[i].getRoll();
 			msg.pitch = this->movementAll[i].getPitch();
@@ -687,6 +703,7 @@ void Controller::buildFormation()
 			Position6DOF firstElement;
 			firstElement.setPosition(first);
 			this->listTargetsMutex.lock();
+			ROS_INFO("Push back first Element");
 			this->listTargets[0].push_back(firstElement);
 			this->listTargetsMutex.unlock();
 		}
