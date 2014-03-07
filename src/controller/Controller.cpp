@@ -110,7 +110,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			continue;	
 		}
 		this->lastCurrentMutex.lock();
-		this->lastCurrent[id] = time(&this->lastCurrent[id]);
+		this->lastCurrent[id] = getNanoTime();
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
 		this->lastCurrentMutex.unlock();
@@ -397,9 +397,9 @@ bool Controller::checkInput()
 		{
 			continue;
 		}
-		time_t currentTime = time(&currentTime);
+		long int currentTime = getNanoTime();
 		this->lastFormationMovementMutex.lock();
-		time_t lastForm = this->lastFormationMovement;
+		long int lastForm = this->lastFormationMovement;
 		this->lastFormationMovementMutex.unlock();
 		if(currentTime - lastForm > TIME_UPDATED_END)
 		{
@@ -408,7 +408,7 @@ bool Controller::checkInput()
 		      return false;
 		}
 		this->lastCurrentMutex.lock();
-		time_t lastCur = this->lastCurrent[i];
+		long int lastCur = this->lastCurrent[i];
 		this->lastCurrentMutex.unlock();
 		if(currentTime - lastCur > TIME_UPDATED_END)
 		{
@@ -836,7 +836,7 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 	this->formationMovement.push_back(movement);
 	this->formationMovementMutex.unlock();	
 	this->lastFormationMovementMutex.lock();
-	this->lastFormationMovement = time(&this->lastFormationMovement);
+	this->lastFormationMovement = getNanoTime();
 	this->lastFormationMovementMutex.unlock();
 	//calculate and set a new target position each time there is new data
 	this->buildFormationMutex.lock();

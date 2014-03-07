@@ -49,12 +49,12 @@ float MovementQuadruple::getYawrate()
 	return this->yawrate;
 }
 
-time_t MovementQuadruple::getTimestamp()
+long int MovementQuadruple::getTimestamp()
 {
-	return timestamp;
+	return this->timestamp;
 }
 
-void MovementQuadruple::setTimestamp(time_t newTimestamp) 
+void MovementQuadruple::setTimestamp(long int newTimestamp) 
 {
 	this->timestamp = newTimestamp;
 }

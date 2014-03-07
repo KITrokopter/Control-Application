@@ -1,6 +1,8 @@
 #ifndef MOVEMENT_QUADRUPLE_HPP
 #define MOVEMENT_QUADRUPLE_HPP
 
+#include <sys/time.h>
+
 class MovementQuadruple
 {	
 	public:
@@ -13,8 +15,8 @@ class MovementQuadruple
 		float getPitch();
 		float getYawrate();
 		
-		time_t getTimestamp();
-		void setTimestamp( time_t newTimestamp );
+		long int getTimestamp();
+		void setTimestamp( long int newTimestamp );
 
 	private:
 		int thrust;

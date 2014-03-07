@@ -49,12 +49,12 @@ void Position6DOF::setOrientation( double* orientation)
 	}
 }
 
-time_t Position6DOF::getTimestamp()
+long int Position6DOF::getTimestamp()
 {
-	return timestamp;
+	return this->timestamp;
 }
 
-void Position6DOF::setTimestamp(time_t newTimestamp) 
+void Position6DOF::setTimestamp(long int newTimestamp) 
 {
 	this->timestamp = newTimestamp;
 }
