@@ -47,7 +47,7 @@ Controller::Controller()
 	
 	//All control variables are set to zero
 	this->shutdownMutex.lock();
-	this->shutdownStarted = false;	// shutdown not started
+	this->landFinished = false;	// shutdown not started
 	this->shutdownMutex.unlock();
 	
 	this->receivedQCMutex.lock();
@@ -166,30 +166,33 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 void Controller::calculateMovement()
 {
 	ROS_INFO("Calculation started");
-	bool inShutdown;
+	bool end;
 	shutdownMutex.lock();
-	inShutdown = shutdownStarted;
+	end = landFinished;
 	shutdownMutex.unlock();
 	
 	/* As long as we are not in the shutdown process, calculate new Movement data */
-	while(!inShutdown)
+	while(!end)
 	{
 		//ROS_INFO("Calculate");
 		int amount = quadcopterMovementStatus.size();
-		for(int i = 0; (i < amount) && (!inShutdown); i++)
+		for(int i = 0; (i < amount) && (!end); i++)
 		{	
 			/* Shutdown */
 			shutdownMutex.lock();
-			inShutdown = shutdownStarted;
+			end = landFinished;
 			shutdownMutex.unlock();
 			receivedFormMutex.lock();
 			receivedQCMutex.lock();
 			bool enoughData = this->receivedFormation && this->receivedQuadcopters;
 			receivedFormMutex.unlock();
 			receivedQCMutex.unlock();
+			if(this->quadcopterMovementStatus[i] == CALCULATE_LAND || this->quadcopterMovementStatus[i] == CALCULATE_HOLD) //only for testing
+			{
 			if( enoughData)
 			{
 				checkInput();
+			}
 			}
 			
 			/* Calculation */
@@ -367,9 +370,12 @@ void Controller::land( int internId )
 	{
 		this->movementAll[internId].setThrust(THRUST_DECLINE);
 	}
+	else
+	{
+		//Shutdown crazyflie after having left the tracking area.
+		this->movementAll[internId].setThrust(THRUST_MIN);
+	}
 	this->trackedArrayMutex.unlock();
-	//Shutdown crazyflie after having left the tracking area.
-	this->movementAll[internId].setThrust(THRUST_MIN);
 }
 
 /*
@@ -446,7 +452,15 @@ void Controller::emergencyRoutine(std::string message)
 	msg.type = 2;
 	msg.message = message;
 	this->Message_pub.publish(msg);
-	shutdownFormation();
+	shutdownMutex.lock();
+	bool end = landFinished;
+	shutdownMutex.unlock();
+	if(!end)
+	{
+		ROS_INFO("I want to shutdown");
+		control_application::Shutdown srv;
+		Shutdown_client.call(srv);
+	}
 }
 
 
@@ -779,7 +793,7 @@ void Controller::shutdownFormation()
 {
 	ROS_INFO("ShutdownFormation started");	
 	shutdownMutex.lock();
-	this->shutdownStarted = 1; /* Start shutdown process */
+	this->landFinished = true; /* Start shutdown process */
 	shutdownMutex.unlock();
 	
 	/* Bring all quadcopters to a hold */	
@@ -798,7 +812,7 @@ void Controller::shutdownFormation()
 		
 	}
 	shutdownMutex.lock();
-	this->shutdownStarted = 0;
+	this->landFinished = false;
 	shutdownMutex.unlock();
 	
 }
@@ -815,7 +829,8 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 	shutdownFormation ();
 	void *resultCalc;
 	pthread_join(tCalculateMovement, &resultCalc);
-	
+	void *resultBuild;
+	pthread_join(tBuildFormation, &resultBuild);
 	/* Unneccessary if move is not in loop */
 	//void *resultSend;
 	//pthread_join(tSend, &resultSend);
@@ -921,9 +936,9 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 	if(msg->command == 2)
 	{
 		shutdownMutex.lock();
-		bool inShutdown = shutdownStarted;
+		bool end = landFinished;
 		shutdownMutex.unlock();
-		if(!inShutdown)
+		if(!end)
 		{
 			ROS_INFO("I want to shutdown");
 			control_application::Shutdown srv;
