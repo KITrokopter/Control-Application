@@ -528,13 +528,14 @@ void Controller::setTargetPosition()
 		this->formationMovementMutex.unlock();
 		//Check if new position would be in tracking area
 		Vector vector = Vector(targetNew[0],targetNew[1],targetNew[2]);
-		if(!this->trackingArea.contains(vector))
+		/*if(!this->trackingArea.contains(vector))
 		{
 			std::string message("Formation Movement is invalid. Quadcopter %i would leave Tracking Area.\n", i);
-			ROS_INFO("Warning:Formation Movement is invalid. Quadcopter %i would leave Tracking Area.");
+			ROS_INFO("Warning:Formation Movement is invalid. Quadcopter %i would leave Tracking Area.",i);
 			emergencyRoutine(message);
 			return;
-		}
+		}*/ 
+		//Commented because of testing
 		newTarget.setPosition(targetNew);
 		newTarget.setTimestamp(currentTime);
 		this->listTargetsMutex.lock();
@@ -567,8 +568,8 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	unsigned long int i;
 	for( i = 0; i < req.amount; i++)
 	{
-		ROS_INFO("Array %lu", req.quadcoptersId[i]);
-		this->quadcopters.push_back(req.quadcoptersId[i]);
+		//ROS_INFO("Array %lu", req.quadcoptersId[i]);
+                this->quadcopters.push_back(req.quadcoptersId[i]);
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		ROS_INFO("Size of MovementAll %zu", movementAll.size());
 		MovementQuadruple newMoveQuad = MovementQuadruple(0, 0, 0, 0);
