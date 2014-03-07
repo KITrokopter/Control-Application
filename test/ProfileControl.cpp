@@ -42,6 +42,8 @@ int main(int argc, char** argv) {
 	MovementGenerator generator(receiver, from, to, 0.05, 0.1, 0.01, 25, 10);
 	ROS_INFO("Generating");
 	generator.run();
+	ROS_INFO("Generating");
+	generator.run();
 	spinner.stop();
 	ros::waitForShutdown();
 }
