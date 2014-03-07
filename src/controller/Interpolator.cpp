@@ -35,7 +35,7 @@ Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> se
 	}
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
-	double deltaPosition[positions.size()]
+	double deltaPosition[positions.size()-1];
 	int counter = 0;
 	for(std::list<Position6DOF>::positions it = positions.begin(); it != positions.end(); ++it)
 	{
