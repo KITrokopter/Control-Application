@@ -1,9 +1,10 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
 #include "Formation.hpp"
-#include "Position6DOF.hpp"
+#include "Interpolator.hpp"
 #include "MovementQuadruple.hpp"
 #include "Mutex.hpp"
+#include "Position6DOF.hpp"
 #include "ros/ros.h"
 #include "api_application/MoveFormation.h"
 #include "api_application/SetFormation.h"
@@ -18,6 +19,7 @@
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "../position/IPositionReceiver.hpp"
+#include "../matlab/profiling.hpp"
 #include "../matlab/Vector.h"
 #include "../matlab/TrackingArea.h"
 #include <boost/bind.hpp>
@@ -42,8 +44,8 @@
 #define PITCH_STEP 2
 #define INVALID -1
 #define LOW_BATTERY 0.05 //TODO 100% = 1?
-#define TIME_UPDATED_END 1 //In seconds
-#define TIME_UPDATED_CRITICAL 0.2 //In seconds
+#define TIME_UPDATED_END 1*1000*1000 // in ns
+#define TIME_UPDATED_CRITICAL 200*1000 // in ns
 
 /* For calculateMovement */
 #define CALCULATE_NONE 0 // Unused for formation
@@ -109,14 +111,15 @@ private:
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;
+	std::vector<std::list<MovementQuadruple> > listSentQuadruples;
 	
 	/* Identification of Quadcopters */
 	//Receive data over ROS
 	Formation *formation;
 	//int amount;	// Needed for formation
 	std::list<std::vector<float> > formationMovement;
-	time_t lastFormationMovement;
-	time_t lastCurrent[MAX_NUMBER_QUADCOPTER];
+	long int lastFormationMovement;
+	long int lastCurrent[MAX_NUMBER_QUADCOPTER];
 	unsigned int senderID;	
 	TrackingArea trackingArea;
 	
@@ -145,13 +148,12 @@ private:
 	bool buildFormationFinished;
 	bool buildFormationStop;
 
-	/* TODO getTracked zu buildFormationStop
-	 * TODO moveUp
-	 * TODO updatePosition iterator (list array)
-	 * TODO isStable
-	 * TODO stabilizer
+	/* 
+	 * TODO time() gets time in seconds! change where necessary
+	 * TODO buildFormationStop/ -Finished
+	 * TODO thread für shutdown formation
 	 * 
-	 * 
+	 * TODO position6dof set timestamp in constructor without timestamp parameter?
 	 * /
 	
 	/* Mutex */

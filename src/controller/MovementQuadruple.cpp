@@ -8,6 +8,15 @@ MovementQuadruple::MovementQuadruple(int newThrust, float newRoll, float newPitc
 	this->yawrate = newYawrate;		
 }
 
+MovementQuadruple::MovementQuadruple(int newThrust, float newRoll, float newPitch, float newYawrate, time_t newTimestamp)
+{
+	this->thrust = newThrust;
+	this->roll = newRoll;
+	this->pitch = newPitch;
+	this->yawrate = newYawrate;	
+	this->timestamp = newTimestamp;		
+}
+
 void MovementQuadruple::setThrust( int newThrust )
 {
 	this->thrust = newThrust;
@@ -40,4 +49,12 @@ float MovementQuadruple::getYawrate()
 	return this->yawrate;
 }
 
+long int MovementQuadruple::getTimestamp()
+{
+	return this->timestamp;
+}
 
+void MovementQuadruple::setTimestamp(long int newTimestamp) 
+{
+	this->timestamp = newTimestamp;
+}

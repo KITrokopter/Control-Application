@@ -3,13 +3,15 @@
 
 #include <cmath>
 #include <time.h>
-#include <MovementQuadruple.hpp>
+#include <sys/time.h>
+#include "MovementQuadruple.hpp"
+#include "../matlab/profiling.hpp"
 
 #define MAX_STEPS_IN_ADVANCE 1 	// How delayed is the input?
+#define MAX_NUMBER_OF_QUADCOPTER_HIGH 10
+#define MIN_TIME_TO_WAIT 500*1000*1000 // in ns
 
 /*
- * TODO safe sent movementQuadruples in lists/ vectors ~ 10times/sec
- * TODO give that data + positional information (latest x datasets?) to calculateNextMQ()
  * TODO linear interpolation
  * TODO test of speed, either optimize or save data-to-sent in advance
  * TODO optimize interpolation (step size time-dependant)
@@ -19,15 +21,17 @@
 
 class Interpolator {
 public:
-	Interpolator(){};
+	Interpolator();
 
-	MovementQuadruple calculateNextMQ();
+	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, int id);
+/*	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions);*/
 
 protected:
 
 private:
 
-	double speedOfChange; 	// depends on the distance of position to target
+	long int lastUpdated[MAX_NUMBER_OF_QUADCOPTER_HIGH];
+	double stepSizeOfChange; 	// depends on the distance of position to target
 	
 
 };

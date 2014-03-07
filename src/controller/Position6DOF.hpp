@@ -1,8 +1,9 @@
 #ifndef POSITION6DOF_HPP
 #define POSITION6DOF_HPP
+
 #include <time.h>
 #include <cmath>
-
+#include "../matlab/profiling.hpp"
 
 class Position6DOF {
 public:
@@ -11,8 +12,8 @@ public:
 	double* getOrientation();
 	void setPosition(double * position);
 	void setOrientation(double* orientation);
-	time_t getTimestamp();
-	void setTimestamp(time_t newTimestamp);
+	long int getTimestamp();
+	void setTimestamp(long int newTimestamp);
 	Position6DOF(double x, double y, double z, double xOrientation, double yOrientation, double zOrientation);
 	Position6DOF(double x, double y, double z);
 	Position6DOF(){};
@@ -22,7 +23,7 @@ public:
 private:
 	double position[3];
 	double orientation[3];
-	time_t timestamp;
+	long int timestamp;
 };
 
 
