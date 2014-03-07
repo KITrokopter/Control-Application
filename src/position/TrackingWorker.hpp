@@ -1,9 +1,9 @@
 #pragma once
 
-#include <boost/thread.h>
+#include <boost/thread.hpp>
 #include <queue>
-#include <mutex>              // std::mutex, std::unique_lock
-#include <condition_variable> // std::condition_variable
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
 
 #include "IPositionReceiver.hpp"
 #include "../matlab/Vector.h"
@@ -14,6 +14,7 @@ typedef struct {
 	Vector cameraVector;
 	int camNo;
 	int quadcopterId;
+	bool valid;
 } CameraData;
 
 class TrackingWorker {
@@ -24,8 +25,8 @@ private:
 	volatile bool stop;
 
 	std::queue<CameraData> positions;
-	std::mutex mtx;
-	std::condition_variable cv;
+	boost::mutex positionsMutex;
+	boost::condition_variable positionsEmpty;
 	
 	void run();
 	
@@ -38,4 +39,6 @@ public:
 	
 	void updatePosition(Vector cameraVector, int camNo, int quadcopterId);
 	void updatePosition(CameraData cameraData);
+	
+	bool calibrate(ChessboardData *chessboard, int camNo);
 };

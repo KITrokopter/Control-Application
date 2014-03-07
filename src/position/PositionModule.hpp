@@ -20,10 +20,10 @@
 #include "api_application/System.h"
 #include "../controller/Mutex.hpp"
 #include "../matlab/Position.h"
+#include "TrackingWorker.hpp"
 
 class PositionModule {
 private:
-	IPositionReceiver* receiver;
 	bool _isInitialized;
 	bool isRunning;
 	
@@ -37,7 +37,7 @@ private:
 	std::vector<uint64_t> pictureTimes;
 	
 	// Tracking
-	Position tracker;
+	TrackingWorker trackingWorker;
 	/// Maps network ids to camera numbers for the tracker.
 	std::map<int, int> netIdToCamNo;
 	/// Maps camera numbers to net ids.
