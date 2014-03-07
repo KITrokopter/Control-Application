@@ -30,7 +30,6 @@
 #include <sstream>
 #include <stdio.h>
 #include <string>
-#include <time.h>
 #include <unistd.h>
 #include <vector>
 //Ros messages/services

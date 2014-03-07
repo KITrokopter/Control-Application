@@ -506,7 +506,7 @@ void Controller::sendMovementAll()
 	control_application::quadcopter_movement msg;
 	//ROS_INFO("amount %zu",this->movementAll.size());
 	
-	time_t currentTime = time(&currentTime);
+	long int currentTime = getNanoTime();
 	std::vector< MovementQuadruple > newListElement;
 	for(int i = 0; i < movementAll.size(); i++)
 	{
@@ -538,7 +538,7 @@ void Controller::sendMovementAll()
 void Controller::setTargetPosition()
 {
 	
-	time_t currentTime = time(&currentTime);
+	long int currentTime = getNanoTime();
 	Position6DOF newTarget;
 	//Iterate over all quadcopters in formation and set new target considering old target and formation Movement
 	for(int i = 0; i < this->listTargets.size(); i++)
