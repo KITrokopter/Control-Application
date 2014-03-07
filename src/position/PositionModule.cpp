@@ -24,11 +24,9 @@
 
 PositionModule::PositionModule(IPositionReceiver* receiver) : 
 	pictureCache(50), // Assume we never have 50 or more modules running on the network.
-	pictureTimes(50)
+	pictureTimes(50),
+	trackingWorker(receiver)
 {
-	assert(receiver != 0);
-	this->receiver = receiver;
-	
 	ROS_DEBUG("Initializing PositionModule");
 	
 	_isInitialized = true;
@@ -262,7 +260,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	
 	// Delete old calibration results.
 	system("rm -rf /tmp/calibrationResult/*");
-	bool ok = tracker.calibrate(&data, camNumber);
+	bool ok = trackingWorker.calibrate(&data, camNumber);
 	
 	if (ok) {
 		ROS_INFO("Finished multi camera calibration");
@@ -351,7 +349,9 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
 	ROS_DEBUG("msg.ID: %d netIdToCamNo[msg.ID]: %d msg.quadcopterId: %d", msg.ID, netIdToCamNo[msg.ID], msg.quadcopterId);
 	
-	#ifdef QC_PROFILE
+	
+	
+	/*#ifdef QC_PROFILE
 	long int trackingClock = getNanoTime();
 	#endif
 	Vector result = tracker.updatePosition(cameraVector, netIdToCamNo[msg.ID], msg.quadcopterId);
@@ -370,7 +370,7 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
 		receiver->updatePositions(positions, ids, updates);
 	} else {
 		ROS_DEBUG("Not enough information to get position of quadcopter %d", msg.quadcopterId);
-	}
+	}*/
 }
 
 void PositionModule::setPictureSendingActivated(bool activated)
