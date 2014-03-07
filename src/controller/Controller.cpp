@@ -363,7 +363,7 @@ void Controller::land( int internId )
 {
 	this->trackedArrayMutex.lock();
 	//Decline until crazyflie isn't tracked anymore
-	while(tracked[internId] == true)
+	if(tracked[internId] == true)
 	{
 		this->movementAll[internId].setThrust(THRUST_DECLINE);
 	}
@@ -391,6 +391,7 @@ bool Controller::checkInput()
 		if(this->battery_status[i] < LOW_BATTERY && quadcopterMovementStatus[i] != CALCULATE_NONE)
 		{
 			std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
+			ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
 			emergencyRoutine(message);
 		}
 		if(quadcopterMovementStatus[i] != CALCULATE_MOVE && quadcopterMovementStatus[i] != CALCULATE_STABILIZE)
@@ -404,6 +405,7 @@ bool Controller::checkInput()
 		if(currentTime - lastForm > TIME_UPDATED_END)
 		{
 		      std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+		      ROS_INFO("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		      emergencyRoutine(message);
 		      return false;
 		}
@@ -413,6 +415,7 @@ bool Controller::checkInput()
 		if(currentTime - lastCur > TIME_UPDATED_END)
 		{
 		      std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+		      ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		      emergencyRoutine(message);
 		      trackedArrayMutex.lock();
 		      tracked[i] = false;
@@ -436,7 +439,7 @@ bool Controller::checkInput()
  */
 void Controller::emergencyRoutine(std::string message)
 {
-	ROS_INFO("Emergency Routine calles");
+	ROS_INFO("Emergency Routine called");
 	api_application::Message msg;
 	msg.senderID = this->senderID;
 	//Type 2 is a warning message
@@ -545,6 +548,7 @@ void Controller::setTargetPosition()
 		if(!this->trackingArea.contains(vector))
 		{
 			std::string message("Formation Movement is invalid. Quadcopter %i would leave Tracking Area.\n", i);
+			ROS_INFO("Warning:Formation Movement is invalid. Quadcopter %i would leave Tracking Area.");
 			emergencyRoutine(message);
 			return;
 		}
