@@ -110,7 +110,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			continue;	
 		}
 		this->lastCurrentMutex.lock();
-		this->lastCurrent[id] = time(&this->lastCurrent[id]);
+		this->lastCurrent[id] = getNanoTime();
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
 		this->lastCurrentMutex.unlock();
@@ -289,6 +289,12 @@ void Controller::stabilize( int internId )
 	 * dementsprechend für Interpolation setzen (die Raten)
 	 *
 	 */
+	Interpolator interpolator = Interpolator();
+	
+	MovementQuadruple newMovement;
+	this->listPositionsMutex.lock(); 
+	newMovement = interpolator.calculateNextMQ(this->listPositions[internId], this->movementAll[internId]);
+	this->listPositionsMutex.unlock();
 }
 
 bool Controller::isStable( int internId )
@@ -360,7 +366,6 @@ void Controller::land( int internId )
 	if(tracked[internId] == true)
 	{
 		this->movementAll[internId].setThrust(THRUST_DECLINE);
-		sendMovementAll();
 	}
 	this->trackedArrayMutex.unlock();
 	//Shutdown crazyflie after having left the tracking area.
@@ -393,9 +398,9 @@ bool Controller::checkInput()
 		{
 			continue;
 		}
-		time_t currentTime = time(&currentTime);
+		long int currentTime = getNanoTime();
 		this->lastFormationMovementMutex.lock();
-		time_t lastForm = this->lastFormationMovement;
+		long int lastForm = this->lastFormationMovement;
 		this->lastFormationMovementMutex.unlock();
 		if(currentTime - lastForm > TIME_UPDATED_END)
 		{
@@ -405,7 +410,7 @@ bool Controller::checkInput()
 		      return false;
 		}
 		this->lastCurrentMutex.lock();
-		time_t lastCur = this->lastCurrent[i];
+		long int lastCur = this->lastCurrent[i];
 		this->lastCurrentMutex.unlock();
 		if(currentTime - lastCur > TIME_UPDATED_END)
 		{
@@ -486,9 +491,12 @@ void Controller::sendMovementAll()
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
 	//ROS_INFO("amount %zu",this->movementAll.size());
+	
+	time_t currentTime = time(&currentTime);
+	std::vector< MovementQuadruple > newListElement;
 	for(int i = 0; i < movementAll.size(); i++)
 	{
-		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE ) /*FIXME while testing*/
+		if( this->quadcopterMovementStatus[i] != CALCULATE_NONE )
 		{
 			//ROS_INFO("%i",i);
 			msg.thrust = this->movementAll[i].getThrust();
@@ -496,6 +504,15 @@ void Controller::sendMovementAll()
 			msg.pitch = this->movementAll[i].getPitch();
 			msg.yaw = this->movementAll[i].getYawrate();
 			this->Movement_pub[i].publish(msg);		
+			this->movementAll[i].setTimestamp( currentTime );
+
+			// Save Element (TODO only if not too young)
+			this->listSentQuadruples[i].push_back( this->movementAll[i] );
+			if( this->listSentQuadruples[i].size() > 5 )
+			{
+				// Remove oldest elements
+				this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
+			}
 		}
 	}
 	//ROS_INFO("sendMovementAll finished");
@@ -575,16 +592,19 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->movementAll.push_back(newMoveQuad);
 		
 		//Initialization of Arrays of Lists
-		std::list<Position6DOF> newEmptyList;
+		std::list<Position6DOF> newEmptyListPosition;
 		this->listPositionsMutex.lock();
 		this->listTargetsMutex.lock();
 		this->receivedQCStMutex.lock();
-		this->listPositions.push_back(newEmptyList);
-		this->listTargets.push_back(newEmptyList);	      
+		this->listPositions.push_back(newEmptyListPosition);
+		this->listTargets.push_back(newEmptyListPosition);	      
 		this->receivedQuadStatus[i] = false; // received no quadcopter status information
 		this->receivedQCStMutex.unlock();
 		this->listTargetsMutex.unlock();
 		this->listPositionsMutex.unlock();
+
+		std::list<MovementQuadruple> newEmptyListMovement;		
+		this->listSentQuadruples.push_back(newEmptyListMovement);
 		ROS_INFO("Initialization done");
 		
 		//Subscriber to quadcopter status
@@ -598,9 +618,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
   		topicNameMov << "quadcopter_movement_" << id;
 		//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 		this->Movement_pub[i] = this->n.advertise<control_application::quadcopter_movement>(topicNameMov.str().c_str(), 1000);
-		ROS_INFO("QCMovement Topics have been initialized");
-		
-			
+		ROS_INFO("QCMovement Topics have been initialized");			
 	}
 	receivedQCMutex.lock();
 	receivedQuadcopters = true;
@@ -822,7 +840,7 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 	this->formationMovement.push_back(movement);
 	this->formationMovementMutex.unlock();	
 	this->lastFormationMovementMutex.lock();
-	this->lastFormationMovement = time(&this->lastFormationMovement);
+	this->lastFormationMovement = getNanoTime();
 	this->lastFormationMovementMutex.unlock();
 	//calculate and set a new target position each time there is new data
 	this->buildFormationMutex.lock();
