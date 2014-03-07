@@ -39,6 +39,7 @@ Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> se
 	double deltaSpeed[positions.size()-2];	// equals acceleration	/* error-prone FIXME */
 	int counter = 0;
 	Position6DOF positionA, positionB;	// positionA is older than positionB
+//	long int timeA, timeB;	// timeA is older than timeB
 	for(std::list<Position6DOF>::positions it = positions.begin(); it != positions.end(); ++it)
 	{
 		positionA = it;
@@ -47,8 +48,9 @@ Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> se
 			deltaPosition[i-1] = 
 			if( counter > 1 )
 			{
-				double
-				deltaSpeed[i-2] = 
+				double speedDelta = deltaPosition[i-1] - deltaPosition[i-1];	// FIXME
+				double timeDelta = positionB.getTimestamp() - positionA.getTimestamp();
+				deltaSpeed[i-2] = speedDelta / timeDelta;
 			}
 		} 
 		positionB = positionA;
