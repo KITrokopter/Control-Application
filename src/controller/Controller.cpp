@@ -294,9 +294,8 @@ void Controller::stabilize( int internId )
 	 */
 	Interpolator interpolator = Interpolator();
 	
-	MovementQuadruple newMovement;
 	this->listPositionsMutex.lock(); 
-	newMovement = interpolator.calculateNextMQ(this->listPositions[internId], this->movementAll[internId]);
+	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listPositions[internId], this->movementAll[internId]);
 	this->listPositionsMutex.unlock();
 }
 
