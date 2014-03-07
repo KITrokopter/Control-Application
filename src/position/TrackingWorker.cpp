@@ -29,7 +29,7 @@ void TrackingWorker::run()
 		CameraData data = dequeue();
 		
 		if (data.valid) {
-			ROS_DEBUG("Got valid data");
+			// ROS_DEBUG("Got valid data");
 			receivedFirstPosition = true;
 			Vector position = tracker.updatePosition(data.cameraVector, data.camNo, data.quadcopterId);
 			
@@ -46,7 +46,7 @@ void TrackingWorker::run()
 				ROS_DEBUG("Not enough information to get position of quadcopter %d", data.quadcopterId);
 			}
 		} else if (receivedFirstPosition == true) {
-			ROS_WARN("Position update buffer is empty!");
+			// ROS_WARN("Position update buffer is empty!");
 		}
 	}
 	
@@ -71,7 +71,7 @@ void TrackingWorker::updatePosition(CameraData data)
 
 void TrackingWorker::enqueue(CameraData data)
 {
-	ROS_DEBUG("Inserting CameraData");
+	// ROS_DEBUG("Inserting CameraData");
 	
 	{
 		boost::mutex::scoped_lock lock(positionsMutex);
@@ -82,26 +82,24 @@ void TrackingWorker::enqueue(CameraData data)
 		}
 	}
 	
-	ROS_DEBUG("Notifying about new CameraData");
+	// ROS_DEBUG("Notifying about new CameraData");
 	
 	positionsEmpty.notify_one();
 	
-	ROS_DEBUG("Finished insertion process");
+	// ROS_DEBUG("Finished insertion process");
 }
 
 CameraData TrackingWorker::dequeue()
 {
-	ROS_DEBUG("Getting positions lock");
+	// ROS_DEBUG("Getting positions lock");
 	
 	{
 		boost::mutex::scoped_lock lock(positionsMutex);
 		
-		ROS_DEBUG("Got positions lock");
+		// ROS_DEBUG("Got positions lock");
 		
 		if (!dataAvailable()) {
-			ROS_DEBUG("Waiting...");
 			positionsEmpty.timed_wait(lock, boost::get_system_time() + boost::posix_time::milliseconds(100));
-			ROS_DEBUG("Finished waiting");
 		}
 		
 		if (dataAvailable()) {
@@ -115,7 +113,7 @@ CameraData TrackingWorker::dequeue()
 		}
 	}
 	
-	ROS_DEBUG("Released positions lock");
+	// ROS_DEBUG("Released positions lock");
 }
 
 bool TrackingWorker::dataAvailable()
