@@ -35,11 +35,23 @@ Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> se
 	}
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
-	double deltaPosition[positions.size()-1];
+	double deltaPosition[positions.size()-1];	// equals speed	/* error-prone FIXME */
+	double deltaSpeed[positions.size()-2];	// equals acceleration	/* error-prone FIXME */
 	int counter = 0;
+	Position6DOF positionA, positionB;	// positionA is older than positionB
 	for(std::list<Position6DOF>::positions it = positions.begin(); it != positions.end(); ++it)
 	{
-		
+		positionA = it;
+		if( counter > 0 )
+		{
+			deltaPosition[i-1] = 
+			if( counter > 1 )
+			{
+				double
+				deltaSpeed[i-2] = 
+			}
+		} 
+		positionB = positionA;
 		counter++;
 	}
 
