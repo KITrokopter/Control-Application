@@ -161,7 +161,7 @@ void Position::angleTry(int sign) {
     Line xAxis = *(new Line(origin, x));
     // works if E isn't already on the x axis or the y axis
     Line intersectionLine = m->getIntersectionLine(cameras, c, xAxis, y);
-    //printf("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
+    ROS_DEBUG("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
 
 
     Vector n = intersectionLine.getU().mult(1/intersectionLine.getU().getLength());
@@ -183,19 +183,21 @@ Vector Position::calculateCoordinateTransformation(Vector w, int cameraId) {
         if (transformed == false) {
             angleTry(1);
 
-            // checking, whether the result of the z value is nearly 0, if you rotate the first camera in coordinate system of camera 0
-            Vector firstCam = realCameraPos[1];
+            // checking, whether the result of the z value is nearly 0, if you rotate the first camera in coordinate system of camera 0   
+            loadValues(1);
+            mxArray *r = engGetVariable(ep, "T");
+            Vector firstCam = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
             firstCam.putVariable("firstCam", ep);
             engEvalString(ep, "result = rotationMatrix * firstCam';");
-            mxArray* result = engGetVariable(ep, "result");
-            if (!((mxGetPr(result)[2] < 0.5) && (mxGetPr(result)[2] > -0.5))) {
+            r = engGetVariable(ep, "result");
+            ROS_DEBUG("first calculation of transformation matrix, camera 1 would be at position [%f, %f, %f]", mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]);
+            if (!((mxGetPr(r)[2] < 1) && (mxGetPr(r)[2] > -1))) {
                 // if value is wrong, the angle has to be negativ
                 angleTry(-1);
             }
-            mxDestroyArray(result);
-            mxArray *r = engGetVariable(ep, "rotationMatrix");
+            r = engGetVariable(ep, "rotationMatrix");
             rotationMatrix = *(new Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxGetPr(r)[8]));
-
+            mxDestroyArray(r);
             this->transformed = true;
         }
         // calculate rotationMatrix * vector in camera system 0
