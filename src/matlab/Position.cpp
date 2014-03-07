@@ -227,6 +227,7 @@ void Position::loadValues(int cameraId) {
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
+    ROS_DEBUG("updating Position");
     Vector direction;
     if (cameraId == -1) {
         Vector nan = *(new Vector(NAN, NAN, NAN));

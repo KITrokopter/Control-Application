@@ -83,12 +83,8 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 
 
     // first checking, whether the lines are parallel
-    if ( (((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV1() != 0) && (g.getU().getV1() != 0)))
-         && (((f.getU().getV2() == 0) && (g.getU().getV2() == 0)) || ((f.getU().getV2() != 0) && (g.getU().getV2() != 0)))
-         && (((f.getU().getV3() == 0) && (g.getU().getV3() == 0)) || ((f.getU().getV3() != 0) && (g.getU().getV3() != 0))) ) {
-        return 0;
-    } else if (f.getU().getV1()/g.getU().getV1() == f.getU().getV2()/g.getU().getV2() == f.getU().getV3()/g.getU().getV3()) {
-        return 0;
+    if (f.getU().isLinearDependent(g.getU())) {
+            return 0;
     }
     // aren't parallel, need to check, whether intersect. has to make sure, that A has a complement.
     // A*x = bb, x = (r, s)

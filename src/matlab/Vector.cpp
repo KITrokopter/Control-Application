@@ -133,11 +133,23 @@ bool Vector::isValid() {
 }
 
 bool Vector::isLinearDependent(Vector u) {
-    if ((v1 == 0) && (u.getV1() == 0) && (v2 == 0) && (u.getV2() == 0) && (v3 == 0) && (u.getV3() == 0)) {
+    // checking, if one vector value is 0, if the other is also 0
+    if ( !(((v1 == 0) && (u.getV1() == 0)) || ((v1 != 0) && (u.getV1() != 0)))
+        && (((v2 == 0) && (u.getV2() == 0)) || ((v1 != 0) && (u.getV2() != 0)))
+        && (((v3 == 0) && (u.getV3() == 0)) || ((v1 != 0) && (u.getV3() != 0))) ) {
         return true;
-    } else if ( (((v1 == 0) && (u.getV1() == 0)) || ((v1 != 0) && (u.getV1() != 0)))
-            && (((v2 == 0) && (u.getV2() == 0)) || ((v1 != 0) && (u.getV2() != 0)))
-            && (((v3 == 0) && (u.getV3() == 0)) || ((v1 != 0) && (u.getV3() != 0))) ) {
+    // checking, if two values of both vectors are 0 and the third is equal
+    } else if ( (((v1 == 0) && (v2 == 0)) && (v3 = u.getV3())) || (((v1 == 0) && (v3 == 0)) && (v2 = u.getV2())) || (((v2 == 0) && (v3 == 0)) && (v1 = u.getV1())) ) {
         return true;
+    } else if ((v1 == 0) && (v2/u.getV2() == v3/ u.getV3())) {
+        return true;
+    } else if ((v2 == 0) && (v1/u.getV1() == v3/u.getV3())) {
+        return true;
+    } else if ((v3 == 0) && (v1/u.getV1() == v2/u.getV2())) {
+        return true;
+    } else if ((v1/u.getV1() == v2/u.getV2()) && (v1/u.getV1() == v3/u.getV3())) {
+        return true;
+    } else {
+        return false;
     }
 }
