@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <time.h>
+#include <sys/time.h>
 #include <MovementQuadruple.hpp>
 
 #define MAX_STEPS_IN_ADVANCE 1 	// How delayed is the input?

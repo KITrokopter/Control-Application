@@ -12,12 +12,12 @@ Interpolator::Interpolator()
 Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, int id)
 {
 
-	if( sentQuadruples.size() == 0 ) // FIXME
+	if( sentQuadruples.size() == 0 )
 	{
 		return MovementQuadruple(THRUST_START, 0, 0, 0);
 	}
 	
-	MovementQuadruple newMovement = sentQuadruples.last();  // FIXME
+	MovementQuadruple newMovement = sentQuadruples.back();
 	/* get current Time */
 	
 	if( id >= MAX_NUMBER_OF_QUADCOPTER_HIGH ) 
@@ -35,6 +35,7 @@ Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> se
 	}
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
+	double deltaPosition[positions.size()]
 	int counter = 0;
 	for(std::list<Position6DOF>::positions it = positions.begin(); it != positions.end(); ++it)
 	{
