@@ -91,7 +91,7 @@ void Controller::initialize()
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
 {
 		
-	ROS_INFO("Update Position");
+	//ROS_INFO("Update Position");
 	if(!receivedQuadcopters || !receivedFormation)
 	{
 		return;
@@ -154,7 +154,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		}
 		this->listPositionsMutex.unlock();
 	}	
-	ROS_INFO("Update Position finished");	
+	//ROS_INFO("Update Position finished");	
 }
 
 

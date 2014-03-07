@@ -37,36 +37,46 @@ int main(int argc, char** argv) {
 	//spinner.spin(); // spin() will not return until the node has been shutdown
 	
 	usleep(50000000);
-	
+	ROS_INFO("Updating");
 	std::vector<int> ids;
-	id.push_back(0);
+	ids.push_back(0);
 	for(int i = 0; i < 5; i++)
 	{
-	  receiver->updatePositions(from, ids, NULL);
+	  receiver->updatePositions(from, ids, ids);
 	  usleep(100);
 	}
-	from.push_back(Vector(1,1,2);
-	id.push_back(1);
+	from.push_back(Vector(1,1,2));
+	ids.push_back(1);
 	for(int i = 0; i < 5; i++)
 	{
-	  receiver->updatePositions(from, ids, NULL);
+	  receiver->updatePositions(from, ids, ids);
 	  usleep(100);
 	}
-	from.push_back(Vector(1,0,0);
-	id.push_back(2);
+	from.push_back(Vector(1,0,0));
+	ids.push_back(2);
 	for(int i = 0; i < 5; i++)
 	{
-	  receiver->updatePositions(from, ids, NULL);
+	  receiver->updatePositions(from, ids, ids);
 	  usleep(100);
 	}
-	from.push_back(Vector(1,0,0);
-	id.push_back(3);
+	from.push_back(Vector(1,0,0));
+	ids.push_back(3);
 	for(int i = 0; i < 5; i++)
 	{
-	  receiver->updatePositions(from, ids, NULL);
+	  receiver->updatePositions(from, ids, ids);
 	  usleep(100);
 	}
-	usleep(1000000);
+	ROS_INFO("Wait");
+	usleep(4000000);
+	ROS_INFO("Long Update");
+	for(int i = 0; i < 1000000; i++)
+        {
+          receiver->updatePositions(from, ids, ids);
+          usleep(2000);
+        }
+	ROS_INFO("Wait");
+        usleep(10000000);
+	ROS_INFO("Finished");
 	// See MovementGenerator.hpp
 	/*MovementGenerator generator(receiver, from, to, 0.05, 0.1, 0.01, 25, 10);
 	ROS_INFO("Generating");
