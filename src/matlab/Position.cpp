@@ -8,6 +8,7 @@
 #include "engine.h"
 #include "Vector.h"
 #include "Line.h"
+#include "Matrix.h"
 #include "Matlab.h"
 #include "AmccCalibration.h"
 #include <vector>
@@ -26,14 +27,20 @@ Position::Position()
         this->ep = ep;
     }
     Vector nan = *(new Vector(NAN, NAN, NAN));
+    Matrix nanMatrix = *(new Matrix(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN));
     // if quadcopter maximal amount is higher than 50, you should change the range of i
     for (int i = 0; i < 50; i++) {
         std::vector<Vector> h(20, nan);
         quadPos.push_back(h);
         oldPos.push_back(nan);
+        camCoordCameraPos.push_back(nan);
+        camCoordCameraOrient.push_back(nan);
+        camRotMat.push_back(nanMatrix);
+        realCameraPos.push_back(nan);
+        realCameraOrient.push_back(nan);
     }
+    rotationMatrix = nanMatrix;
     this->transformed = false;
-    this->calibrated = false;
 
 }
 
@@ -42,13 +49,19 @@ Position::Position(Engine *ep, int numberCameras)
     this->numberCameras = numberCameras;
     this->ep = ep;
     Vector nan = *(new Vector(NAN, NAN, NAN));
+    Matrix nanMatrix = *(new Matrix(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN));
     for (int i = 0; i < 50; i++) {
         std::vector<Vector> h(20, nan);
         quadPos.push_back(h);
         oldPos.push_back(nan);
+        camCoordCameraPos.push_back(nan);
+        camCoordCameraOrient.push_back(nan);
+        camRotMat.push_back(nanMatrix);
+        realCameraPos.push_back(nan);
+        realCameraOrient.push_back(nan);
     }
+    rotationMatrix = nanMatrix;
     this->transformed = false;
-    this->calibrated = false;
 }
 
 bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
@@ -93,13 +106,12 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     // saves all position and orientation vectors in matlab
     if (ok) {
         for (int i = 0; i < numberCameras; i++) {
-            getOrientation(i);
-            getPosition(i);
+            calculateOrientation(i);
+            calculatePosition(i);
         }
-        this->calibrated = true;
-        Vector v0 = getPosition(0);
-        Vector v1 = getPosition(1);
-        Vector v2 = getPosition(2);
+        Vector v0 = realCameraPos[0];
+        Vector v1 = realCameraPos[1];
+        Vector v2 = realCameraPos[2];
 
         ROS_DEBUG("Position camera 0: [%f, %f, %f]", v0.getV1(), v0.getV2(), v0.getV3());
         ROS_DEBUG("Position camera 1: [%f, %f, %f]", v1.getV1(), v1.getV2(), v1.getV3());
@@ -126,9 +138,16 @@ void Position::angleTry(int sign) {
     // Plain of the cameras E = a + r * u + s * (c - a)
     // as a is always the origin, E intersects the xy-plain in the origin => translation vector is not neccesary
     Matlab *m = new Matlab(ep);
-    Vector a = getPositionInCameraCoordination(0);
-    Vector b = getPositionInCameraCoordination(1);
-    Vector c = getPositionInCameraCoordination(2);
+
+    // a, b, c are the positions of camera 0, 1, 2 in camera coordinate system 0 (might not be calculated yet)
+    Vector a = *(new Vector(0, 0, 0));
+    loadValues(1);
+    mxArray *r = engGetVariable(ep, "T");
+    Vector b = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
+    loadValues(2);
+    r = engGetVariable(ep, "T");
+    Vector c = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
+    mxDestroyArray(r);
     Vector u = b.add(a.mult(-1));
     Vector v = c.add(a.mult(-1));
 
@@ -142,7 +161,7 @@ void Position::angleTry(int sign) {
     Line xAxis = *(new Line(origin, x));
     // works if E isn't already on the x axis or the y axis
     Line intersectionLine = m->getIntersectionLine(cameras, c, xAxis, y);
-    //printf("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
+    ROS_DEBUG("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
 
 
     Vector n = intersectionLine.getU().mult(1/intersectionLine.getU().getLength());
@@ -156,7 +175,7 @@ void Position::angleTry(int sign) {
 }
 
 // calculates Vector in the calibration coordinate of camera 0 in the real camera coordination
-Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
+Vector Position::calculateCoordinateTransformation(Vector w, int cameraId) {
     if (cameraId == -1) {
         Vector nan = *(new Vector(NAN, NAN, NAN));
         return nan;
@@ -164,27 +183,26 @@ Vector Position::getCoordinationTransformation(Vector w, int cameraId) {
         if (transformed == false) {
             angleTry(1);
 
-            // checking, whether the result of the z value is nearly 0, if you rotate the first camera in coordinate system of camera 0
-            Vector firstCam = getPositionInCameraCoordination(1);
+            // checking, whether the result of the z value is nearly 0, if you rotate the first camera in coordinate system of camera 0   
+            loadValues(1);
+            mxArray *r = engGetVariable(ep, "T");
+            Vector firstCam = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
             firstCam.putVariable("firstCam", ep);
             engEvalString(ep, "result = rotationMatrix * firstCam';");
-            mxArray* result = engGetVariable(ep, "result");
-            if (!((mxGetPr(result)[2] < 0.5) && (mxGetPr(result)[2] > -0.5))) {
+            r = engGetVariable(ep, "result");
+            ROS_DEBUG("first calculation of transformation matrix, camera 1 would be at position [%f, %f, %f]", mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]);
+            if (!((mxGetPr(r)[2] < 1) && (mxGetPr(r)[2] > -1))) {
                 // if value is wrong, the angle has to be negativ
                 angleTry(-1);
             }
+            r = engGetVariable(ep, "rotationMatrix");
+            rotationMatrix = *(new Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxGetPr(r)[8]));
+            mxDestroyArray(r);
             this->transformed = true;
-       }
-
-        w.putVariable("cameraCoordinationPos", ep);
+        }
         // calculate rotationMatrix * vector in camera system 0
-        engEvalString(ep, "result = rotationMatrix * cameraCoordinationPos';");
-        mxArray* result = engGetVariable(ep, "result");
-        Vector r = *(new Vector(mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]));
-        mxDestroyArray(result);
-        return r;
+        return w.aftermult(rotationMatrix);
     }
-
 }
 
 void Position::setNumberCameras(int numberCameras) {
@@ -192,8 +210,6 @@ void Position::setNumberCameras(int numberCameras) {
 }
 
 void Position::loadValues(int cameraId) {
-    int i;
-    mxArray* notSupp;
     if (cameraId == 0) {
         // loads resulting file in matlab workspace
         engEvalString(ep, "load('/tmp/calibrationResult/Calib_Results_0.mat');");
@@ -208,28 +224,23 @@ void Position::loadValues(int cameraId) {
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
-    Vector pos;
+    Vector direction;
     if (cameraId == -1) {
-        Vector pos = *(new Vector(NAN, NAN, NAN));
-        return pos;
-    }
-    else if (cameraId != 0) {
-        std::string result;
-        std::ostringstream id;
-        id << cameraId;
-        quad.putVariable("quad", ep);
-        result = "pos = (quad * rodrigues(rotMatCamCoord_" + id.str() + "))' + transVectCamCoord_" + id.str();
-        engEvalString(ep, result.c_str());
-        mxArray *position = engGetVariable(ep, "pos");
-        pos = *(new Vector(mxGetPr(position)[0], mxGetPr(position)[1], mxGetPr(position)[2]));
-        pos = getCoordinationTransformation(pos, cameraId);
-        mxDestroyArray(position);
-    } else {
-        pos = getCoordinationTransformation(quad, cameraId);
+        Vector nan = *(new Vector(NAN, NAN, NAN));
+        return nan;
     }
 
+    // rotating coordinate system in coordinate system of camera 0 and then in real coordination system
+    // direction = rotationMatrix * (quad * camRotMat)
+    direction = (quad.premult(camRotMat[cameraId])).aftermult(rotationMatrix);
+
+
+
+
+    // save result
+    (quadPos[quadcopterId])[cameraId] = direction;
+
     // controlling whether all cameras already tracked the quadcopter once
-   /// if (quadPos[quadcopterId].size() < numberCameras) {
     int valid = 0;
     for (int i = 0; i < numberCameras; i++) {
         if (quadPos[quadcopterId][i].isValid()) {
@@ -237,23 +248,20 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
         }
     }
     if (valid != numberCameras) {
-        /// default value, when not all cameras did track it
-        // save result
-        (quadPos[quadcopterId])[cameraId] = pos;
-        ROS_DEBUG("Not all cameras did track quadcopter %d yet. Camera %d tracked it at position [%f, %f, %f]\n", quadcopterId, cameraId, pos.getV1(), pos.getV2(), pos.getV3());
+        // default value, when not all cameras tracked it yet
+        ROS_DEBUG("Not all cameras did track quadcopter %d yet. Camera %d tracked it at position [%f, %f, %f]\n", quadcopterId, cameraId, direction.getV1(), direction.getV2(), direction.getV3());
         Vector nan = *(new Vector(NAN, NAN, NAN));
         return nan;
     } else {
-        // save result
-        (quadPos[quadcopterId])[cameraId] = pos;
         // not calculated before, first time calculating
         if (!(oldPos[quadcopterId].isValid())) {
 
             // building lines from camera position to quadcopter position
             Line *quadPositions = new Line[numberCameras];
             for (int i = 0; i < numberCameras; i++) {
-                Vector position = getPosition(i);
-                quadPositions[i] = *(new Line(position, (quadPos[quadcopterId])[i].add(position.mult(-1))));
+                Vector camPos = getPosition(i);
+                quadPositions[i] = *(new Line(camPos, quadPos[quadcopterId][i]));
+                printf("%d: [%f, %f, %f] + r * [%f, %f, %f]\n", i, camPos.getV1(), camPos.getV2(), camPos.getV3(), quadPos[quadcopterId][i].getV1(), quadPos[quadcopterId][i].getV2(), quadPos[quadcopterId][i].getV3());
             }
 
             Matlab *m = new Matlab(ep);
@@ -265,10 +273,11 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             return quadPosition;
         } else {
             Matlab *m = new Matlab(ep);
-            // interpolation factor has to be tested.
+
+            // interpolation factor should be tested.
             Vector position = getPosition(cameraId);
             // line from camera to tracked object
-            Line tracked = *(new Line(position, pos.add(position.mult(-1))));
+            Line tracked = *(new Line(position, direction));
             // calulating actual pos
             Vector newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
             // saving new Pos
@@ -279,134 +288,38 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
     }
 }
 
-
-Vector Position::getPositionInCameraCoordination(int cameraId) {
-    Vector translation;
-    if (cameraId == -1) {
-        translation = *(new Vector(NAN, NAN, NAN));
+void Position::calculatePosition(int cameraId) {
+    if (cameraId != -1) {
+        if (cameraId != 0) {
+            loadValues(cameraId);
+            mxArray *r = engGetVariable(ep, "T");
+            camCoordCameraPos[cameraId] = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
+            mxDestroyArray(r);
+        } else {
+            // camera 0 is at the origin and looks down the positive z axis
+            camCoordCameraPos[0] = *(new Vector(0, 0, 0));
+        }
+        realCameraPos[cameraId] = calculateCoordinateTransformation(camCoordCameraPos[cameraId], cameraId);
     }
-    else if (cameraId != 0) {
-        loadValues(cameraId);
-        std::string result;
-        mxArray *tV = engGetVariable(ep, "T");
-        std::ostringstream id;
-        id << cameraId;
-        result = "transVectCamCoord_" + id.str() + " = T";
-        engEvalString(ep, result.c_str());
-        translation = *(new Vector(mxGetPr(tV)[0], mxGetPr(tV)[1], mxGetPr(tV)[2]));
-        mxDestroyArray(tV);
-     } else {
-        // camera 0 is at the origin and looks down the positive z axis
-        translation = *(new Vector(0, 0, 0));
-        engEvalString(ep, "transVectCamCoord_0 = [0, 0, 0]");
-    }
-    return translation;
 }
 
 Vector Position::getPosition(int cameraId) {
-    Vector translation;
-    if (cameraId == -1) {
-        translation = *(new Vector(NAN, NAN, NAN));
-    }
-    else if (!(calibrated)) {
-        if (cameraId == 0) {
+    return this->realCameraPos[cameraId];
+}
+
+void Position::calculateOrientation(int cameraId) {
+    if (cameraId != -1) {
+        if (cameraId != 0) {
+            loadValues(cameraId);
+            mxArray *r = engGetVariable(ep, "R");
+            camRotMat[cameraId] = *(new Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxGetPr(r)[8]));
+            engEvalString(ep, "R = rodrigues(R)");
+            camCoordCameraOrient[cameraId] = *(new Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]));
+        } else {
             // camera 0 is at the origin and looks down the positive z axis
-            translation = *(new Vector(0, 0, 0));
-            Vector v = getCoordinationTransformation(translation,cameraId);
-            std::string var;
-            var = "cameraPosition_0";
-            v.putVariable(var.c_str(), ep);
-            translation = v;
-        } else {
-            translation = getPositionInCameraCoordination(cameraId);
-            Vector v = getCoordinationTransformation(translation, cameraId);
-            std::string var;
-            std::ostringstream id;
-            id << cameraId;
-            var = "cameraPosition_" + id.str();
-            id.str("");
-            id.clear();
-            v.putVariable(var.c_str(), ep);
-            translation = v;
+            camRotMat[0] = *(new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1));
+            camCoordCameraOrient[0] = *(new Vector(0, 0, 1));
         }
-     } else {
-        std::string var;
-        std::ostringstream id;
-        id << cameraId;
-        var = "cameraPosition_" + id.str();
-        id.str("");
-        id.clear();
-        mxArray* trans = engGetVariable(ep, var.c_str());
-        translation = *(new Vector(mxGetPr(trans)[0], mxGetPr(trans)[1], mxGetPr(trans)[2]));
-        mxDestroyArray(trans);
+        realCameraOrient[cameraId] = calculateCoordinateTransformation(camCoordCameraOrient[cameraId], cameraId);
     }
-    return translation;
-}
-
-Vector Position::getOrientationInCameraCoordination(int cameraId) {
-    Vector orientation;
-    if (cameraId == -1) {
-        orientation = *(new Vector(NAN, NAN, NAN));
-    }
-    else if (cameraId != 0) {
-        loadValues(cameraId);
-        std::string result;
-        std::ostringstream id;
-        id << cameraId;
-        result = "rotMatCamCoord_" + id.str() + " = rodrigues(R);";
-        engEvalString(ep, result.c_str());
-        result = "rotMatCamCoord_" + id.str();
-        mxArray *oV = engGetVariable(ep, result.c_str());
-        orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
-        mxDestroyArray(oV);
-    } else {
-        // camera 0 is at the origin and looks down the positive z axis
-        orientation = *(new Vector(0, 0, 1));
-        engEvalString(ep, "rotMatCamCoord_0 = [0, 0, 1]");
-    }
-    return orientation;
-}
-
-Vector Position::getOrientation(int cameraId) {
-    Vector orientation;
-    if (cameraId == -1) {
-        orientation = *(new Vector(NAN, NAN, NAN));
-    }
-    else {
-        if (!(calibrated)) {
-            if (cameraId == 0) {
-                orientation = getOrientationInCameraCoordination(cameraId);
-                // saving orientation in cameraOrientation_cameraIs
-                Vector v = getCoordinationTransformation(orientation, cameraId);
-                std::string var;
-                var = "cameraOrientation_0";
-                v.putVariable(var.c_str(), ep);
-                orientation = v;
-            }
-            else {
-                orientation = getOrientationInCameraCoordination(cameraId);
-                // saving orientation in cameraOrientation_cameraIds
-                Vector v = getCoordinationTransformation(orientation, cameraId);
-                std::string var;
-                std::ostringstream id;
-                id << cameraId;
-                var = "cameraOrientation_" + id.str();
-                id.str("");
-                id.clear();
-                v.putVariable(var.c_str(), ep);
-                orientation = v;
-            }
-        } else {
-            std::string var;
-            std::ostringstream id;
-            id << cameraId;
-            var = "cameraOrientation_" + id.str();
-            id.str("");
-            id.clear();
-            mxArray* oV = engGetVariable(ep, var.c_str());
-            orientation = *(new Vector(mxGetPr(oV)[0], mxGetPr(oV)[1], mxGetPr(oV)[2]));
-            mxDestroyArray(oV);
-        }
-    }
-    return orientation;
 }

@@ -10,6 +10,7 @@
 
 #include "engine.h"
 #include <string>
+#include "Matrix.h"
 
 
 class Vector {
@@ -25,6 +26,10 @@ public:
 	void setV3(double v3);
 	Vector add(Vector a);
 	Vector mult(double a);
+	// calculates Vector * Matrix
+	Vector premult(Matrix A);
+	// calculates Matrix * Vector
+	Vector aftermult(Matrix A);
 	int scalarMult(Vector a);
     	double getLength();
     	void putVariable(std::string a, Engine *ep);

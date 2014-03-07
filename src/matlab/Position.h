@@ -5,6 +5,7 @@
 #include "../position/ChessboardData.hpp"
 #include "Vector.h"
 #include "Line.h"
+#include "Matrix.h"
 #include "Matlab.h"
 #include "AmccCalibration.h"
 #include "engine.h"
@@ -18,8 +19,7 @@ private:
 	int numberCameras;
 	// saves whether the cameras are multicalibrated or not;
 	bool transformed;
-	// saves whether the position and translation is calculated of all cameras;
-	bool calibrated;
+
 	/* 
 	 * (quadPos[i])[j] is the position of quadrocopter with ID i and camera with ID j
 	 *  default value is nan, maximum amount of quadcopter is 50, of cameras is 20
@@ -30,25 +30,34 @@ private:
 	 * maximum amount of quadcopters is 50
 	 */ 
 	std::vector<Vector> oldPos;
+	
 
-	/* 
-		Variables saved in matlab:
+	// output of amcc toolbox
+	// camera position in camera coordinate system of camera 0
+	std::vector<Vector> camCoordCameraPos;
+	// camera orientation in camera coordinate system of camera 0
+	std::vector<Vector> camCoordCameraOrient;
+	// camera rotation matrices of cameras to rotate in coordinate system of camera 0
+	std::vector<Matrix> camRotMat;
 
-		cameraPosition_cameraId: real position of camera with cameraId
-		cameraOrientation_cameraId: real orientation of camera with cameraId
 
-		rotationMatrix: rotationmatrix to calculate camera system of camera 0 to real coordinate system
+	// calculated of results of amcc toolbox
+	// real position of cameras
+	std::vector<Vector> realCameraPos;
+	// real orientation of cameras
+	std::vector<Vector> realCameraOrient;
+	// rotationmatrix to calculate coordinate system of camera 0 to real coordinate system	
+	Matrix rotationMatrix;
 
-		camera values in camera coordinate system with cameraId
-		rotMatCamCoord_cameraId: rodrigues(omc_left_x)
-		transVectCamCoord_cameraId
+	/// calculates camera position, that is saved in realCameraPos[cameraId]
+    	void calculatePosition(int cameraId);
+	/// calculates orientation, that is saved in realCameraOrient[cameraId]
+	void calculateOrientation(int cameraId);
 
-		camera values in real coordinationsystem
-		rotationMatrixCamera_cameraId: rotationmatrix of camera with cameraId, is rodrigues(omc_left_x)
-		translationVectorCamera_cameraId: translation vector of camera with cameraId, is Tc_left_x
-		(x is first not supressed image)
-	*/
-
+	// transforming coordinate system with positiv or negative angle (sign should only be -1 or 1)	
+	void angleTry(int sign);
+	// loads values of amcc toolbox calibration of camera with cameraId in matlab workspace
+    	void loadValues(int cameraId);
 public:
 	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
     	Position();
@@ -61,24 +70,16 @@ public:
 	// setter
 	void setNumberCameras(int numberCameras);
 
-	// transforming coordinate system with positiv or negative angle (sign should only be -1 or 1)	
-	void angleTry(int sign);	
-	// transforming coordinate system of camera 0 to coordinate system where all cameras are on the xy-plane 
-	Vector getCoordinationTransformation(Vector w, int cameraId);
+		
+	// transforming coordinate system of camera 0 to coordinate system where all cameras are on the xy-plane, returns vector w in real co-system
+	Vector calculateCoordinateTransformation(Vector w, int cameraId);
 
 	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet	
         Vector updatePosition(Vector quad, int cameraId, int quadcopterId);
-	/// should only be called once, loads the output of the position of a camera in coordinate system of camera 0
-        Vector getPositionInCameraCoordination(int cameraId);
-	/// should only be called once, loads the output of the orientation of a camera in coordinate system of camera 0   
-	Vector getOrientationInCameraCoordination(int cameraId);
-	/// should only be called once, value is saved in variable cameraPosition_cameraId, is in real coordinate system
-	Vector getPosition(int cameraId);
-	/// should only be called once, value is saved in variable cameraOrientation_cameraId, is in real coordinate system
-	Vector getOrientation(int cameraId);
+
 	
-	// loads values of amcc toolbox calibration of camera with cameraId in matlab workspace
-    	void loadValues(int cameraId);
+	// returns position of camera with cameraId, returns NAN, if not yet calibrated
+	Vector getPosition(int cameraId);
 };
 
 #endif // POSITION_H //
