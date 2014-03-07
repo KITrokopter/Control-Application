@@ -21,6 +21,8 @@ TrackingWorker::~TrackingWorker()
 
 void TrackingWorker::run()
 {
+	ROS_INFO("Started tracking thread");
+	
 	while (!stop) {
 		CameraData data = dequeue();
 		
@@ -41,6 +43,8 @@ void TrackingWorker::run()
 			}
 		}
 	}
+	
+	ROS_INFO("Stopped tracking thread");
 }
 
 void TrackingWorker::updatePosition(Vector cameraVector, int camNo, int quadcopterId)
