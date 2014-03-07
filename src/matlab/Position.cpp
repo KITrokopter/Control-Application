@@ -73,7 +73,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     }
     
     AmccCalibration *calib = new AmccCalibration(ep);
-    //calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
+    calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
 
     // checking whether calibration did work (trying to load all output files)
     mxArray *good;
@@ -230,8 +230,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
 
     // rotating coordinate system in coordinate system of camera 0 and then in real coordination system
     // direction = rotationMatrix * (quad * camRotMat)
-    //direction = (quad.premult(camRotMat[cameraId])).aftermult(rotationMatrix);
-    direction = quad;
+    direction = (quad.premult(camRotMat[cameraId])).aftermult(rotationMatrix);
 
 
 

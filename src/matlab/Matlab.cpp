@@ -81,6 +81,11 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 
     /*
      * wrong checking!! has to check, whether first and second line/row are multiples from each other!!!
+     *
+     * isMultiple(v, u) {
+     *
+     *
+     *
      */
 
     if (((f.getU().getV1() != 0) && (g.getU().getV1() != 0)) && ((f.getU().getV2() != 0) && (g.getU().getV2() != 0)) && ((f.getU().getV1() != 0) && (f.getU().getV2() != 0)) && ((g.getU().getV1() != 0) && (g.getU().getV2() != 0))) {
