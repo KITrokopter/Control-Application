@@ -10,7 +10,7 @@ Interpolator::Interpolator()
 	}
 }
 
-MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id)
+MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF target, int id)
 {
 
 	if( sentQuadruples.size() == 0 )
@@ -43,8 +43,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 //	long int timeA, timeB;	// timeA is older than timeB
 	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
-		//positionA = it;
-		/*if( counter > 0 )
+		positionA.setOrientation( it.getOrientation() );
+		positionA.setPosition( it.getPosition() );
+		positionA.setTimestamp( it.getOrientation() );
+		if( counter > 0 )
 		{
 			deltaPosition[counter-1] = 
 			if( counter > 1 )
@@ -56,7 +58,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		} 
 		positionB = positionA;
 		counter++;
-		*/
 	}
 
 	return newMovement;

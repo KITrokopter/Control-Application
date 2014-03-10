@@ -148,7 +148,6 @@ private:
 	bool buildFormationStop;
 
 	/* 
-	 * TODO time() gets time in seconds! change where necessary
 	 * TODO buildFormationStop/ -Finished
 	 * TODO thread für shutdown formation
 	 * 
