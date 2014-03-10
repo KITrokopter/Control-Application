@@ -23,8 +23,6 @@
 //#define SINGLE_CAMERA_CALIBRATION
 
 PositionModule::PositionModule(IPositionReceiver* receiver) : 
-	pictureCache(50), // Assume we never have 50 or more modules running on the network.
-	pictureTimes(50),
 	trackingWorker(receiver)
 {
 	ROS_DEBUG("Initializing PositionModule");
@@ -137,12 +135,12 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 	std::map<int, cv::Mat*> pictureMap;
 	int goodPictures = 0;
 	
-	for (std::vector<cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++, id++)
+	for (std::map<int, cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++, id++)
 	{
-		if (*it != 0)
+		if (it->second != 0)
 		{
 			std::vector<cv::Point2f> corners;
-			bool foundAllCorners = cv::findChessboardCorners(**it, boardSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+			bool foundAllCorners = cv::findChessboardCorners(*(it->second), boardSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
 			
 			if (!foundAllCorners)
 			{
@@ -154,10 +152,10 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 				goodPictures++;
 			}
 			
-			pictureMap[id] = *it;
+			pictureMap[id] = it->second;
 			
 			// Remove image from image cache.
-			*it = 0;
+			it->second = 0;
 		}
 	}
 	
@@ -269,8 +267,6 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 // Topic
 void PositionModule::pictureCallback(const camera_application::Picture &msg)
 {
-	assert(msg.ID < 50);
-	
 	// Insert camera id, if not already there.
 	idDict.insert(msg.ID);
 	
@@ -278,7 +274,6 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	
 	if (isCalibrating)
 	{
-		// Will crash here, if more than 49 modules are used.
 		if (pictureCache[msg.ID] != 0)
 		{
 			delete pictureCache[msg.ID];

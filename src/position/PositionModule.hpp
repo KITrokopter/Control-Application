@@ -34,8 +34,8 @@ private:
 	cv::Size boardSize;
 	cv::Size realSize;
 	Mutex pictureCacheMutex;
-	std::vector<cv::Mat*> pictureCache;
-	std::vector<uint64_t> pictureTimes;
+	std::map<int, cv::Mat*> pictureCache;
+	std::map<int, uint64_t> pictureTimes;
 	
 	// Tracking
 	TrackingWorker trackingWorker;
