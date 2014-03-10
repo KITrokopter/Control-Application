@@ -2,14 +2,14 @@
 
 Interpolator::Interpolator()
 {
-	this->speedOfChange = 1;
+	this->stepSizeOfChange = 1;
 	for( int i = 0; i < MAX_NUMBER_OF_QUADCOPTER_HIGH; i++ )
 	{
 		this->lastUpdated[i] = 0;
 	}
 }
 
-Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id)
+Interpolator::MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id)
 {
 
 	if( sentQuadruples.size() == 0 )

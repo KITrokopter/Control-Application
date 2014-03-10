@@ -2,6 +2,7 @@
 #define INTERPOLATOR_HPP
 
 #include <cmath>
+#include <list>
 #include <time.h>
 #include <sys/time.h>
 #include "MovementQuadruple.hpp"
