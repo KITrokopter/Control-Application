@@ -10,6 +10,7 @@
 #include "Line.h"
 #include "Matrix.h"
 #include "Matlab.h"
+#include "TrackingArea.h"
 #include "AmccCalibration.h"
 #include <vector>
 #include <cmath>
@@ -132,6 +133,10 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 0 and 1 is %f", v0.add(v1.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
+
+        //ROS_DEBUG("Calculating tracking area");
+        //TrackingArea test = (realCameraPos, realCameraOrient, 3, 1500, ep);
+        // printf();
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
@@ -238,6 +243,7 @@ void Position::loadValues(int cameraId) {
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
+    ROS_DEBUG("update Position");
     Vector direction;
     if (cameraId == -1) {
         Vector nan = *(new Vector(NAN, NAN, NAN));
