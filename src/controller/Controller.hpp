@@ -74,7 +74,7 @@ public:
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovementAll();
 	void calculateMovement();
-	void land( int internId );
+	void land( int internId, , int * nrLand  );
 	void buildFormation();
 	
 	/* Formation also services*/
@@ -146,6 +146,7 @@ private:
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
 	bool buildFormationFinished;
 	bool buildFormationStop;
+	bool shutdownStarted;
 
 	/* 
 	 * TODO time() gets time in seconds! change where necessary
@@ -157,6 +158,7 @@ private:
 	
 	/* Mutex */
 	Mutex shutdownMutex;
+	Mutex landMutex;
 	Mutex formationMovementMutex;
 	Mutex listPositionsMutex;
 	Mutex listTargetsMutex;
