@@ -7,7 +7,7 @@ class MovementQuadruple
 {	
 	public:
 		MovementQuadruple(int newThrust, float newRoll, float newPitch, float newYawrate);
-		MovementQuadruple(int newThrust, float newRoll, float newPitch, float newYawrate, time_t newTimestamp)
+		MovementQuadruple(int newThrust, float newRoll, float newPitch, float newYawrate, long int newTimestamp);
 		void setThrust( int newThrust );
 		void setRollPitchYawrate(float newRoll, float newPitch, float newYawrate);
 		int getThrust();
@@ -21,7 +21,7 @@ class MovementQuadruple
 	private:
 		int thrust;
 		float roll, pitch, yawrate;
-		time_t timestamp;
+		long int timestamp;
 
 };
 

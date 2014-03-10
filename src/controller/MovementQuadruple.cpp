@@ -8,7 +8,7 @@ MovementQuadruple::MovementQuadruple(int newThrust, float newRoll, float newPitc
 	this->yawrate = newYawrate;		
 }
 
-MovementQuadruple::MovementQuadruple(int newThrust, float newRoll, float newPitch, float newYawrate, time_t newTimestamp)
+MovementQuadruple::MovementQuadruple(int newThrust, float newRoll, float newPitch, float newYawrate, long int newTimestamp)
 {
 	this->thrust = newThrust;
 	this->roll = newRoll;

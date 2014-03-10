@@ -30,7 +30,6 @@
 #include <sstream>
 #include <stdio.h>
 #include <string>
-#include <time.h>
 #include <unistd.h>
 #include <vector>
 //Ros messages/services
@@ -141,7 +140,7 @@ private:
 
 	/* Control variables */
 	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters
-	bool shutdownStarted; //Set when we are in the shutdown process
+	bool landFinished; //Set when we are in the shutdown process
 	bool receivedQuadcopters;
 	bool receivedFormation;
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
