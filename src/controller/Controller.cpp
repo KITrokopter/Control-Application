@@ -233,13 +233,8 @@ void Controller::calculateMovement()
 					convertMovement(moveVector, i);
 					break;
 				case CALCULATE_LAND:
-<<<<<<< HEAD
 					ROS_INFO("Land %i", i);
 					land( i, &numberOfLanded );
-=======
-					//ROS_INFO("Land %i", i);
-					land( i );
->>>>>>> 15e0f4b89c2a9598554e13167d70830174640d50
 					break;
 				default:
 					ROS_INFO("Default %i", i);
