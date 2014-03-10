@@ -9,7 +9,7 @@ Interpolator::Interpolator()
 	}
 }
 
-Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, int id)
+Interpolator::MovementQuadruple calculateNextMQ(<std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id)
 {
 
 	if( sentQuadruples.size() == 0 )
