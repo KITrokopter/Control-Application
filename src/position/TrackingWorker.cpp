@@ -90,7 +90,11 @@ void TrackingWorker::enqueue(CameraData data)
 		positions.push(data);
 		
 		if (positions.size() > 25) {
-			ROS_WARN("Position update buffer is running full (%ld entries). Seems like the position updating can't keep up!", positions.size());
+			ROS_WARN("Position update buffer is running full (%ld entries). Seems like the position updating can't keep up! Dropping 15 entries.", positions.size());
+			
+			for (int i = 0; i < 15; i++) {
+				positions.pop();
+			}
 		}
 	}
 	
@@ -116,7 +120,7 @@ CameraData TrackingWorker::dequeue()
 		}
 		
 		if (dataAvailable()) {
-			CameraData data = positions.back();
+			CameraData data = positions.front();
 			positions.pop();
 			
 			// ROS_DEBUG("dequeue: Released positions lock");
