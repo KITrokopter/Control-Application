@@ -92,6 +92,7 @@ bool Position::calibratedYet(int numberCameras) {
             id.clear();
         }
     }
+    return ok;
 }
 
 bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
@@ -105,6 +106,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     bool calculated = calibratedYet(numberCameras);
 
     if (calculated == false) {
+        ROS_DEBUG("Calibrating with amcc toolbox\n");
         AmccCalibration *calib = new AmccCalibration(ep);
         calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
     }
