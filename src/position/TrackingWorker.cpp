@@ -2,6 +2,7 @@
 
 #include <boost/chrono/duration.hpp>
 #include <ros/console.h>
+#include "../matlab/position.hpp"
 
 TrackingWorker::TrackingWorker(IPositionReceiver *receiver)
 {
@@ -29,7 +30,7 @@ void TrackingWorker::run()
 		CameraData data = dequeue();
 		
 		if (data.valid) {
-			ROS_DEBUG("Got valid data");
+			// ROS_DEBUG("Got valid data");
 			receivedFirstPosition = true;
 			Vector position = tracker.updatePosition(data.cameraVector, data.camNo, data.quadcopterId);
 			
@@ -41,10 +42,14 @@ void TrackingWorker::run()
 			updates.push_back(1);
 			
 			if (position.isValid()) {
+				long int startTime = getNanoTime();
 				receiver->updatePositions(positions, ids, updates);
-				ROS_DEBUG("Updated position of quadcopter %d", data.quadcopterId);
+				double duration = getNanoTime() - startTime;
+				duration /= 1e6;
+				
+				ROS_DEBUG("Updating position of quadcopter %d took %.3f ms", data.quadcopterId, duration);
 			} else {
-				ROS_DEBUG("Not enough information to get position of quadcopter %d", data.quadcopterId);
+				// ROS_DEBUG("Not enough information to get position of quadcopter %d", data.quadcopterId);
 			}
 		} else if (receivedFirstPosition) {
 			ROS_WARN("Position update buffer is empty!");
@@ -67,20 +72,20 @@ void TrackingWorker::updatePosition(Vector cameraVector, int camNo, int quadcopt
 
 void TrackingWorker::updatePosition(CameraData data)
 {
-	ROS_DEBUG("updatePosition: called");
+	// ROS_DEBUG("updatePosition: called");
 	
 	enqueue(data);
 	
-	ROS_DEBUG("updatePosition: Inserted CameraData for camera %d and quadcopter %d", data.camNo, data.quadcopterId);
+	// ROS_DEBUG("updatePosition: Inserted CameraData for camera %d and quadcopter %d", data.camNo, data.quadcopterId);
 }
 
 void TrackingWorker::enqueue(CameraData data)
 {
-	ROS_DEBUG("enqueue: Inserting CameraData");
+	// ROS_DEBUG("enqueue: Inserting CameraData");
 	
 	{
 		boost::mutex::scoped_lock lock(positionsMutex);
-		ROS_DEBUG("enqueue: Got positions lock");
+		// ROS_DEBUG("enqueue: Got positions lock");
 		positions.push(data);
 		
 		if (positions.size() > 25) {
@@ -88,22 +93,22 @@ void TrackingWorker::enqueue(CameraData data)
 		}
 	}
 	
-	ROS_DEBUG("enqueue: Released positions lock");
-	ROS_DEBUG("enqueue: Notifying about new CameraData");
+	// ROS_DEBUG("enqueue: Released positions lock");
+	// ROS_DEBUG("enqueue: Notifying about new CameraData");
 	
 	positionsEmpty.notify_one();
 	
-	ROS_DEBUG("enqueue: Finished insertion process");
+	// ROS_DEBUG("enqueue: Finished insertion process");
 }
 
 CameraData TrackingWorker::dequeue()
 {
-	ROS_DEBUG("dequeue: Getting positions lock");
+	// ROS_DEBUG("dequeue: Getting positions lock");
 	
 	{
 		boost::mutex::scoped_lock lock(positionsMutex);
 		
-		ROS_DEBUG("dequeue: Got positions lock");
+		// ROS_DEBUG("dequeue: Got positions lock");
 		
 		if (!dataAvailable()) {
 			positionsEmpty.timed_wait(lock, boost::get_system_time() + boost::posix_time::milliseconds(100));
@@ -113,13 +118,13 @@ CameraData TrackingWorker::dequeue()
 			CameraData data = positions.back();
 			positions.pop();
 			
-			ROS_DEBUG("dequeue: Released positions lock");
+			// ROS_DEBUG("dequeue: Released positions lock");
 			return data;
 		} else {
 			CameraData data;
 			data.valid = false;
 			
-			ROS_DEBUG("dequeue: Released positions lock");
+			// ROS_DEBUG("dequeue: Released positions lock");
 			return data;
 		}
 	}
