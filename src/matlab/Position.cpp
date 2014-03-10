@@ -122,12 +122,15 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
             calculatePosition(i);
         }
         Vector v0 = realCameraPos[0];
+        Vector d0 = realCameraOrient[0];
         Vector v1 = realCameraPos[1];
+        Vector d1 = realCameraOrient[1];
         Vector v2 = realCameraPos[2];
+        Vector d2 = realCameraOrient[2];
 
-        ROS_DEBUG("Position camera 0: [%f, %f, %f]", v0.getV1(), v0.getV2(), v0.getV3());
-        ROS_DEBUG("Position camera 1: [%f, %f, %f]", v1.getV1(), v1.getV2(), v1.getV3());
-        ROS_DEBUG("Position camera 2: [%f, %f, %f]", v2.getV1(), v2.getV2(), v2.getV3());
+        ROS_DEBUG("Position camera 0: [%f, %f, %f] is directed in [%f, %f, %f]", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
+        ROS_DEBUG("Position camera 1: [%f, %f, %f] is directed in [%f, %f, %f]", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
+        ROS_DEBUG("Position camera 2: [%f, %f, %f] is directed in [%f, %f, %f]", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
 
 
         ROS_DEBUG("Distance between camera 0 and 1 is %f", v0.add(v1.mult(-1)).getLength());
@@ -135,8 +138,8 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
 
         //ROS_DEBUG("Calculating tracking area");
-        //TrackingArea test = (realCameraPos, realCameraOrient, 3, 1500, ep);
-        // printf();
+        //TrackingArea test = TrackingArea(&realCameraPos, &realCameraOrient, 3, 1500, ep);
+        //test.printTrackingArea();
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
@@ -182,7 +185,7 @@ void Position::angleTry(int sign) {
 
     Vector n = intersectionLine.getU().mult(1/intersectionLine.getU().getLength());
     n.putVariable("n", ep);
-    double angle = getAngle(*(new Vector(0, 0, 1)), b.cross(c));
+    double angle = getAngle(Vector(0, 0, 1), b.cross(c));
     double dataAngle[1] = {sign * angle};
     mxArray *ang = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(ang), (void *)dataAngle, sizeof(dataAngle));
@@ -219,6 +222,7 @@ Vector Position::calculateCoordinateTransformation(Vector w, int cameraId) {
             mxDestroyArray(r);
             this->transformed = true;
         }
+        rotationMatrix.printMatrix();
         // calculate rotationMatrix * vector in camera system 0
         return w.aftermult(rotationMatrix);
     }
@@ -243,7 +247,7 @@ void Position::loadValues(int cameraId) {
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
-    ROS_DEBUG("update Position");
+    ROS_DEBUG("update Position: [%f, %f, %f], cameraId: %d", quad.getV1(), quad.getV2(), quad.getV3(), cameraId);
     Vector direction;
     if (cameraId == -1) {
         Vector nan = *(new Vector(NAN, NAN, NAN));
@@ -251,11 +255,8 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
     }
 
     // rotating coordinate system in coordinate system of camera 0 and then in real coordination system
-    // direction = rotationMatrix * (quad * camRotMat)
-    direction = (quad.premult(camRotMat[cameraId])).aftermult(rotationMatrix);
-
-
-
+    // direction = rotationMatrix * (camRotMat * quad)
+    direction = (quad.aftermult(camRotMat[cameraId])).aftermult(rotationMatrix);
 
     // save result
     (quadPos[quadcopterId])[cameraId] = direction;
@@ -275,6 +276,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
     } else {
         // not calculated before, first time calculating
         if (!(oldPos[quadcopterId].isValid())) {
+            ROS_DEBUG("First calculation of position");
 
             // building lines from camera position to quadcopter position
             Line *quadPositions = new Line[numberCameras];
@@ -285,6 +287,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             }
 
             Matlab *m = new Matlab(ep);
+
             Vector quadPosition = m->interpolateLines(quadPositions, numberCameras);
 
             oldPos[quadcopterId] = quadPosition;
@@ -292,12 +295,13 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
 
             return quadPosition;
         } else {
+            ROS_DEBUG("New calculation of position");
             Matlab *m = new Matlab(ep);
 
             // interpolation factor should be tested.
             Vector position = getPosition(cameraId);
             // line from camera to tracked object
-            Line tracked = *(new Line(position, direction));
+            Line tracked = Line(position, direction);
             // calulating actual pos
             Vector newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
             // saving new Pos
@@ -340,6 +344,6 @@ void Position::calculateOrientation(int cameraId) {
             camRotMat[0] = *(new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1));
             camCoordCameraOrient[0] = *(new Vector(0, 0, 1));
         }
-        realCameraOrient[cameraId] = calculateCoordinateTransformation(camCoordCameraOrient[cameraId], cameraId);
+        realCameraOrient[cameraId] = camCoordCameraOrient[cameraId].aftermult(rotationMatrix);
     }
 }

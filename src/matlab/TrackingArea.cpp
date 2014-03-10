@@ -30,7 +30,7 @@ TrackingArea::TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector b1
     this->center = *(calculateCenter(m->getEngine()));
 }
 
-TrackingArea::TrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Engine *ep) {
+TrackingArea::TrackingArea(vector<Vector> cameraPosition, vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep) {
     setTrackingArea(cameraPosition, cameraDirection, numberCameras, maxRange, ep);
 }
 
@@ -235,7 +235,7 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
 /*
  * checks whether all cameras observe x
  */
-bool TrackingArea::inCameraRange(Vector *cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep) {
+bool TrackingArea::inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep) {
     for (int i = 0; i < numberCameras; i++) {
         if (inTrackingArea(cameraPosition[i], cameraDirection[i], maxRange, x, ep) == false) {
             return false;
@@ -247,7 +247,7 @@ bool TrackingArea::inCameraRange(Vector *cameraPosition, Vector* cameraDirection
 /*
  *  calculates the maximum TrackingArea in form of a quader
  */
-void TrackingArea::setTrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Engine *ep) {
+void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep) {
     Matlab *m = new Matlab(ep);
     Line *cameraLines = new Line[numberCameras];
     for (int i = 0; i < numberCameras; i++) {
