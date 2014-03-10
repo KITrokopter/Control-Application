@@ -52,11 +52,27 @@ void tracking(Matlab *m) {
 
 int main(int argc, char** argv) {
     Matlab *m = new Matlab();
-    bool ok = calibrate(m);
+    Vector a1 = *(new Vector(0.000000, -0.000000, 0.000000));
+    Vector u1 = * (new Vector(0.315551, -0.962110, -0.234050));
+    Vector a2 = * (new Vector(730.285416, -753.080314, 0.000243));
+    Vector u2 = *(new Vector(-1.187641, 1.253347, 0.301279));
+    Vector a3 = *(new Vector(-765.780098, -595.685729, 0.000209));
+    Vector u3 = *(new Vector(1.249163, 1.125928, -0.282776));
+    Line *quadPositions = new Line[3];
+    quadPositions[0] = Line(a1, u1);
+    quadPositions[1] = Line(a2, u2);
+    quadPositions[2] = Line(a3, u3);
+    printf("called interpolate\n");
+
+
+    Vector re = m->interpolateLines(quadPositions, 3);
+    printf("result is %f, %f, %f\n", re.getV1(), re.getV2(), re.getV3());
+    /*bool ok = calibrate(m);
     if (ok == true) {
         printf("success\n");
     } else {
         printf("fail\n");
-    }
+    }*/
+    delete quadPositions;
     m->destroyMatlab();
 }

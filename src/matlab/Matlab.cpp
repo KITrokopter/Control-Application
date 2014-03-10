@@ -70,7 +70,7 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
     f.getU().putVariable("u", ep);
     g.getA().putVariable("b", ep);
     g.getU().putVariable("v", ep);
-    mxArray *same, *parallel;
+    mxArray *same;
 	engEvalString(ep, "dif = [a1 - b1, a2 - b2, a3 - b3]");
     // checks whether the lines intersect, if so result = 1
 	// checks whether a line or a row of A would be 0, so that it can't be inverted
@@ -86,12 +86,14 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
     if (f.getU().isLinearDependent(g.getU())) {
             return 0;
     }
+
+
     // aren't parallel, need to check, whether intersect. has to make sure, that A has a complement.
     // A*x = bb, x = (r, s)
     // checks if equation is also right for the third vectorcomponent.
     else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV2() == 0) && (g.getU().getV2() == 0))
                  || ((f.getU().getV1() == 0) && (f.getU().getV2() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV2() == 0)))) {
-		engEvalString(ep, "A = [-u1 v1; -u2 v2];");
+        engEvalString(ep, "A = [-u1 v1; -u2 v2];");
         engEvalString(ep, "x = inv(A)*bb");
 		engEvalString(ep, "same = (a1+x(1)*u1 == b1 + x(2) * v1)");
     } else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV3() == 0) && (g.getU().getV3() == 0))
@@ -103,7 +105,7 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
         engEvalString(ep, "A = [-u2 v2; -u3 v3]");
         engEvalString(ep, "x = inv(A)*bb");
 		engEvalString(ep, "same = (a3+x(1)*u3 == b3 + x(2) * v3)");
-	}
+    }
 	same = engGetVariable(ep, "same");
 	if (mxGetPr(same)[0] != 0.0) {
 		engEvalString(ep, "i = a + x(1)*u");
@@ -119,23 +121,22 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 	engEvalString(ep, "n = cross(u, v);");
 	engEvalString(ep, "A = [-u1 -n(1) v1; -u2 -n(2) v2; -u3 -n(3) v3];");
 	engEvalString(ep, "bb = [dif(1); dif(2); dif(3)];");
-	// A*x = bb, x = (r, t, s)
-	engEvalString(ep, "x = inv(A)*bb");
+    // A*x = bb, x = (r, t, s)
+    engEvalString(ep, "x = inv(A)*bb");
 	engEvalString(ep, "perpf = a + x(1,1) * u");
 	engEvalString(ep, "perpg = b + x(3,1) * v");
-	resultf = engGetVariable(ep, "perpf");
+    resultf = engGetVariable(ep, "perpf");
 	//printf("Lotfußpunkt von f ist [%f, %f, %f]\n", mxGetPr(resultf)[0], mxGetPr(resultf)[1], mxGetPr(resultf)[2]);
-	resultg = engGetVariable(ep, "perpg");
+    resultg = engGetVariable(ep, "perpg");
 	//printf("Lotfußpunkt von g ist [%f, %f, %f]\n", mxGetPr(resultg)[0], mxGetPr(resultg)[1], mxGetPr(resultg)[2]);
 	Vector* perpFootf = new Vector(mxGetPr(resultf)[0], mxGetPr(resultf)[1], mxGetPr(resultf)[2]);
 	Vector* perpFootg = new Vector(mxGetPr(resultg)[0], mxGetPr(resultg)[1], mxGetPr(resultg)[2]);
 	//printf("Lotfußpunkt von g ist [%f, %f, %f]\n", perpFootg->getV1(), perpFootg->getV2(),perpFootg->getV3());
-	result[0] = perpFootf;
-	result[1] = perpFootg;
-	mxDestroyArray(resultf);
-	mxDestroyArray(resultg);
-	mxDestroyArray(same);
-	mxDestroyArray(parallel);
+    result[0] = perpFootf;
+    result[1] = perpFootg;
+    mxDestroyArray(resultf);
+    mxDestroyArray(resultg);
+    mxDestroyArray(same);
 	return 2;
 }
 
@@ -143,15 +144,15 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
     // saving perpendicular foot points of all lines of array lines
     Vector *points = new Vector[2*quantity];
 	int pos = 0;
-	int intersects;
+    int intersects;
 	Vector* result[2];
 	for (int i = 0; i < quantity; i++) {
 		for (int j = i + 1; j < quantity; j++) {
             intersects = perpFootTwoLines(lines[i], lines[j], result);
-			if (intersects == 1) {
+            if (intersects == 1) {
                 points[pos] = *result[0];
                 printf("intersects: [%f, %f, %f]\n", points[pos].getV1(), points[pos].getV2(), points[pos].getV3());
-				pos++;
+                pos++;
 			} else if (intersects == 2) {
 				points[pos] = *result[0];
                 printf("perp1: [%f, %f, %f]\n", points[pos].getV1(), points[pos].getV2(), points[pos].getV3());
