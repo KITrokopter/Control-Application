@@ -241,7 +241,7 @@ void Controller::calculateMovement()
 					convertMovement(moveVector, i);
 					break;
 				case CALCULATE_LAND:
-					ROS_INFO("Land %i", i);
+					//ROS_INFO("Land %i", i);
 					land( i );
 					break;
 				default:
