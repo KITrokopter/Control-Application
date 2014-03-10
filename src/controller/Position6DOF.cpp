@@ -60,6 +60,16 @@ void Position6DOF::setTimestamp(long int newTimestamp)
 }
 
 
+double Position6DOF::getAbsoluteDistance()
+{
+	double sum = 0;
+	for( int i = 0; i < 3; i++ )
+	{
+		sum = sum + (this->position[i] * this->position[i]);
+	}
+	return sqrt( sum );
+}
+
 double Position6DOF::getAbsoluteDistance( Position6DOF otherPosition )
 {
 	double sum = 0;

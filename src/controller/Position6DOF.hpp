@@ -18,6 +18,7 @@ public:
 	Position6DOF(double x, double y, double z);
 	Position6DOF(){};
 
+	double getAbsoluteDistance();
 	double getAbsoluteDistance( Position6DOF otherPosition );
 
 private:

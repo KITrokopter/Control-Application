@@ -148,7 +148,7 @@ private:
 	bool buildFormationStop;
 
 	/* 
-	 * TODO buildFormationStop/ -Finished
+	 * TODO buildFormationStop/ -Finished, landFinished, ...
 	 * TODO thread für shutdown formation
 	 * 
 	 * TODO position6dof set timestamp in constructor without timestamp parameter?

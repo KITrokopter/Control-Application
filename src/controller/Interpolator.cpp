@@ -36,7 +36,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	}
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
-	double deltaPosition[positions.size()-1];	// equals speed	/* error-prone FIXME */
+	bool oscillate = false;
+	double deltaTarget[positions.size()];
+	double deltaAbsPosition[positions.size()-1];	// equals speed	/* error-prone FIXME */
 	double deltaSpeed[positions.size()-2];	// equals acceleration	/* error-prone FIXME */
 	int counter = 0;
 	Position6DOF positionA, positionB;	// positionA is older than positionB
@@ -44,14 +46,20 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
 		positionA.setOrientation( (*it).getOrientation() );
-		positionA.setPosition( *(it).getPosition() );
-		positionA.setTimestamp( *(it).getTimestamp() );
+		positionA.setPosition( (*it).getPosition() );
+		positionA.setTimestamp( (*it).getTimestamp() );
+		deltaTarget[counter] = positionA.getAbsoluteDistance( target );
 		if( counter > 0 )
 		{
-			deltaPosition[counter-1] = 
+			deltaAbsPosition[counter-1] = positionB.getAbsoluteDistance( positionA );
 			if( counter > 1 )
 			{
-				double speedDelta = deltaPosition[counter-1] - deltaPosition[counter-1];	// FIXME
+				double speedDelta = deltaAbsPosition[counter-1] - deltaAbsPosition[counter-2];	
+				if( speedDelta < 0 )
+				{
+					oscillate = true;
+					speedDelta = -speedDelta;
+				}
 				double timeDelta = positionB.getTimestamp() - positionA.getTimestamp();
 				deltaSpeed[counter-2] = speedDelta / timeDelta;
 			}
