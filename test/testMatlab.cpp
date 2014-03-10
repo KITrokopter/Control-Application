@@ -23,11 +23,9 @@ bool calibrate(Matlab *m) {
     printf("cam 1 is [%f, %f, %f]\n", cam1.getV1(), cam1.getV2(), cam1.getV3());
     Vector cam2 = h->getPosition(2);
     printf("cam 2 is [%f, %f, %f]\n", cam2.getV1(), cam2.getV2(), cam2.getV3());
-    Vector x = *(new Vector(0.00001, -1, 0.00001));
+    Vector x = *(new Vector(1, 1, 1));
     h->updatePosition(x, 0, 1);
-    x = *(new Vector(-1, -0.5, 0.00001));
     h->updatePosition(x, 1, 1);
-    x = *(new Vector(1, 0.5, 0.00001));
     Vector pos = h->updatePosition(x, 2, 1);
     printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
     return ok;
@@ -96,13 +94,15 @@ int main(int argc, char** argv) {
     quadPositions[2] = Line(a3, u3);
     Vector re = m->interpolateLines(quadPositions, 3);
     printf("result is %f, %f, %f\n", re.getV1(), re.getV2(), re.getV3());*/
-    perp(m);
+    //perp(m);
     bool ok = calibrate(m);
     if (ok == true) {
         printf("success\n");
     } else {
         printf("fail\n");
     }
+
+    /*
     Vector a = Vector(0,0,0);
     Vector b = Vector(730.285416, -753.080314, 0.000243);
     Vector u = Vector (0.000010, -1.000000, 0.000010);
@@ -113,6 +113,6 @@ int main(int argc, char** argv) {
     m->perpFootTwoLines(l1, l2, result);
     printf("skew: [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
     printf("skew: [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
-
+*/
     m->destroyMatlab();
 }

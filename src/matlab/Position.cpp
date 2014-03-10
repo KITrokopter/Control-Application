@@ -117,9 +117,10 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
 
     // saves all position and orientation vectors in matlab
     if (ok) {
-        for (int i = 0; i < numberCameras; i++) {
-            calculateOrientation(i);
+        // calculates from the back as for camera 0 the rotationmatrix isn't calculated yet
+        for (int i = (numberCameras - 1); i >= 0; i--) {
             calculatePosition(i);
+            calculateOrientation(i);
         }
         Vector v0 = realCameraPos[0];
         Vector d0 = realCameraOrient[0];
@@ -131,6 +132,9 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Position camera 0: [%f, %f, %f] is directed in [%f, %f, %f]", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
         ROS_DEBUG("Position camera 1: [%f, %f, %f] is directed in [%f, %f, %f]", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
         ROS_DEBUG("Position camera 2: [%f, %f, %f] is directed in [%f, %f, %f]", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
+        printf("Position camera 0: [%f, %f, %f] is directed in [%f, %f, %f]\n", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
+        printf("Position camera 1: [%f, %f, %f] is directed in [%f, %f, %f]\n", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
+        printf("Position camera 2: [%f, %f, %f] is directed in [%f, %f, %f]\n", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
 
 
         ROS_DEBUG("Distance between camera 0 and 1 is %f", v0.add(v1.mult(-1)).getLength());
