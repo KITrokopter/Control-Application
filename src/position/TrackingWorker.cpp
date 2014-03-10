@@ -144,3 +144,8 @@ bool TrackingWorker::calibrate(ChessboardData *chessboard, int camNo)
 {
 	return tracker.calibrate(chessboard, camNo);
 }
+
+Vector TrackingWorker::getCameraPosition(int camNo)
+{
+	return tracker.getPosition(camNo);
+}

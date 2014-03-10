@@ -41,4 +41,5 @@ public:
 	void updatePosition(CameraData cameraData);
 	
 	bool calibrate(ChessboardData *chessboard, int camNo);
+	Vector getCameraPosition(int camNo);
 };
