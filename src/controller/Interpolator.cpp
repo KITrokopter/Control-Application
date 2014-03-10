@@ -90,22 +90,28 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	return newMovement;
 }
 
-int calculateThrust( int thrust, double zFirst, double zLast, double distance, long int timediff )
+int calculateThrust( int thrust, double zDistanceFirst, double zDistanceLatest, double distance, long int timediff )
 {
 	int newThrust = thrust;
 	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
 	double distanceFactor = 0.5; // higher if further from target, between [0, 1]
-	double threshold = 
+	double threshold = 0;	// higher if timediff is higher and 	//TODO
 
 	if( speed > MAX_SPEED ) 
 	{
 		newThrust -= THRUST_STEP;	
-	} else if( zLast-zFirst > threshold )
+	} else if( zDistanceLatest > RANGE_STABLE_Z )	// QC is under target position
 	{
-		newThrust -= THRUST_STEP;
-	} else if( zLast-zFirst < -threshold )
+		if( abs(zDistanceFirst-zDistanceLatest)<threshold || zDistanceFirst-zDistanceLatest<0)	//TODO
+		{
+			newThrust += THRUST_STEP;		
+		} 
+	} else if( zDistanceLatest < RANGE_STABLE_Z )	// QC is above target position
 	{
-		newThrust += THRUST_STEP;
+		if( abs(zDistanceFirst-zDistanceLatest)<threshold || zDistanceFirst-zDistanceLatest>0)	//TODO
+		{
+			newThrust -= THRUST_STEP;		
+		} 
 	}
 
 	return newThrust;
