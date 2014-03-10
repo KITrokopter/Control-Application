@@ -6,11 +6,14 @@
 #include <time.h>
 #include <sys/time.h>
 #include "MovementQuadruple.hpp"
+#include "Position6DOF.hpp"
 #include "../matlab/profiling.hpp"
+#include "ros/ros.h"
 
 #define MAX_STEPS_IN_ADVANCE 1 	// How delayed is the input?
 #define MAX_NUMBER_OF_QUADCOPTER_HIGH 10
 #define MIN_TIME_TO_WAIT 500*1000*1000 // in ns
+
 
 /*
  * TODO linear interpolation

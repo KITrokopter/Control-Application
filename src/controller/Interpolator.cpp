@@ -1,4 +1,5 @@
 #include "Interpolator.hpp"
+#include "Controller.hpp"
 
 Interpolator::Interpolator()
 {
@@ -9,7 +10,7 @@ Interpolator::Interpolator()
 	}
 }
 
-Interpolator::MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id)
+MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id)
 {
 
 	if( sentQuadruples.size() == 0 )
@@ -40,21 +41,22 @@ Interpolator::MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> &se
 	int counter = 0;
 	Position6DOF positionA, positionB;	// positionA is older than positionB
 //	long int timeA, timeB;	// timeA is older than timeB
-	for(std::list<Position6DOF>::positions it = positions.begin(); it != positions.end(); ++it)
+	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
-		positionA = it;
-		if( counter > 0 )
+		//positionA = it;
+		/*if( counter > 0 )
 		{
-			deltaPosition[i-1] = 
+			deltaPosition[counter-1] = 
 			if( counter > 1 )
 			{
-				double speedDelta = deltaPosition[i-1] - deltaPosition[i-1];	// FIXME
+				double speedDelta = deltaPosition[counter-1] - deltaPosition[counter-1];	// FIXME
 				double timeDelta = positionB.getTimestamp() - positionA.getTimestamp();
-				deltaSpeed[i-2] = speedDelta / timeDelta;
+				deltaSpeed[counter-2] = speedDelta / timeDelta;
 			}
 		} 
 		positionB = positionA;
 		counter++;
+		*/
 	}
 
 	return newMovement;
