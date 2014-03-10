@@ -32,7 +32,11 @@ void TrackingWorker::run()
 		if (data.valid) {
 			// ROS_DEBUG("Got valid data");
 			receivedFirstPosition = true;
+			
+			long int startTime = getNanoTime();
 			Vector position = tracker.updatePosition(data.cameraVector, data.camNo, data.quadcopterId);
+			double duration = getNanoTime() - startTime;
+			duration /= 1e6;
 			
 			std::vector<Vector> positions;
 			std::vector<int> ids;
@@ -42,15 +46,12 @@ void TrackingWorker::run()
 			updates.push_back(1);
 			
 			if (position.isValid()) {
-				long int startTime = getNanoTime();
 				receiver->updatePositions(positions, ids, updates);
-				double duration = getNanoTime() - startTime;
-				duration /= 1e6;
-				
-				ROS_DEBUG("Updating position of quadcopter %d took %.3f ms", data.quadcopterId, duration);
 			} else {
 				// ROS_DEBUG("Not enough information to get position of quadcopter %d", data.quadcopterId);
 			}
+			
+			ROS_DEBUG("Updating position of quadcopter %d took %.3f ms", data.quadcopterId, duration);
 		} else if (receivedFirstPosition) {
 			ROS_WARN("Position update buffer is empty!");
 		}
