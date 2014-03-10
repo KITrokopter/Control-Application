@@ -226,7 +226,6 @@ Vector Position::calculateCoordinateTransformation(Vector w, int cameraId) {
             mxDestroyArray(r);
             this->transformed = true;
         }
-        rotationMatrix.printMatrix();
         // calculate rotationMatrix * vector in camera system 0
         return w.aftermult(rotationMatrix);
     }
