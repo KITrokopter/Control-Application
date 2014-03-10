@@ -50,24 +50,24 @@ private:
 	Matrix rotationMatrix;
 
 	/// calculates camera position, that is saved in realCameraPos[cameraId]
-    	void calculatePosition(int cameraId);
+	void calculatePosition(int cameraId);
 	/// calculates orientation, that is saved in realCameraOrient[cameraId]
 	void calculateOrientation(int cameraId);
 
 	// transforming coordinate system with positiv or negative angle (sign should only be -1 or 1)	
 	void angleTry(int sign);
 	// loads values of amcc toolbox calibration of camera with cameraId in matlab workspace
-    	void loadValues(int cameraId);
+	void loadValues(int cameraId);
 public:
 	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
-    	Position();
-    	Position(Engine *ep, int numberCameras);
+	Position();
+	Position(Engine *ep, int numberCameras);
 
 	// checks whether the calibration has been made successfully
 	bool calibratedYet(int numberCameras);
 
 	// calibrating with amcc toolbox, saving matlab variables in workspace after calibration
-        bool calibrate(ChessboardData *chessboardData, int numberCameras);
+	bool calibrate(ChessboardData *chessboardData, int numberCameras);
 	// calculating angle between vector u and vector v
 	double getAngle(Vector u, Vector v);
 	// setter
@@ -78,7 +78,7 @@ public:
 	Vector calculateCoordinateTransformation(Vector w, int cameraId);
 
 	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet	
-        Vector updatePosition(Vector quad, int cameraId, int quadcopterId);
+	Vector updatePosition(Vector quad, int cameraId, int quadcopterId);
 
 	
 	// returns position of camera with cameraId, returns NAN, if not yet calibrated

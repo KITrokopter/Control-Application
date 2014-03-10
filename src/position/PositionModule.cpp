@@ -258,6 +258,14 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		ROS_ERROR("Calibration failed!");
 	}
 	
+	for (int i = 0; i < camNumber; i++) {
+		Vector position = trackingWorker.getCameraPosition(i);
+		res.cameraXPositions.push_back(position.getV1());
+		res.cameraYPositions.push_back(position.getV2());
+		res.cameraZPositions.push_back(position.getV3());
+		res.IDs.push_back(idDict.getBackward(i));
+	}
+	
 	isCalibrating = false;
 	
 	return ok;
