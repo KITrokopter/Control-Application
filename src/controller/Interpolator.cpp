@@ -1,6 +1,8 @@
 #include "Interpolator.hpp"
 #include "Controller.hpp"
 
+bool reachingTarget( double first, double last, double speed, long int timediff );
+
 Interpolator::Interpolator()
 {
 	this->stepSizeOfChange = 1;
@@ -37,9 +39,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
 	bool oscillate = false;
-	double deltaTarget[positions.size()];
-	double deltaAbsPosition[positions.size()-1];	// equals speed	/* error-prone FIXME */
-	double deltaSpeed[positions.size()-2];	// equals acceleration	/* error-prone FIXME */
+	int size = positions.size();
+	double deltaTarget[size];
+	double deltaAbsPosition[size-1];	// equals speed	/* error-prone FIXME */
+	double deltaSpeed[size-2];	// equals acceleration	/* error-prone FIXME */
 	int counter = 0;
 	Position6DOF positionA, positionB;	// positionA is older than positionB
 //	long int timeA, timeB;	// timeA is older than timeB
@@ -68,5 +71,23 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		counter++;
 	}
 
+	if( counter > 1 )
+	{
+		if( reachingTarget() )
+
+	}
+
 	return newMovement;
+}
+
+bool reachingTarget( double first, double last, double speed, long int timediff )
+{
+	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
+	double distanceFactor = 0.5; // higher if further from target, between [0, 1]
+	double factor = REACHING_TARGET_DIFF * timediffNormalized * distanceFactor;
+	if( (last<first) && ((first-last) > factor*speed) )
+	{
+		return true;
+	}
+	return false;
 }

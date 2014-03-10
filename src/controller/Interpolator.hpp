@@ -14,6 +14,8 @@
 #define MAX_NUMBER_OF_QUADCOPTER_HIGH 10
 #define MIN_TIME_TO_WAIT 500*1000*1000 // in ns
 
+#define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
+
 
 /*
  * TODO linear interpolation
