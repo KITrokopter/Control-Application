@@ -26,12 +26,12 @@ bool IdDictionary::contains(int n)
 
 void IdDictionary::insert(int n)
 {
-	if (translated) {
-		ROS_ERROR("insert: Ids already translated!");
-	}
-	
 	if (contains(n)) {
 		return;
+	}
+	
+	if (translated) {
+		ROS_ERROR("insert: Ids already translated!");
 	}
 	
 	mutex.lock();
