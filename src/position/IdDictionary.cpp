@@ -36,6 +36,7 @@ void IdDictionary::insert(int n)
 	
 	mutex.lock();
 	
+	ROS_DEBUG("Inserted id %d", n);
 	ids.push_back(n);
 	
 	mutex.unlock();
@@ -53,6 +54,8 @@ void IdDictionary::translateIds()
 	}
 	
 	mutex.lock();
+	
+	ROS_DEBUG("Translating dictionary with %d ids", size());
 	
 	translated = true;
 	
