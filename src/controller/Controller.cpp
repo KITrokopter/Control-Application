@@ -244,7 +244,7 @@ void Controller::calculateMovement()
 					convertMovement(moveVector, i);
 					break;
 				case CALCULATE_LAND:
-					ROS_INFO("Land %i", i);
+					//ROS_INFO("Land %i", i);
 					land( i, &numberOfLanded );
 					break;
 				default:
@@ -823,6 +823,7 @@ void Controller::shutdownFormation()
 	/*shutdownMutex.lock();
 	this->landFinished = false;
 	shutdownMutex.unlock();*/
+ 	ROS_INFO("Shutdown function finished");
 	
 }
 
@@ -843,6 +844,7 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 	/* Unneccessary if move is not in loop */
 	//void *resultSend;
 	//pthread_join(tSend, &resultSend);
+	ROS_INFO("Shutdown finished");
 	return true;
 }
 
