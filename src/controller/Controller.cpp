@@ -373,6 +373,7 @@ void Controller::land( int internId )
 	{
 		//Shutdown crazyflie after having left the tracking area.
 		this->movementAll[internId].setThrust(THRUST_MIN);
+		this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
 	}
 	this->trackedArrayMutex.unlock();
 }
@@ -941,7 +942,10 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 		{
 			ROS_INFO("I want to shutdown");
 			control_application::Shutdown srv;
-			Shutdown_client.call(srv);
+			if(Shutdown_client.call(srv))
+			{
+				ROS_INFO("Shutdown call true");
+			}
 			//shutdown(NULL, NULL);
 		}
 		//TODO Do we need to clean up something here? Free space, join threads ...
