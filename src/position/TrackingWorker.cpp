@@ -2,7 +2,7 @@
 
 #include <boost/chrono/duration.hpp>
 #include <ros/console.h>
-#include "../matlab/position.hpp"
+#include "../matlab/profiling.hpp"
 
 TrackingWorker::TrackingWorker(IPositionReceiver *receiver)
 {
