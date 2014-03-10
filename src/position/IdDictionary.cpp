@@ -60,8 +60,8 @@ void IdDictionary::translateIds()
 	int id = 0;
 	
 	for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++, id++) {
-		forward[id] = *it;
-		backward[*it] = id;
+		backward[id] = *it;
+		forward[*it] = id;
 	}
 	
 	mutex.unlock();

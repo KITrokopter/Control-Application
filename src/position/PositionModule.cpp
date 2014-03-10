@@ -237,9 +237,8 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		ROS_ERROR("Have not enough images for calibration (Have %ld)!", netIdToCamNo.size());
 	}*/
 	
-	if (idDict.isTranslated()) {
+	if (!idDict.isTranslated()) {
 		ROS_WARN("Dictionary was not translated! Translating now.");
-	} else {
 		idDict.translateIds();
 	}
 	
