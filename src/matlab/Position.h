@@ -63,6 +63,9 @@ public:
     	Position();
     	Position(Engine *ep, int numberCameras);
 
+	// checks whether the calibration has been made successfully
+	bool calibratedYet(int numberCameras);
+
 	// calibrating with amcc toolbox, saving matlab variables in workspace after calibration
         bool calibrate(ChessboardData *chessboardData, int numberCameras);
 	// calculating angle between vector u and vector v

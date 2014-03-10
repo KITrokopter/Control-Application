@@ -151,14 +151,11 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
             intersects = perpFootTwoLines(lines[i], lines[j], result);
             if (intersects == 1) {
                 points[pos] = *result[0];
-                printf("intersects: [%f, %f, %f]\n", points[pos].getV1(), points[pos].getV2(), points[pos].getV3());
                 pos++;
 			} else if (intersects == 2) {
 				points[pos] = *result[0];
-                printf("perp1: [%f, %f, %f]\n", points[pos].getV1(), points[pos].getV2(), points[pos].getV3());
-				pos++;
+                pos++;
 				points[pos] = *result[1];
-                printf("perp2: [%f, %f, %f]\n", points[pos].getV1(), points[pos].getV2(), points[pos].getV3());
                 pos++;
 			}
 		}
