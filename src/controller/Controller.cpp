@@ -468,16 +468,18 @@ void Controller::emergencyRoutine(std::string message)
  */
 void Controller::convertMovement(double* const vector, int internId)
 {
+	/* TODO */
+	
 	/* conversion from vectors to thrust, yawrate, pitch... */
 	int thrust_react_z_low = -5;
 	int thrust_react_z_high = 5;
 	int thrust = 0;
 	MovementQuadruple * movement = &(this->movementAll[internId]);
 	if (vector[2] > thrust_react_z_high) {
-		thrust = movement->getThrust() + THRUST_STEP;
-		movement->setThrust(thrust);
-	} else if (vector[2] < thrust_react_z_high) {
 		thrust = movement->getThrust() - THRUST_STEP;
+		movement->setThrust(thrust);
+	} else if (vector[2] < thrust_react_z_low) {
+		thrust = movement->getThrust() + THRUST_STEP;
 		movement->setThrust(thrust);
 	} else {
 		/* Probably nothing to do here. */

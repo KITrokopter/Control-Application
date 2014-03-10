@@ -1,8 +1,6 @@
 #include "Interpolator.hpp"
 #include "Controller.hpp"
 
-bool reachingTarget( double first, double last, double speed, long int timediff );
-
 Interpolator::Interpolator()
 {
 	this->stepSizeOfChange = 1;
@@ -39,6 +37,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	}
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
+	/* Calculate thrust value */
+	
+	
+	/* Calculate rest */
 	bool oscillate = false;
 	int size = positions.size();
 	double deltaTarget[size];
@@ -75,10 +77,38 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	if( counter > 1 )
 	{
 		if( reachingTarget() )
+		{
+
+		}
+		else 
+		{
+
+		}
 
 	}
 
 	return newMovement;
+}
+
+int calculateThrust( int thrust, double zFirst, double zLast, double distance, long int timediff )
+{
+	int newThrust = thrust;
+	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
+	double distanceFactor = 0.5; // higher if further from target, between [0, 1]
+	double threshold = 
+
+	if( speed > MAX_SPEED ) 
+	{
+		newThrust -= THRUST_STEP;	
+	} else if( zLast-zFirst > threshold )
+	{
+		newThrust -= THRUST_STEP;
+	} else if( zLast-zFirst < -threshold )
+	{
+		newThrust += THRUST_STEP;
+	}
+
+	return newThrust;
 }
 
 bool reachingTarget( double first, double last, double speed, long int timediff )

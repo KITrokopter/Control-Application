@@ -15,10 +15,15 @@
 #define MIN_TIME_TO_WAIT 500*1000*1000 // in ns
 
 #define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
+#define REACHING_HEIGHT_DIFF 0.6 // Factor 0 <= x <= 1
+#define MAX_SPEED 0.5	// in m/s
 
 
 /*
  * TODO linear interpolation
+ * 	TODO reach and keep height
+ * 	TODO same in 3D-view
+ * 
  * TODO test of speed, either optimize or save data-to-sent in advance
  * TODO optimize interpolation (step size time-dependant)
  * TODO optimize interpolation (replace linear function)
