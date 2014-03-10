@@ -42,6 +42,7 @@ void TrackingWorker::run()
 			
 			if (position.isValid()) {
 				receiver->updatePositions(positions, ids, updates);
+				ROS_DEBUG("Updated position of quadcopter %d", data.quadcopterId);
 			} else {
 				ROS_DEBUG("Not enough information to get position of quadcopter %d", data.quadcopterId);
 			}
@@ -67,6 +68,8 @@ void TrackingWorker::updatePosition(Vector cameraVector, int camNo, int quadcopt
 void TrackingWorker::updatePosition(CameraData data)
 {
 	enqueue(data);
+	
+	ROS_DEBUG("Inserted CameraData for camera %d and quadcopter %d", data.camNo, data.quadcopterId);
 }
 
 void TrackingWorker::enqueue(CameraData data)
