@@ -74,7 +74,7 @@ public:
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovementAll();
 	void calculateMovement();
-	void land( int internId, , int * nrLand  );
+	void land( int internId, int * nrLand  );
 	void buildFormation();
 	
 	/* Formation also services*/

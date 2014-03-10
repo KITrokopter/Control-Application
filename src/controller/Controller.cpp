@@ -169,7 +169,18 @@ void Controller::calculateMovement()
 	int numberOfLanded = 0;
 	int amount = quadcopterMovementStatus.size();
 	/* As long as we are not in the shutdown process, calculate new Movement data */
-	while(numberOfLanded < amount && numberOfLanded > 0)
+	bool end;
+	this->receivedFormMutex.lock();
+	if(this->receivedFormation)
+	{
+		end = numberOfLanded >= this->formation->getAmount();
+	}
+	else
+	{
+		end = false;
+	}
+	this->receivedFormMutex.unlock();
+	while(!end)
 	{
 		//ROS_INFO("Calculate");
 		for(int i = 0; (i < amount) && (!end); i++)
