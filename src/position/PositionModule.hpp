@@ -75,6 +75,8 @@ private:
 	std::ofstream log;
 	std::vector<long int> timeLog;
 	
+	bool calculateCameraNumbers();
+	
 public:
 	PositionModule(IPositionReceiver* receiver);
 	~PositionModule();

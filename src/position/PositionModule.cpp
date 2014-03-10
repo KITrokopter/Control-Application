@@ -118,11 +118,8 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	return true;
 }
 
-// Service
-bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req, control_application::TakeCalibrationPicture::Response &res)
+bool PositionModule::calculateCameraNumbers()
 {
-	ROS_DEBUG("Taking calibration picture. Have %ld cameras.", camNoToNetId.size());
-	
 	pictureCacheMutex.lock();
 	
 	// Build net id -> cam no map.
@@ -130,6 +127,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		// If already built, there are already images on the disk with wrong ids, so return an error.
 		if (netIdToCamNo.size() != 0) {
 			ROS_ERROR("Got new cameras after taking first calibration picture!");
+			pictureCacheMutex.unlock();
 			return false;
 		}
 		
@@ -143,6 +141,21 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		
 		ROS_INFO("Got %ld cameras", netIdToCamNo.size());
 	}
+	
+	pictureCacheMutex.unlock();
+	return true;
+}
+
+// Service
+bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req, control_application::TakeCalibrationPicture::Response &res)
+{
+	ROS_DEBUG("Taking calibration picture. Have %ld cameras.", camNoToNetId.size());
+	
+	if (!calculateCameraNumbers()) {
+		return false;
+	}
+	
+	pictureCacheMutex.lock();
 	
 	int id = 0;
 	std::map<int, cv::Mat*> pictureMap;
@@ -249,6 +262,9 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	if (netIdToCamNo.size() < 2) {
 		ROS_ERROR("Have not enough images for calibration (Have %ld)!", netIdToCamNo.size());
 	}*/
+	
+	// TODO: Remove
+	calculateCameraNumbers();
 	
 	ROS_INFO("Calculating multi camera calibration. This could take up to 2 hours");
 	// ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
