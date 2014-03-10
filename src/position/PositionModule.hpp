@@ -21,6 +21,7 @@
 #include "../controller/Mutex.hpp"
 #include "../matlab/Position.h"
 #include "TrackingWorker.hpp"
+#include "IdDictionary.hpp"
 
 class PositionModule {
 private:
@@ -39,9 +40,7 @@ private:
 	// Tracking
 	TrackingWorker trackingWorker;
 	/// Maps network ids to camera numbers for the tracker.
-	std::map<int, int> netIdToCamNo;
-	/// Maps camera numbers to net ids.
-	std::vector<int> camNoToNetId;
+	IdDictionary idDict;
 	
 	// ROS network
 	ros::ServiceServer startCalibrationService;

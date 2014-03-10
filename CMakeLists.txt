@@ -136,6 +136,7 @@ if(EXISTS ${MATLAB_PATH})
   src/position/PositionModule.cpp
   src/position/ChessboardData.cpp
   src/position/TrackingWorker.cpp
+  src/position/IdDictionary.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -180,6 +181,7 @@ add_executable(control_application_test_calibration_node
   src/position/PositionModule.cpp
   src/position/ChessboardData.cpp
   src/position/TrackingWorker.cpp
+  src/position/IdDictionary.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -228,6 +230,7 @@ add_executable(profile_control
 	src/position/PositionModule.cpp
 	src/position/ChessboardData.cpp
 	src/position/TrackingWorker.cpp
+	src/position/IdDictionary.cpp
 	src/KitrokopterMessages.cpp
 )
 
@@ -255,6 +258,7 @@ add_executable(position_module
 	src/position/DummyPositionReceiver.cpp
 	src/position/ChessboardData.cpp
 	src/position/TrackingWorker.cpp
+	src/position/IdDictionary.cpp
 	src/KitrokopterMessages.cpp
 	src/matlab/Vector.cpp
 	src/matlab/Line.cpp

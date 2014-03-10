@@ -107,6 +107,8 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	{
 		ROS_INFO("Starting multi camera calibration process");
 		
+		// Delete old calibration data.
+		system("rm -rf /tmp/calibrationResult/*");
 		system("rm -rf /tmp/calibrationImages/*");
 		setPictureSendingActivated(true);
 		calibrationPictureCount = 0;
@@ -118,41 +120,15 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	return true;
 }
 
-bool PositionModule::calculateCameraNumbers()
-{
-	pictureCacheMutex.lock();
-	
-	// Build net id -> cam no map.
-	if (camNoToNetId.size() != netIdToCamNo.size()) {
-		// If already built, there are already images on the disk with wrong ids, so return an error.
-		if (netIdToCamNo.size() != 0) {
-			ROS_ERROR("Got new cameras after taking first calibration picture!");
-			pictureCacheMutex.unlock();
-			return false;
-		}
-		
-		std::sort(camNoToNetId.begin(), camNoToNetId.end());
-		netIdToCamNo.clear();
-		
-		for (int i = 0; i < camNoToNetId.size(); i++) {
-			netIdToCamNo[camNoToNetId[i]] = i;
-			ROS_DEBUG("Inserted id %d for cam no %d", camNoToNetId[i], i);
-		}
-		
-		ROS_INFO("Got %ld cameras", netIdToCamNo.size());
-	}
-	
-	pictureCacheMutex.unlock();
-	return true;
-}
-
 // Service
 bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req, control_application::TakeCalibrationPicture::Response &res)
 {
-	ROS_DEBUG("Taking calibration picture. Have %ld cameras.", camNoToNetId.size());
+	ROS_DEBUG("Taking calibration picture. Have %d cameras.", idDict.size());
 	
-	if (!calculateCameraNumbers()) {
+	if (idDict.isTranslated()) {
 		return false;
+	} else {
+		idDict.translateIds();
 	}
 	
 	pictureCacheMutex.lock();
@@ -223,7 +199,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		
 		for (std::map<int, cv::Mat*>::iterator it = pictureMap.begin(); it != pictureMap.end(); it++) {
 			std::stringstream ss;
-			ss << "/tmp/calibrationImages/cam" << netIdToCamNo[it->first] << "_image" << calibrationPictureCount << ".png";
+			ss << "/tmp/calibrationImages/cam" << idDict.getForward(it->first) << "_image" << calibrationPictureCount << ".png";
 			
 			// Save picture on disk for amcctoolbox.
 			std::cout << "Saving picture: " << cv::imwrite(ss.str(), *(it->second)) << std::endl;
@@ -263,19 +239,20 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		ROS_ERROR("Have not enough images for calibration (Have %ld)!", netIdToCamNo.size());
 	}*/
 	
-	// TODO: Remove
-	calculateCameraNumbers();
+	if (idDict.isTranslated()) {
+		ROS_WARN("Dictionary was not translated! Translating now.");
+	} else {
+		idDict.translateIds();
+	}
 	
 	ROS_INFO("Calculating multi camera calibration. This could take up to 2 hours");
 	// ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
 	ChessboardData data(7, 7, 57, 57);
 	
 	pictureCacheMutex.lock();
-	int camNumber = 3; //camNoToNetId.size();
+	int camNumber = 3; // idDict.size();
 	pictureCacheMutex.unlock();
 	
-	// Delete old calibration results.
-	system("rm -rf /tmp/calibrationResult/*");
 	bool ok = trackingWorker.calibrate(&data, camNumber);
 	
 	if (ok) {
@@ -294,22 +271,10 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 {
 	assert(msg.ID < 50);
 	
-	pictureCacheMutex.lock();
-	
-	bool idKnown = false;
-	
 	// Insert camera id, if not already there.
-	for (int i = 0; i < camNoToNetId.size(); i++) {
-		if (camNoToNetId[i] == msg.ID) {
-			idKnown = true;
-			break;
-		}
-	}
+	idDict.insert(msg.ID);
 	
-	if (!idKnown) {
-		camNoToNetId.push_back(msg.ID);
-		ROS_DEBUG("Inserted id %d at position %ld", msg.ID, camNoToNetId.size() - 1);
-	}
+	pictureCacheMutex.lock();
 	
 	if (isCalibrating)
 	{
@@ -363,9 +328,9 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
  	// TODO: Calculate position in our coordinate system.
 	// TODO: Is this coordinate change correct for amcctoolbox?
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
-	ROS_DEBUG("msg.ID: %d netIdToCamNo[msg.ID]: %d msg.quadcopterId: %d", msg.ID, netIdToCamNo[msg.ID], msg.quadcopterId);
+	ROS_DEBUG("msg.ID: %d netIdToCamNo[msg.ID]: %d msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID), msg.quadcopterId);
 	
-	trackingWorker.updatePosition(cameraVector, netIdToCamNo[msg.ID], msg.quadcopterId);
+	trackingWorker.updatePosition(cameraVector, idDict.getForward(msg.ID), msg.quadcopterId);
 	
 	/*#ifdef QC_PROFILE
 	long int trackingClock = getNanoTime();
