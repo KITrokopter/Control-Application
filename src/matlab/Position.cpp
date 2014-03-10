@@ -64,18 +64,8 @@ Position::Position(Engine *ep, int numberCameras)
     this->transformed = false;
 }
 
-bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
-
-    this->numberCameras = numberCameras;
-    if (numberCameras < 3) {
-        ROS_ERROR("Not enough cameras!");
-        return false;
-    }
-    
-    AmccCalibration *calib = new AmccCalibration(ep);
-    calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
-
-    // checking whether calibration did work (trying to load all output files)
+bool Position::calibratedYet(int numberCameras) {
+    // trying to load all output files
     mxArray *good;
     std::string load;
     std::ostringstream id;
@@ -91,7 +81,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         for (int i = 1; i < numberCameras; i++) {
             id << i;
             load = "try load('/tmp/calibrationResult/Calib_Results_stereo_0_" + id.str() + ".mat'); worked = 1; catch worked = 0; end";
-            engEvalString(ep, load.c_str());
+            engEvalString(ep,load.c_str());
             good = engGetVariable(ep, "worked");
             result = mxGetPr(good)[0];
             if (result == 0) {
@@ -102,6 +92,25 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
             id.clear();
         }
     }
+}
+
+bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
+
+    this->numberCameras = numberCameras;
+    if (numberCameras < 3) {
+        ROS_ERROR("Not enough cameras!");
+        return false;
+    }
+
+    bool calculated = calibratedYet(numberCameras);
+
+    if (calculated == false) {
+        AmccCalibration *calib = new AmccCalibration(ep);
+        calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
+    }
+
+    // checking whether calibration did work (trying to load all output files)
+    bool ok = calibratedYet(numberCameras);
 
     // saves all position and orientation vectors in matlab
     if (ok) {
@@ -227,7 +236,6 @@ void Position::loadValues(int cameraId) {
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
-    ROS_DEBUG("updating Position");
     Vector direction;
     if (cameraId == -1) {
         Vector nan = *(new Vector(NAN, NAN, NAN));
