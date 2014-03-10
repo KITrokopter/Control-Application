@@ -23,11 +23,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	MovementQuadruple newMovement = sentQuadruples.back();
 	long int currentTime = getNanoTime();
 	
-	if( id >= MAX_NUMBER_OF_QUADCOPTER_HIGH ) 
+	/*if( id >= MAX_NUMBER_OF_QUADCOPTER_HIGH ) 
 	{		
 		ROS_INFO("Got wrong id in calculateNextMQ.");
 		return newMovement;
-	} else if( sentQuadruples.size() < 3 || positions.size() < 3 )
+	} else*/ 
+	if( sentQuadruples.size() < 3 || positions.size() < 3 )
 	{
 		ROS_INFO("Not enough data in calculateNextMQ.");
 		return newMovement;
