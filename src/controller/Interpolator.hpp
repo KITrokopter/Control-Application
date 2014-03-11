@@ -14,9 +14,23 @@
 #define MAX_NUMBER_OF_QUADCOPTER_HIGH 10
 #define MIN_TIME_TO_WAIT 500*1000*1000 // in ns
 
+#define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
+#define REACHING_HEIGHT_DIFF 0.6 // Factor 0 <= x <= 1
+
+#define SPEED_MIN_INCLINING 150 	// in mm/s
+#define SPEED_MAX_INCLINING 500 	// in mm/s
+#define SPEED_MIN_DECLINING -150 	// in mm/s
+#define SPEED_MAX_DECLINING -500 	// in mm/s
+
+#define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
+
+
 
 /*
  * TODO linear interpolation
+ * 	TODO reach and keep height
+ * 	TODO same in 3D-view
+ * 
  * TODO test of speed, either optimize or save data-to-sent in advance
  * TODO optimize interpolation (step size time-dependant)
  * TODO optimize interpolation (replace linear function)
@@ -27,7 +41,7 @@ class Interpolator {
 public:
 	Interpolator();
 
-	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id);
+	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id);
 
 protected:
 

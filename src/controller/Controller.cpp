@@ -320,10 +320,10 @@ void Controller::stabilize( int internId )
 	 *
 	 */
 	Interpolator interpolator = Interpolator();
-	
-	this->listPositionsMutex.lock(); 
-	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], internId);
-	this->listPositionsMutex.unlock();
+	this->listTargetsMutex.lock();
+	Position6DOF targetInternId = this->listTargets[internId].back();
+	this->listTargetsMutex.unlock();
+	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
 }
 
 bool Controller::isStable( int internId )
@@ -493,16 +493,18 @@ void Controller::emergencyRoutine(std::string message)
  */
 void Controller::convertMovement(double* const vector, int internId)
 {
+	/* TODO */
+	
 	/* conversion from vectors to thrust, yawrate, pitch... */
 	int thrust_react_z_low = -5;
 	int thrust_react_z_high = 5;
 	int thrust = 0;
 	MovementQuadruple * movement = &(this->movementAll[internId]);
 	if (vector[2] > thrust_react_z_high) {
-		thrust = movement->getThrust() + THRUST_STEP;
-		movement->setThrust(thrust);
-	} else if (vector[2] < thrust_react_z_high) {
 		thrust = movement->getThrust() - THRUST_STEP;
+		movement->setThrust(thrust);
+	} else if (vector[2] < thrust_react_z_low) {
+		thrust = movement->getThrust() + THRUST_STEP;
 		movement->setThrust(thrust);
 	} else {
 		/* Probably nothing to do here. */
@@ -563,9 +565,12 @@ void Controller::setTargetPosition()
 {
 	
 	long int currentTime = getNanoTime();
-	Position6DOF newTarget;
+	Position6DOF newTarget;	
+	this->listTargetsMutex.lock();
+	int listTargetSize = this->listTargets.size();
+	this->listTargetsMutex.unlock();
 	//Iterate over all quadcopters in formation and set new target considering old target and formation Movement
-	for(int i = 0; i < this->listTargets.size(); i++)
+	for(int i = 0; i < listTargetSize; i++)
 	{
 		this->listTargetsMutex.lock();
 		Position6DOF latestTarget = this->listTargets[i].back();

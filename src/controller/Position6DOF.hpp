@@ -18,7 +18,9 @@ public:
 	Position6DOF(double x, double y, double z);
 	Position6DOF(){};
 
+	double getAbsoluteDistance();
 	double getAbsoluteDistance( Position6DOF otherPosition );
+	double getDistanceZ( Position6DOF otherPosition ); // positive if "this" is below "otherPosition"
 
 private:
 	double position[3];

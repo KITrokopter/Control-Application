@@ -54,7 +54,8 @@
 #define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
 #define CALCULATE_LAND 5 //Shutdown quadcopter
 
-#define RANGE_STABLE 0.1 // Distance of two points to be considered "equal" in meters
+#define RANGE_STABLE 0.1 // Distance of two points to be considered "equal" in m
+#define RANGE_STABLE_Z 0.08 // Difference of two height-Values to be considered "equal" in m
 
 #define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
 
@@ -149,8 +150,7 @@ private:
 	bool shutdownStarted;
 
 	/* 
-	 * TODO time() gets time in seconds! change where necessary
-	 * TODO buildFormationStop/ -Finished
+	 * TODO buildFormationStop/ -Finished, landFinished, ...
 	 * TODO thread für shutdown formation
 	 * 
 	 * TODO position6dof set timestamp in constructor without timestamp parameter?
