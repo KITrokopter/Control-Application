@@ -249,7 +249,7 @@ void Controller::calculateMovement()
 					convertMovement(moveVector, i);
 					break;
 				case CALCULATE_LAND:
-					ROS_INFO("Landed: %i", numberOfLanded);
+					//ROS_INFO("Landed: %i", numberOfLanded);
 					land( i, &numberOfLanded );
 					break;
 				default:
@@ -395,6 +395,7 @@ void Controller::land( int internId, int * nrLand )
 		this->movementAll[internId].setThrust(THRUST_MIN);
 		this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
 		(*nrLand)++;
+		ROS_INFO("Landed: %i", *nrLand);
 	}
 	this->trackedArrayMutex.unlock();
 }
@@ -447,10 +448,11 @@ bool Controller::checkInput()
 		}
 		if(currentTime - lastCur > TIME_UPDATED_CRITICAL && quadcopterMovementStatus[i] != CALCULATE_NONE && quadcopterMovementStatus[i] != CALCULATE_START)
 		{
-		      trackedArrayMutex.lock();
-		      tracked[i] = false;
-		      trackedArrayMutex.unlock();
-		      return false;
+		     	trackedArrayMutex.lock();
+			ROS_INFO("tracked false");	
+		    	tracked[i] = false;
+		     	trackedArrayMutex.unlock();
+		     	return false;
 		}
 	}
 	
