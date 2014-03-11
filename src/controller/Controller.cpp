@@ -647,13 +647,12 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		int id = this->quadcopters[i];
   		topicNameQS << "quadcopter_status_" << id;
 		this->QuadStatus_sub[i] = this->n.subscribe<quadcopter_application::quadcopter_status>(topicNameQS.str().c_str(), 1000, boost::bind(&Controller::QuadStatusCallback, this, _1, i));
-		ROS_INFO("QCStatus Topics have been initialized");
+		
 		//Publisher of Movement			
 		std::stringstream topicNameMov;
   		topicNameMov << "quadcopter_movement_" << id;
 		//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 		this->Movement_pub[i] = this->n.advertise<control_application::quadcopter_movement>(topicNameMov.str().c_str(), 1000);
-		ROS_INFO("QCMovement Topics have been initialized");			
 	}
 	receivedQCMutex.lock();
 	receivedQuadcopters = true;
@@ -831,9 +830,15 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 	ROS_INFO("Service shutdown has been called");
 	shutdownFormation ();
 	this->landMutex.lock();
+	ROS_INFO("SHUTDOWN landFinished is %i", landFinished);
 	bool end = this->landFinished;
 	this->landMutex.unlock();
-	while(!end){};
+	while(!end)
+	{
+		this->landMutex.lock();
+		end = this->landFinished;
+		this->landMutex.unlock();
+	}
 	void *resultCalc;
 	pthread_join(tCalculateMovement, &resultCalc);
 	void *resultBuild;
@@ -881,7 +886,6 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 	this->formation->setDistance(msg->distance);
 	this->formation->setAmount(msg->amount);
 	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
-	ROS_INFO("Setting Formation");
 	Position6DOF formPos[msg->amount];
 	for(int i = 0; i < msg->amount; i++)
 	{
@@ -892,7 +896,6 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		formPos[i].setPosition(pos);
 	}
 	this->formation->setPosition(formPos);
-	ROS_INFO("Formation Position set");
 	receivedFormMutex.lock();
 	receivedFormation = true;
 	receivedFormMutex.unlock();

@@ -31,13 +31,10 @@ void Formation::setAmount(int amount)
 
 void Formation::setPosition(Position6DOF * position)
 {
-	ROS_INFO("Setting Formation Position");
-	ROS_INFO("Amount is %i", amount);
 	if(amount > 0)
 	{
 		for(int i=0; i < amount; i++)
 		{
-			ROS_INFO("Round %i", i);
 			this->position[i].setPosition(position[i].getPosition());
 			this->position[i].setOrientation(position[i].getOrientation());
 		}
