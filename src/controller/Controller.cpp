@@ -700,6 +700,7 @@ void Controller::buildFormation()
 	} while( notEnoughData );
 	//Get the formation Positions and the distance.
 	int formationAmount = this->formation->getAmount();
+	ROS_INFO("Formation Amount %i", formationAmount);
 	Position6DOF formPos[formationAmount];
 	for( int i = 0; i < formationAmount; i++)
 	{
