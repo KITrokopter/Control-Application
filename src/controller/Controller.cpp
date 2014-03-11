@@ -559,7 +559,7 @@ void Controller::sendMovementAll()
 	//ROS_INFO("sendMovementAll finished");
 }
 
-void setTrackingArea(TrackingArea * area)
+void Controller::setTrackingArea(TrackingArea * area)
 {
 	this->trackingArea = *area;
 }
@@ -901,15 +901,19 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 {
 	ROS_INFO("I heard Formation. amount: %i", msg->amount);
 	this->formation->setDistance(msg->distance);
+	ROS_INFO("Set amount");
 	this->formation->setAmount(msg->amount);
 	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
+	ROS_INFO("Set form Pos");
 	Position6DOF formPos[msg->amount];
 	for(int i = 0; i < msg->amount; i++)
 	{
-		double pos[3], ori[3];
+		ROS_INFO("round %i", i);
+		double pos[3];
 		pos[0] = msg->xPositions[i];
 		pos[1] = msg->yPositions[i];
 		pos[2] = msg->zPositions[i];
+		ROS_INFO("Set Position");
 		formPos[i].setPosition(pos);
 	}
 	this->formation->setPosition(formPos);

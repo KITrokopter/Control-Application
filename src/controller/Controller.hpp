@@ -91,7 +91,7 @@ public:
 	bool checkInput();
 	void emergencyRoutine(std::string message);
 	
-	bool setTrackingArea(TrackingArea area);
+	void setTrackingArea(TrackingArea * area);
     
 protected:
 	//Callbacks for Ros subscriber
