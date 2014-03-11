@@ -9,13 +9,14 @@
 #define TRACKINGAREA_H_
 
 #include "Vector.h"
+#include <vector>
 
 class TrackingArea {
 // a1 to a4 is clockwisely one plain, b1 to b4 the same, ai is below of bi
 private: Vector a1, a2, a3, a4, b1, b2, b3, b4, center;
 public:
 	TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector b1, Vector b2, Vector b3, Vector b4);
-	TrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Engine *ep); 
+	TrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector>  cameraDirection, int numberCameras, double maxRange, Engine *ep); 
 	TrackingArea(){};
     	Vector getA1();
     	Vector getA2();
@@ -44,8 +45,8 @@ public:
 	double getVectorLength(Vector a, Vector b);
 	double getDistPointPlane(Vector a1, Vector u, Vector v, Vector x);
 	Vector getPerpPointPlane(Vector a, Vector u, Vector v, Vector x);
-    bool inCameraRange(Vector *cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep);
-    void setTrackingArea(Vector* cameraPosition, Vector* cameraDirection, int numberCameras, double maxRange, Engine *ep);
+    bool inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep);
+    void setTrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep);
 	void printTrackingArea();
 };
 

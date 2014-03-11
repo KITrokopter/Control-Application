@@ -22,6 +22,7 @@ public:
 	double getM31();
 	double getM32();
 	double getM33();
+	void printMatrix();
 };
 
 #endif /* MATRIX_H_ */

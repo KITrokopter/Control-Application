@@ -41,9 +41,9 @@ int main(int argc, char** argv)
     Vector* u = new Vector(-1, 4, 3);
     Vector* b = new Vector(5, 8, 21);
     Vector* v = new Vector(1, 1, 5);
+
 */
 
-/*
     //Lotfußpunkt f: (8, -1, 7) Lotfußpunkt g: (8, 11, 1)
     Vector* a = new Vector(3, -1, 7);
     Vector* u = new Vector(1, 0, 0);
@@ -53,6 +53,7 @@ int main(int argc, char** argv)
     Line* f = new Line(*a, *u);
     Line* g = new Line(*b, *v);
     long int first = getNanoTime();
+
     Vector oneLine = m->perpFootOneLine(*f, *b);
     long int second = getNanoTime();
     printf("result is [%f, %f, %f] in time %ld\n", oneLine.getV1(), oneLine.getV2(), oneLine.getV3(), second-first);
@@ -74,7 +75,7 @@ int main(int argc, char** argv)
         }
     }
 
-
+/*
     Line *f = new Line(*(new Vector(2, 2, 2)), *(new Vector(1, -1, 5)));
     Vector *f1 = new Vector(3, 2, 4);
     Line *g = new Line(*(new Vector(2, 1, 5)), *(new Vector(0, -1, 3)));

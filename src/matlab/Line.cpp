@@ -9,8 +9,8 @@
 #include "Vector.h"
 
 Line::Line() {
-    this->a = *(new Vector(0, 0, 0));
-    this->u = *(new Vector(0, 0, 0));
+    this->a = Vector(0, 0, 0);
+    this->u = Vector(0, 0, 0);
 }
 
 Line::Line(Vector a, Vector u) {

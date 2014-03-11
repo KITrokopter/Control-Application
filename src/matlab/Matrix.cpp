@@ -6,6 +6,7 @@
  */
 
 #include "Matrix.h"
+#include <stdio.h>
 
 Matrix::Matrix() {
     this->m11 = 0;
@@ -65,4 +66,8 @@ double Matrix::getM32() {
 
 double Matrix::getM33() {
     return this->m33;
+}
+
+void Matrix::printMatrix() {
+    printf("%f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", m11, m12, m13, m21, m22, m23, m31, m32, m33);
 }

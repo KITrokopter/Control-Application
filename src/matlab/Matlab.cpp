@@ -38,6 +38,13 @@ Engine* Matlab::getEngine() {
 }
 
 Vector Matlab::perpFootOneLine(Line f, Vector b) {
+    Vector a = f.getA();
+    Vector u = f.getU();
+    int d = b.scalarMult(u);
+    int x = (a.scalarMult(u) - d)/(u.scalarMult(u.mult(-1)));
+    Vector result = a.add(u.mult(x));
+    return result;
+    /*
     f.getA().putVariable("a", ep);
     f.getU().putVariable("u", ep);
     b.putVariable("b", ep);
@@ -45,14 +52,14 @@ Vector Matlab::perpFootOneLine(Line f, Vector b) {
 	engEvalString(ep, "d = dot(b, u);");
 	result = engGetVariable(ep, "d");
 
-	/*
+
 		nicer solution with Sym MathToolbox
 		engEvalString(ep, "syms r;");
         	engEvalString(ep, "vector = a + r*u;");
         	engEvalString(ep, "product = dot(u,vector)");
         	engEvalString(ep, "r = solve(product == d, r)");
         	engEvalString(ep, "x = cast(r, 'double');");
-	*/
+
 
 	// as u is the direction vector it can't be 0
 	engEvalString(ep, "x = (a1*u1+a2*u2+a3*u3-d)/(-u1*u1-u2*u2-u3*u3)");
@@ -62,7 +69,7 @@ Vector Matlab::perpFootOneLine(Line f, Vector b) {
 	//printf("result is [%f, %f, %f]\n", mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]);
 	Vector* perpFoot = new Vector(mxGetPr(result)[0], mxGetPr(result)[1], mxGetPr(result)[2]);
 	mxDestroyArray(result);
-	return *perpFoot;
+    return *perpFoot;*/
 }
 
 int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
@@ -76,17 +83,10 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 	// checks whether a line or a row of A would be 0, so that it can't be inverted
     engEvalString(ep, "bb = [dif(1); dif(2)];");
 
-
-    /*
-     * inserting if f.getU().isLinerarDependent(g.getU()) return 0
-     */
-
-
     // first checking, whether the lines are parallel
     if (f.getU().isLinearDependent(g.getU())) {
             return 0;
     }
-
 
     // aren't parallel, need to check, whether intersect. has to make sure, that A has a complement.
     // A*x = bb, x = (r, s)
@@ -95,16 +95,18 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
                  || ((f.getU().getV1() == 0) && (f.getU().getV2() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV2() == 0)))) {
         engEvalString(ep, "A = [-u1 v1; -u2 v2];");
         engEvalString(ep, "x = inv(A)*bb");
-		engEvalString(ep, "same = (a1+x(1)*u1 == b1 + x(2) * v1)");
+        engEvalString(ep, "same = (a3+x(1)*u3 == b3 + x(2) * v3)");
     } else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV3() == 0) && (g.getU().getV3() == 0))
                  || ((f.getU().getV1() == 0) && (f.getU().getV3() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV3() == 0)))) {
         engEvalString(ep, "A = [-u1 v1; -u3 v3]");
+        engEvalString(ep, "bb = [dif(1); dif(3)];");
         engEvalString(ep, "x = inv(A)*bb");
 		engEvalString(ep, "same = (a2+x(1)*u2 == b2 + x(2) * v2)");
     } else {
         engEvalString(ep, "A = [-u2 v2; -u3 v3]");
+        engEvalString(ep, "bb = [dif(2); dif(3)];");
         engEvalString(ep, "x = inv(A)*bb");
-		engEvalString(ep, "same = (a3+x(1)*u3 == b3 + x(2) * v3)");
+        engEvalString(ep, "same = (a1+x(1)*u1 == b1 + x(2) * v1)");
     }
 	same = engGetVariable(ep, "same");
 	if (mxGetPr(same)[0] != 0.0) {
@@ -150,9 +152,12 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 		for (int j = i + 1; j < quantity; j++) {
             intersects = perpFootTwoLines(lines[i], lines[j], result);
             if (intersects == 1) {
+                printf("intersects: [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
                 points[pos] = *result[0];
                 pos++;
-			} else if (intersects == 2) {
+            } else if (intersects == 2) {
+                printf("skew: [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
+                printf("skew: [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
 				points[pos] = *result[0];
                 pos++;
 				points[pos] = *result[1];
@@ -172,19 +177,16 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 	v1 = v1 / pos;
 	v2 = v2 / pos;
 	v3 = v3 / pos;
-	Vector *approximated = new Vector(v1, v2, v3);
-    return *approximated;
+    return Vector(v1, v2, v3);
 }
 
 Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
     Vector newPos = perpFootOneLine(line, quadPos);
 	double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
 	double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
-	double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
-	Vector* interpolatedNewPos = new Vector(v1, v2, v3);
-	return *interpolatedNewPos;
+    double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
+    return Vector(v1, v2, v3);
 }
-
 
 Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {
     f.getA().putVariable("a", ep);
@@ -217,7 +219,7 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     // point on the intersectionline
     Vector intersection2 = g.getA().add(w.mult(mxGetPr(x)[2]));
 
-    Line *intersectionLine = new Line(intersection1, (intersection2.add(intersection1.mult(-1))));
+    Line intersectionLine = Line(intersection1, (intersection2.add(intersection1.mult(-1))));
     mxDestroyArray(x);
-    return *intersectionLine;
+    return intersectionLine;
 }

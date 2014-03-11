@@ -53,12 +53,12 @@ Vector Vector::add(Vector a) {
     double v1 = this->v1 + a.getV1();
     double v2 = this->v2 + a.getV2();
     double v3 = this->v3 + a.getV3();
-    Vector v = *(new Vector(v1, v2, v3));
+    Vector v = Vector(v1, v2, v3);
     return v;
 }
 
 Vector Vector::mult(double a) {
-    Vector v = *(new Vector(this->v1 * a, this->v2 * a, this->v3 * a));
+    Vector v = Vector(this->v1 * a, this->v2 * a, this->v3 * a);
     return v;
 }
 
@@ -66,7 +66,7 @@ Vector Vector::premult(Matrix A) {
     double a1 = v1 * A.getM11() + v2 * A.getM21() + v3 * A.getM31();
     double a2 = v1 * A.getM12() + v2 * A.getM22() + v3 * A.getM32();
     double a3 = v1 * A.getM13() + v2 * A.getM23() + v3 * A.getM33();
-    Vector result = *(new Vector(a1, a2, a3));
+    Vector result = Vector(a1, a2, a3);
     return result;
 }
 
@@ -74,7 +74,7 @@ Vector Vector::aftermult(Matrix A) {
     double a1 = v1 * A.getM11() + v2 * A.getM12() + v3 * A.getM13();
     double a2 = v1 * A.getM21() + v2 * A.getM22() + v3 * A.getM23();
     double a3 = v1 * A.getM31() + v2 * A.getM32() + v3 * A.getM33();
-    Vector result = *(new Vector(a1, a2, a3));
+    Vector result = Vector(a1, a2, a3);
     return result;
 }
 
@@ -110,7 +110,7 @@ void Vector::putVariable(std::string a, Engine *ep) {
 }
 
 Vector Vector::cross(Vector v) {
-    Vector cross = *(new Vector(v.getV2()*v3 - v.getV3()*v2, v.getV3()*v1 - v.getV1()*v3, v.getV1()*v2 -v.getV2()*v1));
+    Vector cross = Vector(v.getV2()*v3 - v.getV3()*v2, v.getV3()*v1 - v.getV1()*v3, v.getV1()*v2 -v.getV2()*v1);
     return cross;
 }
 
