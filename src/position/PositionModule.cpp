@@ -129,11 +129,10 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 	
 	pictureCacheMutex.lock();
 	
-	int id = 0;
 	std::map<int, cv::Mat*> pictureMap;
 	int goodPictures = 0;
 	
-	for (std::map<int, cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++, id++)
+	for (std::map<int, cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++)
 	{
 		if (it->second != 0)
 		{
@@ -150,7 +149,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 				goodPictures++;
 			}
 			
-			pictureMap[id] = it->second;
+			pictureMap[it->first] = it->second;
 			
 			// Remove image from image cache.
 			it->second = 0;
