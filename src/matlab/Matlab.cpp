@@ -177,17 +177,15 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 	v1 = v1 / pos;
 	v2 = v2 / pos;
 	v3 = v3 / pos;
-	Vector *approximated = new Vector(v1, v2, v3);
-    return *approximated;
+    return Vector(v1, v2, v3);
 }
 
 Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
     Vector newPos = perpFootOneLine(line, quadPos);
 	double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
 	double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
-	double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
-	Vector* interpolatedNewPos = new Vector(v1, v2, v3);
-	return *interpolatedNewPos;
+    double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
+    return Vector(v1, v2, v3);
 }
 
 Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {
@@ -221,7 +219,7 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     // point on the intersectionline
     Vector intersection2 = g.getA().add(w.mult(mxGetPr(x)[2]));
 
-    Line *intersectionLine = new Line(intersection1, (intersection2.add(intersection1.mult(-1))));
+    Line intersectionLine = Line(intersection1, (intersection2.add(intersection1.mult(-1)));
     mxDestroyArray(x);
-    return *intersectionLine;
+    return intersectionLine;
 }

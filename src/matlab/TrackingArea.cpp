@@ -251,8 +251,8 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
     Matlab *m = new Matlab(ep);
     Line *cameraLines = new Line[numberCameras];
     for (int i = 0; i < numberCameras; i++) {
-        cameraLines[i] = *(new Line());
-        cameraLines[i] = *(new Line(cameraPosition[i], cameraDirection[i]));
+        cameraLines[i] = Line();
+        cameraLines[i] = Line(cameraPosition[i], cameraDirection[i]);
     }
     Vector center = m->interpolateLines(cameraLines, numberCameras);
 
@@ -270,25 +270,25 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
-        setA1(*(new Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange)));
-        setA2(*(new Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange)));
-        setA3(*(new Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange)));
-        setA4(*(new Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() - posChange)));
-        setB1(*(new Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() - posChange)));
-        setB2(*(new Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange)));
-        setB3(*(new Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange)));
-        setB4(*(new Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange)));
+        setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange));
+        setA2(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange));
+        setA3(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange));
+        setA4(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() - posChange));
+        setB1(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() - posChange));
+        setB2(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange));
+        setB3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange));
+        setB4(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange));
         posChange += 10;
     }
     posChange -= 10;
-    setA1(*(new Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange)));
-    setA2(*(new Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange)));
-    setA3(*(new Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange)));
-    setA4(*(new Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() - posChange)));
-    setB1(*(new Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() - posChange)));
-    setB2(*(new Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange)));
-    setB3(*(new Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange)));
-    setB4(*(new Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange)));
+    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange));
+    setA2(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange));
+    setA3(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange));
+    setA4(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() - posChange));
+    setB1(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() - posChange));
+    setB2(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange));
+    setB3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange));
+    setB4(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange));
 }
 
 void TrackingArea::printTrackingArea() {
