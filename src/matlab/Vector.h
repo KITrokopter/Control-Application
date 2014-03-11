@@ -31,8 +31,8 @@ public:
 	// calculates Matrix * Vector
 	Vector aftermult(Matrix A);
     double scalarMult(Vector a);
-    	double getLength();
-    	void putVariable(std::string a, Engine *ep);
+    double getLength();
+    void putVariable(std::string a, Engine *ep);
 	Vector cross(Vector v);
 	bool equals(Vector v);
 	std::string toString();
