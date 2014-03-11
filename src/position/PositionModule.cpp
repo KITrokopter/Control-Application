@@ -123,9 +123,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 {
 	ROS_DEBUG("Taking calibration picture. Have %d cameras.", idDict.size());
 	
-	if (idDict.isTranslated()) {
-		return false;
-	} else {
+	if (!idDict.isTranslated()) {
 		idDict.translateIds();
 	}
 	
