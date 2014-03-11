@@ -414,7 +414,7 @@ void Controller::land( int internId, int * nrLand )
  */
 bool Controller::checkInput(int internId)
 {
-	
+	ROS_INFO("Checking");
 	this->receivedQCStMutex.lock();
 	bool received = this->receivedQuadStatus[internId];
 	this->receivedQCStMutex.unlock();
@@ -425,6 +425,7 @@ bool Controller::checkInput(int internId)
 		ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, LOW_BATTERY);
 		emergencyRoutine(message);
 	}
+	ROS_INFO("Lastformationmovement");
 	long int currentTime = getNanoTime();
 	this->lastFormationMovementMutex.lock();
 	long int lastForm = this->lastFormationMovement;
@@ -436,6 +437,7 @@ bool Controller::checkInput(int internId)
 		emergencyRoutine(message);
 		return false;
 	}
+	ROS_INFO("Last current Input");
 	this->lastCurrentMutex.lock();
 	long int lastCur = this->lastCurrent[internId];
 	this->lastCurrentMutex.unlock();
@@ -450,6 +452,7 @@ bool Controller::checkInput(int internId)
 		trackedArrayMutex.unlock();
 		return false;
 	}
+	ROS_INFO("Critical");
 	if(currentTime - lastCur > TIME_UPDATED_CRITICAL && quadcopterMovementStatus[internId] != CALCULATE_NONE && quadcopterMovementStatus[internId] != CALCULATE_START)
 	{
 		trackedArrayMutex.lock();
@@ -899,19 +902,15 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 {
 	ROS_INFO("I heard Formation. amount: %i", msg->amount);
 	this->formation->setDistance(msg->distance);
-	ROS_INFO("Set amount");
 	this->formation->setAmount(msg->amount);
 	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
-	ROS_INFO("Set form Pos");
 	Position6DOF formPos[msg->amount];
 	for(int i = 0; i < msg->amount; i++)
 	{
-		ROS_INFO("round %i", i);
 		double pos[3];
 		pos[0] = msg->xPositions[i];
 		pos[1] = msg->yPositions[i];
 		pos[2] = msg->zPositions[i];
-		ROS_INFO("Set Position");
 		formPos[i].setPosition(pos);
 	}
 	this->formation->setPosition(formPos);
