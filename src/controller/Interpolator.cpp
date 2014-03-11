@@ -85,45 +85,48 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	return newMovement;
 }
 
-int calculateThrust( int thrust, double zDistanceFirst, double zDistanceLatest, double distance, long int timediff )
+int calculateThrust( int thrust, double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff )
 {
 	int newThrust = thrust;
 	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
 	double distanceFactor = 0.5; // higher if further from target, between [0, 1]
 	double threshold = 0;	// higher if timediff is higher and 	//TODO
 
-
+	/* Height-difference calculated as z-speed in mm/s. Positive if inclining. */
+	double zSpeed = (zDistanceFirst-zDistanceLatest) * timediffNormalized;	// in mm/s
+	
 	/* 
+	 * Do not change thrust if
+	 * 	is inclining and "close" to target
+	 * 	is declining and "close" to target
 	 * Increase thrust if
 	 * 	inclining too slow
 	 * 	declining too fast
 	 * 	positive distance to target is increasing
-	 * Do not change thrust if
-	 * 	is inclining and "close" to target
 	 * Decrease thrust if
 	 * 	inclining too fast
 	 * 	declining too slow
 	 * 	negative distance to target is increasing
+	 * 	(speed is too high)
 	 * 
+	 * All that iff values seem realistic 	TODO
 	 */
-	if( speed > MAX_SPEED ) 
+	
+	if( abs(zDistanceLatest) < DISTANCE_CLOSE_TO_TARGET ) 
 	{
-		newThrust -= THRUST_STEP;	
-	} else if( zDistanceLatest > RANGE_STABLE_Z )	// QC is under target position
+		return newThrust;		
+	} else
 	{
-		if( abs(zDistanceFirst-zDistanceLatest)<threshold || zDistanceFirst-zDistanceLatest<0)	//TODO
-		{
-			newThrust += THRUST_STEP;		
-		} 
-	} else if( zDistanceLatest < RANGE_STABLE_Z )	// QC is above target position
-	{
-		if( abs(zDistanceFirst-zDistanceLatest)<threshold || zDistanceFirst-zDistanceLatest>0)	//TODO
-		{
-			newThrust -= THRUST_STEP;		
-		} 
+		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst)) 
+		{  
+			newThrust += THRUST_STEP;	
+		}
+		if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst)) 
+		{  
+			newThrust -= THRUST_STEP;	
+		}
+		return newThrust;	
 	}
-
-	return newThrust;
 }
 
 bool reachingTarget( double first, double last, double speed, long int timediff )
