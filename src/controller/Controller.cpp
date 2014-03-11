@@ -199,6 +199,7 @@ void Controller::calculateMovement()
 			{
 			if( enoughData)
 			{
+				ROS_INFO("CheckInput");
 				checkInput();
 			}
 			}
@@ -389,6 +390,7 @@ void Controller::hold( int internId )
 
 void Controller::land( int internId, int * nrLand )
 {
+	ROS_INFO("Land");
 	this->trackedArrayMutex.lock();
 	//Decline until crazyflie isn't tracked anymore
 	if(tracked[internId] == true)
@@ -593,6 +595,11 @@ void Controller::setTargetPosition()
 		newTarget.setTimestamp(currentTime);
 		this->listTargetsMutex.lock();
 		this->listTargets[i].push_back(newTarget);
+		while( this->listTargets[i].size() > 30 )
+		{
+			// Remove oldest elements
+			this->listTargets[i].erase( this->listTargets[i].begin() );
+		}
 		this->listTargetsMutex.unlock();
 	}
 	
