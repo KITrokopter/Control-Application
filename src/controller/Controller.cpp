@@ -186,7 +186,7 @@ void Controller::calculateMovement()
 	this->receivedFormMutex.unlock();
 	while(!end)
 	{
-		ROS_INFO("Landed: %i", numberOfLanded);
+		
 		//ROS_INFO("Calculate");
 		for(int i = 0; (i < amount) && (!end); i++)
 		{	
@@ -249,7 +249,7 @@ void Controller::calculateMovement()
 					convertMovement(moveVector, i);
 					break;
 				case CALCULATE_LAND:
-					//ROS_INFO("Land %i", i);
+					ROS_INFO("Landed: %i", numberOfLanded);
 					land( i, &numberOfLanded );
 					break;
 				default:
@@ -697,9 +697,6 @@ void Controller::buildFormation()
 		ROS_INFO("Starting QC %i",i);
 		//Starting/ Inclining process
 		quadcopterMovementStatus[i] = CALCULATE_START;
-		//Calculate the wanted position for quadcopter i
-		ROS_INFO("test1");
-		//double * pos = formPos[i].getPosition();
 		double pos[3];
 		double target[3];
 		for(int k = 0; k < 3; k++)
@@ -707,19 +704,10 @@ void Controller::buildFormation()
 			pos[k] = formPos[i].getPosition()[k];
 			target[k] = pos[k] * distance;
 		}
-		/*ROS_INFO("test1,5");
-		target[0] = pos[0] * distance;
-		target[1] = pos[1] * distance;
-		target[2] = pos[2] * distance;*/
-		ROS_INFO("test2");
 		//As long as the quadcopter isn't tracked, incline
 		while(this->quadcopterMovementStatus[i] == CALCULATE_START)
 		{
 			//Wait
-			//TODO When working right, do nothing here and just wait till it's tracked
-			/*this->movementAll[i] = MovementQuadruple(THRUST_START, 0, 0, 0);
-			ROS_INFO("Moving up");
-			sendMovementAll();*/
 		}
 		ROS_INFO("Tracked");
 		//If this is the first tracked quadcopter set it as a reference point for all the others
@@ -761,7 +749,6 @@ void Controller::buildFormation()
 		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
 		double pointer[3];
 		this->listTargetsMutex.lock();
-		//double* pointer = this->listTargets.back()[i].getPosition();
 		for(int k = 0; k < 3; k++)
 		{
 			pointer[k] = this->listTargets[i].back().getPosition()[k];
@@ -773,7 +760,6 @@ void Controller::buildFormation()
 		Position6DOF element;
 		element.setPosition(pointer);
 		this->listTargetsMutex.lock();
-		//this->listTargets.back()[i].setPosition(pointer);
 		this->listTargets[i].push_back(element);
 		this->listTargetsMutex.unlock();
 		this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
