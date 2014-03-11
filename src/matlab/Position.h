@@ -62,6 +62,8 @@ private:
 	void angleTry(int sign);
 	// loads values of amcc toolbox calibration of camera with cameraId in matlab workspace
 	void loadValues(int cameraId);
+
+	std::vector<int> imageAge;
 public:
 	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
 	Position();

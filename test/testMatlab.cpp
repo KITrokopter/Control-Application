@@ -12,6 +12,7 @@
 #include <string.h>
 #include <iostream>
 #include <math.h>
+#include <ros/ros.h>
 
 bool calibrate(Matlab *m) {
     Position *h = new Position(m->getEngine(), 3);
@@ -23,21 +24,17 @@ bool calibrate(Matlab *m) {
     printf("cam 1 is [%f, %f, %f]\n", cam1.getV1(), cam1.getV2(), cam1.getV3());
     Vector cam2 = h->getPosition(2);
     printf("cam 2 is [%f, %f, %f]\n", cam2.getV1(), cam2.getV2(), cam2.getV3());
-    Vector x = *(new Vector(0.000002,0.0001, 0.99));
+    Vector x = *(new Vector(0,0, 1));
     h->updatePosition(x, 0, 1);
     h->updatePosition(x, 1, 1);
     Vector pos = h->updatePosition(x, 2, 1);
     printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
     pos = h->updatePosition(x, 2, 1);
-       printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
-       pos = h->updatePosition(x, 2, 1);
-          printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
-          pos = h->updatePosition(x, 2, 1);
-             printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
-             pos = h->updatePosition(x, 2, 1);
-                printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
-                pos = h->updatePosition(x, 2, 1);
-                   printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
+    printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
+    for (int i = 0; i < 100; i++) {
+        pos = h->updatePosition(x, 2, 1);
+        printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
+    }
     return ok;
 }
 
@@ -91,6 +88,10 @@ void perp(Matlab *m) {
 }
 
 int main(int argc, char** argv) {
+    // Enable debug level logging.
+    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+        ros::console::notifyLoggerLevelsChanged();
+    }
     Matlab *m = new Matlab();
     /*Vector a1 = *(new Vector(0.000000, -0.000000, 0.000000));
     Vector u1 = * (new Vector(0.315551, -0.962110, -0.234050));

@@ -39,6 +39,7 @@ Position::Position()
         camRotMat.push_back(nanMatrix);
         realCameraPos.push_back(nan);
         realCameraOrient.push_back(nan);
+        imageAge.push_back(0);
     }
     rotationMatrix = nanMatrix;
     this->transformed = false;
@@ -60,6 +61,7 @@ Position::Position(Engine *ep, int numberCameras)
         camRotMat.push_back(nanMatrix);
         realCameraPos.push_back(nan);
         realCameraOrient.push_back(nan);
+        imageAge.push_back(0);
     }
     rotationMatrix = nanMatrix;
     this->transformed = false;
@@ -141,7 +143,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
 
-        setTrackingArea(1000);
+        //setTrackingArea(1000);
         //ROS_DEBUG("Calculating tracking area");
         //TrackingArea test = TrackingArea(&realCameraPos, &realCameraOrient, 3, 1500, ep);
         //test.printTrackingArea();
@@ -256,6 +258,16 @@ void Position::loadValues(int cameraId) {
 
 Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
     ROS_DEBUG("update Position: [%f, %f, %f], cameraId: %d", quad.getV1(), quad.getV2(), quad.getV3(), cameraId);
+
+    // increments counter for other cameras
+    for (int i = 0; i < numberCameras; i++) {
+        if (i != cameraId) {
+            imageAge[i]++;
+        }
+    }
+    // resets counter of camera with cameraId
+    imageAge[cameraId] = 0;
+
     Vector direction;
     if (cameraId == -1) {
         return Vector(NAN, NAN, NAN);
@@ -281,8 +293,14 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
         Vector nan = Vector(NAN, NAN, NAN);
         return nan;
     } else {
-        // not calculated before, first time calculating
         if (!(oldPos[quadcopterId].isValid())) {
+            // not calculated before, first time calculating
+            for (int i = 0; i < numberCameras; i++) {
+                if (imageAge[i] > 5) {
+                    ROS_DEBUG("Information is too old.");
+                    return Vector(NAN, NAN, NAN);
+                }
+            }
             ROS_DEBUG("First calculation of position with camera information:");
 
             // building lines from camera position to quadcopter position
@@ -301,7 +319,13 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             ROS_DEBUG("First seen position of quadcopter %d is [%f, %f, %f]\n", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3());
             return quadPosition;
         } else {
-            ROS_DEBUG("New calculation of position");
+            // not calculated before, first time calculating
+            for (int i = 0; i < numberCameras; i++) {
+                if (imageAge[i] > 20) {
+                    ROS_DEBUG("Information is too old.");
+                    return Vector(NAN, NAN, NAN);
+                }
+            }
             Matlab *m = new Matlab(ep);
 
             // interpolation factor should be tested.
@@ -356,7 +380,6 @@ void Position::calculateOrientation(int cameraId) {
 }
 
 void Position::setTrackingArea(double maxRange) {
-
     *this->tracking = TrackingArea(realCameraPos, realCameraOrient, numberCameras, maxRange, ep);
 }
 

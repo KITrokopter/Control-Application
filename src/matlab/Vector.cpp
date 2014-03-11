@@ -78,7 +78,7 @@ Vector Vector::aftermult(Matrix A) {
     return result;
 }
 
-int Vector::scalarMult(Vector a) {
+double Vector::scalarMult(Vector a) {
     return (this->v1*a.getV1() + this->v2*a.getV2() + this->v3*a.getV3());
 }
 

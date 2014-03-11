@@ -30,7 +30,7 @@ public:
 	Vector premult(Matrix A);
 	// calculates Matrix * Vector
 	Vector aftermult(Matrix A);
-	int scalarMult(Vector a);
+    double scalarMult(Vector a);
     	double getLength();
     	void putVariable(std::string a, Engine *ep);
 	Vector cross(Vector v);
