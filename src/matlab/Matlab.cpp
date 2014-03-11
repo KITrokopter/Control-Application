@@ -219,7 +219,7 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     // point on the intersectionline
     Vector intersection2 = g.getA().add(w.mult(mxGetPr(x)[2]));
 
-    Line intersectionLine = Line(intersection1, (intersection2.add(intersection1.mult(-1)));
+    Line intersectionLine = Line(intersection1, (intersection2.add(intersection1.mult(-1))));
     mxDestroyArray(x);
     return intersectionLine;
 }
