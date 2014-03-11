@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
           usleep(2000);
         }
 	ROS_INFO("Wait");
-        usleep(10000000);
+        usleep(100000000);
 	ROS_INFO("Finished");
 	// See MovementGenerator.hpp
 	/*MovementGenerator generator(receiver, from, to, 0.05, 0.1, 0.01, 25, 10);
