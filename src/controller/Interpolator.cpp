@@ -10,7 +10,7 @@ Interpolator::Interpolator()
 	}
 }
 
-MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id)
+MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target)
 {
 
 	if( sentQuadruples.size() == 0 )
@@ -21,11 +21,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	MovementQuadruple newMovement = sentQuadruples.back();
 	long int currentTime = getNanoTime();
 	
-	/*if( id >= MAX_NUMBER_OF_QUADCOPTER_HIGH ) 
-	{		
-		ROS_INFO("Got wrong id in calculateNextMQ.");
-		return newMovement;
-	} else*/ 
 	if( sentQuadruples.size() < 3 || positions.size() < 3 )
 	{
 		ROS_INFO("Not enough data in calculateNextMQ.");
@@ -97,6 +92,20 @@ int calculateThrust( int thrust, double zDistanceFirst, double zDistanceLatest, 
 	double distanceFactor = 0.5; // higher if further from target, between [0, 1]
 	double threshold = 0;	// higher if timediff is higher and 	//TODO
 
+
+	/* 
+	 * Increase thrust if
+	 * 	inclining too slow
+	 * 	declining too fast
+	 * 	positive distance to target is increasing
+	 * Do not change thrust if
+	 * 	is inclining and "close" to target
+	 * Decrease thrust if
+	 * 	inclining too fast
+	 * 	declining too slow
+	 * 	negative distance to target is increasing
+	 * 
+	 */
 	if( speed > MAX_SPEED ) 
 	{
 		newThrust -= THRUST_STEP;	

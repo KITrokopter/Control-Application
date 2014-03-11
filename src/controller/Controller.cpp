@@ -296,7 +296,7 @@ void Controller::stabilize( int internId )
 	this->listPositionsMutex.lock(); 
 	Position6DOF targetInternId = this->listTargets[internId];
 	this->listPositionsMutex.unlock();
-	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
+	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId);
 }
 
 bool Controller::isStable( int internId )
