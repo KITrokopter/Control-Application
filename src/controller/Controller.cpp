@@ -186,6 +186,7 @@ void Controller::calculateMovement()
 	this->receivedFormMutex.unlock();
 	while(!end)
 	{
+		ROS_INFO("Landed: %i", numberOfLanded);
 		//ROS_INFO("Calculate");
 		for(int i = 0; (i < amount) && (!end); i++)
 		{	
@@ -420,15 +421,11 @@ bool Controller::checkInput()
 			ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
 			emergencyRoutine(message);
 		}
-		if(quadcopterMovementStatus[i] != CALCULATE_MOVE && quadcopterMovementStatus[i] != CALCULATE_STABILIZE)
-		{
-			continue;
-		}
 		long int currentTime = getNanoTime();
 		this->lastFormationMovementMutex.lock();
 		long int lastForm = this->lastFormationMovement;
 		this->lastFormationMovementMutex.unlock();
-		if(currentTime - lastForm > TIME_UPDATED_END)
+		if(currentTime - lastForm > TIME_UPDATED_END && quadcopterMovementStatus[i] == CALCULATE_MOVE)
 		{
 		      std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		      ROS_INFO("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
@@ -438,17 +435,17 @@ bool Controller::checkInput()
 		this->lastCurrentMutex.lock();
 		long int lastCur = this->lastCurrent[i];
 		this->lastCurrentMutex.unlock();
-		if(currentTime - lastCur > TIME_UPDATED_END)
+		if(currentTime - lastCur > TIME_UPDATED_END && quadcopterMovementStatus[i] != CALCULATE_NONE && quadcopterMovementStatus[i] != CALCULATE_START)
 		{
 		      std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		      ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
-		      emergencyRoutine(message);
+		      //emergencyRoutine(message);
 		      trackedArrayMutex.lock();
 		      tracked[i] = false;
 		      trackedArrayMutex.unlock();
 		      return false;
 		}
-		if(currentTime - lastCur > TIME_UPDATED_CRITICAL)
+		if(currentTime - lastCur > TIME_UPDATED_CRITICAL && quadcopterMovementStatus[i] != CALCULATE_NONE && quadcopterMovementStatus[i] != CALCULATE_START)
 		{
 		      trackedArrayMutex.lock();
 		      tracked[i] = false;
