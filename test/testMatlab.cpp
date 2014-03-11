@@ -23,11 +23,21 @@ bool calibrate(Matlab *m) {
     printf("cam 1 is [%f, %f, %f]\n", cam1.getV1(), cam1.getV2(), cam1.getV3());
     Vector cam2 = h->getPosition(2);
     printf("cam 2 is [%f, %f, %f]\n", cam2.getV1(), cam2.getV2(), cam2.getV3());
-    Vector x = *(new Vector(1, 1, 1));
+    Vector x = *(new Vector(0.000002,0.0001, 0.99));
     h->updatePosition(x, 0, 1);
     h->updatePosition(x, 1, 1);
     Vector pos = h->updatePosition(x, 2, 1);
     printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
+    pos = h->updatePosition(x, 2, 1);
+       printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
+       pos = h->updatePosition(x, 2, 1);
+          printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
+          pos = h->updatePosition(x, 2, 1);
+             printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
+             pos = h->updatePosition(x, 2, 1);
+                printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
+                pos = h->updatePosition(x, 2, 1);
+                   printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
     return ok;
 }
 

@@ -132,15 +132,16 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Position camera 0: [%f, %f, %f] is directed in [%f, %f, %f]", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
         ROS_DEBUG("Position camera 1: [%f, %f, %f] is directed in [%f, %f, %f]", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
         ROS_DEBUG("Position camera 2: [%f, %f, %f] is directed in [%f, %f, %f]", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
-        printf("Position camera 0: [%f, %f, %f] is directed in [%f, %f, %f]\n", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
-        printf("Position camera 1: [%f, %f, %f] is directed in [%f, %f, %f]\n", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
-        printf("Position camera 2: [%f, %f, %f] is directed in [%f, %f, %f]\n", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
+        //printf("Position camera 0: [%f, %f, %f] is directed in [%f, %f, %f]\n", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
+        //printf("Position camera 1: [%f, %f, %f] is directed in [%f, %f, %f]\n", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
+        //printf("Position camera 2: [%f, %f, %f] is directed in [%f, %f, %f]\n", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
 
 
         ROS_DEBUG("Distance between camera 0 and 1 is %f", v0.add(v1.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
 
+        setTrackingArea(1000);
         //ROS_DEBUG("Calculating tracking area");
         //TrackingArea test = TrackingArea(&realCameraPos, &realCameraOrient, 3, 1500, ep);
         //test.printTrackingArea();
@@ -211,7 +212,7 @@ Vector Position::calculateCoordinateTransformation(Vector w, int cameraId) {
             mxArray *r = engGetVariable(ep, "T");
             Vector firstCam = Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]);
             r = engGetVariable(ep, "rotationMatrix");
-            rotationMatrix = Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxGetPr(r)[8]);
+            rotationMatrix = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
             Vector result = firstCam.aftermult(rotationMatrix);
 
             ROS_DEBUG("first calculation of transformation matrix, camera 1 would be at position [%f, %f, %f]", result.getV1(), result.getV2(), result.getV3());
@@ -219,7 +220,7 @@ Vector Position::calculateCoordinateTransformation(Vector w, int cameraId) {
                 // if value is wrong, the angle has to be negativ
                 angleTry(-1);
                 r = engGetVariable(ep, "rotationMatrix");
-                rotationMatrix = Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxGetPr(r)[8]);
+                rotationMatrix = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
                 result = firstCam.aftermult(rotationMatrix);
                 ROS_DEBUG("new calculation has result [%f, %f, %f]", result.getV1(), result.getV2(), result.getV3());
                 if (!((result.getV3() < 0.5) && (result.getV3() > -0.5))) {
@@ -257,8 +258,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
     ROS_DEBUG("update Position: [%f, %f, %f], cameraId: %d", quad.getV1(), quad.getV2(), quad.getV3(), cameraId);
     Vector direction;
     if (cameraId == -1) {
-        Vector nan = Vector(NAN, NAN, NAN);
-        return nan;
+        return Vector(NAN, NAN, NAN);
     }
 
     // rotating coordinate system in coordinate system of camera 0 and then in real coordination system
@@ -283,7 +283,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
     } else {
         // not calculated before, first time calculating
         if (!(oldPos[quadcopterId].isValid())) {
-            ROS_DEBUG("First calculation of position");
+            ROS_DEBUG("First calculation of position with camera information:");
 
             // building lines from camera position to quadcopter position
             Line *quadPositions = new Line[numberCameras];
@@ -342,9 +342,10 @@ void Position::calculateOrientation(int cameraId) {
         if (cameraId != 0) {
             loadValues(cameraId);
             mxArray *r = engGetVariable(ep, "R");
-            camRotMat[cameraId] = Matrix(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2], mxGetPr(r)[3], mxGetPr(r)[4], mxGetPr(r)[5], mxGetPr(r)[6], mxGetPr(r)[7], mxGetPr(r)[8]);
-            engEvalString(ep, "R = rodrigues(R)");
-            camCoordCameraOrient[cameraId] = Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]);
+            camRotMat[cameraId] = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
+            //engEvalString(ep, "R = rodrigues(R)");
+            // camRotMat * [0, 0, 1]
+            camCoordCameraOrient[cameraId] = (Vector(0, 0, 1)).aftermult(camRotMat[cameraId]);
         } else {
             // camera 0 is at the origin and looks down the positive z axis
             camRotMat[0] = Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
@@ -352,4 +353,13 @@ void Position::calculateOrientation(int cameraId) {
         }
         realCameraOrient[cameraId] = camCoordCameraOrient[cameraId].aftermult(rotationMatrix);
     }
+}
+
+void Position::setTrackingArea(double maxRange) {
+
+    *this->tracking = TrackingArea(realCameraPos, realCameraOrient, numberCameras, maxRange, ep);
+}
+
+TrackingArea Position::getTrackingArea() {
+    return *this->tracking;
 }
