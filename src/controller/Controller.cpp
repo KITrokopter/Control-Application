@@ -50,6 +50,10 @@ Controller::Controller()
 	this->shutdownStarted = false;	// shutdown not started
 	this->shutdownMutex.unlock();
 	
+	this->landMutex.lock();
+	this->landFinished = false;
+	this->landMutex.unlock();
+	
 	this->receivedQCMutex.lock();
 	this->receivedQuadcopters = false; // received no quadcopters
 	this->receivedQCMutex.unlock();
@@ -60,7 +64,7 @@ Controller::Controller()
 	this->buildFormationMutex.unlock();
 	
 	this->stopFormationMutex.lock();
-	this->buildFormationStop = true; // buildFormation has not been stopped
+	this->buildFormationStop = false; // buildFormation has not been stopped
 	this->stopFormationMutex.unlock();
 	
 	this->formation = new Formation();
@@ -256,8 +260,16 @@ void Controller::calculateMovement()
 			}
 			sendMovementAll();
 			/* Shutdown */
+			if(this->receivedFormation)
+			{
+				end = numberOfLanded >= this->formation->getAmount();
+			}
+			else
+			{
+				end = false;
+			}
 			landMutex.lock();
-			end = landFinished;
+			this->landFinished = end;
 			landMutex.unlock();
 			
 		}
@@ -819,11 +831,7 @@ void Controller::shutdownFormation()
 		quadcopterMovementStatus[i] = CALCULATE_LAND;
 		
 	}
-	//TODO Do we need to reset after shutdown to make buildformation possible again? If yes how to differ from global shutdown?
-	/*shutdownMutex.lock();
-	this->landFinished = false;
-	shutdownMutex.unlock();*/
- 	ROS_INFO("Shutdown function finished");
+	ROS_INFO("Shutdown function finished");
 	
 }
 
@@ -837,6 +845,10 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 {
 	ROS_INFO("Service shutdown has been called");
 	shutdownFormation ();
+	this->landMutex.lock();
+	bool end = this->landFinished;
+	this->landMutex.unlock();
+	while(!end){};
 	void *resultCalc;
 	pthread_join(tCalculateMovement, &resultCalc);
 	void *resultBuild;
@@ -855,14 +867,10 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
 {
 	ROS_INFO("I heard Movement. xMovement: %f", msg->xMovement);
-	//float movement[3];
 	std::vector<float> movement;
 	movement.push_back( msg->xMovement );
 	movement.push_back( msg->yMovement );
 	movement.push_back( msg->zMovement );
-	/*movement[0] = msg->xMovement;
-	movement[1] = msg->yMovement;
-	movement[2] = msg->zMovement;*/
 	this->formationMovementMutex.lock();
 	this->formationMovement.push_back(movement);
 	this->formationMovementMutex.unlock();	
@@ -871,7 +879,7 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 	this->lastFormationMovementMutex.unlock();
 	//calculate and set a new target position each time there is new data
 	this->buildFormationMutex.lock();
-	bool build = buildFormationFinished;
+	bool build = this->buildFormationFinished;
 	this->buildFormationMutex.unlock();
 	if(build)
 	{
