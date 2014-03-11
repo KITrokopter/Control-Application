@@ -220,7 +220,10 @@ void Controller::calculateMovement()
 			switch( quadcopterMovementStatus[i] )
 			{
 				case CALCULATE_NONE:
-					//ROS_INFO("None %i", i);
+					if(numberOfLanded > 1)
+					{
+						 ROS_INFO("None: %i", i);
+					}
 					/* 
 					 * Take old values
 					 * At beginning list has to be initialized with "send none".
@@ -249,7 +252,10 @@ void Controller::calculateMovement()
 					convertMovement(moveVector, i);
 					break;
 				case CALCULATE_LAND:
-					//ROS_INFO("Landed: %i", numberOfLanded);
+					if(numberOfLanded > 1 && i == 1)
+					{
+						 ROS_INFO("Landed: %i", numberOfLanded);
+					}
 					land( i, &numberOfLanded );
 					break;
 				default:
@@ -428,31 +434,32 @@ bool Controller::checkInput()
 		this->lastFormationMovementMutex.unlock();
 		if(currentTime - lastForm > TIME_UPDATED_END && quadcopterMovementStatus[i] == CALCULATE_MOVE)
 		{
-		      std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
-		      ROS_INFO("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
-		      emergencyRoutine(message);
-		      return false;
+			std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+			ROS_INFO("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+			emergencyRoutine(message);
+			return false;
 		}
 		this->lastCurrentMutex.lock();
 		long int lastCur = this->lastCurrent[i];
 		this->lastCurrentMutex.unlock();
 		if(currentTime - lastCur > TIME_UPDATED_END && quadcopterMovementStatus[i] != CALCULATE_NONE && quadcopterMovementStatus[i] != CALCULATE_START)
 		{
-		      std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
-		      ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
-		      //emergencyRoutine(message);
-		      trackedArrayMutex.lock();
-		      tracked[i] = false;
-		      trackedArrayMutex.unlock();
-		      return false;
+			std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+			ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+			//emergencyRoutine(message);
+			trackedArrayMutex.lock();
+			ROS_INFO("tracked false");
+			tracked[i] = false;
+			trackedArrayMutex.unlock();
+			return false;
 		}
 		if(currentTime - lastCur > TIME_UPDATED_CRITICAL && quadcopterMovementStatus[i] != CALCULATE_NONE && quadcopterMovementStatus[i] != CALCULATE_START)
 		{
-		     	trackedArrayMutex.lock();
+			trackedArrayMutex.lock();
 			ROS_INFO("tracked false");	
-		    	tracked[i] = false;
-		     	trackedArrayMutex.unlock();
-		     	return false;
+			tracked[i] = false;
+			trackedArrayMutex.unlock();
+			return false;
 		}
 	}
 	
