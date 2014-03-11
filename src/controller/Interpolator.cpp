@@ -12,7 +12,7 @@ Interpolator::Interpolator()
 	}
 }
 
-MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target)
+MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id)
 {
 
 	if( sentQuadruples.size() == 0 )
@@ -93,7 +93,8 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		double zDistanceA = positionA.getDistanceZ( target );
 		double zDistanceB = positionB.getDistanceZ( target );
 		double timediffAB = positionB.getTimestamp() - positionA.getTimestamp();
-		newMovement.setThrust( calculateThrust(newMovement.getThrust(), zDistanceA, zDistanceB, timediffAB) );
+		double absDistanceAB = positionA.getAbsoluteDistance( positionB );
+		newMovement.setThrust( calculateThrust(newMovement.getThrust(), zDistanceA, zDistanceB, absDistanceAB, timediffAB) );
 	}
 
 	return newMovement;
