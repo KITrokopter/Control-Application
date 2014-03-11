@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 	ROS_INFO("Wait");
 	usleep(4000000);
 	ROS_INFO("Long Update");
-	for(int i = 0; i < 1000000; i++)
+	for(int i = 0; i < 10000; i++)
         {
           receiver->updatePositions(from, ids, ids);
           usleep(2000);

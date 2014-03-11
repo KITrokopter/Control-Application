@@ -47,7 +47,7 @@ Controller::Controller()
 	
 	//All control variables are set to zero
 	this->shutdownMutex.lock();
-	this->landFinished = false;	// shutdown not started
+	this->shutdownStarted = false;	// shutdown not started
 	this->shutdownMutex.unlock();
 	
 	this->receivedQCMutex.lock();
@@ -166,22 +166,25 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 void Controller::calculateMovement()
 {
 	ROS_INFO("Calculation started");
-	bool end;
-	shutdownMutex.lock();
-	end = landFinished;
-	shutdownMutex.unlock();
-	
+	int numberOfLanded = 0;
+	int amount = quadcopterMovementStatus.size();
 	/* As long as we are not in the shutdown process, calculate new Movement data */
+	bool end;
+	this->receivedFormMutex.lock();
+	if(this->receivedFormation)
+	{
+		end = numberOfLanded >= this->formation->getAmount();
+	}
+	else
+	{
+		end = false;
+	}
+	this->receivedFormMutex.unlock();
 	while(!end)
 	{
 		//ROS_INFO("Calculate");
-		int amount = quadcopterMovementStatus.size();
 		for(int i = 0; (i < amount) && (!end); i++)
 		{	
-			/* Shutdown */
-			shutdownMutex.lock();
-			end = landFinished;
-			shutdownMutex.unlock();
 			receivedFormMutex.lock();
 			receivedQCMutex.lock();
 			bool enoughData = this->receivedFormation && this->receivedQuadcopters;
@@ -241,8 +244,8 @@ void Controller::calculateMovement()
 					convertMovement(moveVector, i);
 					break;
 				case CALCULATE_LAND:
-					ROS_INFO("Land %i", i);
-					land( i );
+					//ROS_INFO("Land %i", i);
+					land( i, &numberOfLanded );
 					break;
 				default:
 					ROS_INFO("Default %i", i);
@@ -252,6 +255,10 @@ void Controller::calculateMovement()
 					break;
 			}
 			sendMovementAll();
+			/* Shutdown */
+			landMutex.lock();
+			end = landFinished;
+			landMutex.unlock();
 			
 		}
 	}	
@@ -361,7 +368,7 @@ void Controller::hold( int internId )
 	/* TODO */
 }
 
-void Controller::land( int internId )
+void Controller::land( int internId, int * nrLand )
 {
 	this->trackedArrayMutex.lock();
 	//Decline until crazyflie isn't tracked anymore
@@ -373,6 +380,8 @@ void Controller::land( int internId )
 	{
 		//Shutdown crazyflie after having left the tracking area.
 		this->movementAll[internId].setThrust(THRUST_MIN);
+		this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
+		(*nrLand)++;
 	}
 	this->trackedArrayMutex.unlock();
 }
@@ -452,7 +461,7 @@ void Controller::emergencyRoutine(std::string message)
 	msg.message = message;
 	this->Message_pub.publish(msg);
 	shutdownMutex.lock();
-	bool end = landFinished;
+	bool end = this->shutdownStarted;
 	shutdownMutex.unlock();
 	if(!end)
 	{
@@ -797,7 +806,7 @@ void Controller::shutdownFormation()
 {
 	ROS_INFO("ShutdownFormation started");	
 	shutdownMutex.lock();
-	this->landFinished = true; /* Start shutdown process */
+	this->shutdownStarted = true; /* Start shutdown process */
 	shutdownMutex.unlock();
 	
 	/* Bring all quadcopters to a hold */	
@@ -815,9 +824,11 @@ void Controller::shutdownFormation()
 		quadcopterMovementStatus[i] = CALCULATE_LAND;
 		
 	}
-	shutdownMutex.lock();
+	//TODO Do we need to reset after shutdown to make buildformation possible again? If yes how to differ from global shutdown?
+	/*shutdownMutex.lock();
 	this->landFinished = false;
-	shutdownMutex.unlock();
+	shutdownMutex.unlock();*/
+ 	ROS_INFO("Shutdown function finished");
 	
 }
 
@@ -838,6 +849,7 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 	/* Unneccessary if move is not in loop */
 	//void *resultSend;
 	//pthread_join(tSend, &resultSend);
+	ROS_INFO("Shutdown finished");
 	return true;
 }
 
@@ -940,13 +952,16 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 	if(msg->command == 2)
 	{
 		shutdownMutex.lock();
-		bool end = landFinished;
+		bool end = this->shutdownStarted;
 		shutdownMutex.unlock();
 		if(!end)
 		{
 			ROS_INFO("I want to shutdown");
 			control_application::Shutdown srv;
-			Shutdown_client.call(srv);
+			if(Shutdown_client.call(srv))
+			{
+				ROS_INFO("Shutdown call true");
+			}
 			//shutdown(NULL, NULL);
 		}
 		//TODO Do we need to clean up something here? Free space, join threads ...
