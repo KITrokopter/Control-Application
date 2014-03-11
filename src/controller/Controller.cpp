@@ -197,11 +197,12 @@ void Controller::calculateMovement()
 			receivedQCMutex.unlock();
 			if(this->quadcopterMovementStatus[i] == CALCULATE_LAND || this->quadcopterMovementStatus[i] == CALCULATE_HOLD) //only for testing
 			{
-			if( enoughData)
-			{
-				ROS_INFO("CheckInput");
-				checkInput();
-			}
+				ROS_INFO("land or hold");
+				if( enoughData)
+				{
+					ROS_INFO("CheckInput");
+					checkInput();
+				}
 			}
 			
 			/* Calculation */
@@ -558,6 +559,10 @@ void Controller::sendMovementAll()
 	//ROS_INFO("sendMovementAll finished");
 }
 
+void setTrackingArea(TrackingArea * area)
+{
+	this->trackingArea = *area;
+}
 /*
  * Calculates the new Targets considering the previous targets and the formation movement vector (without orientation right now)
  */
@@ -566,11 +571,9 @@ void Controller::setTargetPosition()
 	
 	long int currentTime = getNanoTime();
 	Position6DOF newTarget;	
-	this->listTargetsMutex.lock();
-	int listTargetSize = this->listTargets.size();
-	this->listTargetsMutex.unlock();
+	int formationAmount = this->formation->getAmount();
 	//Iterate over all quadcopters in formation and set new target considering old target and formation Movement
-	for(int i = 0; i < listTargetSize; i++)
+	for(int i = 0; i < formationAmount; i++)
 	{
 		this->listTargetsMutex.lock();
 		Position6DOF latestTarget = this->listTargets[i].back();
@@ -811,9 +814,10 @@ void Controller::shutdownFormation()
 	shutdownMutex.lock();
 	this->shutdownStarted = true; /* Start shutdown process */
 	shutdownMutex.unlock();
+	int formationAmount = this->formation->getAmount();
 	
 	/* Bring all quadcopters to a hold */	
-	for(unsigned int i = 0; i < quadcopterMovementStatus.size(); i++)
+	for(unsigned int i = 0; i < formationAmount; i++)
 	{
 		quadcopterMovementStatus[i] = CALCULATE_HOLD;
 	}
@@ -822,7 +826,7 @@ void Controller::shutdownFormation()
 
 	/* Decline */
 	 //Decline each quadcopter till it's not tracked anymore and then shutdown motor
-	for(int i = 0; i < quadcopterMovementStatus.size(); i++)
+	for(int i = 0; i < formationAmount; i++)
 	{
 		quadcopterMovementStatus[i] = CALCULATE_LAND;
 		
@@ -851,6 +855,7 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 		end = this->landFinished;
 		this->landMutex.unlock();
 	}
+	ROS_INFO("Join threads");
 	void *resultCalc;
 	pthread_join(tCalculateMovement, &resultCalc);
 	void *resultBuild;
