@@ -141,11 +141,11 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			
 			if (!foundAllCorners)
 			{
-				ROS_INFO("Took bad picture (id %d)", id);
+				ROS_INFO("Took bad picture (id %d)", it->first);
 			}
 			else
 			{
-				ROS_INFO("Took good picture (id %d)", id);
+				ROS_INFO("Took good picture (id %d)", it->first);
 				goodPictures++;
 			}
 			
