@@ -20,6 +20,7 @@ public:
 
 	double getAbsoluteDistance();
 	double getAbsoluteDistance( Position6DOF otherPosition );
+	double getDistanceZ( Position6DOF otherPosition ); // positive if "this" is below "otherPosition"
 
 private:
 	double position[3];

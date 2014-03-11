@@ -1,6 +1,8 @@
 #include "Interpolator.hpp"
 #include "Controller.hpp"
 
+int calculateThrust(int thrust, double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff);
+
 Interpolator::Interpolator()
 {
 	this->stepSizeOfChange = 1;
@@ -65,11 +67,14 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 				deltaSpeed[counter-2] = speedDelta / timeDelta;
 			}
 		} 
-		positionB = positionA;
+		if( positionA.getTimestamp() != positions.back().getTimestamp() )
+		{
+			positionB = positionA;
+		}
 		counter++;
 	}
 
-	if( counter > 1 )
+	/*if( counter > 1 )
 	{
 		if( reachingTarget() )
 		{
@@ -79,7 +84,16 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		{
 
 		}
+	}*/
 
+	if( counter > 0 )	// Enough data to calculate new thrust value
+	{
+		/*positionA.setPosition( positions.back().getPosition() );
+		positionA.getTimestamp( positions.back().getTimestamp() );*/
+		double zDistanceA = positionA.getDistanceZ( target );
+		double zDistanceB = positionB.getDistanceZ( target );
+		double timediffAB = positionB.getTimestamp() - positionA.getTimestamp();
+		newMovement.setThrust( calculateThrust(newMovement.getThrust(), zDistanceA, zDistanceB, timediffAB) );
 	}
 
 	return newMovement;
@@ -89,7 +103,7 @@ int calculateThrust( int thrust, double zDistanceFirst, double zDistanceLatest, 
 {
 	int newThrust = thrust;
 	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
-	double distanceFactor = 0.5; // higher if further from target, between [0, 1]
+	double distanceFactor = 0.5; // higher if further from target, between [0, 1]	//TODO
 	double threshold = 0;	// higher if timediff is higher and 	//TODO
 
 	/* Height-difference calculated as z-speed in mm/s. Positive if inclining. */
