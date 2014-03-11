@@ -415,14 +415,10 @@ bool Controller::checkInput()
 	for(int i = 0; i < this->quadcopterMovementStatus.size(); i++)
 	{
 		this->receivedQCStMutex.lock();
-		bool save = !this->receivedQuadStatus[i];
+		bool received = this->receivedQuadStatus[i];
 		this->receivedQCStMutex.unlock();
-		if(save)
-		{
-			continue;
-		}
 		/* Battery */
-		if(this->battery_status[i] < LOW_BATTERY && quadcopterMovementStatus[i] != CALCULATE_NONE)
+		if(this->battery_status[i] < LOW_BATTERY && quadcopterMovementStatus[i] != CALCULATE_NONE && received)
 		{
 			std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
 			ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", i, LOW_BATTERY);
@@ -625,10 +621,8 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	unsigned long int i;
 	for( i = 0; i < req.amount; i++)
 	{
-		//ROS_INFO("Array %lu", req.quadcoptersId[i]);
                 this->quadcopters.push_back(req.quadcoptersId[i]);
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
-		ROS_INFO("Size of MovementAll %zu", movementAll.size());
 		MovementQuadruple newMoveQuad = MovementQuadruple(0, 0, 0, 0);
 		this->movementAll.push_back(newMoveQuad);
 		
@@ -736,7 +730,6 @@ void Controller::buildFormation()
 			Position6DOF firstElement;
 			firstElement.setPosition(first);
 			this->listTargetsMutex.lock();
-			ROS_INFO("Push back first Element");
 			this->listTargets[0].push_back(firstElement);
 			this->listTargetsMutex.unlock();
 		}
@@ -887,25 +880,16 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 	ROS_INFO("I heard Formation. amount: %i", msg->amount);
 	this->formation->setDistance(msg->distance);
 	this->formation->setAmount(msg->amount);
-	
-	//TODO Delete when list arrays are converted to arrays list and target array size is used
-	//this->amount = msg->amount;
 	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
 	ROS_INFO("Setting Formation");
 	Position6DOF formPos[msg->amount];
 	for(int i = 0; i < msg->amount; i++)
 	{
 		double pos[3], ori[3];
-		//double * pos;
 		pos[0] = msg->xPositions[i];
 		pos[1] = msg->yPositions[i];
 		pos[2] = msg->zPositions[i];
 		formPos[i].setPosition(pos);
-		//Depends on the calculation of target and current position
-		//ori[0] = 0;
-		//ori[1] = 0;
-		//ori[2] = 0;
-		//formPos[i].setOrientation(ori);
 	}
 	this->formation->setPosition(formPos);
 	ROS_INFO("Formation Position set");
