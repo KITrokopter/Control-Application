@@ -143,6 +143,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
 
+        usleep(10000000);
         //ROS_DEBUG("Calculating tracking area");
         //setTrackingArea(1000);
         //this->tracking->printTrackingArea();
