@@ -179,6 +179,7 @@ bool TrackingArea::contains(Vector x) {
         return false;
     }
 }
+
 // übergebe linie von ursprung auf flacher Ebene und ebene aus drei punkten bestehen mit maxRange abstand
 bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection, double maxRange, Vector x, Engine *ep) {
     Matlab *m = new Matlab(ep);
@@ -256,7 +257,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         cameraLines[i] = Line(cameraPosition[i], cameraDirection[i]);
     }
     Vector center = m->interpolateLines(cameraLines, numberCameras);
-
+    ROS_DEBUG("center is [%f, %f, %f]", center.getV1(), center.getV2(), center.getV3());
     setCenter(center);
     setA1(center);
     setA2(center);
@@ -266,11 +267,14 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
     setB2(center);
     setB3(center);
     setB4(center);
-    double posChange = 100;
+    double posChange = 1;
+
+    // searching border of tracking area
     while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
+        posChange *= 2;
         setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange));
         setA2(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange));
         setA3(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange));
@@ -279,10 +283,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         setB2(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange));
         setB3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange));
         setB4(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange));
-        posChange += 100;
         ROS_DEBUG("square size: %f", 2 * posChange);
     }
-    posChange -= 100;
+
+    // border is between posChange and posChange/2
+    posChange /= 2;
     setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange));
     setA2(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange));
     setA3(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange));
@@ -291,6 +296,9 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
     setB2(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange));
     setB3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange));
     setB4(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange));
+
+    posChange += 50;
+
 }
 
 void TrackingArea::printTrackingArea() {
