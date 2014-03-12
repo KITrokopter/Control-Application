@@ -263,7 +263,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		res.cameraYPositions.push_back(position.getV2());
 		res.cameraZPositions.push_back(position.getV3());
 		res.IDs.push_back(idDict.getBackward(i));
-		ROS_DEBUG ("Calculated position of camera %d");
+		ROS_DEBUG ("Calculated position of camera %d", i);
 	}
 	
 	isCalibrating = false;
