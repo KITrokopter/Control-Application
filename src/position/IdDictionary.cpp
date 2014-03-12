@@ -81,9 +81,13 @@ void IdDictionary::translateIds()
 		std::sort(ids.begin(), ids.end());
 		int id = 0;
 		
+		ROS_DEBUG("forward.size(): %ld", forward.size());
+		
 		for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++, id++) {
+			ROS_DEBUG("Adding pair id/*it: %d/%d", id, *it);
 			backward[id] = *it;
 			forward[*it] = id;
+			ROS_DEBUG("Added. forward.size() is now: %ld", forward.size());
 		}
 		
 		ROS_DEBUG("translateIds: releasing lock");
