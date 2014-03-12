@@ -29,6 +29,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	
 	_isInitialized = true;
 	isCalibrating = false;
+	isCalibrated = false;
 	isRunning = false;
 	
 	ros::NodeHandle n;
@@ -104,6 +105,8 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	if (!isCalibrating)
 	{
 		ROS_INFO("Starting multi camera calibration process");
+		
+		isCalibrated = false;
 		
 		// Delete old calibration data.
 		system("rm -rf /tmp/calibrationResult/*");
@@ -251,6 +254,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	
 	if (ok) {
 		ROS_INFO("Finished multi camera calibration");
+		isCalibrated = true;
 	} else {
 		ROS_ERROR("Calibration failed!");
 	}
@@ -324,6 +328,10 @@ void PositionModule::systemCallback(const api_application::System &msg)
 // Topic
 void PositionModule::rawPositionCallback(const camera_application::RawPosition &msg)
 {
+	if (!isCalibrated) {
+		return;
+	}
+	
  	// TODO: Calculate position in our coordinate system.
 	// TODO: Is this coordinate change correct for amcctoolbox?
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
