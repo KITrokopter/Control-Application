@@ -152,6 +152,7 @@ private:
 	/* 
 	 * TODO buildFormationStop/ -Finished, landFinished, ...
 	 * TODO thread für shutdown formation
+	 * 	Testing @Carina
 	 * 
 	 * TODO position6dof set timestamp in constructor without timestamp parameter?
 	 * /

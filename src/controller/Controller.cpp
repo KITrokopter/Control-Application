@@ -109,7 +109,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		id = getLocalId(i);
 		//ROS_INFO("Global id is %i",i);
 		//ROS_INFO("Local Id is %i", id);
-		if(id == -1)
+		if(id == INVALID)	// @Carina 
 		{
 			continue;	
 		}
