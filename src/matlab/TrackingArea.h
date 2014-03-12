@@ -18,10 +18,16 @@ private:
 
     /**
      * creates a tracking area in form of a cube, that has center as center and whose cube length is 2*posChange
-     * @param posChange
+     * @param posChange distance of cube edges and center
      */
     void increaseTrackingArea(double posChange);
-    void TrackingArea::increaseTrackingArea(double height, double posChange);
+
+    /**
+     * creates a tracking area in form of a quader, that has center as center and whose quader height is 2* height and whose length width is 2*posChange
+     * @param posChange distance of quader side plains to center
+     * @param height distance of quader floor and cube bottom to center
+     */
+    void increaseTrackingArea(double posChange, double height);
 public:
 	TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector b1, Vector b2, Vector b3, Vector b4);
 	TrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector>  cameraDirection, int numberCameras, double maxRange, Engine *ep); 
