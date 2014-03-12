@@ -265,7 +265,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
     setB2(center);
     setB3(center);
     setB4(center);
-    double posChange = 10;
+    double posChange = 100;
     while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
@@ -278,9 +278,10 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         setB2(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange));
         setB3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange));
         setB4(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange));
-        posChange += 10;
+        posChange += 100;
+        ROS_DEBUG("square size: %f", 2 * posChange);
     }
-    posChange -= 10;
+    posChange -= 100;
     setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange));
     setA2(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange));
     setA3(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange));
