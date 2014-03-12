@@ -11,7 +11,7 @@ IdDictionary::IdDictionary()
 
 bool IdDictionary::contains(int n)
 {
-	boost::mutex::scopedLock lock(mutex);
+	boost::mutex::scoped_lock lock(mutex);
 	
 	for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
 		if (*it == n) {
@@ -33,7 +33,7 @@ void IdDictionary::insert(int n)
 		ROS_ERROR("insert: Ids already translated!");
 	}
 	
-	boost::mutex::scopedLock lock(mutex);
+	boost::mutex::scoped_lock lock(mutex);
 	
 	ROS_DEBUG("Inserted id %d", n);
 	ids.push_back(n);
@@ -50,7 +50,7 @@ void IdDictionary::translateIds()
 		return;
 	}
 	
-	boost::mutex::scopedLock lock(mutex);
+	boost::mutex::scoped_lock lock(mutex);
 	
 	ROS_DEBUG("Translating dictionary with %d ids", size());
 	
@@ -76,7 +76,7 @@ int IdDictionary::getForward(int n)
 		ROS_ERROR("getForward: Ids not translated!");
 	}
 	
-	boost::mutex::scopedLock lock(mutex);
+	boost::mutex::scoped_lock lock(mutex);
 	
 	if (forward.count(n)) {
 		int result = forward[n];
@@ -94,7 +94,7 @@ int IdDictionary::getBackward(int n)
 	}
 	
 	ROS_DEBUG("getBackward: Locking mutex");
-	boost::mutex::scopedLock lock(mutex);
+	boost::mutex::scoped_lock lock(mutex);
 	ROS_DEBUG("getBackward: Mutex locked");
 	
 	if (backward.count(n)) {

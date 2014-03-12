@@ -11,7 +11,7 @@ using namespace std;
 class IdDictionary
 {
 private:
-	Mutex mutex;
+	boost::mutex mutex;
 	map<int, int> forward;
 	map<int, int> backward;
 	vector<int> ids;
