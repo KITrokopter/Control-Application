@@ -246,9 +246,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	// ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
 	ChessboardData data(7, 7, 57, 57);
 	
-	pictureCacheMutex.lock();
 	int camNumber = 3; // idDict.size();
-	pictureCacheMutex.unlock();
 	
 	bool ok = trackingWorker.calibrate(&data, camNumber);
 	
@@ -265,6 +263,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		res.cameraYPositions.push_back(position.getV2());
 		res.cameraZPositions.push_back(position.getV3());
 		res.IDs.push_back(idDict.getBackward(i));
+		ROS_DEBUG ("Calculated position of camera %d");
 	}
 	
 	isCalibrating = false;
