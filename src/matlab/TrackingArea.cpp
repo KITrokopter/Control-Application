@@ -296,8 +296,9 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
     double rightBorder = posChange;
     double middle = rightBorder - 1/2 * leftBorder;
 
+    bool tracked = false;
     // searching exact border of tracking area
-    while (rightBorder - leftBorder > 5) {
+    while ((rightBorder - leftBorder > 5) || (tracked == false)) {
         if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
@@ -305,12 +306,15 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
             // border is between leftBorder and middle
             rightBorder = middle;
+            tracked = true;
         } else {
             // border is between middle and rightBorder
             leftBorder = middle;
+            tracked = false;
         }
         middle = rightBorder - 1/2 * leftBorder;
-        ROS_DEBUG("square size: %f", 2 * posChange);
+        increaseTrackingArea(middle);
+        ROS_DEBUG("square size: %f", 2 * middle);
     }
 
 
