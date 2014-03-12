@@ -246,6 +246,18 @@ bool TrackingArea::inCameraRange(std::vector<Vector> cameraPosition, std::vector
     return true;
 }
 
+void TrackingArea::increaseTrackingArea(double posChange) {
+    Vector center = getCenter();
+    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange));
+    setA2(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange));
+    setA3(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange));
+    setA4(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() - posChange));
+    setB1(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() - posChange));
+    setB2(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange));
+    setB3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange));
+    setB4(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange));
+}
+
 /*
  *  calculates the maximum TrackingArea in form of a quader
  */
@@ -286,8 +298,30 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         ROS_DEBUG("square size: %f", 2 * posChange);
     }
 
-    // border is between posChange and posChange/2
-    posChange /= 2;
+    // border is between leftBorder and rightBorder
+    double leftBorder = posChange/2;
+    double rightBorder = posChange;
+    double middle = rightBorder - 1/2 * leftBorder;
+
+    // searching exact border of tracking area
+    while (rightBorder - leftBorder > 5) {
+        if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
+            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
+            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
+
+            // border is between leftBorder and middle
+            rightBorder = middle;
+        } else {
+            // border is between middle and rightBorder
+            leftBorder = middle;
+        }
+        middle = rightBorder - 1/2 * leftBorder;
+        ROS_DEBUG("square size: %f", 2 * posChange);
+    }
+
+
+
     setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange));
     setA2(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange));
     setA3(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange));
