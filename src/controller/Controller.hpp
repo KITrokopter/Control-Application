@@ -88,9 +88,10 @@ public:
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
 	
 	int getLocalId(int globalId);
-	bool checkInput();
+	bool checkInput(int internId);
 	void emergencyRoutine(std::string message);
 	
+	void setTrackingArea(TrackingArea * area);
     
 protected:
 	//Callbacks for Ros subscriber
