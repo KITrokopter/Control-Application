@@ -63,10 +63,6 @@ Controller::Controller()
 	this->buildFormationFinished = false; // has not built formation
 	this->buildFormationMutex.unlock();
 	
-	this->stopFormationMutex.lock();
-	this->buildFormationStop = false; // buildFormation has not been stopped
-	this->stopFormationMutex.unlock();
-	
 	this->formation = new Formation();
 	
 	ROS_INFO("ROS stuff set up");
@@ -298,14 +294,8 @@ void Controller::moveUp( int internId )
 {
 	double moveVector[3];	
 	
-	stopFormationMutex.lock();
-	bool continueMoveUp = buildFormationStop;
-	stopFormationMutex.unlock();	
-	if( continueMoveUp )
-	{
-		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
-		movementAll[internId] = newMovement;
-	} 
+	MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
+	movementAll[internId] = newMovement;
 }
 
 void Controller::stabilize( int internId )

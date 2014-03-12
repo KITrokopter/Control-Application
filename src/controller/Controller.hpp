@@ -147,7 +147,6 @@ private:
 	bool receivedFormation;
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
 	bool buildFormationFinished;
-	bool buildFormationStop;
 	bool shutdownStarted;
 
 	/* 
@@ -164,7 +163,6 @@ private:
 	Mutex listPositionsMutex;
 	Mutex listTargetsMutex;
 	Mutex buildFormationMutex;
-	Mutex stopFormationMutex;
 	Mutex trackedArrayMutex;
 	Mutex receivedQCMutex;
 	Mutex receivedFormMutex;
