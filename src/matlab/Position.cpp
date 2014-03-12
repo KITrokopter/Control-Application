@@ -144,9 +144,9 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
 
         usleep(10000000);
-        //ROS_DEBUG("Calculating tracking area");
-        //setTrackingArea(1000);
-        //this->tracking->printTrackingArea();
+        ROS_DEBUG("Calculating tracking area");
+        setTrackingArea(1000);
+        tracking.printTrackingArea();
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
@@ -381,9 +381,9 @@ void Position::calculateOrientation(int cameraId) {
 }
 
 void Position::setTrackingArea(double maxRange) {
-    *this->tracking = TrackingArea(realCameraPos, realCameraOrient, numberCameras, maxRange, ep);
+    this->tracking = TrackingArea(realCameraPos, realCameraOrient, numberCameras, maxRange, ep);
 }
 
 TrackingArea Position::getTrackingArea() {
-    return *this->tracking;
+    return this->tracking;
 }

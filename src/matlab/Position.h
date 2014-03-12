@@ -22,7 +22,7 @@ private:
 	bool transformed;
 
 	// TrackingArea of cameras
-	TrackingArea *tracking;
+    TrackingArea tracking;
 
 	/* 
 	 * (quadPos[i])[j] is the position of quadrocopter with ID i and camera with ID j
