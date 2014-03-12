@@ -14,6 +14,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "TrackingArea.h"
+#include <ros/ros.h>
 
 using namespace std;
 

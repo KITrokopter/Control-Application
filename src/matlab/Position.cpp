@@ -145,7 +145,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
 
         ROS_DEBUG("Calculating tracking area");
         setTrackingArea(1000);
-        TrackingArea test = TrackingArea(&realCameraPos, &realCameraOrient, 3, 1500, ep);
+        TrackingArea test = TrackingArea(realCameraPos, realCameraOrient, 3, 1500, ep);
         test.printTrackingArea();
     }
 
