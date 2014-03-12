@@ -42,7 +42,7 @@
 #define ROLL_STEP 2
 #define PITCH_STEP 2
 #define INVALID -1
-#define LOW_BATTERY 0.05 //TODO 100% = 1?
+#define LOW_BATTERY 3.0//In V
 #define TIME_UPDATED_END 1*1000*1000 // in ns
 #define TIME_UPDATED_CRITICAL 200*1000 // in ns
 
