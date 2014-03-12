@@ -15,7 +15,6 @@ bool IdDictionary::contains(int n)
 	
 	for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
 		if (*it == n) {
-			mutex.unlock();
 			return true;
 		}
 	}
