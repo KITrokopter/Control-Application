@@ -2,6 +2,7 @@
 
 #include <map>
 #include <vector>
+#include <boost/thread/mutex.hpp>
 
 #include "../controller/Mutex.hpp"
 
