@@ -965,7 +965,7 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 			{
 				ROS_INFO("Shutdown call true");
 			}*/
-			shutdown(NULL, NULL);
+			shutdown(srv.request, srv.response);
 		}
 		//TODO Do we need to clean up something here? Free space, join threads ...
 	}
