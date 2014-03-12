@@ -484,7 +484,10 @@ void Controller::emergencyRoutine(std::string message)
 	{
 		ROS_INFO("I want to shutdown");
 		control_application::Shutdown srv;
-		Shutdown_client.call(srv);
+		if(Shutdown_client.call(srv))
+		{
+			ROS_INFO("Shutdown call true");
+		}
 	}
 }
 
@@ -958,11 +961,11 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 		{
 			ROS_INFO("I want to shutdown");
 			control_application::Shutdown srv;
-			if(Shutdown_client.call(srv))
+			/*if(Shutdown_client.call(srv))
 			{
 				ROS_INFO("Shutdown call true");
-			}
-			//shutdown(NULL, NULL);
+			}*/
+			shutdown(NULL, NULL);
 		}
 		//TODO Do we need to clean up something here? Free space, join threads ...
 	}
