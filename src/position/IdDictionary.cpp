@@ -11,15 +11,17 @@ IdDictionary::IdDictionary()
 
 bool IdDictionary::contains(int n)
 {
-	boost::mutex::scoped_lock lock(mutex);
-	
-	for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
-		if (*it == n) {
-			return true;
+	{
+		boost::mutex::scoped_lock lock(mutex);
+		
+		for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
+			if (*it == n) {
+				return true;
+			}
 		}
+		
+		return false;
 	}
-	
-	return false;
 }
 
 void IdDictionary::insert(int n)
@@ -32,17 +34,21 @@ void IdDictionary::insert(int n)
 		ROS_ERROR("insert: Ids already translated!");
 	}
 	
-	boost::mutex::scoped_lock lock(mutex);
-	
-	ROS_DEBUG("Inserted id %d", n);
-	ids.push_back(n);
+	{
+		boost::mutex::scoped_lock lock(mutex);
+		
+		ROS_DEBUG("Inserted id %d", n);
+		ids.push_back(n);
+	}
 }
 
 int IdDictionary::size()
 {
-	boost::mutex::scoped_lock lock(mutex);
-	
-	return ids.size();
+	{
+		boost::mutex::scoped_lock lock(mutex);
+		
+		return ids.size();
+	}
 }
 
 void IdDictionary::translateIds()
@@ -51,18 +57,20 @@ void IdDictionary::translateIds()
 		return;
 	}
 	
-	boost::mutex::scoped_lock lock(mutex);
-	
-	ROS_DEBUG("Translating dictionary with %d ids", size());
-	
-	translated = true;
-	
-	std::sort(ids.begin(), ids.end());
-	int id = 0;
-	
-	for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++, id++) {
-		backward[id] = *it;
-		forward[*it] = id;
+	{
+		boost::mutex::scoped_lock lock(mutex);
+		
+		ROS_DEBUG("Translating dictionary with %d ids", size());
+		
+		translated = true;
+		
+		std::sort(ids.begin(), ids.end());
+		int id = 0;
+		
+		for (vector<int>::iterator it = ids.begin(); it != ids.end(); it++, id++) {
+			backward[id] = *it;
+			forward[*it] = id;
+		}
 	}
 }
 
@@ -77,14 +85,16 @@ int IdDictionary::getForward(int n)
 		ROS_ERROR("getForward: Ids not translated!");
 	}
 	
-	boost::mutex::scoped_lock lock(mutex);
-	
-	if (forward.count(n)) {
-		int result = forward[n];
-		return result;
-	} else {
-		ROS_ERROR("getForward: Unknown id %d", n);
-		return -1;
+	{
+		boost::mutex::scoped_lock lock(mutex);
+		
+		if (forward.count(n)) {
+			int result = forward[n];
+			return result;
+		} else {
+			ROS_ERROR("getForward: Unknown id %d", n);
+			return -1;
+		}
 	}
 }
 
@@ -96,14 +106,16 @@ int IdDictionary::getBackward(int n)
 	
 	ROS_DEBUG("getBackward: Locking mutex");
 	ROS_DEBUG("forward size: %ld, backward size: %ld, vector size: %ld", forward.size(), backward.size(), ids.size());
-	boost::mutex::scoped_lock lock(mutex);
-	ROS_DEBUG("getBackward: Mutex locked");
-	
-	if (backward.count(n)) {
-		int result = backward[n];
-		return result;
-	} else {
-		ROS_ERROR("getBackward: Unknown id %d", n);
-		return -1;
+	{
+		boost::mutex::scoped_lock lock(mutex);
+		ROS_DEBUG("getBackward: Mutex locked");
+		
+		if (backward.count(n)) {
+			int result = backward[n];
+			return result;
+		} else {
+			ROS_ERROR("getBackward: Unknown id %d", n);
+			return -1;
+		}
 	}
 }
