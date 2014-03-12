@@ -46,8 +46,9 @@ void IdDictionary::insert(int n)
 		ROS_DEBUG("Inserted id %d", n);
 		ids.push_back(n);
 		
-		ROS_DEBUG("insert: released lock");
+		ROS_DEBUG("insert: releasing lock");
 	}
+	ROS_DEBUG("insert: released lock");
 }
 
 int IdDictionary::size()
@@ -57,7 +58,7 @@ int IdDictionary::size()
 		boost::mutex::scoped_lock lock(mutex);
 		ROS_DEBUG("size: got lock");
 		
-		ROS_DEBUG("size: released lock");
+		ROS_DEBUG("size: releasing lock");
 		return ids.size();
 	}
 }
@@ -73,7 +74,7 @@ void IdDictionary::translateIds()
 		boost::mutex::scoped_lock lock(mutex);
 		ROS_DEBUG("translateIds: got lock");
 		
-		ROS_DEBUG("Translating dictionary with %d ids", ids.size());
+		ROS_DEBUG("Translating dictionary with %ld ids", ids.size());
 		
 		translated = true;
 		
@@ -85,9 +86,11 @@ void IdDictionary::translateIds()
 			forward[*it] = id;
 		}
 		
-		ROS_DEBUG("translateIds: released lock");
+		ROS_DEBUG("translateIds: releasing lock");
 	}
+	ROS_DEBUG("translateIds: released lock");
 }
+
 
 bool IdDictionary::isTranslated()
 {
@@ -108,11 +111,11 @@ int IdDictionary::getForward(int n)
 		if (forward.count(n)) {
 			int result = forward[n];
 			
-			ROS_DEBUG("getForward: released lock");
+			ROS_DEBUG("getForward: releasing lock");
 			return result;
 		} else {
 			ROS_ERROR("getForward: Unknown id %d", n);
-			ROS_DEBUG("getForward: released lock");
+			ROS_DEBUG("getForward: releasing lock");
 			return -1;
 		}
 	}
@@ -133,11 +136,11 @@ int IdDictionary::getBackward(int n)
 		if (backward.count(n)) {
 			int result = backward[n];
 			
-			ROS_DEBUG("getBackward: released lock");
+			ROS_DEBUG("getBackward: releasing lock");
 			return result;
 		} else {
 			ROS_ERROR("getBackward: Unknown id %d", n);
-			ROS_DEBUG("getBackward: released lock");
+			ROS_DEBUG("getBackward: releasing lock");
 			return -1;
 		}
 	}
