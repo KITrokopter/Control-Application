@@ -1,7 +1,7 @@
 #include "Interpolator.hpp"
 #include "Controller.hpp"
 
-int calculateThrust(int thrust, double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff);
+int calculateThrustDiff(double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff);
 
 Interpolator::Interpolator()
 {
@@ -72,7 +72,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	}
 
 	/* Calculate thrust value */	
-	if( counter > 0 )	// Enough data to calculate new thrust value
+	if( counter > 1 )	// Enough data to calculate new thrust value (at least two values)
 	{
 		/*positionA.setPosition( positions.back().getPosition() );
 		positionA.getTimestamp( positions.back().getTimestamp() );*/
@@ -80,21 +80,27 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		double zDistanceB = positionB.getDistanceZ( target );
 		double timediffAB = positionB.getTimestamp() - positionA.getTimestamp();
 		double absDistanceAB = positionA.getAbsoluteDistance( positionB );
-		newMovement.setThrust( calculateThrust(newMovement.getThrust(), zDistanceA, zDistanceB, absDistanceAB, timediffAB) );
+		double newThrust = newMovement.getThrust() + calculateThrust(zDistanceA, zDistanceB, absDistanceAB, timediffAB);
+		newMovement.setThrust( newThrust ); 
 	}
 
 	/* Calculate rest */
-	if( counter > 1 )	// Enough data to calculate new roll/pitch/(yaw) values
+	float newRoll = newMovement.getRoll();
+	float newPitch = newMovement.getPitch();
+	float newYawrate = newMovement.getYawrate();
+	if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
 	{
-		
+		newRoll += calculateAxisDiff();
+		newPitch += calculateAxisDiff();
+		newMovement.setRollPitchYawrate(newRoll, newPitch, newYawrate);
 	}
 	
 	return newMovement;
 }
 
-int calculateThrust( int thrust, double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff )
+int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff )
 {
-	int newThrust = thrust;
+	int newThrust = 0;
 	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
 	double distanceFactor = 0.5; // higher if further from target, between [0, 1]	//TODO
 	double threshold = 0;	// higher if timediff is higher and 	//TODO
@@ -134,6 +140,24 @@ int calculateThrust( int thrust, double zDistanceFirst, double zDistanceLatest, 
 		}
 		return newThrust;	
 	}
+}
+
+//double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff
+float calculateAxisDiff( double aDistanceFirst, double bDistanceLatest, double absDistanceFirstLatest, long int timediff ) 
+{
+	/*
+	 * Increase value if
+	 * 	too slow in right direction
+	 * Do not change if
+	 * 	speed is right and in right direction
+	 * Decrease if
+	 * 	faster than min-speed, close to target and right direction
+	 * 	too fast and right direction
+	 * Negate if
+	 * 	going in wrong direction
+	 * 
+	 */
+
 }
 
 bool reachingTarget( double first, double last, double speed, long int timediff )

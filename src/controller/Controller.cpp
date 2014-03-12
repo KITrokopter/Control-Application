@@ -622,7 +622,7 @@ int Controller::getLocalId(int globalId)
 	  return i;
 	}
   }
-  return -1;
+  return INVALID;
 }
 
 
