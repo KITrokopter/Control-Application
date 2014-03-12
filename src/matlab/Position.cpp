@@ -145,8 +145,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
 
         ROS_DEBUG("Calculating tracking area");
         setTrackingArea(1000);
-        TrackingArea test = TrackingArea(realCameraPos, realCameraOrient, 3, 1500, ep);
-        test.printTrackingArea();
+        this->tracking->printTrackingArea();
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
@@ -358,6 +357,7 @@ void Position::calculatePosition(int cameraId) {
 }
 
 Vector Position::getPosition(int cameraId) {
+    ROS_DEBUG("asked for position of camera %d", cameraId);
     return this->realCameraPos[cameraId];
 }
 
