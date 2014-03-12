@@ -6,7 +6,6 @@
  */
 
 #include "Line.h"
-#include "Vector.h"
 
 Line::Line() {
     this->a = Vector(0, 0, 0);
