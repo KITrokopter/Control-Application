@@ -238,7 +238,6 @@ void Controller::calculateMovement()
 					break;
 				case CALCULATE_STABILIZE:
 					ROS_INFO("Stabilize %i", i);
-					/*TODO*/
 					stabilize( i );
 					break;
 				case CALCULATE_HOLD:	
@@ -290,7 +289,7 @@ void Controller::calculateMovement()
  * First second: thrust THRUST_START
  * Next 4 seconds: thrust THRUST_STAND_STILL
  * After that probably an error occured and we can't say where it
- * it and should shutdown.
+ * is and should shutdown.
  */
 void Controller::moveUp( int internId )
 {
@@ -308,7 +307,6 @@ void Controller::moveUp( int internId )
 
 void Controller::stabilize( int internId )
 {
-	/* TODO */
 	/*
 	 * Delta der Position berechnen
 	 * 	falls nicht möglich: sende alten Wert (return)
@@ -319,12 +317,20 @@ void Controller::stabilize( int internId )
 	 * Geschwindigkeit und Beschleunigung der letzten x Male berechnen, Werte 
 	 * dementsprechend für Interpolation setzen (die Raten)
 	 *
+	 * Calculate only every 
+	 *
 	 */
 	Interpolator interpolator = Interpolator();
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
 	this->listTargetsMutex.unlock();
+	if( // TODO < CALCULATE_STABILIZE_STEP )
+	{
+		return;
+	}
 	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
+	
+	this->movementAll[internId] = newMovement;
 }
 
 bool Controller::isStable( int internId )
@@ -346,21 +352,7 @@ bool Controller::isStable( int internId )
 		std::list<Position6DOF>::reverse_iterator rit = this->listPositions[internId].rbegin();
 		for( ; rit != this->listPositions[internId].rend(); ++rit )
 		{
-			if( counter == compareTime[0] )
-			{
-				if( !closeToTarget( listPositions[internId].back(), *rit ) )
-				{
-					return false;
-				}
-			}
-			if( counter == compareTime[1] )
-			{
-				if( !closeToTarget( listPositions[internId].back(), *rit ) )
-				{
-					return false;
-				}
-			}
-			if( counter == compareTime[2] )
+			if( counter==compareTime[0] || counter==compareTime[1] || counter==compareTime[2] )
 			{
 				if( !closeToTarget( listPositions[internId].back(), *rit ) )
 				{

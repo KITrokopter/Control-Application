@@ -54,6 +54,8 @@
 #define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
 #define CALCULATE_LAND 5 //Shutdown quadcopter
 
+#define CALCULATE_STABILIZE_STEP 500	// time in ms after next value should be calculated
+
 #define RANGE_STABLE 0.1 // Distance of two points to be considered "equal" in m
 #define RANGE_STABLE_Z 0.08 // Difference of two height-Values to be considered "equal" in m
 

@@ -21,6 +21,8 @@
 #define SPEED_MAX_INCLINING 500 	// in mm/s
 #define SPEED_MIN_DECLINING -150 	// in mm/s
 #define SPEED_MAX_DECLINING -500 	// in mm/s
+#define SPEED_MIN_PLANE 80	// in mm/s
+#define SPEED_MAX_PLANE 300	// in mm/s
 
 #define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
 

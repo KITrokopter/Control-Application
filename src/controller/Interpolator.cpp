@@ -90,8 +90,8 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	float newYawrate = newMovement.getYawrate();
 	if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
 	{
-		newRoll += calculateAxisDiff();
-		newPitch += calculateAxisDiff();
+		newRoll += calculatePlaneDiff();
+		newPitch += calculatePlaneDiff();
 		newMovement.setRollPitchYawrate(newRoll, newPitch, newYawrate);
 	}
 	
@@ -142,14 +142,26 @@ int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double a
 	}
 }
 
-//double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff
-float calculateAxisDiff( double aDistanceFirst, double bDistanceLatest, double absDistanceFirstLatest, long int timediff ) 
+float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, long int timediff, double aSentLatest ) 
 {
+
+	float diff = 0;
+	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
+	double distanceFactor = 0.5; // higher if further from target, between [0, 1]	//TODO
+	double threshold = 0;	// higher if timediff is higher and 	//TODO
+
+	/* Difference calculated as a-speed in mm/s. 
+	 Positive if going in normalized positive direction. */
+	double aSpeed = (aDistanceFirst-aDistanceLatest) * timediffNormalized;	// in mm/s
+	double aAbsDistance = abs(aDistanceFirst-aDistanceLatest);
+	bool distanceIncrease = false;
+	
 	/*
+	 * Do not change if
+	 * 	speed is right and right direction
+	 * 	close to target and right direction
 	 * Increase value if
 	 * 	too slow in right direction
-	 * Do not change if
-	 * 	speed is right and in right direction
 	 * Decrease if
 	 * 	faster than min-speed, close to target and right direction
 	 * 	too fast and right direction
@@ -157,7 +169,16 @@ float calculateAxisDiff( double aDistanceFirst, double bDistanceLatest, double a
 	 * 	going in wrong direction
 	 * 
 	 */
-
+	if( (aSpeed>0 && aSpeed<SPEED_MIN_PLANE) && (aSpeed<))
+	{
+		diff += ROLL_STEP;
+	}	
+	if( abs(aSpeed)>SPEED_MIN_PLANE && aAbsDistance
+	return diff;
+	/*if( abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET ) 
+	{
+		return diff;		
+	}*/
 }
 
 bool reachingTarget( double first, double last, double speed, long int timediff )
