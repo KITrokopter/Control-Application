@@ -258,6 +258,18 @@ void TrackingArea::increaseTrackingArea(double posChange) {
     setB4(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange));
 }
 
+void TrackingArea::increaseTrackingArea(double height, double posChange) {
+    Vector center = getCenter();
+    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - height));
+    setA2(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + height));
+    setA3(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + height));
+    setA4(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() - height));
+    setB1(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() - height));
+    setB2(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + height));
+    setB3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + height));
+    setB4(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - height));
+}
+
 /*
  *  calculates the maximum TrackingArea in form of a quader
  */
@@ -288,17 +300,19 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
         posChange *= 2;
         increaseTrackingArea(posChange);
-        ROS_DEBUG("square size: %f", 2 * posChange);
+        ROS_DEBUG("increasing, cube size: %f", 2 * posChange);
     }
 
     // border is between leftBorder and rightBorder
     double leftBorder = posChange/2;
     double rightBorder = posChange;
-    double middle = rightBorder - 1/2 * leftBorder;
+    double middle = (rightBorder - leftBorder)/2;
 
     bool tracked = false;
     // searching exact border of tracking area
-    while ((rightBorder - leftBorder > 5) || (tracked == false)) {
+    while ((rightBorder - leftBorder > 5) && (tracked == false)) {
+
+        // checks whether all corners of tracking area are still tracked of all cameras
         if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
@@ -312,23 +326,15 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             leftBorder = middle;
             tracked = false;
         }
-        middle = rightBorder - 1/2 * leftBorder;
+        middle = (rightBorder - leftBorder)/2;
         increaseTrackingArea(middle);
-        ROS_DEBUG("square size: %f", 2 * middle);
+        ROS_DEBUG("binary search, cube size: %f", 2 * middle);
     }
 
+    // border is (rightBorder - leftBorder)/2
+    ROS_DEBUG("maximal cube size is %f", middle);
 
 
-    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - posChange));
-    setA2(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + posChange));
-    setA3(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + posChange));
-    setA4(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() - posChange));
-    setB1(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() - posChange));
-    setB2(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + posChange));
-    setB3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + posChange));
-    setB4(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange));
-
-    posChange += 50;
 
 }
 
