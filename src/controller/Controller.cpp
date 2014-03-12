@@ -324,7 +324,7 @@ void Controller::stabilize( int internId )
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
 	this->listTargetsMutex.unlock();
-	if( // TODO < CALCULATE_STABILIZE_STEP )
+	if() // TODO dateNow-dateOfLatestCalculation < CALCULATE_STABILIZE_STEP )
 	{
 		return;
 	}

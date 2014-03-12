@@ -33,6 +33,8 @@
  * 	TODO reach and keep height
  * 	TODO same in 3D-view
  * 
+ * TODO hold
+ * 
  * TODO test of speed, either optimize or save data-to-sent in advance
  * TODO optimize interpolation (step size time-dependant)
  * TODO optimize interpolation (replace linear function)

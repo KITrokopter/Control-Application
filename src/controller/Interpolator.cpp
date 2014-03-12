@@ -147,33 +147,49 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 
 	float diff = 0;
 	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
-	double distanceFactor = 0.5; // higher if further from target, between [0, 1]	//TODO
-	double threshold = 0;	// higher if timediff is higher and 	//TODO
+	double aAbsDistance = abs(aDistanceFirst-aDistanceLatest);
+	double distanceFactor = 0.1 + fmin(2.0, (arctan(aAbsDistance*1000.0)+1.0); // higher if further from target, between [0, 2]	//TODO
 
 	/* Difference calculated as a-speed in mm/s. 
 	 Positive if going in normalized positive direction. */
 	double aSpeed = (aDistanceFirst-aDistanceLatest) * timediffNormalized;	// in mm/s
-	double aAbsDistance = abs(aDistanceFirst-aDistanceLatest);
 	bool distanceIncrease = false;
 	
 	/*
-	 * Do not change if
+	 * Do not change value if
 	 * 	speed is right and right direction
 	 * 	close to target and right direction
-	 * Increase value if
-	 * 	too slow in right direction
-	 * Decrease if
+	 * Increase abs(value) if
+	 * 	too slow
+	 * Decrease abs(value) if
 	 * 	faster than min-speed, close to target and right direction
-	 * 	too fast and right direction
-	 * Negate if
+	 * 	too fast
+	 * Negate value if
 	 * 	going in wrong direction
 	 * 
 	 */
-	if( (aSpeed>0 && aSpeed<SPEED_MIN_PLANE) && (aSpeed<))
-	{
-		diff += ROLL_STEP;
-	}	
-	if( abs(aSpeed)>SPEED_MIN_PLANE && aAbsDistance
+	// right direction: (aSpeed>0 && aDistanceLatest>0) 
+	// close to target: abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET
+	if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE) )
+		diff += ROLL_STEP; 
+	else if( (aSpeed<0 && aDistanceLatest<0) && (-aSpeed<SPEED_MIN_PLANE) )
+		diff -= ROLL_STEP; 
+	else if( aSpeed>SPEED_MAX_PLANE )
+		diff -= ROLL_STEP; 
+	else if( -aSpeed>SPEED_MAX_PLANE )
+		diff += ROLL_STEP; 
+	else if( (aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest>0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
+		diff -= ROLL_STEP; 
+	else if( (-aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest<0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
+		diff += ROLL_STEP; 
+	/*
+
+	                                    * /
+	else if( (aSpeed>0) && aDistanceLatest>aDistanceLatest
+	
+	if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE) )
+		diff += ROLL_STEP; 
+	        
 	return diff;
 	/*if( abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET ) 
 	{
