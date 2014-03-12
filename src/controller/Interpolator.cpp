@@ -34,10 +34,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	}
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
-	/* Calculate thrust value */
 	
-	
-	/* Calculate rest */
 	bool oscillate = false;
 	int size = positions.size();
 	double deltaTarget[size];
@@ -74,18 +71,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		counter++;
 	}
 
-	/*if( counter > 1 )
-	{
-		if( reachingTarget() )
-		{
-
-		}
-		else 
-		{
-
-		}
-	}*/
-
+	/* Calculate thrust value */	
 	if( counter > 0 )	// Enough data to calculate new thrust value
 	{
 		/*positionA.setPosition( positions.back().getPosition() );
@@ -97,6 +83,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		newMovement.setThrust( calculateThrust(newMovement.getThrust(), zDistanceA, zDistanceB, absDistanceAB, timediffAB) );
 	}
 
+	/* Calculate rest */
+	if( counter > 1 )	// Enough data to calculate new roll/pitch/(yaw) values
+	{
+		
+	}
+	
 	return newMovement;
 }
 
@@ -124,7 +116,7 @@ int calculateThrust( int thrust, double zDistanceFirst, double zDistanceLatest, 
 	 * 	negative distance to target is increasing
 	 * 	(speed is too high)
 	 * 
-	 * All that iff values seem realistic 	TODO
+	 * All that iff received position-values seem realistic 	TODO
 	 */
 	
 	if( abs(zDistanceLatest) < DISTANCE_CLOSE_TO_TARGET ) 
