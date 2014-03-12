@@ -13,24 +13,32 @@
 
 class Matlab {
 private:
-    /*
-     * Engine of matlab window
+
+    /**
+     * Engine of matlab.
      */
     Engine *ep;
 public:
+
+    /**
+     * empty constructor. creates matlab engine.
+     */
 	Matlab();
-    /*
-     * already created matlab window with ep
+
+    /**
+     * constructor.
+     * @param ep matlab engine
      */
 	Matlab(Engine *ep);
 	Engine* getEngine();
 
-    /*
-     * close matlab application
+    /**
+     * destroys engine of matlab
      */
 	void destroyMatlab();
 
     /**
+     * calculates perpendicular foot of line f and point b.
      * @param f Line where the return shoul lie on
      * @param b point
      * @return perpendicular foot of line f and point b
@@ -38,6 +46,7 @@ public:
 	Vector perpFootOneLine(Line f, Vector b);
 
     /**
+     * calculates perpendicular foot of line f and line g. Result is saved in result
      * @param f Line where the first perpendicular foot should lie on
      * @param g Line where the second perpendicular foot should lie on
      * @param result array of vectors where the perpendicular points should be saved
@@ -48,7 +57,7 @@ public:
 	int perpFootTwoLines(Line f, Line g, Vector **result);
 
     /**
-     * @brief interpolateLines
+     * linear interpolation of some lines
      * @param lines array of all lines that should be interpolated
      * @param quantity number of lines in the array lines
      * @return vector that is nearest to all lines
@@ -56,7 +65,7 @@ public:
     Vector interpolateLines(Line *lines, int quantity);
 
     /**
-     * @brief interpolateLine
+     * linear interpolation of a point and a line with a interpolationfactor
      * @param line line of a camera pointing to the actual quadcopter position
      * @param quadPos last position of quadcopter
      * @param interpolationFactor
@@ -66,7 +75,7 @@ public:
 
     /**
      * Warning: Only working, if line g and E1 or line g.getA() + r * (directV2-g.getA()) intersects!!
-     * @brief getIntersectionLine
+     * calculates intersection line of two plains
      * @param f Line, that is positionated in plane E1
      * @param directV1 Point, that is not in line f and is on the plane E1
      * E1 = f.getA() + r*f.getU() + s*(directV1 - f.getA())

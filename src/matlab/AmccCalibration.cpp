@@ -12,9 +12,6 @@
 #include <iostream>
 #include <sstream>
 #include <cstring>
-#include "engine.h"
-#include "Vector.h"
-#include "Line.h"
 #include "AmccCalibration.h"
 #include <ros/ros.h>
 
@@ -39,7 +36,6 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
 
     // for debuging saves Matlab log in input folder
     engEvalString(ep, "diary('/tmp/calibrationImages/log');");
-
 
     // input of parameters
     double dataSlx[1] = {squareLengthX};
