@@ -40,6 +40,8 @@ void IdDictionary::insert(int n)
 
 int IdDictionary::size()
 {
+	boost::mutex::scoped_lock lock(mutex);
+	
 	return ids.size();
 }
 
@@ -93,6 +95,7 @@ int IdDictionary::getBackward(int n)
 	}
 	
 	ROS_DEBUG("getBackward: Locking mutex");
+	ROS_DEBUG("forward size: %ld, backward size: %ld, vector size: %ld", forward.size(), backward.size(), ids.size());
 	boost::mutex::scoped_lock lock(mutex);
 	ROS_DEBUG("getBackward: Mutex locked");
 	
