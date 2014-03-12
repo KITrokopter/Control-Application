@@ -73,7 +73,7 @@ void IdDictionary::translateIds()
 		boost::mutex::scoped_lock lock(mutex);
 		ROS_DEBUG("translateIds: got lock");
 		
-		ROS_DEBUG("Translating dictionary with %d ids", size());
+		ROS_DEBUG("Translating dictionary with %d ids", ids.size());
 		
 		translated = true;
 		
