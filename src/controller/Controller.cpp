@@ -432,24 +432,19 @@ bool Controller::checkInput(int internId)
 	this->lastFormationMovementMutex.unlock();
 	if(currentTime - lastForm > TIME_UPDATED_END && quadcopterMovementStatus[internId] == CALCULATE_MOVE)
 	{
-		std::string message("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
-		ROS_INFO("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+		std::string message("No new formation movement data has been received since %ld sec. Shutdown formation\n", TIME_UPDATED_END);
+		ROS_INFO("No new formation movement data has been received since %ld sec. Shutdown formation\n", TIME_UPDATED_END);
 		emergencyRoutine(message);
 		return false;
 	}
-	ROS_INFO("Current time %ld", currentTime);
 	this->lastCurrentMutex.lock();
-	ROS_INFO("Last current Input of %i: %ld",internId, this->lastCurrent[internId]);
 	long int lastCur = this->lastCurrent[internId];
 	this->lastCurrentMutex.unlock();
 	ROS_INFO("%ld", currentTime - lastCur);
-	ROS_INFO("%i",quadcopterMovementStatus[internId] != CALCULATE_NONE);
-	ROS_INFO("%i", quadcopterMovementStatus[internId] != CALCULATE_START);
 	if(currentTime - lastCur > TIME_UPDATED_END && quadcopterMovementStatus[internId] != CALCULATE_NONE && quadcopterMovementStatus[internId] != CALCULATE_START)
 	{
-		ROS_INFO("Test1");
-		//std::string message("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
-		ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+		std::string message("No quadcopter position data has been received since %ld sec. Shutdown formation\n", TIME_UPDATED_END);
+		ROS_INFO("No quadcopter position data has been received since %ld sec. Shutdown formation\n", TIME_UPDATED_END);
 		//emergencyRoutine(message);
 		trackedArrayMutex.lock();
 		ROS_INFO("tracked false");
