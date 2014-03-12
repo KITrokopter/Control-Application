@@ -386,14 +386,8 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
     }
 
     // border is (rightBorder - leftBorder)/2
-    ROS_DEBUG("maximal cube size is %f", middle);
-    double border = middle;
-    // volume of cube is (middle * 2)^3
-    double borderVolume = 8 * middle * middle * middle;
-
-
-
-    double flatQuaderLength = length;
+    ROS_DEBUG("maximal cube length is %f", middle);
+    double flatQuaderLength = middle;
     double flatQuaderHeight = height;
     double flatQuaderVolume = 8 * length * length * heigth;
     if (flatQuaderVolume > borderVolume) {
