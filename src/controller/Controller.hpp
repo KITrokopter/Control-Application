@@ -171,6 +171,7 @@ private:
 	Mutex receivedQCStMutex;
 	Mutex lastFormationMovementMutex;
 	Mutex lastCurrentMutex;
+	Mutex movementStatusMutex;
 
 	/* Threads */
 	pthread_t tCalculateMovement;
