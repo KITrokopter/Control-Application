@@ -84,8 +84,9 @@ int IdDictionary::getForward(int n)
 	mutex.lock();
 	
 	if (forward.count(n)) {
+		int result = forward[n];
 		mutex.unlock();
-		return forward[n];
+		return result;
 	} else {
 		ROS_ERROR("getForward: Unknown id %d", n);
 		mutex.unlock();
@@ -102,8 +103,9 @@ int IdDictionary::getBackward(int n)
 	mutex.lock();
 	
 	if (backward.count(n)) {
+		int result = backward[n];
 		mutex.unlock();
-		return backward[n];
+		return result;
 	} else {
 		ROS_ERROR("getBackward: Unknown id %d", n);
 		mutex.unlock();
