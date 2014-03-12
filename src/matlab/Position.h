@@ -10,6 +10,7 @@
 #include "AmccCalibration.h"
 #include "engine.h"
 #include <vector>
+#include "TrackingArea.h"
 
 class Position {
 private: 
@@ -19,6 +20,9 @@ private:
 	int numberCameras;
 	// saves whether the cameras are multicalibrated or not;
 	bool transformed;
+
+	// TrackingArea of cameras
+	TrackingArea *tracking;
 
 	/* 
 	 * (quadPos[i])[j] is the position of quadrocopter with ID i and camera with ID j
@@ -58,6 +62,8 @@ private:
 	void angleTry(int sign);
 	// loads values of amcc toolbox calibration of camera with cameraId in matlab workspace
 	void loadValues(int cameraId);
+
+	std::vector<int> imageAge;
 public:
 	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
 	Position();
@@ -73,11 +79,14 @@ public:
 	// setter
 	void setNumberCameras(int numberCameras);
 
-		
+	// sets the tracking area after calibration
+	void setTrackingArea(double maxRange);
+	TrackingArea getTrackingArea();	
+
 	// transforming coordinate system of camera 0 to coordinate system where all cameras are on the xy-plane, returns vector w in real co-system
 	Vector calculateCoordinateTransformation(Vector w, int cameraId);
 
-	/// quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet	
+    // quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet
 	Vector updatePosition(Vector quad, int cameraId, int quadcopterId);
 
 	

@@ -265,6 +265,7 @@ add_executable(position_module
   	src/matlab/Matrix.cpp
 	src/matlab/Matlab.cpp
 	src/matlab/Position.cpp
+  	src/matlab/TrackingArea.cpp
 	src/matlab/AmccCalibration.cpp
 	src/matlab/profiling.cpp
 	src/controller/Mutex.cpp

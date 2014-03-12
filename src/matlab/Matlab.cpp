@@ -13,6 +13,7 @@
 #include "engine.h"
 #include "Vector.h"
 #include "Line.h"
+#include <ros/ros.h>
 #define  BUFSIZE 256
 
 Matlab::Matlab() {
@@ -40,7 +41,7 @@ Engine* Matlab::getEngine() {
 Vector Matlab::perpFootOneLine(Line f, Vector b) {
     Vector a = f.getA();
     Vector u = f.getU();
-    int d = b.scalarMult(u);
+    float d = b.scalarMult(u);
     int x = (a.scalarMult(u) - d)/(u.scalarMult(u.mult(-1)));
     Vector result = a.add(u.mult(x));
     return result;
@@ -182,10 +183,12 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 
 Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
     Vector newPos = perpFootOneLine(line, quadPos);
-	double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
+    double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
 	double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
     double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
-    return Vector(v1, v2, v3);
+    Vector result(v1, v2, v3);
+    ROS_DEBUG("Difference: %f", (result.add(quadPos.mult(-1))).getLength());
+    return result;
 }
 
 Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {
