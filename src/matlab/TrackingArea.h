@@ -28,6 +28,7 @@ private:
      * @param height distance of quader floor and cube bottom to center
      */
     void increaseTrackingArea(double posChange, double height);
+
 public:
 	TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector b1, Vector b2, Vector b3, Vector b4);
 	TrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector>  cameraDirection, int numberCameras, double maxRange, Engine *ep); 

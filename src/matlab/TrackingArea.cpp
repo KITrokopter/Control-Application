@@ -258,7 +258,7 @@ void TrackingArea::increaseTrackingArea(double posChange) {
     setB4(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - posChange));
 }
 
-void TrackingArea::increaseTrackingArea(double height, double posChange) {
+void TrackingArea::increaseTrackingArea(double posChange, double height) {
     Vector center = getCenter();
     setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - height));
     setA2(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + height));
@@ -333,9 +333,31 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
     // border is (rightBorder - leftBorder)/2
     ROS_DEBUG("maximal cube size is %f", middle);
+    double border = middle;
+    // volume of cube is (middle * 2)^3
+    double borderVolume = 8 * middle * middle * middle;
 
+    // checking whether trackingArea is bigger, if quader and not cube
+    // first making height smaller and length, width bigger
+    double height = middle;
+    double length = middle;
+    height = height - 40;
+    length = lenght + 10;
+    increaseTrackingArea(length, height);
+    while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+        && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
+        && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
+        && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
 
+        length = length + 10;
+        increaseTrackingArea(length, height);
+    }
+    double flatQuaderLength = length;
+    double flatQuaderHeight = height;
+    double flatQuaderVolume = 8 * length * length * heigth;
+    if (flatQuaderVolume > borderVolume) {
 
+    }
 }
 
 void TrackingArea::printTrackingArea() {
