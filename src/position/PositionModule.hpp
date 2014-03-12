@@ -30,6 +30,7 @@ private:
 	
 	// Calibration
 	bool isCalibrating;
+	bool isCalibrated;
 	int calibrationPictureCount;
 	cv::Size boardSize;
 	cv::Size realSize;
