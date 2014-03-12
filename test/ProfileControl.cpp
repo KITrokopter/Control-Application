@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
 	//ros::MultiThreadedSpinner spinner(2); // Use 4 threads
 	//spinner.spin(); // spin() will not return until the node has been shutdown
 	
-	usleep(50000000);
+	usleep(30000000);
 	ROS_INFO("Updating");
 	std::vector<int> ids;
 	ids.push_back(0);
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 	  usleep(100);
 	}
 	ROS_INFO("Wait");
-	usleep(4000000);
+	usleep(10000000);
 	ROS_INFO("Long Update");
 	for(int i = 0; i < 10000; i++)
         {
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
           usleep(2000);
         }
 	ROS_INFO("Wait");
-        usleep(100000000);
+        usleep(10000000);
 	ROS_INFO("Finished");
 	// See MovementGenerator.hpp
 	/*MovementGenerator generator(receiver, from, to, 0.05, 0.1, 0.01, 25, 10);
