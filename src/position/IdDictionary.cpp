@@ -100,7 +100,9 @@ int IdDictionary::getBackward(int n)
 		ROS_ERROR("getBackward: Ids not translated!");
 	}
 	
+	ROS_DEBUG("getBackward: Locking mutex");
 	mutex.lock();
+	ROS_DEBUG("getBackward: Mutex locked");
 	
 	if (backward.count(n)) {
 		int result = backward[n];
