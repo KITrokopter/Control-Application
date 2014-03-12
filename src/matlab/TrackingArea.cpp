@@ -338,20 +338,61 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
     double borderVolume = 8 * middle * middle * middle;
 
     // checking whether trackingArea is bigger, if quader and not cube
+
+
     // first making height smaller and length, width bigger
     double height = middle;
     double length = middle;
-    height = height - 40;
-    length = lenght + 10;
-    increaseTrackingArea(length, height);
+
+    // decreasing height 10%, increasing length, width simultaneous
+    height = height - (height/10);
+    posChange = 1;
+    increaseTrackingArea(length + posChange, height);
     while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
         && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
         && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
         && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
 
-        length = length + 10;
-        increaseTrackingArea(length, height);
+        posChange = posChange * 2;
+        increaseTrackingArea(length + posChange, height);
+        ROS_DEBUG("increasing, quader size: %f x %f x %f", 2 * (length + posChange), 2 * (length + posChange), height);
     }
+
+    leftBorder = length + posChange / 2;
+    rightBorder = length + posChange;
+    middle = (rightBorder - leftBorder) / 2;
+
+    tracked = false;
+    // searching exact border of tracking area
+    while ((rightBorder - leftBorder > 5) && (tracked == false)) {
+
+        // checks whether all corners of tracking area are still tracked of all cameras
+        if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
+            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
+            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
+
+            // border is between leftBorder and middle
+            rightBorder = middle;
+            tracked = true;
+        } else {
+            // border is between middle and rightBorder
+            leftBorder = middle;
+            tracked = false;
+        }
+        middle = (rightBorder - leftBorder)/2;
+        increaseTrackingArea(middle, height);
+        ROS_DEBUG("binary search, quader size: %f x %f x %f", 2 * middle, 2 * middle , height);
+    }
+
+    // border is (rightBorder - leftBorder)/2
+    ROS_DEBUG("maximal cube size is %f", middle);
+    double border = middle;
+    // volume of cube is (middle * 2)^3
+    double borderVolume = 8 * middle * middle * middle;
+
+
+
     double flatQuaderLength = length;
     double flatQuaderHeight = height;
     double flatQuaderVolume = 8 * length * length * heigth;
