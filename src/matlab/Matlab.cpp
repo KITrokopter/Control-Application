@@ -178,8 +178,6 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
     double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
     Vector result(v1, v2, v3);
 
-    // calculates distance between last seen position and new calculated position
-    ROS_DEBUG("Difference: %f", (result.add(quadPos.mult(-1))).getLength());
     return result;
 }
 

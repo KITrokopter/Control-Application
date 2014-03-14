@@ -28,6 +28,7 @@ private:
      * @param height distance of quader floor and cube bottom to center
      */
     void increaseTrackingArea(double posChange, double height);
+    void increaseTrackingArea(double posChange, double heightPos, double heightNeg);
 
 public:
 	TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector b1, Vector b2, Vector b3, Vector b4);

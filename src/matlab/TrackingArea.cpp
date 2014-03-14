@@ -272,6 +272,19 @@ void TrackingArea::increaseTrackingArea(double posChange, double height) {
     setB4(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + height));
 }
 
+void TrackingArea::increaseTrackingArea(double posChange, double heightPos, double heightNeg) {
+    Vector center = getCenter();
+    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() - heightNeg));
+    setA2(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() - heightNeg));
+    setA3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() - heightNeg));
+    setA4(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() - heightNeg));
+    posChange = posChange/2;
+    setB1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + heightPos));
+    setB2(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + heightPos));
+    setB3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + heightPos));
+    setB4(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + heightPos));
+}
+
 
 double TrackingArea::getVolume(double height) {
     double upperLength = b1.add(b2.mult(-1)).getLength();
@@ -436,231 +449,6 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
     }
 
     ROS_DEBUG("maximal lower size is %f", lowerBorder * 2);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // old code
-
-
-
-
-
-
-    // searching border of tracking area
-    while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
-        posChange *= 2;
-        increaseTrackingArea(posChange);
-        ROS_DEBUG("increasing, cube size: %f", 2 * posChange);
-    }
-
-    // border is between leftBorder and rightBorder
-    leftBorder = posChange/2;
-    rightBorder = posChange;
-    middle = leftBorder + (rightBorder - leftBorder)/2;
-    increaseTrackingArea(middle);
-
-    tracked = false;
-    // searching exact border of tracking area
-    while ((rightBorder - leftBorder > 5) || (tracked == false)) {
-
-        // checks whether all corners of tracking area are still tracked of all cameras
-        if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
-
-            // border is between middle and rightBorder
-            leftBorder = middle;
-            tracked = true;
-            ROS_DEBUG("TRUE");
-        } else {
-            // border is between leftBorder and middle
-            rightBorder = middle;
-            tracked = false;
-            ROS_DEBUG("false");
-        }
-        middle = leftBorder + (rightBorder - leftBorder)/2;
-        increaseTrackingArea(middle);
-        ROS_DEBUG("binary search, cube size: %f", 2 * middle);
-    }
-
-    // border is (rightBorder - leftBorder)/2
-    border = middle;
-    ROS_DEBUG("maximal cube size is %f", border * 2);
-    // volume of cube
-    double borderVolume = getVolume(middle * 2);
-    ROS_DEBUG("maximal cube volume is %f", borderVolume);
-
-
-    // checking whether trackingArea is bigger, if quader and not cube
-
-
-    // first making height smaller and length, width bigger
-    double height = border;
-    double length = border;
-
-/*
-    // decreasing height 10%, increasing length, width simultaneous
-    double flatQuaderVolume = borderVolume + 10;
-    double flatQuaderLength = 0;
-    double flatQuaderHeight = 0;
-    while (flatQuaderVolume > borderVolume) {
-
-        height = height - (height/10);
-        posChange = 1;
-        increaseTrackingArea(length + posChange, height);
-        while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
-
-            posChange = posChange * 2;
-            increaseTrackingArea(length + posChange, height);
-            ROS_DEBUG("increasing, flat quader size: %f x %f x %f", 2 * (length + posChange), 2 * (length + posChange), height);
-        }
-
-        leftBorder = length + posChange / 2;
-        rightBorder = length + posChange;
-        middle = leftBorder + (rightBorder - leftBorder) / 2;
-        increaseTrackingArea(middle);
-
-        tracked = false;
-        // searching exact border of tracking area
-        while ((rightBorder - leftBorder > 5) || (tracked == false)) {
-
-            // checks whether all corners of tracking area are still tracked of all cameras
-            if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
-
-                // border is between middle and rightBorder
-                leftBorder = middle;
-                tracked = true;
-                ROS_DEBUG("true");
-            } else {
-                // border is between leftBorder and middle
-                rightBorder = middle;
-                tracked = false;
-                ROS_DEBUG("false");
-            }
-            middle = leftBorder + (rightBorder - leftBorder)/2;
-            increaseTrackingArea(middle, height);
-            ROS_DEBUG("binary search, flat quader size: %f x %f x %f", 2 * middle, 2 * middle , 2 * height);
-        }
-
-        flatQuaderLength = middle;
-        flatQuaderHeight = height;
-        // border is (rightBorder - leftBorder)/2
-        ROS_DEBUG("maximal flat quader is %f x %f x %f", flatQuaderLength * 2, flatQuaderLength *  2, flatQuaderHeight * 2);
-        flatQuaderVolume = getVolume(height);
-        ROS_DEBUG("maximal flat quader volume is %f", flatQuaderVolume);
-    }
-
-*/
-
-
-    // then making length, width smaller and height bigger
-    height = border;
-    length = border;
-
-
-    // decreasing length, width 10%, increasing height
-    double tallQuaderLength = 0;
-    double tallQuaderHeight = 0;
-    double tallQuaderVolume = borderVolume + 10;
-    while (tallQuaderVolume > borderVolume) {
-
-        length = length - (length/10);
-        posChange = 1;
-        increaseTrackingArea(length, height + posChange);
-        while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
-            && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
-
-            posChange = posChange * 2;
-            increaseTrackingArea(length, height + posChange);
-            ROS_DEBUG("increasing, tall quader size: %f x %f x %f", 2 * length, 2 * length, 2 * (height + posChange));
-        }
-
-        leftBorder = height + posChange / 2;
-        rightBorder = height + posChange;
-        middle = leftBorder + (rightBorder - leftBorder) / 2;
-        increaseTrackingArea(middle);
-
-        tracked = false;
-        // searching exact border of tracking area
-        while ((rightBorder - leftBorder > 5) || (tracked == false)) {
-
-            // checks whether all corners of tracking area are still tracked of all cameras
-            if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
-
-                // border is between middle and rightBorder
-                leftBorder = middle;
-                tracked = true;
-                ROS_DEBUG("true");
-            } else {
-                // border is between leftBorder and middle
-                rightBorder = middle;
-                tracked = false;
-                ROS_DEBUG("false");
-            }
-            middle = leftBorder + (rightBorder - leftBorder)/2;
-            increaseTrackingArea(length, middle);
-            ROS_DEBUG("binary search, tall quader size: %f x %f x %f", length, length , 2 * middle);
-        }
-
-        tallQuaderLength = length;
-        tallQuaderHeight = middle;
-        // border is (rightBorder - leftBorder)/2
-        ROS_DEBUG("maximal tall quader is %f x %f x %f", tallQuaderLength * 2, tallQuaderLength * 2, tallQuaderHeight * 2);
-        tallQuaderVolume = getVolume(tallQuaderHeight * 2);
-        ROS_DEBUG("maximal tall quader volume is %f", tallQuaderVolume);
-
-    }
-
-    if ((borderVolume >= flatQuaderVolume) && (borderVolume >= tallQuaderVolume)) {
-        increaseTrackingArea(border);
-    } else if ((flatQuaderVolume >= borderVolume) && (flatQuaderVolume >= tallQuaderVolume)) {
-        increaseTrackingArea(flatQuaderLength, flatQuaderHeight);
-    } else {
-        increaseTrackingArea(tallQuaderLength, tallQuaderHeight);
-    }
-    ROS_DEBUG("maximal Tracking Area is %f x %f x %f", a1.add(a2.mult(-1)).getLength(), a1.add(a2.mult(-1)).getLength(), a1.add(b1.mult(-1)).getLength());
 }
 
 void TrackingArea::printTrackingArea() {

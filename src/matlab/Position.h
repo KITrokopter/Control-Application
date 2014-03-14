@@ -21,6 +21,9 @@ private:
 	// saves whether the cameras are multicalibrated or not;
 	bool transformed;
 
+    // distance of last seen position and actual position
+    double distance;
+
 	// TrackingArea of cameras
     TrackingArea tracking;
 
@@ -92,6 +95,9 @@ public:
 	
 	// returns position of camera with cameraId, returns NAN, if not yet calibrated
 	Vector getPosition(int cameraId);
+
+    // returns distance between last seen position and last calculated position
+    double getDistance();
 };
 
 #endif // POSITION_H //

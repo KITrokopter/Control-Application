@@ -43,6 +43,7 @@ Position::Position()
     }
     rotationMatrix = nanMatrix;
     this->transformed = false;
+    distance = 0;
 
 }
 
@@ -65,6 +66,7 @@ Position::Position(Engine *ep, int numberCameras)
     }
     rotationMatrix = nanMatrix;
     this->transformed = false;
+    distance = 0;
 }
 
 bool Position::calibratedYet(int numberCameras) {
@@ -336,6 +338,10 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             Line tracked = Line(position, direction);
             // calulating actual pos
             Vector newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
+
+            // calculates distance between last seen position and new calculated position
+            distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
+
             // saving new Pos
             ROS_DEBUG("New position of quadcopter %d is [%f, %f, %f]\n", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3());
             oldPos[quadcopterId] = newPos;
@@ -387,4 +393,8 @@ void Position::setTrackingArea(double maxRange) {
 
 TrackingArea Position::getTrackingArea() {
     return this->tracking;
+}
+
+double Position::getDistance() {
+    return this->distance;
 }
