@@ -258,9 +258,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	}
 	
 	for (int i = 0; i < camNumber; i++) {
-		ROS_DEBUG("Calculating position of camera %d", i);
 		Vector position = trackingWorker.getCameraPosition(i);
-		ROS_DEBUG("Calculated position of camera %d", i);
 		res.cameraXPositions.push_back(position.getV1());
 		res.cameraYPositions.push_back(position.getV2());
 		res.cameraZPositions.push_back(position.getV3());
