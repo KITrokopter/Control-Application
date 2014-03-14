@@ -297,19 +297,22 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].push_front( newMovement );
 	} else
 	{
-		int diff = 4000;
-		long int timeDiff = 400000000;
-		long int currentTime = getNanoTime();
-		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0, currentTime );
-		this->listFutureMovement[internId].push_back( newMovement );
+		if( this->listFutureMovement[internId].size() == 0 )
+		{
+			int diff = 4000;
+			long int timeDiff = 400000000;
+			long int currentTime = getNanoTime();
+			MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0, currentTime );
+			this->listFutureMovement[internId].push_back( newMovement );
 		
-		newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
-		newMovement.setThrust( newMovement.getThrust() + diff );
-		this->listFutureMovement[internId].push_back( newMovement );
+			newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
+			newMovement.setThrust( newMovement.getThrust() + diff );
+			this->listFutureMovement[internId].push_back( newMovement );
 		
-		newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
-		newMovement.setThrust( newMovement.getThrust() + diff );
-		this->listFutureMovement[internId].push_back( newMovement );
+			newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
+			newMovement.setThrust( newMovement.getThrust() + diff );
+			this->listFutureMovement[internId].push_back( newMovement );
+		}
 	}
 }
 
