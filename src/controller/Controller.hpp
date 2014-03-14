@@ -110,11 +110,13 @@ protected:
 	void hold( int internId );
 
 private:
-
-	/* Position */
-	std::vector<std::list<Position6DOF> > listPositions;
-	std::vector<std::list<Position6DOF> > listTargets;
-	std::vector<std::list<MovementQuadruple> > listSentQuadruples;
+	
+	/* 
+	 * TODO buildFormationStop/ -Finished, landFinished, ...
+	 * TODO thread für shutdown formation
+	 * 	Testing @Carina
+	 * 
+	 * /
 	
 	/* Identification of Quadcopters */
 	//Receive data over ROS
@@ -131,8 +133,13 @@ private:
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int > quadcopterMovementStatus;
 	
+	/* Position */
+	std::vector<std::list<Position6DOF> > listPositions;
+	std::vector<std::list<Position6DOF> > listTargets;
+	
 	/* Set data */ 
-	std::vector<MovementQuadruple > movementAll;
+	std::vector<std::list<MovementQuadruple> > listSentQuadruples;
+	std::vector<std::list<MovementQuadruple> > listFutureMovement;
 
 	/* Received data */ 
 	//Arrays for quadcopters sorted by intern id
@@ -150,13 +157,6 @@ private:
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
 	bool buildFormationFinished;
 	bool shutdownStarted;
-
-	/* 
-	 * TODO buildFormationStop/ -Finished, landFinished, ...
-	 * TODO thread für shutdown formation
-	 * 	Testing @Carina
-	 * 
-	 * /
 	
 	/* Mutex */
 	Mutex shutdownMutex;

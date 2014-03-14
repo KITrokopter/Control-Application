@@ -100,7 +100,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	std::vector<Position6DOF> newListItem;
 	int i = 0;
 	int id = 0;
-	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
+	for(std::vector<Vector>::iterator it = this->positions.begin(); it != this->positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
 		//ROS_INFO("Global id is %i",i);
@@ -227,7 +227,6 @@ void Controller::calculateMovement()
 					/* 
 					 * Take old values
 					 * At beginning list has to be initialized with "send none".
-					 * No convertMovement has to be called. 
 					 */
 					break;
 				case CALCULATE_START:	
@@ -324,7 +323,9 @@ void Controller::stabilize( int internId )
 	*/
 	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
 	
-	this->movementAll[internId] = newMovement;
+	this->listFutureMovement[internId].clear();
+	this->listFutureMovement[internId].push_front( newMovement );
+	   
 }
 
 bool Controller::isStable( int internId )
@@ -382,12 +383,16 @@ void Controller::land( int internId, int * nrLand )
 	//Decline until crazyflie isn't tracked anymore
 	if(tracked[internId] == true)
 	{
-		this->movementAll[internId].setThrust(THRUST_DECLINE);
+		/*while( this->listFutureMovement[internId].size() > 1)
+		{
+			this->listFutureMovement[internId].pop_back();
+		}*/
+		this->listFutureMovement[internId].front().setThrust( THRUST_DECLINE );
 	}
 	else
 	{
 		//Shutdown crazyflie after having left the tracking area.
-		this->movementAll[internId].setThrust(THRUST_MIN);
+		this->listFutureMovement[internId].front().setThrust( THRUST_MIN );
 		this->movementStatusMutex.lock();
 		this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
 		this->movementStatusMutex.unlock();
@@ -491,6 +496,7 @@ void Controller::convertMovement(double* const vector, int internId)
 	/* TODO */
 	
 	/* conversion from vectors to thrust, yawrate, pitch... */
+	/*
 	int thrust_react_z_low = -5;
 	int thrust_react_z_high = 5;
 	int thrust = 0;
@@ -501,9 +507,7 @@ void Controller::convertMovement(double* const vector, int internId)
 	} else if (vector[2] < thrust_react_z_low) {
 		thrust = movement->getThrust() + THRUST_STEP;
 		movement->setThrust(thrust);
-	} else {
-		/* Probably nothing to do here. */
-	}
+	} 
 
 	double length = 0;
 	for (int i = 0; i < 3; i++) {
@@ -514,6 +518,7 @@ void Controller::convertMovement(double* const vector, int internId)
 	double ratio_roll = vector[0] / length;
 	double ratio_pitch = vector[1] / length;
 	movement->setRollPitchYawrate(	ratio_roll + ROLL_STEP, ratio_pitch + PITCH_STEP, 0.0);
+	*/
 }
 
 /*
@@ -529,7 +534,7 @@ void Controller::sendMovementAll()
 	
 	long int currentTime = getNanoTime();
 	std::vector< MovementQuadruple > newListElement;
-	for(int i = 0; i < movementAll.size(); i++)
+	for(int i = 0; i < listFutureMovement.size(); i++)
 	{
 		this->movementStatusMutex.lock();
 		unsigned int quadStatus= this->quadcopterMovementStatus[i];
@@ -537,19 +542,39 @@ void Controller::sendMovementAll()
 		if( quadStatus != CALCULATE_NONE )
 		{
 			//ROS_INFO("%i",i);
-			msg.thrust = this->movementAll[i].getThrust();
-			msg.roll = this->movementAll[i].getRoll();
-			msg.pitch = this->movementAll[i].getPitch();
-			msg.yaw = this->movementAll[i].getYawrate();
+			msg.thrust = this->listFutureMovement[i].front().getThrust();
+			msg.roll = this->listFutureMovement[i].front().getRoll();
+			msg.pitch = this->listFutureMovement[i].front().getPitch();
+			msg.yaw = this->listFutureMovement[i].front().getYawrate();
 			this->Movement_pub[i].publish(msg);		
-			this->movementAll[i].setTimestamp( currentTime );
+			this->listFutureMovement[i].front().setTimestamp( currentTime );
 
 			// Save Element (TODO only if not too young)
-			this->listSentQuadruples[i].push_back( this->movementAll[i] );
-			if( this->listSentQuadruples[i].size() > 5 )
+			this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
+			while( this->listSentQuadruples[i].size() > 5 )	// while or if FIXME
 			{
 				// Remove oldest elements
 				this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
+			}
+
+			// Remove Element if exists in list and timestamp < actual time
+			if( this->listFutureMovement.size() > 1 )
+			{
+				std::vector<MovementQuadruple>::iterator it2 = this->listFutureMovement[i].begin();
+				int counter = 0;
+				while( it2->getTimestamp() < currentTime )
+				{
+					++it2;
+					counter++;
+				}
+				if( counter > 0 )
+				{
+					--it2;
+					counter--;
+				}
+				if( counter > 0 ) {
+					this->listFutureMovement[i].erase( this->listFutureMovement[i].begin(), it2 );
+				}
 			}
 		}
 	}
@@ -654,6 +679,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 
 		std::list<MovementQuadruple> newEmptyListMovement;		
 		this->listSentQuadruples.push_back(newEmptyListMovement);
+		this->listFutureMovement.push_back(newEmptyListMovement);
 		ROS_INFO("Initialization done");
 		
 		//Subscriber to quadcopter status
