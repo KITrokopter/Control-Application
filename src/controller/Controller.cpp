@@ -316,10 +316,12 @@ void Controller::stabilize( int internId )
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
 	this->listTargetsMutex.unlock();
+	/*
 	if() // TODO dateNow-dateOfLatestCalculation < CALCULATE_STABILIZE_STEP )
 	{
 		return;
 	}
+	*/
 	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
 	
 	this->movementAll[internId] = newMovement;

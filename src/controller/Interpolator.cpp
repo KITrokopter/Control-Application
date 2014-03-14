@@ -147,9 +147,8 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 {
 
 	float diff = 0;
-	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
 	double aAbsDistance = abs(aDistanceFirst-aDistanceLatest);
-	double distanceFactor = 0.1 + fmin(2.0, (arctan(aAbsDistance*1000.0)+1.0); // higher if further from target, between [0, 2]	//TODO
+	double distanceFactor = 0.1 + fmin(2.0, (atan(aAbsDistance*1000.0)+1.0)); // higher if further from target, between [0, 2]	//TODO
 
 	/* Difference calculated as a-speed in mm/s. 
 	 Positive if going in normalized positive direction. */
@@ -222,5 +221,3 @@ bool reachingTarget( double first, double last, double speed, long int timediff 
 	}
 	return false;
 }
-
-int* calc
