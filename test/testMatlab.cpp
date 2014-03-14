@@ -47,11 +47,19 @@ void tracking(Matlab *m) {
     Vector *d2 = new Vector(10, -10, 10);
     Vector *d3 = new Vector(-10, -10, 10);
     Vector *d4 = new Vector(-10, 10, 10);
-    Vector cameraPosition[4] = {*c1, *c2, *c3, *c4};
-    Vector cameraDirection[4] = {*d1, *d2, *d3, *d4};
-    //TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 15, m->getEngine());
-    //printf("[%f %f %f], [%f %f %f], [%f %f %f], [%f, %f, %f], [%f, %f, %f] is the tracking area\n", t->getA1().getV1(), t->getA1().getV2(),t->getA1().getV3(), t->getA2().getV1(), t->getA2().getV2(), t->getA2().getV3(), t->getA3().getV1(), t->getA3().getV2(), t->getA3().getV3(), t->getA4().getV1(), t->getA4().getV2(), t->getA4().getV3(), t->getB1().getV1(), t->getB1().getV2(), t->getB1().getV3());
-
+    std::vector<Vector> cameraPosition;
+    cameraPosition.push_back(*c1);
+    cameraPosition.push_back(*c2);
+    cameraPosition.push_back(*c3);
+    cameraPosition.push_back(*c4);
+    std::vector<Vector> cameraDirection;
+    cameraDirection.push_back(*d1);
+    cameraDirection.push_back(*d2);
+    cameraDirection.push_back(*d3);
+    cameraDirection.push_back(*d4);
+    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 5, m->getEngine());
+    printf("[%f %f %f], [%f %f %f], [%f %f %f], [%f, %f, %f], [%f, %f, %f] is the tracking area\n", t->getA1().getV1(), t->getA1().getV2(),t->getA1().getV3(), t->getA2().getV1(), t->getA2().getV2(), t->getA2().getV3(), t->getA3().getV1(), t->getA3().getV2(), t->getA3().getV3(), t->getA4().getV1(), t->getA4().getV2(), t->getA4().getV3(), t->getB1().getV1(), t->getB1().getV2(), t->getB1().getV3());
+    t->printTrackingArea();
 }
 
 void perp(Matlab *m) {
@@ -92,7 +100,9 @@ int main(int argc, char** argv) {
     if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
         ros::console::notifyLoggerLevelsChanged();
     }
+
     Matlab *m = new Matlab();
+    tracking(m);
     /*Vector a1 = *(new Vector(0.000000, -0.000000, 0.000000));
     Vector u1 = * (new Vector(0.315551, -0.962110, -0.234050));
     Vector a2 = * (new Vector(730.285416, -753.080314, 0.000243));
@@ -104,16 +114,14 @@ int main(int argc, char** argv) {
     quadPositions[1] = Line(a2, u2);
     quadPositions[2] = Line(a3, u3);
     Vector re = m->interpolateLines(quadPositions, 3);
-    printf("result is %f, %f, %f\n", re.getV1(), re.getV2(), re.getV3());*/
-    //perp(m);
+    printf("result is %f, %f, %f\n", re.getV1(), re.getV2(), re.getV3());
+    perp(m);
     bool ok = calibrate(m);
     if (ok == true) {
         printf("success\n");
     } else {
         printf("fail\n");
     }
-
-    /*
     Vector a = Vector(0,0,0);
     Vector b = Vector(730.285416, -753.080314, 0.000243);
     Vector u = Vector (0.000010, -1.000000, 0.000010);

@@ -143,10 +143,9 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
 
-        usleep(10000000);
-        ROS_DEBUG("Calculating tracking area");
-        setTrackingArea(1000);
-        tracking.printTrackingArea();
+        //ROS_DEBUG("Calculating tracking area");
+        //setTrackingArea(1000);
+        //tracking.printTrackingArea();
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
@@ -191,6 +190,9 @@ void Position::angleTry(int sign) {
 
 
     Vector n = intersectionLine.getU().mult(1/intersectionLine.getU().getLength());
+    if (n.getV3() < 0) {
+        n.mult(-1);
+    }
     n.putVariable("n", ep);
     double angle = getAngle(Vector(0, 0, 1), b.cross(c));
     double dataAngle[1] = {sign * angle};
@@ -297,7 +299,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             // not calculated before, first time calculating
             for (int i = 0; i < numberCameras; i++) {
                 if (imageAge[i] > 5) {
-                    ROS_DEBUG("Information is too old.");
+                    ROS_DEBUG("Information of camera %d is too old.", i);
                     return Vector(NAN, NAN, NAN);
                 }
             }
@@ -322,7 +324,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             // not calculated before, first time calculating
             for (int i = 0; i < numberCameras; i++) {
                 if (imageAge[i] > 20) {
-                    ROS_DEBUG("Information is too old.");
+                    ROS_DEBUG("Information of camera %d is too old.", i);
                     return Vector(NAN, NAN, NAN);
                 }
             }
@@ -358,7 +360,6 @@ void Position::calculatePosition(int cameraId) {
 }
 
 Vector Position::getPosition(int cameraId) {
-    ROS_DEBUG("asked for position of camera %d", cameraId);
     return this->realCameraPos[cameraId];
 }
 
