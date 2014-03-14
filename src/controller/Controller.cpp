@@ -297,11 +297,19 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].push_front( newMovement );
 	} else
 	{
-		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
-		// Change timestamp
+		int diff = 8000;
+		long int timeDiff = 400000000;
+		long int currentTime = getNanoTime();
+		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0, currentTime );
 		// Calculate different thrust depending on charge
 		this->listFutureMovement[internId].push_back( newMovement );
+		
+		newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
+		newMovement.setThrust( newMovement.getThrust() - diff );
 		this->listFutureMovement[internId].push_back( newMovement );
+		
+		newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
+		newMovement.setThrust( newMovement.getThrust() - diff );
 		this->listFutureMovement[internId].push_back( newMovement );
 	}
 }

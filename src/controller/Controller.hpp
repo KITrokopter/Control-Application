@@ -1,5 +1,6 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
+#include "CalculatorMoveUp.hpp"
 #include "Formation.hpp"
 #include "Interpolator.hpp"
 #include "MovementQuadruple.hpp"
