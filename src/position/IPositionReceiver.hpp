@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "../matlab/Vector.h"
+#include "../matlab/TrackingArea.h"
 
 class IPositionReceiver
 {
@@ -21,6 +22,13 @@ public:
 	 * quadcopter with id ids.at(i) that was generated with updates.at(i) images since the last call of this method.
 	 */
 	virtual void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates) = 0;
+	
+	/**
+	 * Sets the tracking area to use for controlling the quadcopters.
+	 * 
+	 * @param area The tracking area.
+	 */
+	virtual void setTrackingArea(TrackingArea area) = 0;
 };
 
 #endif // IPOSITION_RECEIVER

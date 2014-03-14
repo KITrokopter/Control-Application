@@ -922,3 +922,11 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 		//TODO Do we need to clean up something here? Free space, join threads ...
 	}
 }
+
+/*
+ * Created by Sebastian, modify if necessary :)
+ */
+void Controller::setTrackingArea(TrackingArea area)
+{
+	trackingArea = area;
+}

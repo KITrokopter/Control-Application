@@ -92,6 +92,8 @@ public:
 	bool checkInput();
 	void emergencyRoutine(std::string message);
 	
+	void setTrackingArea(TrackingArea area);
+	
     
 protected:
 	//Callbacks for Ros subscriber
@@ -125,7 +127,7 @@ private:
 	time_t lastFormationMovement;
 	time_t lastCurrent[MAX_NUMBER_QUADCOPTER];
 	unsigned int senderID;
-	//TODO Set area
+	//TODO Set area (Done by Sebastian, remove after reading :) )
 	TrackingArea trackingArea;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
