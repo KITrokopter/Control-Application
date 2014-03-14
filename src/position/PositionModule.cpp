@@ -19,9 +19,6 @@
 #include "../matlab/Vector.h"
 #include "../matlab/profiling.hpp"
 
-// Use this to test if images are saved properly, when you only have one camera.
-//#define SINGLE_CAMERA_CALIBRATION
-
 PositionModule::PositionModule(IPositionReceiver* receiver) : 
 	trackingWorker(receiver)
 {
@@ -159,13 +156,11 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		}
 	}
 	
+	ROS_DEBUG("Got %d good pictures.", goodPictures);
+	
 	pictureCacheMutex.unlock();
 	
-	#ifdef SINGLE_CAMERA_CALIBRATION
 	if (goodPictures >= 1) {
-	#else
-	if (goodPictures >= 2) {
-	#endif
 		// Create directory for images.
 		int error = mkdir("/tmp/calibrationImages", 0777);
 		
