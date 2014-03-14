@@ -290,10 +290,20 @@ void Controller::calculateMovement()
  */
 void Controller::moveUp( int internId )
 {
-	double moveVector[3];	
-	
-	MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
-	movementAll[internId] = newMovement;
+	bool moveUpSmart = true;
+
+	if( !moveUpSmart ) {		
+		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
+		this->listFutureMovement[internId].push_front( newMovement );
+	} else
+	{
+		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
+		// Change timestamp
+		// Calculate different thrust depending on charge
+		this->listFutureMovement[internId].push_back( newMovement );
+		this->listFutureMovement[internId].push_back( newMovement );
+		this->listFutureMovement[internId].push_back( newMovement );
+	}
 }
 
 void Controller::stabilize( int internId )
