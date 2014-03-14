@@ -558,10 +558,6 @@ void Controller::sendMovementAll()
 	//ROS_INFO("sendMovementAll finished");
 }
 
-void Controller::setTrackingArea(TrackingArea * area)
-{
-	this->trackingArea = *area;
-}
 /*
  * Calculates the new Targets considering the previous targets and the formation movement vector (without orientation right now)
  */
@@ -1011,7 +1007,6 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 	}
 }
 
-
 /* HELPER FUNCTIONS */
 bool closeToTarget( Position6DOF position1, Position6DOF position2 )
 {
@@ -1021,4 +1016,12 @@ bool closeToTarget( Position6DOF position1, Position6DOF position2 )
 		return true;
 	}
 	return false;
+}
+
+/*
+ * Created by Sebastian, modify if necessary :)
+ */
+void Controller::setTrackingArea(TrackingArea area)
+{
+	trackingArea = area;
 }

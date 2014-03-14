@@ -21,3 +21,6 @@
 
 # Generated docs
 /docs
+
+# Qt Creator
+*.autosave

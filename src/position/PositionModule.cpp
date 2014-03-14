@@ -17,21 +17,16 @@
 #include "api_application/Announce.h"
 
 #include "../matlab/Vector.h"
-
-// Use this to test if images are saved properly, when you only have one camera.
-//#define SINGLE_CAMERA_CALIBRATION
+#include "../matlab/profiling.hpp"
 
 PositionModule::PositionModule(IPositionReceiver* receiver) : 
-	pictureCache(50), // Assume we never have 50 or more modules running on the network.
-	pictureTimes(50)
+	trackingWorker(receiver)
 {
-	assert(receiver != 0);
-	this->receiver = receiver;
-	
 	ROS_DEBUG("Initializing PositionModule");
 	
 	_isInitialized = true;
 	isCalibrating = false;
+	isCalibrated = false;
 	isRunning = false;
 	
 	ros::NodeHandle n;
@@ -81,11 +76,18 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	} else {
 		ROS_ERROR("Could not initialize PositionModule!");
 	}
+	
+	log.open("position_module.log");
+	
+	if (!log.is_open()) {
+		ROS_ERROR("Could not open log file!");
+	}
 }
 
 PositionModule::~PositionModule()
 {
 	msg->~KitrokopterMessages();
+	log.close();
 	
 	// TODO: Free picture cache.
 	
@@ -101,6 +103,10 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	{
 		ROS_INFO("Starting multi camera calibration process");
 		
+		isCalibrated = false;
+		
+		// Delete old calibration data.
+		system("rm -rf /tmp/calibrationResult/*");
 		system("rm -rf /tmp/calibrationImages/*");
 		setPictureSendingActivated(true);
 		calibrationPictureCount = 0;
@@ -115,63 +121,46 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 // Service
 bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req, control_application::TakeCalibrationPicture::Response &res)
 {
-	ROS_DEBUG("Taking calibration picture. Have %ld cameras.", camNoToNetId.size());
+	ROS_DEBUG("Taking calibration picture. Have %d cameras.", idDict.size());
+	
+	if (!idDict.isTranslated()) {
+		idDict.translateIds();
+	}
 	
 	pictureCacheMutex.lock();
 	
-	// Build net id -> cam no map.
-	if (camNoToNetId.size() != netIdToCamNo.size()) {
-		// If already built, there are already images on the disk with wrong ids, so return an error.
-		if (netIdToCamNo.size() != 0) {
-			ROS_ERROR("Got new cameras after taking first calibration picture!");
-			return false;
-		}
-		
-		std::sort(camNoToNetId.begin(), camNoToNetId.end());
-		netIdToCamNo.clear();
-		
-		for (int i = 0; i < camNoToNetId.size(); i++) {
-			netIdToCamNo[camNoToNetId[i]] = i;
-		}
-		
-		ROS_INFO("Got %ld cameras", netIdToCamNo.size());
-	}
-	
-	int id = 0;
 	std::map<int, cv::Mat*> pictureMap;
 	int goodPictures = 0;
 	
-	for (std::vector<cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++, id++)
+	for (std::map<int, cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++)
 	{
-		if (*it != 0)
+		if (it->second != 0)
 		{
 			std::vector<cv::Point2f> corners;
-			bool foundAllCorners = cv::findChessboardCorners(**it, boardSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+			bool foundAllCorners = cv::findChessboardCorners(*(it->second), boardSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
 			
 			if (!foundAllCorners)
 			{
-				ROS_INFO("Took bad picture (id %d)", id);
+				ROS_INFO("Took bad picture (id %d)", it->first);
 			}
 			else
 			{
-				ROS_INFO("Took good picture (id %d)", id);
+				ROS_INFO("Took good picture (id %d)", it->first);
 				goodPictures++;
 			}
 			
-			pictureMap[id] = *it;
+			pictureMap[it->first] = it->second;
 			
 			// Remove image from image cache.
-			*it = 0;
+			it->second = 0;
 		}
 	}
 	
+	ROS_DEBUG("Got %d good pictures.", goodPictures);
+	
 	pictureCacheMutex.unlock();
 	
-	#ifdef SINGLE_CAMERA_CALIBRATION
 	if (goodPictures >= 1) {
-	#else
-	if (goodPictures >= 2) {
-	#endif
 		// Create directory for images.
 		int error = mkdir("/tmp/calibrationImages", 0777);
 		
@@ -203,7 +192,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		
 		for (std::map<int, cv::Mat*>::iterator it = pictureMap.begin(); it != pictureMap.end(); it++) {
 			std::stringstream ss;
-			ss << "/tmp/calibrationImages/cam" << netIdToCamNo[it->first] << "_image" << calibrationPictureCount << ".png";
+			ss << "/tmp/calibrationImages/cam" << idDict.getForward(it->first) << "_image" << calibrationPictureCount << ".png";
 			
 			// Save picture on disk for amcctoolbox.
 			std::cout << "Saving picture: " << cv::imwrite(ss.str(), *(it->second)) << std::endl;
@@ -238,26 +227,42 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		ROS_ERROR("Cannot calculate calibration! Start calibration first!");
 		return false;
 	}
+		
+	if (!idDict.isTranslated()) {
+		ROS_WARN("Dictionary was not translated! Translating now.");
+		idDict.translateIds();
+	}
 	
-	if (netIdToCamNo.size() < 2) {
-		ROS_ERROR("Have not enough images for calibration (Have %ld)!", netIdToCamNo.size());
+	if (idDict.size() < 2) {
+		ROS_ERROR("Have not enough cameras for calibration (Have %d)!", idDict.size());
+		isCalibrating = false;
+		return false;
+	}
+	
+	if (idDict.size() < 3) {
+		ROS_WARN("Have not enough cameras for a useful setup! Have %d, but should be at least 3.", idDict.size());
 	}
 	
 	ROS_INFO("Calculating multi camera calibration. This could take up to 2 hours");
 	ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
 	
-	pictureCacheMutex.lock();
-	int camNumber = camNoToNetId.size();
-	pictureCacheMutex.unlock();
+	int camNumber = idDict.size();
 	
-	// Delete old calibration results.
-	system("rm -rf /tmp/calibrationResult/*");
-	bool ok = tracker.calibrate(&data, camNumber);
+	bool ok = trackingWorker.calibrate(&data, camNumber);
 	
 	if (ok) {
 		ROS_INFO("Finished multi camera calibration");
+		isCalibrated = true;
 	} else {
 		ROS_ERROR("Calibration failed!");
+	}
+	
+	for (int i = 0; i < camNumber; i++) {
+		Vector position = trackingWorker.getCameraPosition(i);
+		res.cameraXPositions.push_back(position.getV1());
+		res.cameraYPositions.push_back(position.getV2());
+		res.cameraZPositions.push_back(position.getV3());
+		res.IDs.push_back(idDict.getBackward(i));
 	}
 	
 	isCalibrating = false;
@@ -268,27 +273,13 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 // Topic
 void PositionModule::pictureCallback(const camera_application::Picture &msg)
 {
-	assert(msg.ID < 50);
+	// Insert camera id, if not already there.
+	idDict.insert(msg.ID);
 	
 	pictureCacheMutex.lock();
 	
-	bool idKnown = false;
-	
-	// Insert camera id, if not already there.
-	for (int i = 0; i < camNoToNetId.size(); i++) {
-		if (camNoToNetId[i] == msg.ID) {
-			idKnown = true;
-			break;
-		}
-	}
-	
-	if (!idKnown) {
-		camNoToNetId.push_back(msg.ID);
-	}
-	
 	if (isCalibrating)
 	{
-		// Will crash here, if more than 49 modules are used.
 		if (pictureCache[msg.ID] != 0)
 		{
 			delete pictureCache[msg.ID];
@@ -322,6 +313,12 @@ void PositionModule::systemCallback(const api_application::System &msg)
 	}
 	
 	if (!isRunning) {
+		int counter = 0;
+		
+		for (std::vector<long int>::iterator it = timeLog.begin(); it != timeLog.end(); it++) {
+			log << counter++ << ", " << *it << std::endl;
+		}
+		
 		ros::shutdown();
 	}
 }
@@ -329,11 +326,24 @@ void PositionModule::systemCallback(const api_application::System &msg)
 // Topic
 void PositionModule::rawPositionCallback(const camera_application::RawPosition &msg)
 {
+	if (!isCalibrated) {
+		return;
+	}
+	
  	// TODO: Calculate position in our coordinate system.
 	// TODO: Is this coordinate change correct for amcctoolbox?
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
-	ROS_DEBUG("msg.ID: %d netIdToCamNo[msg.ID]: %d msg.quadcopterId: %d", msg.ID, netIdToCamNo[msg.ID], msg.quadcopterId);
+	ROS_DEBUG("Received position: msg.ID: %d idDict.getForward(msg.ID): %d msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID), msg.quadcopterId);
+	
+	trackingWorker.updatePosition(cameraVector, idDict.getForward(msg.ID), msg.quadcopterId);
+	
+	/*#ifdef QC_PROFILE
+	long int trackingClock = getNanoTime();
+	#endif
 	Vector result = tracker.updatePosition(cameraVector, netIdToCamNo[msg.ID], msg.quadcopterId);
+	#ifdef QC_PROFILE
+	timeLog.push_back(getNanoTime() - trackingClock);
+	#endif
 	
 	std::vector<Vector> positions;
 	std::vector<int> ids;
@@ -346,7 +356,7 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
 		receiver->updatePositions(positions, ids, updates);
 	} else {
 		ROS_DEBUG("Not enough information to get position of quadcopter %d", msg.quadcopterId);
-	}
+	}*/
 }
 
 void PositionModule::setPictureSendingActivated(bool activated)

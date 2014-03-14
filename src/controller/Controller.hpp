@@ -93,7 +93,10 @@ public:
 	bool checkInput(int internId);
 	void emergencyRoutine(std::string message);
 	
-	void setTrackingArea(TrackingArea * area);
+	// Sebastian: I didn't use a pointer here, because I think that is ok (TrackingArea itself
+	//            doesn't contain any pointer, so the copy should work just fine)
+	// (Remove after reading)
+	void setTrackingArea(TrackingArea area);
     
 protected:
 	//Callbacks for Ros subscriber
@@ -121,9 +124,11 @@ private:
 	Formation *formation;
 	//int amount;	// Needed for formation
 	std::list<std::vector<float> > formationMovement;
-	long int lastFormationMovement;
-	long int lastCurrent[MAX_NUMBER_QUADCOPTER];
-	unsigned int senderID;	
+	
+	time_t lastFormationMovement;
+	time_t lastCurrent[MAX_NUMBER_QUADCOPTER];
+	unsigned int senderID;
+	//TODO Set area (Done by Sebastian, remove after reading :) )
 	TrackingArea trackingArea;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
