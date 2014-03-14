@@ -1,25 +1,31 @@
 #ifndef POSITION6DOF_HPP
 #define POSITION6DOF_HPP
-#include <time.h>
 
+#include <time.h>
+#include <cmath>
+#include "../matlab/profiling.hpp"
 
 class Position6DOF {
 public:
 	//both arrays of the return pointer have size three
-	double* const getPosition();
-	double* const getOrientation();
-	void setPosition(double * const position);
-	void setOrientation(double* const orientation);
-	time_t getTimestamp();
-	void setTimestamp(time_t newTimestamp);
+	double* getPosition();
+	double* getOrientation();
+	void setPosition(double * position);
+	void setOrientation(double* orientation);
+	long int getTimestamp();
+	void setTimestamp(long int newTimestamp);
 	Position6DOF(double x, double y, double z, double xOrientation, double yOrientation, double zOrientation);
 	Position6DOF(double x, double y, double z);
 	Position6DOF(){};
 
+	double getAbsoluteDistance();
+	double getAbsoluteDistance( Position6DOF otherPosition );
+	double getDistanceZ( Position6DOF otherPosition ); // positive if "this" is below "otherPosition"
+
 private:
 	double position[3];
 	double orientation[3];
-	time_t timestamp;
+	long int timestamp;
 };
 
 
