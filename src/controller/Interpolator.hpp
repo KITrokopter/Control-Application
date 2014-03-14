@@ -21,15 +21,20 @@
 #define SPEED_MAX_INCLINING 500 	// in mm/s
 #define SPEED_MIN_DECLINING -150 	// in mm/s
 #define SPEED_MAX_DECLINING -500 	// in mm/s
+#define SPEED_MIN_PLANE 80	// in mm/s
+#define SPEED_MAX_PLANE 300	// in mm/s
 
 #define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
 
 
 
 /*
+ * TODO start depeding on charge
+ * 
  * TODO linear interpolation
- * 	TODO reach and keep height
  * 	TODO same in 3D-view
+ * 
+ * TODO hold
  * 
  * TODO test of speed, either optimize or save data-to-sent in advance
  * TODO optimize interpolation (step size time-dependant)
