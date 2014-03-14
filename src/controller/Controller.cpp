@@ -297,19 +297,18 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].push_front( newMovement );
 	} else
 	{
-		int diff = 8000;
+		int diff = 4000;
 		long int timeDiff = 400000000;
 		long int currentTime = getNanoTime();
 		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0, currentTime );
-		// Calculate different thrust depending on charge
 		this->listFutureMovement[internId].push_back( newMovement );
 		
 		newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
-		newMovement.setThrust( newMovement.getThrust() - diff );
+		newMovement.setThrust( newMovement.getThrust() + diff );
 		this->listFutureMovement[internId].push_back( newMovement );
 		
 		newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
-		newMovement.setThrust( newMovement.getThrust() - diff );
+		newMovement.setThrust( newMovement.getThrust() + diff );
 		this->listFutureMovement[internId].push_back( newMovement );
 	}
 }
@@ -577,17 +576,18 @@ void Controller::sendMovementAll()
 
 			// Remove Element if exists in list and timestamp < actual time
 			if( this->listFutureMovement.size() > 1 )
-			{
+			{				
+				ROS_INFO("listFutureMovement-size > 1");
 				std::list<MovementQuadruple>::iterator it2 = this->listFutureMovement[i].begin();
 				int counter = 0;
-				while( it2->getTimestamp() < currentTime )
+				while( it2->getTimestamp()<currentTime && it2 != this->listFutureMovement[i].end() )
 				{
 					++it2;
 					counter++;
 				}
 				if( counter > 0 )
 				{
-					--it2;
+					//--it2;
 					counter--;
 				}
 				if( counter > 0 ) {
