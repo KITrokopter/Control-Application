@@ -86,13 +86,14 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	}
 
 	/* Calculate rest */
-	float newRoll = newMovement.getRoll();
-	float newPitch = newMovement.getPitch();
-	float newYawrate = newMovement.getYawrate();
 	if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
 	{
-		newRoll += calculatePlaneDiff();
-		newPitch += calculatePlaneDiff();
+		float newRoll = newMovement.getRoll();
+		float newPitch = newMovement.getPitch();
+		float newYawrate = newMovement.getYawrate();
+		
+		//newRoll += calculatePlaneDiff();	//TODO
+		//newPitch += calculatePlaneDiff();	//TODO
 		newMovement.setRollPitchYawrate(newRoll, newPitch, newYawrate);
 	}
 	
@@ -171,24 +172,37 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 	// right direction: (aSpeed>0 && aDistanceLatest>0) 
 	// close to target: abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET
 	if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE) )
+	{
 		diff += ROLL_STEP; 
+	}
 	else if( (aSpeed<0 && aDistanceLatest<0) && (-aSpeed<SPEED_MIN_PLANE) )
+	{
 		diff -= ROLL_STEP; 
+	}
 	else if( aSpeed>SPEED_MAX_PLANE )
+	{
 		diff -= ROLL_STEP; 
+	}
 	else if( -aSpeed>SPEED_MAX_PLANE )
+	{
 		diff += ROLL_STEP; 
+	}
 	else if( (aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest>0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
+	{
 		diff -= ROLL_STEP; 
+	}
 	else if( (-aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest<0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
+	{
 		diff += ROLL_STEP; 
+	}
+	else if( (aSpeed>0) && aDistanceLatest>aDistanceLatest )
+	{
+		
+	}
+	                                   
 	/*
-
-	                                    * /
-	else if( (aSpeed>0) && aDistanceLatest>aDistanceLatest
-	
 	if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE) )
-		diff += ROLL_STEP; 
+		diff += ROLL_STEP; */
 	        
 	return diff;
 	/*if( abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET ) 
@@ -208,3 +222,5 @@ bool reachingTarget( double first, double last, double speed, long int timediff 
 	}
 	return false;
 }
+
+int* calc

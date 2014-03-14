@@ -29,8 +29,9 @@
 
 
 /*
+ * TODO start depeding on charge
+ * 
  * TODO linear interpolation
- * 	TODO reach and keep height
  * 	TODO same in 3D-view
  * 
  * TODO hold
