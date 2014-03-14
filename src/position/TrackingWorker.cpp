@@ -35,6 +35,7 @@ void TrackingWorker::run()
 			
 			long int startTime = getNanoTime();
 			Vector position = tracker.updatePosition(data.cameraVector, data.camNo, data.quadcopterId);
+			errorGraph.nextPoint(tracker.getDistance());
 			double duration = getNanoTime() - startTime;
 			duration /= 1e6;
 			
