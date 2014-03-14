@@ -1,8 +1,8 @@
 #include "Interpolator.hpp"
 #include "Controller.hpp"
 
-int calculateThrustDiff(double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff);
-float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, long int timediff, double aSentLatest );
+int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized );
+float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest );
 
 Interpolator::Interpolator()
 {
@@ -36,14 +36,13 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
 	
-	bool oscillate = false;
+	//bool oscillate = false;
 	int size = positions.size();
 	double deltaTarget[size];
 	double deltaAbsPosition[size-1];	// equals speed	/* error-prone FIXME */
 	double deltaSpeed[size-2];	// equals acceleration	/* error-prone FIXME */
 	int counter = 0;
 	Position6DOF positionA, positionB;	// positionA is older than positionB
-//	long int timeA, timeB;	// timeA is older than timeB
 	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
 		positionA.setOrientation( (*it).getOrientation() );
@@ -58,7 +57,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 				double speedDelta = deltaAbsPosition[counter-1] - deltaAbsPosition[counter-2];	
 				if( speedDelta < 0 )
 				{
-					oscillate = true;
+					//oscillate = true;
 					speedDelta = -speedDelta;
 				}
 				double timeDelta = positionB.getTimestamp() - positionA.getTimestamp();
@@ -71,7 +70,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		}
 		counter++;
 	}
-
+	
 	/* Calculate thrust value */	
 	if( counter > 1 )	// Enough data to calculate new thrust value (at least two values)
 	{
@@ -80,8 +79,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		double zDistanceA = positionA.getDistanceZ( target );
 		double zDistanceB = positionB.getDistanceZ( target );
 		double timediffAB = positionB.getTimestamp() - positionA.getTimestamp();
+		double timediffNormalized = (double) timediffAB / 1000000000;	// should be in seconds
 		double absDistanceAB = positionA.getAbsoluteDistance( positionB );
-		double newThrust = newMovement.getThrust() + calculateThrustDiff(zDistanceA, zDistanceB, absDistanceAB, timediffAB);
+		double newThrust = newMovement.getThrust() + calculateThrustDiff(zDistanceA, zDistanceB, absDistanceAB, timediffNormalized);
 		newMovement.setThrust( newThrust ); 
 	}
 
@@ -99,10 +99,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	return newMovement;
 }
 
-int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff )
+int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized )
 {
 	int newThrust = 0;
-	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
 	double distanceFactor = 0.5; // higher if further from target, between [0, 1]	//TODO
 	double threshold = 0;	// higher if timediff is higher and 	//TODO
 
@@ -143,7 +142,7 @@ int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double a
 	}
 }
 
-float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, long int timediff, double aSentLatest ) 
+float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest ) 
 {
 
 	float diff = 0;
