@@ -290,7 +290,7 @@ void Controller::calculateMovement()
  */
 void Controller::moveUp( int internId )
 {
-	bool moveUpSmart = true;
+	bool moveUpSmart = false;
 
 	if( !moveUpSmart ) {		
 		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
@@ -681,7 +681,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		this->movementStatusMutex.unlock();
 		MovementQuadruple newMoveQuad = MovementQuadruple(0, 0, 0, 0);
-		this->listFutureMovement[i].push_back(newMoveQuad);
+		//this->listFutureMovement[i].push_back(newMoveQuad);
 		
 		//Initialization of Arrays of Lists
 		std::list<Position6DOF> newEmptyListPosition;
@@ -1011,7 +1011,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
  */
 void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr)
 {
-	ROS_INFO("I heard Quadcopter Status. topicNr: %i", topicNr);
+	//ROS_INFO("I heard Quadcopter Status. topicNr: %i", topicNr);
 	//Intern mapping
 	int quaId = this->getLocalId(topicNr);
 	this->battery_status[quaId] = msg->battery_status;
