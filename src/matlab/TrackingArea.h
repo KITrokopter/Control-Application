@@ -60,6 +60,7 @@ public:
 	double getVectorLength(Vector a, Vector b);
 	double getDistPointPlane(Vector a1, Vector u, Vector v, Vector x);
 	Vector getPerpPointPlane(Vector a, Vector u, Vector v, Vector x);
+    double getVolume(double height);
     bool inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep);
     void setTrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep);
 	void printTrackingArea();
