@@ -2,6 +2,7 @@
 #include "Controller.hpp"
 
 int calculateThrustDiff(double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, long int timediff);
+float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, long int timediff, double aSentLatest );
 
 Interpolator::Interpolator()
 {
@@ -80,7 +81,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		double zDistanceB = positionB.getDistanceZ( target );
 		double timediffAB = positionB.getTimestamp() - positionA.getTimestamp();
 		double absDistanceAB = positionA.getAbsoluteDistance( positionB );
-		double newThrust = newMovement.getThrust() + calculateThrust(zDistanceA, zDistanceB, absDistanceAB, timediffAB);
+		double newThrust = newMovement.getThrust() + calculateThrustDiff(zDistanceA, zDistanceB, absDistanceAB, timediffAB);
 		newMovement.setThrust( newThrust ); 
 	}
 
