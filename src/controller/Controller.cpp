@@ -449,6 +449,7 @@ bool Controller::checkInput(int internId)
 	if(currentTime - lastForm > TIME_UPDATED_END && quadStatus == CALCULATE_MOVE)
 	{
 		//std::string message = std::string("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+		std::string message = "No new formation moevement data has been received";
 		ROS_INFO("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//emergencyRoutine(message);
 		return false;
@@ -461,6 +462,7 @@ bool Controller::checkInput(int internId)
 	{
 		ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//std::string message2 = std::string("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+		std::string message2 = "No new quadcopter position data has been received";
 		//emergencyRoutine(message2);
 		trackedArrayMutex.lock();
 		ROS_INFO("tracked false");
@@ -605,10 +607,6 @@ void Controller::sendMovementAll()
 	//ROS_INFO("sendMovementAll finished");
 }
 
-void Controller::setTrackingArea(TrackingArea * area)
-{
-	this->trackingArea = *area;
-}
 /*
  * Calculates the new Targets considering the previous targets and the formation movement vector (without orientation right now)
  */
@@ -1059,7 +1057,6 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 	}
 }
 
-
 /* HELPER FUNCTIONS */
 bool closeToTarget( Position6DOF position1, Position6DOF position2 )
 {
@@ -1069,4 +1066,12 @@ bool closeToTarget( Position6DOF position1, Position6DOF position2 )
 		return true;
 	}
 	return false;
+}
+
+/*
+ * Created by Sebastian, modify if necessary :)
+ */
+void Controller::setTrackingArea(TrackingArea area)
+{
+	trackingArea = area;
 }

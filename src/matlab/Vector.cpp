@@ -53,16 +53,32 @@ Vector Vector::add(Vector a) {
     double v1 = this->v1 + a.getV1();
     double v2 = this->v2 + a.getV2();
     double v3 = this->v3 + a.getV3();
-    Vector v = *(new Vector(v1, v2, v3));
+    Vector v = Vector(v1, v2, v3);
     return v;
 }
 
 Vector Vector::mult(double a) {
-    Vector v = *(new Vector(this->v1 * a, this->v2 * a, this->v3 * a));
+    Vector v = Vector(this->v1 * a, this->v2 * a, this->v3 * a);
     return v;
 }
 
-int Vector::scalarMult(Vector a) {
+Vector Vector::premult(Matrix A) {
+    double a1 = v1 * A.getM11() + v2 * A.getM21() + v3 * A.getM31();
+    double a2 = v1 * A.getM12() + v2 * A.getM22() + v3 * A.getM32();
+    double a3 = v1 * A.getM13() + v2 * A.getM23() + v3 * A.getM33();
+    Vector result = Vector(a1, a2, a3);
+    return result;
+}
+
+Vector Vector::aftermult(Matrix A) {
+    double a1 = v1 * A.getM11() + v2 * A.getM12() + v3 * A.getM13();
+    double a2 = v1 * A.getM21() + v2 * A.getM22() + v3 * A.getM23();
+    double a3 = v1 * A.getM31() + v2 * A.getM32() + v3 * A.getM33();
+    Vector result = Vector(a1, a2, a3);
+    return result;
+}
+
+double Vector::scalarMult(Vector a) {
     return (this->v1*a.getV1() + this->v2*a.getV2() + this->v3*a.getV3());
 }
 
@@ -94,16 +110,8 @@ void Vector::putVariable(std::string a, Engine *ep) {
 }
 
 Vector Vector::cross(Vector v) {
-    Vector cross = *(new Vector(v.getV2()*v3 - v.getV3()*v2, v.getV3()*v1 - v.getV1()*v3, v.getV1()*v2 -v.getV2()*v1));
+    Vector cross = Vector(v.getV2()*v3 - v.getV3()*v2, v.getV3()*v1 - v.getV1()*v3, v.getV1()*v2 -v.getV2()*v1);
     return cross;
-}
-
-bool Vector::equals(Vector v) {
-    if ((v.getV1() == v1) && (v.getV2() == v2) && (v.getV3() == v3)) {
-        return true;
-    } else {
-        return false;
-    }
 }
 
 std::string Vector::toString() {
@@ -114,4 +122,26 @@ std::string Vector::toString() {
 
 bool Vector::isValid() {
 	return !(isnan(v1) || isnan(v2) || isnan(v3));
+}
+
+bool Vector::isLinearDependent(Vector u) {
+    // checking, if one vector value is 0, if the other is also 0
+    if ( !(((v1 == 0) && (u.getV1() == 0)) || ((v1 != 0) && (u.getV1() != 0)))
+        && (((v2 == 0) && (u.getV2() == 0)) || ((v1 != 0) && (u.getV2() != 0)))
+        && (((v3 == 0) && (u.getV3() == 0)) || ((v1 != 0) && (u.getV3() != 0))) ) {
+        return true;
+    // checking, if two values of both vectors are 0 and the third is equal
+    } else if ( (((v1 == 0) && (v2 == 0)) && (v3 = u.getV3())) || (((v1 == 0) && (v3 == 0)) && (v2 = u.getV2())) || (((v2 == 0) && (v3 == 0)) && (v1 = u.getV1())) ) {
+        return true;
+    } else if ((v1 == 0) && (v2/u.getV2() == v3/ u.getV3())) {
+        return true;
+    } else if ((v2 == 0) && (v1/u.getV1() == v3/u.getV3())) {
+        return true;
+    } else if ((v3 == 0) && (v1/u.getV1() == v2/u.getV2())) {
+        return true;
+    } else if ((v1/u.getV1() == v2/u.getV2()) && (v1/u.getV1() == v3/u.getV3())) {
+        return true;
+    } else {
+        return false;
+    }
 }

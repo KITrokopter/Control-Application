@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 #include <inttypes.h>
+#include <iostream>
+#include <fstream>
 
 #include "IPositionReceiver.hpp"
 #include "../KitrokopterMessages.hpp"
@@ -18,28 +20,28 @@
 #include "api_application/System.h"
 #include "../controller/Mutex.hpp"
 #include "../matlab/Position.h"
+#include "TrackingWorker.hpp"
+#include "IdDictionary.hpp"
 
 class PositionModule {
 private:
-	IPositionReceiver* receiver;
 	bool _isInitialized;
 	bool isRunning;
 	
 	// Calibration
 	bool isCalibrating;
+	bool isCalibrated;
 	int calibrationPictureCount;
 	cv::Size boardSize;
 	cv::Size realSize;
 	Mutex pictureCacheMutex;
-	std::vector<cv::Mat*> pictureCache;
-	std::vector<uint64_t> pictureTimes;
+	std::map<int, cv::Mat*> pictureCache;
+	std::map<int, uint64_t> pictureTimes;
 	
 	// Tracking
-	Position tracker;
+	TrackingWorker trackingWorker;
 	/// Maps network ids to camera numbers for the tracker.
-	std::map<int, int> netIdToCamNo;
-	/// Maps camera numbers to net ids.
-	std::vector<int> camNoToNetId;
+	IdDictionary idDict;
 	
 	// ROS network
 	ros::ServiceServer startCalibrationService;
@@ -68,6 +70,12 @@ private:
 	// ROS wrappers
 	void setPictureSendingActivated(bool activated);
 	void sendPing();
+	
+	// Logging
+	std::ofstream log;
+	std::vector<long int> timeLog;
+	
+	bool calculateCameraNumbers();
 	
 public:
 	PositionModule(IPositionReceiver* receiver);
