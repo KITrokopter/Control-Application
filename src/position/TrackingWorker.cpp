@@ -4,7 +4,7 @@
 #include <ros/console.h>
 #include "../matlab/profiling.hpp"
 
-TrackingWorker::TrackingWorker(IPositionReceiver *receiver)
+TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(200, "Difference")
 {
 	assert(receiver != 0);
 	

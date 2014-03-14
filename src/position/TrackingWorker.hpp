@@ -10,6 +10,8 @@
 #include "../matlab/Position.h"
 #include "../controller/Mutex.hpp"
 
+#include "Graph.hpp"
+
 typedef struct {
 	Vector cameraVector;
 	int camNo;
@@ -27,6 +29,9 @@ private:
 	std::queue<CameraData> positions;
 	boost::mutex positionsMutex;
 	boost::condition_variable positionsEmpty;
+	
+	// Graphing
+	Graph errorGraph;
 	
 	void run();
 	
