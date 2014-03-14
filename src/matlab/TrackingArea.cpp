@@ -307,10 +307,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
     double leftBorder = posChange/2;
     double rightBorder = posChange;
     double middle = (rightBorder - leftBorder)/2;
+    increaseTrackingArea(middle);
 
     bool tracked = false;
     // searching exact border of tracking area
-    while ((rightBorder - leftBorder > 5) && (tracked == false)) {
+    while ((rightBorder - leftBorder > 5) || (tracked == false)) {
 
         // checks whether all corners of tracking area are still tracked of all cameras
         if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
@@ -318,13 +319,13 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
             && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
 
-            // border is between leftBorder and middle
-            rightBorder = middle;
-            tracked = true;
-        } else {
             // border is between middle and rightBorder
             leftBorder = middle;
             tracked = false;
+        } else {
+            // border is between leftBorder and middle
+            rightBorder = middle;
+            tracked = true;
         }
         middle = (rightBorder - leftBorder)/2;
         increaseTrackingArea(middle);
@@ -369,10 +370,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         leftBorder = length + posChange / 2;
         rightBorder = length + posChange;
         middle = (rightBorder - leftBorder) / 2;
+        increaseTrackingArea(middle);
 
         tracked = false;
         // searching exact border of tracking area
-        while ((rightBorder - leftBorder > 5) && (tracked == false)) {
+        while ((rightBorder - leftBorder > 5) || (tracked == false)) {
 
             // checks whether all corners of tracking area are still tracked of all cameras
             if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
@@ -380,13 +382,13 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
                 && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
                 && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
 
-                // border is between leftBorder and middle
-                rightBorder = middle;
-                tracked = true;
-            } else {
                 // border is between middle and rightBorder
                 leftBorder = middle;
                 tracked = false;
+            } else {
+                // border is between leftBorder and middle
+                rightBorder = middle;
+                tracked = true;
             }
             middle = (rightBorder - leftBorder)/2;
             increaseTrackingArea(middle, height);
@@ -431,10 +433,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         leftBorder = height + posChange / 2;
         rightBorder = height + posChange;
         middle = (rightBorder - leftBorder) / 2;
+        increaseTrackingArea(middle);
 
         tracked = false;
         // searching exact border of tracking area
-        while ((rightBorder - leftBorder > 5) && (tracked == false)) {
+        while ((rightBorder - leftBorder > 5) || (tracked == false)) {
 
             // checks whether all corners of tracking area are still tracked of all cameras
             if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
@@ -442,13 +445,13 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
                 && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b2, ep)
                 && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, b4, ep)) {
 
-                // border is between leftBorder and middle
-                rightBorder = middle;
-                tracked = true;
-            } else {
                 // border is between middle and rightBorder
                 leftBorder = middle;
                 tracked = false;
+            } else {
+                // border is between leftBorder and middle
+                rightBorder = middle;
+                tracked = true;
             }
             middle = (rightBorder - leftBorder)/2;
             increaseTrackingArea(length, middle);
