@@ -22,6 +22,7 @@
 #include "../matlab/Position.h"
 #include "TrackingWorker.hpp"
 #include "IdDictionary.hpp"
+#include "Graph.hpp"
 
 class PositionModule {
 private:
