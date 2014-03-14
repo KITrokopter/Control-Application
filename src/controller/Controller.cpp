@@ -100,7 +100,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	std::vector<Position6DOF> newListItem;
 	int i = 0;
 	int id = 0;
-	for(std::vector<Vector>::iterator it = this->positions.begin(); it != this->positions.end(); ++it, i++)
+	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
 		//ROS_INFO("Global id is %i",i);
@@ -578,7 +578,7 @@ void Controller::sendMovementAll()
 			// Remove Element if exists in list and timestamp < actual time
 			if( this->listFutureMovement.size() > 1 )
 			{
-				std::vector<MovementQuadruple>::iterator it2 = this->listFutureMovement[i].begin();
+				std::list<MovementQuadruple>::iterator it2 = this->listFutureMovement[i].begin();
 				int counter = 0;
 				while( it2->getTimestamp() < currentTime )
 				{
@@ -681,7 +681,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		this->movementStatusMutex.unlock();
 		MovementQuadruple newMoveQuad = MovementQuadruple(0, 0, 0, 0);
-		this->movementAll.push_back(newMoveQuad);
+		this->listFutureMovement[i].push_back(newMoveQuad);
 		
 		//Initialization of Arrays of Lists
 		std::list<Position6DOF> newEmptyListPosition;
