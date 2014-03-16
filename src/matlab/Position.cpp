@@ -158,7 +158,12 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
 double Position::getAngle(Vector u, Vector v) {
     // cos(alpha)= u*v/(|u|*|v|)
     double angle = u.scalarMult(v)/(u.getLength() * v.getLength());
-    return acos(angle);
+    angle = acos(angle);
+    // checks whether angle is between 0 and 90 degree
+    if (angle > M_PI/2) {
+        angle = -(angle - M_PI);
+    }
+    return angle;
 }
 
 void Position::angleTry(int sign) {
