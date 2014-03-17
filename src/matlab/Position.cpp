@@ -304,12 +304,18 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
     } else {
         if (!(oldPos[quadcopterId].isValid())) {
             // not calculated before, first time calculating
+            int tooOld = 0;
             for (int i = 0; i < numberCameras; i++) {
                 if (imageAge[i] > 5) {
                     ROS_DEBUG("Information of camera %d is too old.", i);
-                    return Vector(NAN, NAN, NAN);
+                    tooOld++;
                 }
             }
+            if (2 > numberCameras - tooOld) {
+                ROS_DEBUG("Information can't be used, as too much cameras can't track it anymore");
+                return Vector(NAN, NAN, NAN);
+            }
+
             ROS_DEBUG("First calculation of position with camera information:");
 
             // building lines from camera position to quadcopter position
@@ -329,12 +335,19 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             return quadPosition;
         } else {
             // not calculated before, first time calculating
+            int tooOld = 0;
             for (int i = 0; i < numberCameras; i++) {
                 if (imageAge[i] > 20) {
                     ROS_DEBUG("Information of camera %d is too old.", i);
-                    return Vector(NAN, NAN, NAN);
+                    tooOld++;
                 }
             }
+
+            if (2 > numberCameras - tooOld) {
+                ROS_DEBUG("Information can't be used, as too much cameras can't track it anymore");
+                return Vector(NAN, NAN, NAN);
+            }
+
             Matlab *m = new Matlab(ep);
 
             // interpolation factor should be tested.
