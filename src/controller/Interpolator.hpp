@@ -46,6 +46,7 @@ class Interpolator {
 public:
 	Interpolator();
 
+	MovementQuadruple calibrate(int id, std::list<MovementQuadruple> sentQuadruples);
 	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id);
 
 protected:
@@ -53,7 +54,10 @@ protected:
 private:
 
 	long int lastUpdated[MAX_NUMBER_OF_QUADCOPTER_HIGH];
+	double northeast[MAX_NUMBER_OF_QUADCOPTER_HIGH][2];		// 0-pitch, 1-roll
 	double stepSizeOfChange; 	// depends on the distance of position to target
+
+	long int started[MAX_NUMBER_OF_QUADCOPTER_HIGH];
 
 };
 
