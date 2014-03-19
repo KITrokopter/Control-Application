@@ -39,6 +39,10 @@ private:
 	std::map<int, cv::Mat*> pictureCache;
 	std::map<int, uint64_t> pictureTimes;
 	
+	std::map<int, cv::Mat> intrinsicsMatrices;
+	std::map<int, cv::Mat> distortionCoefficients;
+	std::map<int, std::string> windowNames;
+	
 	// Tracking
 	TrackingWorker trackingWorker;
 	/// Maps network ids to camera numbers for the tracker.

@@ -47,4 +47,6 @@ public:
 	
 	bool calibrate(ChessboardData *chessboard, int camNo);
 	Vector getCameraPosition(int camNo);
+	cv::Mat getIntrinsicsMatrix(int camNo);
+	cv::Mat getDistortionCoefficients(int camNo);
 };

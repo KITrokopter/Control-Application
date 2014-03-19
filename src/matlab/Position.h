@@ -12,6 +12,8 @@
 #include <vector>
 #include "TrackingArea.h"
 
+#include <opencv2/core/core.hpp>
+
 class Position {
 private: 
 	// enigne pointer to matlab application
@@ -100,10 +102,10 @@ public:
     double getDistance();
 
     // saves distorion coefficient of camera with cameraId in distCoeff
-    void getDistortionCoefficients(int cameraId, double* distCoeff);
+    cv::Mat getDistortionCoefficients(int cameraId);
 
     // calculates intrinsic matrix as can be seen here: http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
-    Matrix getIntrinsicsMatrix(int cameraId);
+    cv::Mat getIntrinsicsMatrix(int cameraId);
 
 };
 

@@ -228,7 +228,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		return false;
 	}
 	
-	if (netIdToCamNo.size() < 2) {
+	if (idDict.size() < 2) {
 		ROS_ERROR("Have not enough images for calibration (Have %ld)!", netIdToCamNo.size());
 	}*/
 	
@@ -241,7 +241,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	// ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
 	ChessboardData data(7, 7, 57, 57);
 	
-	int camNumber = 3; // idDict.size();
+	int camNumber = 3; // (int) idDict.size();
 	
 	bool ok = trackingWorker.calibrate(&data, camNumber);
 	
@@ -258,6 +258,16 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		res.cameraYPositions.push_back(position.getV2());
 		res.cameraZPositions.push_back(position.getV3());
 		res.IDs.push_back(idDict.getBackward(i));
+		
+		// DEBUG: Show calibration results visually
+		intrinsicsMatrices[idDict.getBackward(i)] = trackingWorker.getIntrinsicsMatrix(i);
+		distortionCoefficients[idDict.getBackward(i)] = trackingWorker.getDistortionCoefficients(i);
+		std::stringstream ss;
+		ss << "Calib Results CamId " << idDict.getBackward(i);
+		windowNames[idDict.getBackward(i)] = ss.str();
+		
+		cv::StartWindowThread();
+		cv::namedWindow(ss.str());
 	}
 	
 	isCalibrating = false;
@@ -271,26 +281,29 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	// Insert camera id, if not already there.
 	idDict.insert(msg.ID);
 	
+	cv::Mat* image = new cv::Mat(cv::Size(640, 480), CV_8UC3);
+	
+	for (int i = 0; i < 640 * 480 * 3; i++)	{
+		image->data[i] = msg.image[i];
+	}
+	
+	// DEBUG: Show calibration results visually
+	if (intrinsicsMatrices.count(msg.ID) > 0 && distortionCoefficients.count(msg.ID) > 0 && windowNames.count(msg.ID) > 0) {
+		cv::imshow(windowNames[msg.ID], *image);
+	}
+	
 	pictureCacheMutex.lock();
 	
-	if (isCalibrating)
-	{
-		if (pictureCache[msg.ID] != 0)
-		{
+	if (isCalibrating) {
+		if (pictureCache[msg.ID] != 0) {
 			delete pictureCache[msg.ID];
 			pictureCache[msg.ID] = 0;
-			
-		}
-		
-		cv::Mat* image = new cv::Mat(cv::Size(640, 480), CV_8UC3);
-		
-		for (int i = 0; i < 640 * 480 * 3; i++)
-		{
-			image->data[i] = msg.image[i];
 		}
 		
 		pictureCache[msg.ID] = image;
 		pictureTimes[msg.ID] = msg.timestamp;
+	} else {
+		delete image;
 	}
 	
 	pictureCacheMutex.unlock();
@@ -314,6 +327,7 @@ void PositionModule::systemCallback(const api_application::System &msg)
 			log << counter++ << ", " << *it << std::endl;
 		}
 		
+		cv::destroyAllWindows();
 		ros::shutdown();
 	}
 }

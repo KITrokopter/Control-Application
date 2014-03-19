@@ -417,23 +417,28 @@ double Position::getDistance() {
     return this->distance;
 }
 
-void Position::getDistortionCoefficients(int cameraId, double* distCoeff) {
+cv::Mat Position::getDistortionCoefficients(int cameraId) {
     std::string result;
     std::ostringstream id;
     id << cameraId;
     result = "load('/tmp/calibrationResult/Calib_Results_" + id.str() + ".mat');";
     // loads resulting file in matlab workspace
     engEvalString(ep, result.c_str());
+	
+	cv::Mat distortionCoefficients(cv::Size(5, 1), CV_64F);
+	
     mxArray *r = engGetVariable(ep, "kc");
-    distCoeff[0] = mxGetPr(r)[0];
-    distCoeff[1] = mxGetPr(r)[1];
-    distCoeff[2] = mxGetPr(r)[2];
-    distCoeff[3] = mxGetPr(r)[3];
-    distCoeff[4] = mxGetPr(r)[4];
+    distortionCoefficients.data[0] = mxGetPr(r)[0];
+	distortionCoefficients.data[1] = mxGetPr(r)[1];
+	distortionCoefficients.data[2] = mxGetPr(r)[2];
+	distortionCoefficients.data[3] = mxGetPr(r)[3];
+	distortionCoefficients.data[4] = mxGetPr(r)[4];
     mxDestroyArray(r);
+	
+	return distortionCoefficients;
 }
 
-Matrix Position::getIntrinsicsMatrix(int cameraId) {
+cv::Mat Position::getIntrinsicsMatrix(int cameraId) {
     std::string result;
     std::ostringstream id;
     id << cameraId;
@@ -444,9 +449,21 @@ Matrix Position::getIntrinsicsMatrix(int cameraId) {
     mxArray *alpha = engGetVariable(ep, "alpha_c");
     mxArray *cc = engGetVariable(ep, "cc");
     double fc1 = mxGetPr(fc)[0];
-    Matrix intrinsics = Matrix(fc1, mxGetPr(alpha)[0] * fc1, mxGetPr(cc)[0], 0, mxGetPr(fc)[1], mxGetPr(cc)[1], 0, 0, 1);
+	
+    cv::Mat intrinsicsMatrix(cv::Size(3, 3), CV_64F);
+	intrinsicsMatrix.data[0] = fc1;
+	intrinsicsMatrix.data[1] = mxGetPr(alpha)[0] * fc1;
+	intrinsicsMatrix.data[2] = mxGetPr(cc)[0];
+	intrinsicsMatrix.data[3] = 0;
+	intrinsicsMatrix.data[4] = mxGetPr(fc)[1];
+	intrinsicsMatrix.data[5] = mxGetPr(cc)[1];
+	intrinsicsMatrix.data[6] = 0;
+	intrinsicsMatrix.data[7] = 0;
+	intrinsicsMatrix.data[8] = 1;
+	
     mxDestroyArray(fc);
     mxDestroyArray(cc);
     mxDestroyArray(alpha);
-    return intrinsics;
+	
+    return intrinsicsMatrix;
 }

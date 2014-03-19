@@ -150,3 +150,13 @@ Vector TrackingWorker::getCameraPosition(int camNo)
 {
 	return tracker.getPosition(camNo);
 }
+
+cv::Mat TrackingWorker::getIntrinsicsMatrix(int camNo)
+{
+	return tracker.getIntrinsicsMatrix(camNo);
+}
+
+cv::Mat TrackingWorker::getDistortionCoefficients(int camNo)
+{
+	return tracker.getDistortionCoefficients(camNo);
+}
