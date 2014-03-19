@@ -562,23 +562,7 @@ void Controller::sendMovementAll()
 		unsigned int quadStatus= this->quadcopterMovementStatus[i];
 		this->movementStatusMutex.unlock();
 		if( quadStatus != CALCULATE_NONE )
-		{
-			//ROS_INFO("%i",i);
-			msg.thrust = this->listFutureMovement[i].front().getThrust();
-			msg.roll = this->listFutureMovement[i].front().getRoll();
-			msg.pitch = this->listFutureMovement[i].front().getPitch();
-			msg.yaw = this->listFutureMovement[i].front().getYawrate();
-			this->Movement_pub[i].publish(msg);		
-			this->listFutureMovement[i].front().setTimestamp( currentTime );
-
-			// Save Element (TODO only if not too young)
-			this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
-			while( this->listSentQuadruples[i].size() > 5 )	// while or if FIXME
-			{
-				// Remove oldest elements
-				this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
-			}
-
+		{			
 			// Remove Element if exists in list and timestamp < actual time
 			if( this->listFutureMovement.size() > 1 )
 			{				
@@ -597,10 +581,24 @@ void Controller::sendMovementAll()
 				{
 					//--it2;
 					counter--;
-				}
-				if( counter > 0 ) {
 					this->listFutureMovement[i].erase( this->listFutureMovement[i].begin(), it2 );
 				}
+			}
+			
+			//ROS_INFO("%i",i);
+			msg.thrust = this->listFutureMovement[i].front().getThrust();
+			msg.roll = this->listFutureMovement[i].front().getRoll();
+			msg.pitch = this->listFutureMovement[i].front().getPitch();
+			msg.yaw = this->listFutureMovement[i].front().getYawrate();
+			this->Movement_pub[i].publish(msg);		
+			this->listFutureMovement[i].front().setTimestamp( currentTime );
+
+			// Save Element (TODO only if not too young)
+			this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
+			while( this->listSentQuadruples[i].size() > 5 )	// while or if FIXME
+			{
+				// Remove oldest elements
+				this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
 			}
 		}
 	}
@@ -1073,5 +1071,5 @@ bool closeToTarget( Position6DOF position1, Position6DOF position2 )
  */
 void Controller::setTrackingArea(TrackingArea area)
 {
-	trackingArea = area;
+	this->trackingArea = area;
 }
