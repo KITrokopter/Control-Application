@@ -292,7 +292,7 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	if (intrinsicsMatrices.count(msg.ID) > 0 && distortionCoefficients.count(msg.ID) > 0 && windowNames.count(msg.ID) > 0) {
 		cv::Mat undistorted(cv::Size(640, 480), CV_8UC3);
 		cv::undistort(*image, undistorted, intrinsicsMatrices[msg.ID], distortionCoefficients[msg.ID]);
-		cv::imshow(windowNames[msg.ID], *image);
+		cv::imshow(windowNames[msg.ID], undistorted);
 	}
 	
 	pictureCacheMutex.lock();

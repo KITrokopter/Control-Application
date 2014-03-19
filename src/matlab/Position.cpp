@@ -434,7 +434,7 @@ cv::Mat Position::getDistortionCoefficients(int cameraId) {
 	distortionCoefficients.at<double>(3) = mxGetPr(r)[3];
 	distortionCoefficients.at<double>(4) = mxGetPr(r)[4];
 	
-	for (int i = 0; i < 9; i++) {
+	for (int i = 0; i < 5; i++) {
 		ROS_DEBUG("DistortionCoefficients %d: %f", i, distortionCoefficients.at<double>(i));
 	}
 	
