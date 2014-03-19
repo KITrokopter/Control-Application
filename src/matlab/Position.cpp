@@ -425,14 +425,19 @@ cv::Mat Position::getDistortionCoefficients(int cameraId) {
     // loads resulting file in matlab workspace
     engEvalString(ep, result.c_str());
 	
-	cv::Mat distortionCoefficients(cv::Size(5, 1), CV_64F);
-	
     mxArray *r = engGetVariable(ep, "kc");
+	
+	cv::Mat distortionCoefficients(cv::Size(5, 1), CV_64F);
     distortionCoefficients.data[0] = mxGetPr(r)[0];
 	distortionCoefficients.data[1] = mxGetPr(r)[1];
 	distortionCoefficients.data[2] = mxGetPr(r)[2];
 	distortionCoefficients.data[3] = mxGetPr(r)[3];
 	distortionCoefficients.data[4] = mxGetPr(r)[4];
+	
+	for (int i = 0; i < 9; i++) {
+		ROS_DEBUG("DistortionCoefficients %d: %f", i, distortionCoefficients.data[i]);
+	}
+	
     mxDestroyArray(r);
 	
 	return distortionCoefficients;
@@ -460,6 +465,10 @@ cv::Mat Position::getIntrinsicsMatrix(int cameraId) {
 	intrinsicsMatrix.data[6] = 0;
 	intrinsicsMatrix.data[7] = 0;
 	intrinsicsMatrix.data[8] = 1;
+	
+	for (int i = 0; i < 9; i++) {
+		ROS_DEBUG("IntrinsicsMatrix %d: %f", i, intrinsicsMatrix.data[i]);
+	}
 	
     mxDestroyArray(fc);
     mxDestroyArray(cc);
