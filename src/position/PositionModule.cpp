@@ -11,6 +11,7 @@
 #include <ros/console.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "sensor_msgs/Image.h"
 #include "api_application/Ping.h"
@@ -266,7 +267,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		ss << "Calib Results CamId " << idDict.getBackward(i);
 		windowNames[idDict.getBackward(i)] = ss.str();
 		
-		cv::StartWindowThread();
+		cv::startWindowThread();
 		cv::namedWindow(ss.str());
 	}
 	
@@ -289,7 +290,9 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	
 	// DEBUG: Show calibration results visually
 	if (intrinsicsMatrices.count(msg.ID) > 0 && distortionCoefficients.count(msg.ID) > 0 && windowNames.count(msg.ID) > 0) {
-		cv::imshow(windowNames[msg.ID], *image);
+		cv::Mat undistorted(cv::Size(640, 480), CV_8UC3);
+		cv::undistort(*image, undistorted, intrinsicsMatrices[msg.ID], distortionCoefficients[msg.ID]);
+		cv::imshow(windowNames[msg.ID], undistorted);
 	}
 	
 	pictureCacheMutex.lock();
