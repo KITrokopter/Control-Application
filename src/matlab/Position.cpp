@@ -434,9 +434,9 @@ cv::Mat Position::getDistortionCoefficients(int cameraId) {
 	distortionCoefficients.at<double>(3) = mxGetPr(r)[3];
 	distortionCoefficients.at<double>(4) = mxGetPr(r)[4];
 	
-	for (int i = 0; i < 5; i++) {
-		ROS_DEBUG("DistortionCoefficients %d: %f", i, distortionCoefficients.at<double>(i));
-	}
+// 	for (int i = 0; i < 5; i++) {
+// 		ROS_DEBUG("DistortionCoefficients %d: %f", i, distortionCoefficients.at<double>(i));
+// 	}
 	
     mxDestroyArray(r);
 	
@@ -466,9 +466,9 @@ cv::Mat Position::getIntrinsicsMatrix(int cameraId) {
 	intrinsicsMatrix.at<double>(2, 1) = 0;
 	intrinsicsMatrix.at<double>(2, 2) = 1;
 	
-	for (int i = 0; i < 9; i++) {
-		ROS_DEBUG("IntrinsicsMatrix %d: %f", i, intrinsicsMatrix.at<double>(i));
-	}
+// 	for (int i = 0; i < 9; i++) {
+// 		ROS_DEBUG("IntrinsicsMatrix %d: %f", i, intrinsicsMatrix.at<double>(i));
+// 	}
 	
     mxDestroyArray(fc);
     mxDestroyArray(cc);
