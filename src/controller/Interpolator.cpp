@@ -16,11 +16,13 @@ Interpolator::Interpolator()
 MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id)
 {
 
+	/* Nothing has been sent so far. */
 	if( sentQuadruples.size() == 0 )
 	{
 		return MovementQuadruple(THRUST_START, 0, 0, 0);
 	}
-	
+
+	/* A MovementQuadruple has been sent before. */
 	MovementQuadruple newMovement = sentQuadruples.back();
 	long int currentTime = getNanoTime();
 	
@@ -35,14 +37,14 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	}
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
-	
-	//bool oscillate = false;
 	int size = positions.size();
-	double deltaTarget[size];
-	double deltaAbsPosition[size-1];	// equals speed	/* error-prone FIXME */
-	double deltaSpeed[size-2];	// equals acceleration	/* error-prone FIXME */
+	double deltaTarget[size];	// Absolute distance to latest target
+	double deltaAbsPosition[size-1];	// equals speed	/* arraysize FIXME */
+	double deltaSpeed[size-2];	// equals acceleration	/* arraysize FIXME */
 	int counter = 0;
 	Position6DOF positionA, positionB;	// positionA is older than positionB
+
+	/* Calculate values for declared arrays above for later usage. */
 	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
 		positionA.setOrientation( (*it).getOrientation() );
@@ -166,11 +168,22 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 	 * 	too fast
 	 * Negate value if
 	 * 	going in wrong direction
-	 * 
+	 */	
+	/* 
+	 * TODO if too slow, SPEED_MIN_PLANE needs to be changed
 	 */
+	
 	// right direction: (aSpeed>0 && aDistanceLatest>0) 
 	// close to target: abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET
-	if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE) )
+	if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE))
+	{
+		diff += ROLL_STEP; 
+	}
+	else if( -aSpeed>SPEED_MAX_PLANE )
+	{
+		diff += ROLL_STEP; 
+	}
+	else if( (-aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest<0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
 	{
 		diff += ROLL_STEP; 
 	}
@@ -182,32 +195,12 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 	{
 		diff -= ROLL_STEP; 
 	}
-	else if( -aSpeed>SPEED_MAX_PLANE )
-	{
-		diff += ROLL_STEP; 
-	}
 	else if( (aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest>0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
 	{
 		diff -= ROLL_STEP; 
 	}
-	else if( (-aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest<0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
-	{
-		diff += ROLL_STEP; 
-	}
-	else if( (aSpeed>0) && aDistanceLatest>aDistanceLatest )
-	{
-		
-	}
-	                                   
-	/*
-	if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE) )
-		diff += ROLL_STEP; */
-	        
+	
 	return diff;
-	/*if( abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET ) 
-	{
-		return diff;		
-	}*/
 }
 
 bool reachingTarget( double first, double last, double speed, long int timediff )

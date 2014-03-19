@@ -591,7 +591,7 @@ void Controller::sendMovementAll()
 			msg.pitch = this->listFutureMovement[i].front().getPitch();
 			msg.yaw = this->listFutureMovement[i].front().getYawrate();
 			this->Movement_pub[i].publish(msg);		
-			this->listFutureMovement[i].front().setTimestamp( currentTime );
+			//this->listFutureMovement[i].front().setTimestamp( currentTime );
 
 			// Save Element (TODO only if not too young)
 			this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );

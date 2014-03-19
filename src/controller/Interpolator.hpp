@@ -54,7 +54,6 @@ private:
 
 	long int lastUpdated[MAX_NUMBER_OF_QUADCOPTER_HIGH];
 	double stepSizeOfChange; 	// depends on the distance of position to target
-	
 
 };
 
