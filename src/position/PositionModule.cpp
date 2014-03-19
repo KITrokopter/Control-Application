@@ -266,6 +266,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		std::stringstream ss;
 		ss << "Calib Results CamId " << idDict.getBackward(i);
 		windowNames[idDict.getBackward(i)] = ss.str();
+		imageDisplayed[idDict.getBackward(i)] = false;
 		
 		cv::startWindowThread();
 		cv::namedWindow(ss.str());
@@ -282,17 +283,18 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	// Insert camera id, if not already there.
 	idDict.insert(msg.ID);
 	
-	cv::Mat* image = new cv::Mat(cv::Size(640, 480), CV_8UC3);
-	
-	for (int i = 0; i < 640 * 480 * 3; i++)	{
-		image->data[i] = msg.image[i];
-	}
-	
 	// DEBUG: Show calibration results visually
-	if (intrinsicsMatrices.count(msg.ID) > 0 && distortionCoefficients.count(msg.ID) > 0 && windowNames.count(msg.ID) > 0) {
+	if (!imageDisplayed[msg.ID] && intrinsicsMatrices.count(msg.ID) > 0 && distortionCoefficients.count(msg.ID) > 0 && windowNames.count(msg.ID) > 0) {
+		cv::Mat image(cv::Size(640, 480), CV_8UC3);
+		
+		for (int i = 0; i < 640 * 480 * 3; i++)	{
+			image.data[i] = msg.image[i];
+		}
+		
 		cv::Mat undistorted(cv::Size(640, 480), CV_8UC3);
-		cv::undistort(*image, undistorted, intrinsicsMatrices[msg.ID], distortionCoefficients[msg.ID]);
+		cv::undistort(image, undistorted, intrinsicsMatrices[msg.ID], distortionCoefficients[msg.ID]);
 		cv::imshow(windowNames[msg.ID], undistorted);
+		imageDisplayed[msg.ID] = true;
 	}
 	
 	pictureCacheMutex.lock();
@@ -303,10 +305,14 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 			pictureCache[msg.ID] = 0;
 		}
 		
+		cv::Mat* image = new cv::Mat(cv::Size(640, 480), CV_8UC3);
+		
+		for (int i = 0; i < 640 * 480 * 3; i++)	{
+			image->data[i] = msg.image[i];
+		}
+		
 		pictureCache[msg.ID] = image;
 		pictureTimes[msg.ID] = msg.timestamp;
-	} else {
-		delete image;
 	}
 	
 	pictureCacheMutex.unlock();

@@ -42,6 +42,7 @@ private:
 	std::map<int, cv::Mat> intrinsicsMatrices;
 	std::map<int, cv::Mat> distortionCoefficients;
 	std::map<int, std::string> windowNames;
+	std::map<int, bool> imageDisplayed;
 	
 	// Tracking
 	TrackingWorker trackingWorker;
