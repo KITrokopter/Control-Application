@@ -57,22 +57,31 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
     engEvalString(ep, "dif = [a1 - b1, a2 - b2, a3 - b3]");
     mxArray *same;
 
+    // Vectors to check later, if the Matrix of two components of both Vectors can be inverted
+    Vector f12 = Vector(f.getU().getV1(), f.getU().getV2(), 0);
+    Vector f13 = Vector(f.getU().getV1(), 0, f.getU().getV3());
+    Vector g12 = Vector(g.getU().getV1(), g.getU().getV2(), 0);
+    Vector g13 = Vector(g.getU().getV1(), 0, g.getU().getV3());
+
     // first checking, whether the lines are parallel
     if (f.getU().isLinearDependent(g.getU())) {
             return 0;
     }
 
+
     // aren't parallel, need to check, whether intersect. has to make sure, that A can be inverted.
     // A*x = bb, x = (r, s)
     else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV2() == 0) && (g.getU().getV2() == 0))
-                 || ((f.getU().getV1() == 0) && (f.getU().getV2() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV2() == 0)))) {
+                 || ((f.getU().getV1() == 0) && (f.getU().getV2() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV2() == 0))
+                 || (f12.isLinearDependent(g12)))) {
         engEvalString(ep, "A = [-u1 v1; -u2 v2];");
         engEvalString(ep, "bb = [dif(1); dif(2)];");
         engEvalString(ep, "x = inv(A)*bb");
         // checks if equation is also right for the third vectorcomponent.
         engEvalString(ep, "same = (a3+x(1)*u3 == b3 + x(2) * v3)");
     } else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV3() == 0) && (g.getU().getV3() == 0))
-                 || ((f.getU().getV1() == 0) && (f.getU().getV3() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV3() == 0)))) {
+                 || ((f.getU().getV1() == 0) && (f.getU().getV3() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV3() == 0))
+                 || (f13.isLinearDependent(g13)))) {
         engEvalString(ep, "A = [-u1 v1; -u3 v3]");
         engEvalString(ep, "bb = [dif(1); dif(3)];");
         engEvalString(ep, "x = inv(A)*bb");

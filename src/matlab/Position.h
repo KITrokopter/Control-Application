@@ -98,6 +98,13 @@ public:
 
     // returns distance between last seen position and last calculated position
     double getDistance();
+
+    // saves distorion coefficient of camera with cameraId in distCoeff
+    void getDistortionCoefficients(int cameraId, double* distCoeff);
+
+    // calculates intrinsic matrix as can be seen here: http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
+    Matrix getIntrinsicsMatrix(int cameraId);
+
 };
 
 #endif // POSITION_H //

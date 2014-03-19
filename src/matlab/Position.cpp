@@ -145,9 +145,9 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
 
-        ROS_DEBUG("Calculating tracking area");
-        setTrackingArea(2000);
-        tracking.printTrackingArea();
+        //ROS_DEBUG("Calculating tracking area");
+        //setTrackingArea(2000);
+        //tracking.printTrackingArea();
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
@@ -158,7 +158,12 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
 double Position::getAngle(Vector u, Vector v) {
     // cos(alpha)= u*v/(|u|*|v|)
     double angle = u.scalarMult(v)/(u.getLength() * v.getLength());
-    return acos(angle);
+    angle = acos(angle);
+    // checks whether angle is between 0 and 90 degree
+    if (angle > M_PI/2) {
+        angle = -(angle - M_PI);
+    }
+    return angle;
 }
 
 void Position::angleTry(int sign) {
@@ -299,12 +304,18 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
     } else {
         if (!(oldPos[quadcopterId].isValid())) {
             // not calculated before, first time calculating
+            int tooOld = 0;
             for (int i = 0; i < numberCameras; i++) {
                 if (imageAge[i] > 5) {
                     ROS_DEBUG("Information of camera %d is too old.", i);
-                    return Vector(NAN, NAN, NAN);
+                    tooOld++;
                 }
             }
+            if (2 > numberCameras - tooOld) {
+                ROS_DEBUG("Information can't be used, as too much cameras can't track it anymore");
+                return Vector(NAN, NAN, NAN);
+            }
+
             ROS_DEBUG("First calculation of position with camera information:");
 
             // building lines from camera position to quadcopter position
@@ -324,12 +335,19 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             return quadPosition;
         } else {
             // not calculated before, first time calculating
+            int tooOld = 0;
             for (int i = 0; i < numberCameras; i++) {
                 if (imageAge[i] > 20) {
                     ROS_DEBUG("Information of camera %d is too old.", i);
-                    return Vector(NAN, NAN, NAN);
+                    tooOld++;
                 }
             }
+
+            if (2 > numberCameras - tooOld) {
+                ROS_DEBUG("Information can't be used, as too much cameras can't track it anymore");
+                return Vector(NAN, NAN, NAN);
+            }
+
             Matlab *m = new Matlab(ep);
 
             // interpolation factor should be tested.
@@ -397,4 +415,38 @@ TrackingArea Position::getTrackingArea() {
 
 double Position::getDistance() {
     return this->distance;
+}
+
+void Position::getDistortionCoefficients(int cameraId, double* distCoeff) {
+    std::string result;
+    std::ostringstream id;
+    id << cameraId;
+    result = "load('/tmp/calibrationResult/Calib_Results_" + id.str() + ".mat');";
+    // loads resulting file in matlab workspace
+    engEvalString(ep, result.c_str());
+    mxArray *r = engGetVariable(ep, "kc");
+    distCoeff[0] = mxGetPr(r)[0];
+    distCoeff[1] = mxGetPr(r)[1];
+    distCoeff[2] = mxGetPr(r)[2];
+    distCoeff[3] = mxGetPr(r)[3];
+    distCoeff[4] = mxGetPr(r)[4];
+    mxDestroyArray(r);
+}
+
+Matrix Position::getIntrinsicsMatrix(int cameraId) {
+    std::string result;
+    std::ostringstream id;
+    id << cameraId;
+    result = "load('/tmp/calibrationResult/Calib_Results_" + id.str() + ".mat');";
+    // loads resulting file in matlab workspace
+    engEvalString(ep, result.c_str());
+    mxArray *fc = engGetVariable(ep, "fc");
+    mxArray *alpha = engGetVariable(ep, "alpha_c");
+    mxArray *cc = engGetVariable(ep, "cc");
+    double fc1 = mxGetPr(fc)[0];
+    Matrix intrinsics = Matrix(fc1, mxGetPr(alpha)[0] * fc1, mxGetPr(cc)[0], 0, mxGetPr(fc)[1], mxGetPr(cc)[1], 0, 0, 1);
+    mxDestroyArray(fc);
+    mxDestroyArray(cc);
+    mxDestroyArray(alpha);
+    return intrinsics;
 }
