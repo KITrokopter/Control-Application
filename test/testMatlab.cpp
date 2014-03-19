@@ -57,8 +57,7 @@ void tracking(Matlab *m) {
     cameraDirection.push_back(*d2);
     cameraDirection.push_back(*d3);
     cameraDirection.push_back(*d4);
-    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 5, m->getEngine());
-    printf("[%f %f %f], [%f %f %f], [%f %f %f], [%f, %f, %f], [%f, %f, %f] is the tracking area\n", t->getA1().getV1(), t->getA1().getV2(),t->getA1().getV3(), t->getA2().getV1(), t->getA2().getV2(), t->getA2().getV3(), t->getA3().getV1(), t->getA3().getV2(), t->getA3().getV3(), t->getA4().getV1(), t->getA4().getV2(), t->getA4().getV3(), t->getB1().getV1(), t->getB1().getV2(), t->getB1().getV3());
+    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 10, m->getEngine());
     t->printTrackingArea();
 }
 
