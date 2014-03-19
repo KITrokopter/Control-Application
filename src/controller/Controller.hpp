@@ -35,10 +35,10 @@
 #include <vector>
 //Ros messages/services
 
-#define THRUST_MIN 10001
+#define THRUST_MIN 10
 #define THRUST_STAND_STILL 18001
-#define THRUST_START 11000
-#define THRUST_DECLINE 20000
+#define THRUST_START 1000
+#define THRUST_DECLINE 200
 #define THRUST_STEP 50
 #define ROLL_STEP 2
 #define PITCH_STEP 2
