@@ -52,7 +52,7 @@ void TrackingWorker::run()
 				// ROS_DEBUG("Not enough information to get position of quadcopter %d", data.quadcopterId);
 			}
 			
-			ROS_DEBUG("Updating position of quadcopter %d took %.3f ms", data.quadcopterId, duration);
+			// ROS_DEBUG("Updating position of quadcopter %d took %.3f ms", data.quadcopterId, duration);
 		} else if (receivedFirstPosition) {
 			ROS_WARN("Position update buffer is empty!");
 		}

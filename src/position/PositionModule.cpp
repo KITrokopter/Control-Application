@@ -35,7 +35,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	this->pictureSendingActivationPublisher = n.advertise<camera_application::PictureSendingActivation>("PictureSendingActivation", 4);
 	this->pingPublisher = n.advertise<api_application::Ping>("Ping", 4);
 	
-	this->pictureSubscriber = n.subscribe("Picture", 128, &PositionModule::pictureCallback, this);
+	this->pictureSubscriber = n.subscribe("Picture", 12, &PositionModule::pictureCallback, this);
 	this->systemSubscriber = n.subscribe("System", 4, &PositionModule::systemCallback, this);
 	this->rawPositionSubscriber = n.subscribe("RawPosition", 1024, &PositionModule::rawPositionCallback, this);
 	
@@ -284,7 +284,8 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	idDict.insert(msg.ID);
 	
 	// DEBUG: Show calibration results visually
-	if (!imageDisplayed[msg.ID] && intrinsicsMatrices.count(msg.ID) > 0 && distortionCoefficients.count(msg.ID) > 0 && windowNames.count(msg.ID) > 0) {
+	if (imageDisplayed.count(msg.ID) && !imageDisplayed[msg.ID] && intrinsicsMatrices.count(msg.ID) > 0
+		&& distortionCoefficients.count(msg.ID) > 0 && windowNames.count(msg.ID) > 0) {
 		cv::Mat image(cv::Size(640, 480), CV_8UC3);
 		
 		for (int i = 0; i < 640 * 480 * 3; i++)	{
@@ -351,7 +352,7 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
  	// TODO: Calculate position in our coordinate system.
 	// TODO: Is this coordinate change correct for amcctoolbox?
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
-	ROS_DEBUG("Received position: msg.ID: %d idDict.getForward(msg.ID): %d msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID), msg.quadcopterId);
+	// ROS_DEBUG("Received position: msg.ID: %d idDict.getForward(msg.ID): %d msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID), msg.quadcopterId);
 	
 	trackingWorker.updatePosition(cameraVector, idDict.getForward(msg.ID), msg.quadcopterId);
 	
