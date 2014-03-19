@@ -92,6 +92,13 @@ public:
      * print matrix in three lines
      */
 	void printMatrix();
+
+    /**
+     * matrix multiplication
+     * @param A factor
+     * @return product
+     */
+    Matrix multiplicate(Matrix A);
 };
 
 #endif /* MATRIX_H_ */

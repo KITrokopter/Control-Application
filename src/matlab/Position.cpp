@@ -450,3 +450,8 @@ Matrix Position::getIntrinsicsMatrix(int cameraId) {
     mxDestroyArray(alpha);
     return intrinsics;
 }
+
+Matrix Position::getRotationMatrix(int cameraId) {
+    Matrix rotation = rotationMatrix.multiplicate(camRotMat[cameraId]);
+    return rotation;
+}
