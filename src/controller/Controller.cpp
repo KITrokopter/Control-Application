@@ -399,6 +399,7 @@ void Controller::hold( int internId )
 void Controller::land( int internId, int * nrLand )
 {
 	ROS_INFO("Land");
+	long int currentTime = getNanoTime();
 	this->trackedArrayMutex.lock();
 	//Decline until crazyflie isn't tracked anymore
 	if(tracked[internId] == true)
@@ -407,12 +408,19 @@ void Controller::land( int internId, int * nrLand )
 		{
 			this->listFutureMovement[internId].pop_back();
 		}*/
+		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
 		this->listFutureMovement[internId].front().setThrust( THRUST_DECLINE );
+		this->listFutureMovement[internId].front().setTimestamp(currentTime);
+		this->listFutureMovement[internId].push_back( newMovement );
+		
 	}
 	else
 	{
 		//Shutdown crazyflie after having left the tracking area.
+		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
 		this->listFutureMovement[internId].front().setThrust( THRUST_MIN );
+		this->listFutureMovement[internId].front().setTimestamp(currentTime);
+		this->listFutureMovement[internId].push_back( newMovement );
 		this->movementStatusMutex.lock();
 		this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
 		this->movementStatusMutex.unlock();
