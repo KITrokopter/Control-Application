@@ -145,9 +145,9 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
 
-        //ROS_DEBUG("Calculating tracking area");
-        //setTrackingArea(2000);
-        //tracking.printTrackingArea();
+        ROS_DEBUG("Calculating tracking area");
+        setTrackingArea(2000);
+        tracking.printTrackingArea();
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
@@ -329,7 +329,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             Vector quadPosition = m->interpolateLines(quadPositions, numberCameras);
 
             oldPos[quadcopterId] = quadPosition;
-            ROS_DEBUG("First seen position of quadcopter %d is [%f, %f, %f]\n", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3());
+            ROS_DEBUG("First seen position of quadcopter %d is [%f, %f, %f]", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3());
             return quadPosition;
         } else {
             // not calculated before, first time calculating
@@ -359,7 +359,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
 
             // saving new Pos
-            ROS_DEBUG("New position of quadcopter %d seen of camera %f is [%f, %f, %f]\n", quadcopterId, cameraId, newPos.getV1(), newPos.getV2(), newPos.getV3());
+            ROS_DEBUG("New position of quadcopter %d seen of camera %d is [%f, %f, %f]", quadcopterId, cameraId, newPos.getV1(), newPos.getV2(), newPos.getV3());
             oldPos[quadcopterId] = newPos;
             return newPos;
         }

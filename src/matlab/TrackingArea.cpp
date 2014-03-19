@@ -141,24 +141,59 @@ Vector TrackingArea::getPerpPointPlane(Vector a, Vector u, Vector v, Vector x) {
 
 
 /*
- *  checks whether a point x is the TrackingArea or not
+ *  checks whether a point x is in the TrackingArea or not
 */
 bool TrackingArea::contains(Vector x) {
-    /*
-    Vector *u = new Vector(a2.getV1() - a1.getV1(), a2.getV2() - a1.getV2(), a2.getV3() - a1.getV3());
-    Vector *v = new Vector(a3.getV1() - a1.getV1(), a3.getV2() - a1.getV2(), a3.getV3() - a1.getV3());
-    double diff1 = getDistPointPlane(center, *u, *v, x);
-    v = new Vector(b1.getV1() - a1.getV1(), b1.getV2() - a1.getV2(), b1.getV3() - a1.getV3());
-    double diff2 = getDistPointPlane(center, *u, *v, x);
-    u = new Vector(a3.getV1() - a2.getV1(), a3.getV2() - a2.getV2(), a3.getV3() - a2.getV3());
-    v = new Vector(b2.getV1() - a2.getV1(), b2.getV2() - a2.getV2(), b2.getV3() - a2.getV3());
-    double diff3 = getDistPointPlane(center, *u, *v, x);
-    if ((diff1 <= (getHeight()/2)) && (diff2 <= (getLength()/2)) && (diff3 <= (getWidth()/2))) {
-        return true;
+    if ((x.getV3() > up.getV3()) || (x.getV3() < low.getV3()) || (x.getV2() < a1.getV1()) || (x.getV2() > a2.getV1()) || (x.getV1() < a1.getV1()) || (x.getV1() > a3.getV1())) {
+            return false;
     } else {
-        return false;
-    }*/
-    return true;
+
+        double distX, distY, distZ, maxX, maxY, maxZ;
+        if (x.getV3() > center.getV3()) {
+            // x has to be in the upper pyramid
+            Vector a = up;
+            Vector u = Vector(1, 0, 0);
+            Vector v = Vector(0, 1, 0);
+            distZ = getDistPointPlane(a, u, v, x);
+
+            u = Vector(1, 0, 0);
+            v = Vector(0, 0, 1);
+            distY = getDistPointPlane(a, u, v, x);
+
+            u = Vector(0, 1, 0);
+            v = Vector(0, 0, 1);
+            distX = getDistPointPlane(a, u, v, x);
+
+            maxX = center.getV1() - a1.getV1();
+            maxY = center.getV2() - a1.getV2();
+            maxZ = up.getV3() - center.getV3();
+
+        } else {
+            // x has to be in the lower pyramid
+            Vector a = low;
+            Vector u = Vector(1, 0, 0);
+            Vector v = Vector(0, 1, 0);
+            distZ = getDistPointPlane(a, u, v, x);
+
+            u = Vector(1, 0, 0);
+            v = Vector(0, 0, 1);
+            distY = getDistPointPlane(a, u, v, x);
+
+            u = Vector(0, 1, 0);
+            v = Vector(0, 0, 1);
+            distX = getDistPointPlane(a, u, v, x);
+
+            maxX = center.getV1() - a1.getV1();
+            maxY = center.getV2() - a1.getV2();
+            maxZ = center.getV3() - low.getV3();
+        }
+
+        if ((maxX/maxZ < distX/distZ) || (maxY/maxZ < distY/distZ)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }
 
 // übergebe linie von ursprung auf flacher Ebene und ebene aus drei punkten bestehen mit maxRange abstand
@@ -248,16 +283,6 @@ void TrackingArea::increaseTrackingArea(double posChange, double heightPos, doub
 }
 
 /*
-double TrackingArea::getVolume(double height) {
-    double upperLength = b1.add(b2.mult(-1)).getLength();
-    double lowerLength = a1.add(a2.mult(-1)).getLength();
-    double upperVolume = upperLength * upperLength;
-    double lowerVolume = lowerLength * lowerLength;
-    double volume = 1.0/3 * height * (upperVolume + lowerVolume + sqrt(upperVolume * lowerVolume));
-    return volume;
-}*/
-
-/*
  *  calculates the maximum TrackingArea in form of a quader
  */
 void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep) {
@@ -320,22 +345,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             increaseTrackingArea(middle, 0, 0);
             ROS_DEBUG("binary search, side size: %f", 2 * middle);
         }
-
-
-
-
-        ROS_DEBUG("maximal quadrat size is %f", sideBorder * 2;
-
-
-
-
-
-
-
-
-
-
-
+        ROS_DEBUG("maximal quadrat size is %f", sideBorder * 2);
 
 
 
@@ -384,11 +394,6 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
 
 
-
-
-
-
-
         posChange = 1;
         // searching lower border of tracking area
         while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, low, ep)) {
@@ -434,5 +439,5 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 }
 
 void TrackingArea::printTrackingArea() {
-    printf("Tracking area is from [%f, %f, %f] to [%f, %f, %f], quadrat is of size %f, upper point is [%f, %f, %f], lower point is [%f, %f, %f].\n", a1.getV1(), a1.getV2(), a1.getV3(), a3.getV1(), a3.getV2(), a3.getV3(), a1.add(a2.mult(-1)).getLength(), up.getV1(), up.getV2(), up.getV3(), low.getV1(), low.getV2(), low.getV3());
+    ROS_DEBUG("Tracking area is from [%.2f, %.2f, %.2f] to [%.2f, %.2f, %.2f], quadrat is of size %.2f, upper point is [%.2f, %.2f, %.2f], lower point is [%.2f, %.2f, %.2f].", a1.getV1(), a1.getV2(), a1.getV3(), a3.getV1(), a3.getV2(), a3.getV3(), a1.add(a2.mult(-1)).getLength(), up.getV1(), up.getV2(), up.getV3(), low.getV1(), low.getV2(), low.getV3());
 }
