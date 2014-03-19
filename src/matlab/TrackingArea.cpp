@@ -227,12 +227,12 @@ bool TrackingArea::inCameraRange(std::vector<Vector> cameraPosition, std::vector
     return true;
 }
 
-void TrackingArea::increaseTrackingArea(double height) {
+void TrackingArea::increaseTrackingArea(double posChange, double height) {
     Vector center = getCenter();
-    setA1(Vector(center.getV1(), center.getV2(), center.getV3() + height));
-    setA2(Vector(center.getV1(), center.getV2(), center.getV3() + height));
-    setA3(Vector(center.getV1(), center.getV2(), center.getV3() + height));
-    setA4(Vector(center.getV1(), center.getV2(), center.getV3() + height));
+    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + height));
+    setA2(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + height));
+    setA3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + height));
+    setA4(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + height));
     setUp(Vector(center.getV1(), center.getV2(), center.getV3() + height));
     setLow(Vector(center.getV1(), center.getV2(), center.getV3() + height));
 }
@@ -321,58 +321,10 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             ROS_DEBUG("binary search, side size: %f", 2 * middle);
         }
 
-        double newSideBorder = sideBorder;
-        double lower = 1;
-        while (sideBorder <= newSideBorder) {
-            sideBorder = newSideBorder;
-            increaseTrackingArea(-1 * lower);
-            ROS_DEBUG("moving center down: %f", lower);
-            posChange = 1;
-
-            // searching side border of tracking area
-            while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-                    && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
-                posChange *= 2;
-                increaseTrackingArea(posChange, 0, 0);
-                ROS_DEBUG("increasing, side size of center: %f", 2 * posChange);
-            }
-
-            // border is between leftBorder and rightBorder
-            leftBorder = posChange/2;
-            rightBorder = posChange;
-            middle = leftBorder + (rightBorder - leftBorder)/2;
-            increaseTrackingArea(middle, 0, 0);
-
-            tracked = false;
-            newSideBorder = leftBorder;
-            // searching exact border of tracking area
-            while ((rightBorder - leftBorder > 5) || (tracked == false)) {
-
-                // checks whether all corners of tracking area are still tracked of all cameras
-                if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-                    && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
-
-                    // border is between middle and rightBorder
-                    leftBorder = middle;
-                    tracked = true;
-                    ROS_DEBUG("TRUE");
-                    newSideBorder = middle;
-                } else {
-                    // border is between leftBorder and middle
-                    rightBorder = middle;
-                    tracked = false;
-                    ROS_DEBUG("false");
-                }
-                middle = leftBorder + (rightBorder - leftBorder)/2;
-                increaseTrackingArea(middle, 0, 0);
-                ROS_DEBUG("binary search, side size: %f", 2 * middle);
-            }
-            lower++;
-        }
 
 
 
-        ROS_DEBUG("maximal quadrat size is %f at height %f", sideBorder * 2, -lower);
+        ROS_DEBUG("maximal quadrat size is %f", sideBorder * 2;
 
 
 
@@ -407,7 +359,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         tracked = false;
         double upperBorder = leftBorder;
         // searching exact border of tracking area
-        while ((rightBorder - leftBorder > 5) || (tracked == false)) {
+        while ((rightBorder - leftBorder > 1) || (tracked == false)) {
 
             // checks whether all corners of tracking area are still tracked of all cameras
             if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, up, ep)) {
@@ -454,7 +406,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         tracked = false;
         double lowerBorder = 0;
         // searching exact border of tracking area
-        while ((rightBorder - leftBorder > 5) || (tracked == false)) {
+        while ((rightBorder - leftBorder > 1) || (tracked == false)) {
 
             // checks whether all corners of tracking area are still tracked of all cameras
             if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, low, ep)) {
@@ -477,6 +429,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
         ROS_DEBUG("maximal lower size is %f", lowerBorder);
         increaseTrackingArea(sideBorder, upperBorder, lowerBorder);
+
     }
 }
 
