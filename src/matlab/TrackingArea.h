@@ -17,16 +17,15 @@ private:
     Vector a1, a2, a3, a4, low, up, center;
 
     /**
-     * creates a tracking area in form of a cube, that has center as center and whose cube length is 2*posChange
-     * @param posChange distance of cube edges and center
+     * moves form along the z-axis
+     * @param height is difference, that the tracking area is moved from the center z-value.
      */
+    void increaseTrackingArea(double height);
 
     /**
      * creates a tracking area in form of a quader, that has center as center and whose quader height is 2* height and whose length width is 2*posChange
-     * @param posChange distance of quader side plains to center
-     * @param height distance of quader floor and cube bottom to center
+
      */
-    void increaseTrackingArea(double posChange, double height);
     void increaseTrackingArea(double posChange, double heightPos, double heightNeg);
 
 public:
