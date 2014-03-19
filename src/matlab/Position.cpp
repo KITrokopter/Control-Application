@@ -266,8 +266,6 @@ void Position::loadValues(int cameraId) {
 }
 
 Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
-    ROS_DEBUG("update Position: [%f, %f, %f], cameraId: %d", quad.getV1(), quad.getV2(), quad.getV3(), cameraId);
-
     // increments counter for other cameras
     for (int i = 0; i < numberCameras; i++) {
         if (i != cameraId) {
@@ -361,7 +359,7 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
 
             // saving new Pos
-            ROS_DEBUG("New position of quadcopter %d is [%f, %f, %f]\n", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3());
+            ROS_DEBUG("New position of quadcopter %d seen of camera %f is [%f, %f, %f]\n", quadcopterId, cameraId, newPos.getV1(), newPos.getV2(), newPos.getV3());
             oldPos[quadcopterId] = newPos;
             return newPos;
         }
