@@ -390,6 +390,7 @@ void Controller::land( int internId, int * nrLand )
 	//Decline until crazyflie isn't tracked anymore
 	if(tracked[internId] == true)
 	{
+		ROS_INFO("Declining ros");
 		/*while( this->listFutureMovement[internId].size() > 1)
 		{
 			this->listFutureMovement[internId].pop_back();
@@ -402,6 +403,7 @@ void Controller::land( int internId, int * nrLand )
 	}
 	else
 	{
+		ROS_INFO("min");
 		//Shutdown crazyflie after having left the tracking area.
 		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
 		this->listFutureMovement[internId].front().setThrust( THRUST_MIN );
@@ -579,7 +581,7 @@ void Controller::sendMovementAll()
 				//ROS_INFO("listFutureMovement-size > 1");
 				std::list<MovementQuadruple>::iterator it2 = this->listFutureMovement[i].begin();
 				long int aTimestamp = it2->getTimestamp();
- 				ROS_INFO("   %ld ct, %ld timestamp", currentTime, aTimestamp); 
+ 				//ROS_INFO("   %ld ct, %ld timestamp", currentTime, aTimestamp); 
 				//usleep(500000);
 				int counter = 0;
 				while( it2->getTimestamp()<currentTime && it2 != this->listFutureMovement[i].end() )
