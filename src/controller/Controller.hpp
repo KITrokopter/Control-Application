@@ -72,7 +72,7 @@ public:
 	void initialize();
 
 	/* Movement and Positioning */
-	void convertMovement(double* const vector, int internId);
+	void convertMovement(int internId);
 	Position6DOF* getTargetPosition();
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
