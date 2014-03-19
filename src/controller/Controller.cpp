@@ -250,7 +250,7 @@ void Controller::calculateMovement()
 					convertMovement(moveVector, i);
 					break;
 				case CALCULATE_LAND:
-					if(numberOfLanded > 1 && i == 1)
+					if(numberOfLanded > 1 && i == 0)
 					{
 						 ROS_INFO("Landed: %i", numberOfLanded);
 					}
@@ -290,7 +290,7 @@ void Controller::calculateMovement()
  */
 void Controller::moveUp( int internId )
 {
-	bool moveUpSmart = true;
+	bool moveUpSmart = false;
 
 	if( !moveUpSmart ) {		
 		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
