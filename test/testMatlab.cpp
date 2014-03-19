@@ -59,6 +59,12 @@ void tracking(Matlab *m) {
     cameraDirection.push_back(*d4);
     TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 10, m->getEngine());
     t->printTrackingArea();
+    Vector test = Vector(5, 5, 3);
+    if (t->contains(test)) {
+        printf("in tracking area\n");
+    } else {
+        printf("Fail\n");
+    }
 }
 
 void perp(Matlab *m) {

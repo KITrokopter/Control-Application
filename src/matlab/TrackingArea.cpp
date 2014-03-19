@@ -144,8 +144,8 @@ Vector TrackingArea::getPerpPointPlane(Vector a, Vector u, Vector v, Vector x) {
  *  checks whether a point x is in the TrackingArea or not
 */
 bool TrackingArea::contains(Vector x) {
-    if ((x.getV3() > up.getV3()) || (x.getV3() < low.getV3()) || (x.getV2() < a1.getV1()) || (x.getV2() > a2.getV1()) || (x.getV1() < a1.getV1()) || (x.getV1() > a3.getV1())) {
-            return false;
+    if ((x.getV3() > up.getV3()) || (x.getV3() < low.getV3()) || (x.getV2() < a1.getV2()) || (x.getV2() > a2.getV2()) || (x.getV1() < a1.getV1()) || (x.getV1() > a3.getV1())) {
+        return false;
     } else {
 
         double distX, distY, distZ, maxX, maxY, maxZ;
