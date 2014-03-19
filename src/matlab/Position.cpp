@@ -416,3 +416,37 @@ TrackingArea Position::getTrackingArea() {
 double Position::getDistance() {
     return this->distance;
 }
+
+void Position::getDistortionCoefficients(int cameraId, double* distCoeff) {
+    std::string result;
+    std::ostringstream id;
+    id << cameraId;
+    result = "load('/tmp/calibrationResult/Calib_Results_" + id.str() + ".mat');";
+    // loads resulting file in matlab workspace
+    engEvalString(ep, result.c_str());
+    mxArray *r = engGetVariable(ep, "kc");
+    distCoeff[0] = mxGetPr(r)[0];
+    distCoeff[1] = mxGetPr(r)[1];
+    distCoeff[2] = mxGetPr(r)[2];
+    distCoeff[3] = mxGetPr(r)[3];
+    distCoeff[4] = mxGetPr(r)[4];
+    mxDestroyArray(r);
+}
+
+Matrix Position::getIntrinsicsMatrix(int cameraId) {
+    std::string result;
+    std::ostringstream id;
+    id << cameraId;
+    result = "load('/tmp/calibrationResult/Calib_Results_" + id.str() + ".mat');";
+    // loads resulting file in matlab workspace
+    engEvalString(ep, result.c_str());
+    mxArray *fc = engGetVariable(ep, "fc");
+    mxArray *alpha = engGetVariable(ep, "alpha_c");
+    mxArray *cc = engGetVariable(ep, "cc");
+    double fc1 = mxGetPr(fc)[0];
+    Matrix intrinsics = Matrix(fc1, mxGetPr(alpha)[0] * fc1, mxGetPr(cc)[0], 0, mxGetPr(fc)[1], mxGetPr(cc)[1], 0, 0, 1);
+    mxDestroyArray(fc);
+    mxDestroyArray(cc);
+    mxDestroyArray(alpha);
+    return intrinsics;
+}
