@@ -467,3 +467,8 @@ cv::Mat Position::getIntrinsicsMatrix(int cameraId) {
 	
     return intrinsicsMatrix;
 }
+
+Matrix Position::getRotationMatrix(int cameraId) {
+    Matrix rotation = rotationMatrix.multiplicate(camRotMat[cameraId]);
+    return rotation;
+}

@@ -107,6 +107,9 @@ public:
     // calculates intrinsic matrix as can be seen here: http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
     cv::Mat getIntrinsicsMatrix(int cameraId);
 
+    // returns rotationMatrix, that calculates camera co-system of camera with cameraId in real co-system
+    Matrix getRotationMatrix(int cameraId);
+
 };
 
 #endif // POSITION_H //
