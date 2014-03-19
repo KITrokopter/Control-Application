@@ -428,14 +428,14 @@ cv::Mat Position::getDistortionCoefficients(int cameraId) {
     mxArray *r = engGetVariable(ep, "kc");
 	
 	cv::Mat distortionCoefficients(cv::Size(5, 1), CV_64F);
-    distortionCoefficients.data[0] = mxGetPr(r)[0];
-	distortionCoefficients.data[1] = mxGetPr(r)[1];
-	distortionCoefficients.data[2] = mxGetPr(r)[2];
-	distortionCoefficients.data[3] = mxGetPr(r)[3];
-	distortionCoefficients.data[4] = mxGetPr(r)[4];
+    distortionCoefficients.at<double>(0) = mxGetPr(r)[0];
+	distortionCoefficients.at<double>(1) = mxGetPr(r)[1];
+	distortionCoefficients.at<double>(2) = mxGetPr(r)[2];
+	distortionCoefficients.at<double>(3) = mxGetPr(r)[3];
+	distortionCoefficients.at<double>(4) = mxGetPr(r)[4];
 	
 	for (int i = 0; i < 9; i++) {
-		ROS_DEBUG("DistortionCoefficients %d: %f", i, distortionCoefficients.data[i]);
+		ROS_DEBUG("DistortionCoefficients %d: %f", i, distortionCoefficients.at<double>(i));
 	}
 	
     mxDestroyArray(r);
@@ -456,18 +456,18 @@ cv::Mat Position::getIntrinsicsMatrix(int cameraId) {
     double fc1 = mxGetPr(fc)[0];
 	
     cv::Mat intrinsicsMatrix(cv::Size(3, 3), CV_64F);
-	intrinsicsMatrix.data[0] = fc1;
-	intrinsicsMatrix.data[1] = mxGetPr(alpha)[0] * fc1;
-	intrinsicsMatrix.data[2] = mxGetPr(cc)[0];
-	intrinsicsMatrix.data[3] = 0;
-	intrinsicsMatrix.data[4] = mxGetPr(fc)[1];
-	intrinsicsMatrix.data[5] = mxGetPr(cc)[1];
-	intrinsicsMatrix.data[6] = 0;
-	intrinsicsMatrix.data[7] = 0;
-	intrinsicsMatrix.data[8] = 1;
+	intrinsicsMatrix.at<double>(0, 0) = fc1;
+	intrinsicsMatrix.at<double>(0, 1) = mxGetPr(alpha)[0] * fc1;
+	intrinsicsMatrix.at<double>(0, 2) = mxGetPr(cc)[0];
+	intrinsicsMatrix.at<double>(1, 0) = 0;
+	intrinsicsMatrix.at<double>(1, 1) = mxGetPr(fc)[1];
+	intrinsicsMatrix.at<double>(1, 2) = mxGetPr(cc)[1];
+	intrinsicsMatrix.at<double>(2, 0) = 0;
+	intrinsicsMatrix.at<double>(2, 1) = 0;
+	intrinsicsMatrix.at<double>(2, 2) = 1;
 	
 	for (int i = 0; i < 9; i++) {
-		ROS_DEBUG("IntrinsicsMatrix %d: %f", i, intrinsicsMatrix.data[i]);
+		ROS_DEBUG("IntrinsicsMatrix %d: %f", i, intrinsicsMatrix.at<double>(i));
 	}
 	
     mxDestroyArray(fc);
