@@ -566,11 +566,11 @@ void Controller::sendMovementAll()
 			// Remove Element if exists in list and timestamp < actual time
 			if( this->listFutureMovement.size() > 1 )
 			{				
-				ROS_INFO("listFutureMovement-size > 1");
+				//ROS_INFO("listFutureMovement-size > 1");
 				std::list<MovementQuadruple>::iterator it2 = this->listFutureMovement[i].begin();
 				long int aTimestamp = it2->getTimestamp();
- 				ROS_INFO("   %ld ct, %ld timestamp", currentTime, aTimestamp); 
-				usleep(500000);
+ 				//ROS_INFO("   %ld ct, %ld timestamp", currentTime, aTimestamp); 
+				//usleep(500000);
 				int counter = 0;
 				while( it2->getTimestamp()<currentTime && it2 != this->listFutureMovement[i].end() )
 				{
