@@ -416,6 +416,13 @@ void Controller::land( int internId, int * nrLand )
 		ROS_INFO("Landed: %i", *nrLand);
 	}
 	this->trackedArrayMutex.unlock();
+	ROS_INFO("Send Movement here for testing");
+	control_application::quadcopter_movement msg;
+	msg.thrust = this->listFutureMovement[internId].front().getThrust();
+	msg.roll = this->listFutureMovement[internId].front().getRoll();
+	msg.pitch = this->listFutureMovement[internId].front().getPitch();
+	msg.yaw = this->listFutureMovement[internId].front().getYawrate();
+	this->Movement_pub[internId].publish(msg);	
 }
 
 /*
@@ -435,9 +442,8 @@ bool Controller::checkInput(int internId)
 	{
 		std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, LOW_BATTERY);
 		ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, LOW_BATTERY);
-		emergencyRoutine(message);
+		//emergencyRoutine(message);
 	}
-	ROS_INFO("Lastformationmovement");
 	long int currentTime = getNanoTime();
 	this->lastFormationMovementMutex.lock();
 	long int lastForm = this->lastFormationMovement;
@@ -453,7 +459,6 @@ bool Controller::checkInput(int internId)
 	this->lastCurrentMutex.lock();
 	long int lastCur = this->lastCurrent[internId];
 	this->lastCurrentMutex.unlock();
-	ROS_INFO("Distance of time%ld", currentTime - lastCur);
 	if(currentTime - lastCur > TIME_UPDATED_END && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
 		ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
@@ -690,16 +695,12 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	unsigned long int i;
 	for( i = 0; i < req.amount; i++)
 	{
-		ROS_INFO("Test 1");
 		this->quadcopters.push_back(req.quadcoptersId[i]);
-		ROS_INFO("Test 2");
 		this->movementStatusMutex.lock();
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		this->movementStatusMutex.unlock();
-		ROS_INFO("Test 3");
 		MovementQuadruple newMoveQuad = MovementQuadruple(0, 0, 0, 0);
 		//this->listFutureMovement[i].push_back(newMoveQuad);
-		ROS_INFO("Before Initialization of Array");	
 		//Initialization of Arrays of Lists
 		std::list<Position6DOF> newEmptyListPosition;
 		this->listPositionsMutex.lock();
@@ -711,7 +712,6 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->receivedQCStMutex.unlock();
 		this->listTargetsMutex.unlock();
 		this->listPositionsMutex.unlock();
-		ROS_INFO("Before Future");
 		std::list<MovementQuadruple> newEmptyListMovement;		
 		this->listSentQuadruples.push_back(newEmptyListMovement);
 		this->listFutureMovement.push_back(newEmptyListMovement);
