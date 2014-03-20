@@ -23,6 +23,9 @@ private:
 	// saves whether the cameras are multicalibrated or not;
 	bool transformed;
 
+    // saves whether interpolationFactor should always be 0.5 (false) or should be dependent to the distance (true)
+    bool interpolationDependent;
+
     // distance of last seen position and actual position
     double distance;
 
@@ -72,7 +75,8 @@ private:
 public:
 	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
 	Position();
-	Position(Engine *ep, int numberCameras);
+    Position(Engine *ep, int numberCameras);
+    Position(Engine *ep, int numberCameras, bool interpolationDependent);
 
 	// checks whether the calibration has been made successfully
 	bool calibratedYet(int numberCameras);

@@ -44,6 +44,7 @@ Position::Position()
     rotationMatrix = nanMatrix;
     this->transformed = false;
     distance = 0;
+    this->interpolationDependent = false;
 
 }
 
@@ -67,6 +68,30 @@ Position::Position(Engine *ep, int numberCameras)
     rotationMatrix = nanMatrix;
     this->transformed = false;
     distance = 0;
+    this->interpolationDependent = false;
+}
+
+Position::Position(Engine *ep, int numberCameras, bool interpolationDependent)
+{
+    this->numberCameras = numberCameras;
+    this->ep = ep;
+    Vector nan = Vector(NAN, NAN, NAN);
+    Matrix nanMatrix = Matrix(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
+    for (int i = 0; i < 50; i++) {
+        std::vector<Vector> h(20, nan);
+        quadPos.push_back(h);
+        oldPos.push_back(nan);
+        camCoordCameraPos.push_back(nan);
+        camCoordCameraOrient.push_back(nan);
+        camRotMat.push_back(nanMatrix);
+        realCameraPos.push_back(nan);
+        realCameraOrient.push_back(nan);
+        imageAge.push_back(0);
+    }
+    rotationMatrix = nanMatrix;
+    this->transformed = false;
+    distance = 0;
+    this->interpolationDependent = interpolationDependent;
 }
 
 bool Position::calibratedYet(int numberCameras) {
@@ -352,8 +377,24 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             Vector position = getPosition(cameraId);
             // line from camera to tracked object
             Line tracked = Line(position, direction);
+            Vector newPos;
+
             // calulating actual pos
-            Vector newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
+            if ((interpolationDependent) && (distance != 0)) {
+                if (distance > 210) {
+                    newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.7);
+                } else if (distance < 10) {
+                    newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.2);
+                } else {
+                    // diff is between 0 and 100
+                    double diff = (distance - 10) / 2;
+                    // diff is between 0.2 and 0.7
+                    diff = 0.2 + 0.5 * diff/100.0;
+                    newPos = m->interpolateLine(tracked, oldPos[quadcopterId], diff);
+                }
+            } else {
+                newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
+            }
 
             // calculates distance between last seen position and new calculated position
             distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
