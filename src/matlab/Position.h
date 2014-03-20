@@ -190,9 +190,10 @@ public:
      * @param quad is vector pointing to quadcopter of camera with cameraId
      * @param cameraId Id of camera
      * @param quadcopterId Id of quadcopter
-     * @return
+     * @param getPerpFootPoint if true return is perpendicular foot point of line to quad and old position of quadcopter, otherwise returns new interpolated position
+     * @return new position of quadcopter or perpendicular foot point
      */
-    Vector updatePosition(Vector quad, int cameraId, int quadcopterId);
+    Vector updatePosition(Vector quad, int cameraId, int quadcopterId, bool getPerpFootPoint = false);
 
 	
     /**

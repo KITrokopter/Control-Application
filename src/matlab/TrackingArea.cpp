@@ -309,11 +309,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                 // border is between middle and rightBorder
                 leftBorder = middle;
-                sideBorder = middle;
             } else {
                 // border is between leftBorder and middle
                 rightBorder = middle;
             }
+            sideBorder = middle;
             middle = leftBorder + (rightBorder - leftBorder)/2;
             increaseTrackingArea(middle, 0, 0);
             ROS_DEBUG("binary search, side size: %f", 2 * middle);
@@ -365,11 +365,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                         // border is between middle and rightBorder
                         leftBorder = middle;
-                        newSideBorder = middle;
                     } else {
                         // border is between leftBorder and middle
                         rightBorder = middle;
                     }
+                    newSideBorder = middle;
 
                     middle = leftBorder + (rightBorder - leftBorder)/2;
                     increaseTrackingArea(middle, heightLower);
@@ -493,11 +493,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                 // border is between middle and rightBorder
                 leftBorder = middle;
-                upperBorder = middle;
             } else {
                 // border is between leftBorder and middle
                 rightBorder = middle;
             }
+            upperBorder = middle;
             middle = leftBorder + (rightBorder - leftBorder)/2;
             increaseTrackingArea(0, middle, 0);
             ROS_DEBUG("binary search, upper size: %f", middle);
@@ -530,11 +530,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                 // border is between middle and rightBorder
                 leftBorder = middle;
-                lowerBorder = middle;
             } else {
                 // border is between leftBorder and middle
                 rightBorder = middle;
             }
+            lowerBorder = middle;
             middle = leftBorder + (rightBorder - leftBorder)/2;
             increaseTrackingArea(0, 0, middle);
             ROS_DEBUG("binary search, lower size: %f", middle);

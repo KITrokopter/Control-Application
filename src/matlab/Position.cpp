@@ -283,7 +283,7 @@ void Position::loadValues(int cameraId) {
     }
 }
 
-Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
+Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId, bool getPerpFootPoint) {
     // increments counter for other cameras
     for (int i = 0; i < numberCameras; i++) {
         if (i != cameraId) {
@@ -372,30 +372,34 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
             Line tracked = Line(position, direction);
             Vector newPos;
 
-            // calulating actual pos
-            if ((interpolationDependent) && (distance != 0)) {
-                if (distance > 200) {
-                    newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.7);
-                } else if (distance < 100) {
-                    newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.2);
+            if (getPerpFootPoint == false) {
+                // calulating actual pos
+                if ((interpolationDependent) && (distance != 0)) {
+                    if (distance > 200) {
+                        newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.7);
+                    } else if (distance < 100) {
+                        newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.2);
+                    } else {
+                        // diff is between 0 and 100
+                        double diff = distance - 100;
+                        // diff is between 0.2 and 0.7
+                        diff = 0.2 + 0.5 * diff/100.0;
+                        newPos = m->interpolateLine(tracked, oldPos[quadcopterId], diff);
+                    }
                 } else {
-                    // diff is between 0 and 100
-                    double diff = distance - 100;
-                    // diff is between 0.2 and 0.7
-                    diff = 0.2 + 0.5 * diff/100.0;
-                    newPos = m->interpolateLine(tracked, oldPos[quadcopterId], diff);
+                    newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
                 }
+
+                // calculates distance between last seen position and new calculated position
+                distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
+
+                // saving new Pos
+                ROS_DEBUG("New position of quadcopter %d seen of camera %d is [%f, %f, %f]", quadcopterId, cameraId, newPos.getV1(), newPos.getV2(), newPos.getV3());
+                oldPos[quadcopterId] = newPos;
+                return newPos;
             } else {
-                newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
+                return m->perpFootOneLine(tracked, oldPos[quadcopterId]);
             }
-
-            // calculates distance between last seen position and new calculated position
-            distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
-
-            // saving new Pos
-            ROS_DEBUG("New position of quadcopter %d seen of camera %d is [%f, %f, %f]", quadcopterId, cameraId, newPos.getV1(), newPos.getV2(), newPos.getV3());
-            oldPos[quadcopterId] = newPos;
-            return newPos;
         }
     }
 }
