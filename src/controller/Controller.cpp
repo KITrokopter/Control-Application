@@ -214,7 +214,7 @@ void Controller::calculateMovement()
 				case CALCULATE_STABILIZE:
 					if( i == 0)
 					{
-						ROS_INFO("Stabilize %i", i);
+						//ROS_INFO("Stabilize %i", i);
 					}
 					stabilize( i );
 					break;
@@ -382,8 +382,8 @@ void Controller::land( int internId, int * nrLand )
 			this->listFutureMovement[internId].pop_back();
 		}*/
 		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
-		this->listFutureMovement[internId].front().setThrust( THRUST_DECLINE );
-		this->listFutureMovement[internId].front().setTimestamp(currentTime);
+		newMovement.setThrust( THRUST_DECLINE );
+		newMovement.setTimestamp(currentTime);
 		this->listFutureMovement[internId].push_back( newMovement );		
 	}
 	else
@@ -391,8 +391,8 @@ void Controller::land( int internId, int * nrLand )
 		ROS_INFO("min");
 		//Shutdown crazyflie after having left the tracking area.
 		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
-		this->listFutureMovement[internId].front().setThrust( THRUST_MIN );
-		this->listFutureMovement[internId].front().setTimestamp(currentTime);
+		newMovement.setThrust( THRUST_MIN );
+		newMovement.setTimestamp(currentTime);
 		this->listFutureMovement[internId].push_back( newMovement );
 		this->movementStatusMutex.lock();
 		this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
@@ -403,10 +403,11 @@ void Controller::land( int internId, int * nrLand )
 	this->trackedArrayMutex.unlock();
 	ROS_INFO("Send Movement here for testing");
 	control_application::quadcopter_movement msg;
-	msg.thrust = this->listFutureMovement[internId].front().getThrust();
-	msg.roll = this->listFutureMovement[internId].front().getRoll();
-	msg.pitch = this->listFutureMovement[internId].front().getPitch();
-	msg.yaw = this->listFutureMovement[internId].front().getYawrate();
+	msg.thrust = this->listFutureMovement[internId].back().getThrust();
+	ROS_INFO("Thrust in land is %i", msg.thrust);
+	msg.roll = this->listFutureMovement[internId].back().getRoll();
+	msg.pitch = this->listFutureMovement[internId].back().getPitch();
+	msg.yaw = this->listFutureMovement[internId].back().getYawrate();
 	this->Movement_pub[internId].publish(msg);	
 }
 
@@ -587,6 +588,10 @@ void Controller::sendMovementAll()
 			
 			//ROS_INFO("%i",i);
 			msg.thrust = this->listFutureMovement[i].front().getThrust();
+			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_HOLD)
+			{
+				ROS_INFO("Send thrust movement all %i", msg.thrust);
+			}
 			msg.roll = this->listFutureMovement[i].front().getRoll();
 			msg.pitch = this->listFutureMovement[i].front().getPitch();
 			msg.yaw = this->listFutureMovement[i].front().getYawrate();
