@@ -19,34 +19,7 @@ MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> s
 {
 	long int currentTime = getNanoTime();
 	MovementQuadruple newMovement = sentQuadruples.back();	
-	double diff = 3.0f;
 	
-	checkState();	
-	switch( this->status.getState() )
-	{
-		case UNSTARTED:
-			break;			
-		case STARTED:
-			if( this->started[id] > currentTime + timeDiff1 )
-			{
-				newMovement.setTimestamp( currentTime );
-				newMovement.setRollPitchYawrate( -diff, -diff, 0 );
-			}
-			else
-			{
-				newMovement.setTimestamp( currentTime );
-				newMovement.setRollPitchYawrate( diff, diff, 0 );
-			}
-			break;
-		case CALC:			
-
-			break;
-		case DONE:
-
-			break;
-		default:			
-			break;
-	}
 	return newMovement;
 }
 
@@ -71,7 +44,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		return newMovement;
 	} else if( this->lastUpdated[id] - currentTime < MIN_TIME_TO_WAIT)
 	{
-		//ROS_INFO("Take old value, changes need to be visible for calculateNextMQ.");
+		//ROS_INFO("Take old value, changes of sent values need to be visible for calculateNextMQ.");
 		return newMovement;
 	}
 
@@ -126,6 +99,32 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		newMovement.setThrust( newThrust ); 
 	}
 
+	double diff = 3.0f;	
+	checkState();	
+	switch( this->status.getState() )
+	{
+		case UNSTARTED:
+			break;			
+		case STARTED:
+			if( this->started[id] > currentTime + timeDiff1 )
+			{
+				newMovement.setRollPitchYawrate( -diff, -diff, 0 );
+				return newMovement;
+			}
+			else
+			{
+				newMovement.setRollPitchYawrate( diff, diff, 0 );
+				return newMovement;
+			}
+			break;
+		case CALC:	
+			break;
+		case DONE:
+			break;
+		default:			
+			break;
+	}
+	
 	/* Calculate rest */
 	if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
 	{
