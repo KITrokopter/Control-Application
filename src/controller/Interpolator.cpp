@@ -74,7 +74,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		return newMovement;
 	} else if( this->lastUpdated[id] - currentTime < MIN_TIME_TO_WAIT)
 	{
-		ROS_INFO("Take old value, changes need to be visible for calculateNextMQ.");
+		//ROS_INFO("Take old value, changes need to be visible for calculateNextMQ.");
 		return newMovement;
 	}
 
