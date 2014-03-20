@@ -17,18 +17,7 @@
 #include <ros/ros.h>
 
 using namespace std;
-/*
-TrackingArea::TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector low, Vector up) {
-    this->a1 = a1;
-    this->a2 = a2;
-    this->a3 = a3;
-    this->a4 = a4;
-    this->low = low;
-    this->up = up;
-    Matlab *m = new Matlab();
-    this->center = *(calculateCenter(m->getEngine()));
-}
-*/
+
 TrackingArea::TrackingArea(vector<Vector> cameraPosition, vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep) {
     setTrackingArea(cameraPosition, cameraDirection, numberCameras, maxRange, ep);
 }
@@ -87,18 +76,6 @@ Vector TrackingArea::getCenter() {
 void TrackingArea::setCenter(Vector center) {
     this->center = center;
 }
-/*
-Vector* TrackingArea::calculateCenter(Engine *ep) {
-    Vector* u1 = new Vector(a1.getV1() - b3.getV1(), a1.getV2() - b3.getV2(), a1.getV3() - b3.getV3());
-    Line* diag1 = new Line(b3, *u1);
-    Vector* u2 = new Vector(a2.getV1() - b4.getV1(), a2.getV2() - b4.getV2(), a2.getV3() - b4.getV3());
-    Line* diag2 = new Line(b4, *u2);
-    Vector* result[2];
-    Matlab *h = new Matlab(ep);
-    h->perpFootTwoLines(*diag1, *diag2, result);
-    return result[0];
-}
-*/
 
 double TrackingArea::getWidth() {
     return a1.add(a2.mult(-1)).getLength();
@@ -141,6 +118,7 @@ Vector TrackingArea::getPerpPointPlane(Vector a, Vector u, Vector v, Vector x) {
 
 
 /*
+    Vector* calculateCenter(Engine *ep);
  *  checks whether a point x is in the TrackingArea or not
 */
 bool TrackingArea::contains(Vector x) {
@@ -346,6 +324,88 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             ROS_DEBUG("binary search, side size: %f", 2 * middle);
         }
         ROS_DEBUG("maximal quadrat size is %f", sideBorder * 2);
+
+
+
+
+
+
+
+        // searching whether side size is bigger if height is lower
+        double heightLower = -16;
+        double newSideBorder = sideBorder;
+
+        // decrease height while sideBorder gets bigger
+        do {
+            // saves old side border in sideBorder
+            sideBorder = newSideBorder;
+            posChange = 0.5;
+            increaseTrackingArea(newSideBorder, heightLower);
+
+            // searching new side border of tracking area
+            while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+                    && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
+                posChange *= 2;
+                increaseTrackingArea(sideBorder + posChange, heightLower);
+                ROS_DEBUG("lower %f, increasing, side size of center: %f", heightLower, 2 * (posChange + sideBorder));
+            }
+
+            // new border is between leftBorder and rightBorder
+            leftBorder = posChange/2;
+            rightBorder = posChange;
+            middle = leftBorder + (rightBorder - leftBorder)/2;
+            increaseTrackingArea(sideBorder + middle, heightLower);
+
+            tracked = false;
+            newSideBorder = leftBorder;
+            // searching exact border of tracking area
+            while ((rightBorder - leftBorder > 5) || (tracked == false)) {
+
+                // checks whether all corners of tracking area are still tracked of all cameras
+                if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+                    && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
+
+                    // border is between middle and rightBorder
+                    leftBorder = middle;
+                    tracked = true;
+                    ROS_DEBUG("TRUE");
+                    newSideBorder = middle;
+                } else {
+                    // border is between leftBorder and middle
+                    rightBorder = middle;
+                    tracked = false;
+                    ROS_DEBUG("false");
+                }
+
+                middle = leftBorder + (rightBorder - leftBorder)/2;
+                increaseTrackingArea(sideBorder + middle, heightLower);
+                ROS_DEBUG("lower %f, binary search, side size: %f", heightLower, 2 * (middle + sideBorder));
+            }
+
+            ROS_DEBUG("lower %f, maximal quadrat size is %f", heightLower, 2 * (newSideBorder + sideBorder));
+            heightLower *= 2;
+        } while (newSideBorder > sideBorder);
+
+        // maximal width of tracking area is between heightLower and heightLower/2
+        ROS_DEBUG("maximal width is between %f and %f, might be %f", heightLower, heightLower/2, sideBorder);
+        increaseTrackingArea(sideBorder, heightLower/2);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
