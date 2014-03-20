@@ -11,41 +11,49 @@ Interpolator::Interpolator()
 	{
 		state[i] = InterpolatorInfo();
 	}
+	timeDiff1 = 1500000000;
+	timeDiff2 = 2500000000;
 }
 
 MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> sentQuadruples)
 {
-	if( state[id].getState() == 0 )
-		...
 	long int currentTime = getNanoTime();
-	//if( this->northeast[0]==INVALID && this->northeast[1]==INVALID && started[id] == 0)
-	if( this->started[id] == 0)
-	{
-		this->started[id] = currentTime;
-	}
-	MovementQuadruple newMovement = sentQuadruples.back();
+	MovementQuadruple newMovement = sentQuadruples.back();	
 	double diff = 3.0f;
-	long int timeDiff1 = 1500000000;
-	long int timeDiff2 = 2500000000;
+	
+	checkState();	
+	switch( state.getState() )
+	{
+		case UNSTARTED:
+			break;			
+		case STARTED:
+			if( this->started[id] > currentTime + timeDiff1 )
+			{
+				newMovement.setTimestamp( currentTime );
+				newMovement.setRollPitchYawrate( -diff, -diff, 0 );
+			}
+			else
+			{
+				newMovement.setTimestamp( currentTime );
+				newMovement.setRollPitchYawrate( diff, diff, 0 );
+			}
+			break;
+		case CALC:			
+			newMovement.setTimestamp( currentTime );
+			newMovement.setRollPitchYawrate( 0, 0, 0 );
 
-	if( this->started[id] > currentTime + timeDiff2 )
-	{
-		newMovement.setTimestamp( currentTime );
-		newMovement.setRollPitchYawrate( 0, 0, 0 );
-	}
-	else if( this->started[id] > currentTime + timeDiff1 )
-	{
-		newMovement.setTimestamp( currentTime );
-		newMovement.setRollPitchYawrate( -diff, -diff, 0 );
-	}
-	else
-	{
-		newMovement.setTimestamp( currentTime );
-		newMovement.setRollPitchYawrate( diff, diff, 0 );
-	}
+			
+			
+			break;
+		case DONE:
 
+			break;
+		default:			
+			break;
+	}
 	return newMovement;
 }
+
 
 MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id)
 {
@@ -254,4 +262,30 @@ bool reachingTarget( double first, double last, double speed, long int timediff 
 		return true;
 	}
 	return false;
+}
+
+
+void Interpolator::checkState()
+{
+	long int currentTime = getNanoTime();
+	switch( this->status[id].getState() )
+	{
+		case UNSTARTED:
+			this->status[id].setState( STARTED );
+			this->status[id].setStarted( currentTime );
+			break;			
+		case STARTED:
+			if( currentTime > this->status[id].getStarted()+timeDiff2 )
+			{
+				this->status[id].setState( CALC );
+			}
+			break;
+		case CALC:
+			break;
+		case DONE:
+			break;
+		default:			
+			break;
+	}
+	/*	if( this->state[id] == UNSTARTED )*/
 }

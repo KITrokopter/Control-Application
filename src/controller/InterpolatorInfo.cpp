@@ -2,7 +2,7 @@
 
 InterpolatorInfo::InterpolatorInfo()
 {
-	setState( 0 );
+	state = UNSTARTED;
 	/*
 		this->lastUpdated[i] = 0;
 		this->northeast[i][0] = INVALID;

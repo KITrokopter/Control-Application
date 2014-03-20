@@ -45,10 +45,14 @@ public:
 	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id);
 
 protected:
+	void checkState();
 
 private:
 	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER];
 	double stepSizeOfChange; 	// depends on the distance of position to target
+	
+	long int timeDiff1;
+	long int timeDiff2;
 
 };
 

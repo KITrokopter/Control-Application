@@ -6,6 +6,11 @@
 #include <time.h>
 #include <sys/time.h>
 
+#define UNSTARTED 0
+#define STARTED 1
+#define CALC 2
+#define DONE 3
+
 /*
  * TODO 3D-view
  * 
@@ -24,8 +29,8 @@ public:
 	/* Getter and Setter */
 	long int getStarted();
 	void setStarted( long int newStarted );
-	int getState();
-	void setState( int newState );
+	short getState();
+	void setState( short newState );
 	long int getLastUpdated();
 	void setLastUpdated( long int newLastUpdated );
 	double getX();
@@ -44,7 +49,7 @@ private:
 	 * 2 roll/pitch has been sent, calculate x/y values
 	 * 3 calibration done, now do only small adjustments
 	 */
-	int state;	
+	short state;
 	long int started;
 	
 	long int lastUpdated;	// in latest state
