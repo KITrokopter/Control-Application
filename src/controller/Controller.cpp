@@ -551,10 +551,8 @@ void Controller::convertMovement(int internId)
  */
 void Controller::sendMovementAll()
 {
-	//ROS_INFO("sendMovementAll started");
 	//Creates a message for each quadcopter movement and sends it via Ros
 	control_application::quadcopter_movement msg;
-	//ROS_INFO("amount %zu",this->movementAll.size());
 	
 	long int currentTime = getNanoTime();
 	std::vector< MovementQuadruple > newListElement;
@@ -847,7 +845,9 @@ void Controller::buildFormation()
 			else
 			{
 				this->movementStatusMutex.lock();
-				this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
+				//FIXME for testing
+				this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
+				//this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
 				this->movementStatusMutex.unlock();
 			}
 		}
@@ -879,7 +879,9 @@ void Controller::buildFormation()
 		else
 		{
 			this->movementStatusMutex.lock();
-			this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
+			//FIXME for testing
+			this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
+			//this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
 			this->movementStatusMutex.unlock();
 		}
 		ROS_INFO("Done with %i",i);
