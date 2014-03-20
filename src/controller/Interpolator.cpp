@@ -9,15 +9,14 @@ Interpolator::Interpolator()
 	this->stepSizeOfChange = 1;
 	for( int i = 0; i < MAX_NUMBER_OF_QUADCOPTER_HIGH; i++ )
 	{
-		this->lastUpdated[i] = 0;
-		this->northeast[i][0] = INVALID;
-		this->northeast[i][1] = INVALID;
-		this->started[i] = 0;
+		state[i] = InterpolatorInfo();
 	}
 }
 
 MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> sentQuadruples)
 {
+	if( state[id].getState() == 0 )
+		...
 	long int currentTime = getNanoTime();
 	//if( this->northeast[0]==INVALID && this->northeast[1]==INVALID && started[id] == 0)
 	if( this->started[id] == 0)
