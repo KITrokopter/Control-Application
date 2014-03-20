@@ -1,18 +1,8 @@
 #include "Controller.hpp"
 
 bool closeToTarget( Position6DOF position1, Position6DOF position2 );
-
-void* startThreadCalculateMovement(void* something)
-{
-	Controller *someOther = (Controller *) something; 
-	someOther->calculateMovement();
-}
-
-void* startThreadBuildFormation(void* something)
-{
-	Controller *someOther = (Controller *) something; 
-	someOther->buildFormation();
-}
+void* startThreadCalculateMovement(void* something);
+void* startThreadBuildFormation(void* something);
 
 Controller::Controller()
 {
@@ -105,7 +95,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		id = getLocalId(i);
 		//ROS_INFO("Global id is %i",i);
 		//ROS_INFO("Local Id is %i", id);
-		if(id == INVALID)	// @Carina 
+		if(id == INVALID)
 		{
 			continue;	
 		}
@@ -154,7 +144,6 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	//ROS_INFO("Update Position finished");	
 }
 
-
 	
 /*
  * Calculates the movement vector of each quadcopter non stop and sends the vector first to convertMovement to set the yaw, pitch, roll and thrust
@@ -198,7 +187,7 @@ void Controller::calculateMovement()
 			this->movementStatusMutex.lock();
 			unsigned int quadStatus = this->quadcopterMovementStatus[i];
 			this->movementStatusMutex.unlock();
-			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_HOLD) //only for testing
+			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_HOLD) //only for testing TODO
 			{
 				ROS_INFO("land or hold");
 				if( enoughData)
@@ -218,17 +207,13 @@ void Controller::calculateMovement()
 					{
 						 ROS_INFO("None: %i", i);
 					}
-					/* 
-					 * Take old values
-					 * At beginning list has to be initialized with "send none".
-					 */
 					break;
 				case CALCULATE_START:	
 					//ROS_INFO("Start %i", i);
 					moveUp( i );
 					break;
 				case CALCULATE_STABILIZE:
-					if( i = 0)
+					if( i == 0)
 					{
 						ROS_INFO("Stabilize %i", i);
 					}
@@ -236,8 +221,7 @@ void Controller::calculateMovement()
 					break;
 				case CALCULATE_HOLD:	
 					ROS_INFO("Hold %i", i);				
-					/*TODO hold and (if in shutdown) do it fast*/
-					
+					/* TODO */					
 					break;
 				case CALCULATE_MOVE:
 					//ROS_INFO("Move %i", i);
@@ -271,13 +255,6 @@ void Controller::calculateMovement()
 	}	
 }
 
-/*
- * While untracked:
- * First second: thrust THRUST_START
- * Next 4 seconds: thrust THRUST_STAND_STILL
- * After that probably an error occured and we can't say where it
- * is and should shutdown.
- */
 void Controller::moveUp( int internId )
 {
 	bool moveUpSmart = false;
@@ -384,6 +361,10 @@ bool Controller::isStable( int internId )
 void Controller::hold( int internId )
 {
 	/* TODO */
+	this->movementStatusMutex.lock();
+	quadcopterMovementStatus[internId] = CALCULATE_LAND;
+	this->movementStatusMutex.unlock();		
+	
 }
 
 void Controller::land( int internId, int * nrLand )
@@ -395,15 +376,14 @@ void Controller::land( int internId, int * nrLand )
 	if(tracked[internId] == true)
 	{
 		ROS_INFO("Declining ros");
-		/*while( this->listFutureMovement[internId].size() > 1)
+		/*while( this->listFutureMovement[internId].size() > 1)	// FIXME @dominik
 		{
 			this->listFutureMovement[internId].pop_back();
 		}*/
 		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
 		this->listFutureMovement[internId].front().setThrust( THRUST_DECLINE );
 		this->listFutureMovement[internId].front().setTimestamp(currentTime);
-		this->listFutureMovement[internId].push_back( newMovement );
-		
+		this->listFutureMovement[internId].push_back( newMovement );		
 	}
 	else
 	{
@@ -616,7 +596,7 @@ void Controller::sendMovementAll()
 
 			// Save Element (TODO only if not too young)
 			this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
-			while( this->listSentQuadruples[i].size() > 5 )	// while or if FIXME
+			while( this->listSentQuadruples[i].size() > 5 )	// TODO global variable
 			{
 				// Remove oldest elements
 				this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
@@ -654,7 +634,7 @@ void Controller::setTargetPosition()
 		this->formationMovementMutex.unlock();
 		//Check if new position would be in tracking area
 		Vector vector = Vector(targetNew[0],targetNew[1],targetNew[2]);
-		/*if(!this->trackingArea.contains(vector))
+		/*if(!this->trackingArea.contains(vector))	// TODO carina
 		{
 			std::string message("Formation Movement is invalid. Quadcopter %i would leave Tracking Area.\n", i);
 			ROS_INFO("Warning:Formation Movement is invalid. Quadcopter %i would leave Tracking Area.",i);
@@ -676,7 +656,7 @@ void Controller::setTargetPosition()
 	
 }
 
-int Controller::getLocalId(int globalId)
+int Controller::getLocalId(int globalId)	// TODO testme
 {
   for(int i = 0; i < this->quadcopters.size() ; i++ )
   {
@@ -687,8 +667,6 @@ int Controller::getLocalId(int globalId)
   }
   return INVALID;
 }
-
-
 
 /*
  * Service to set Quadcopter IDs
@@ -703,8 +681,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->movementStatusMutex.lock();
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		this->movementStatusMutex.unlock();
-		MovementQuadruple newMoveQuad = MovementQuadruple(0, 0, 0, 0);
-		//this->listFutureMovement[i].push_back(newMoveQuad);
+		
 		//Initialization of Arrays of Lists
 		std::list<Position6DOF> newEmptyListPosition;
 		this->listPositionsMutex.lock();
@@ -809,9 +786,9 @@ void Controller::buildFormation()
 		//As long as the quadcopter isn't tracked, incline
 		while(quadStatus == CALCULATE_START)
 		{
-                	this->movementStatusMutex.lock();
-        	        quadStatus = this->quadcopterMovementStatus[i];
-	                this->movementStatusMutex.unlock();
+        	this->movementStatusMutex.lock();
+	        quadStatus = this->quadcopterMovementStatus[i];
+            this->movementStatusMutex.unlock();
 
 			//ROS_INFO("Starting");
 			//If Shutdown has been called, abort.
@@ -909,8 +886,7 @@ void Controller::buildFormation()
 	ROS_INFO("BuildFormation finished");
 	this->buildFormationMutex.lock();
 	this->buildFormationFinished = true;
-	this->buildFormationMutex.unlock();	
-	
+	this->buildFormationMutex.unlock();		
 }
 
 
@@ -926,12 +902,6 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
 
 /*
  * Shutdown Formation
- * Set all values to zero and thrust to minimum. Send the values and do nothing
- * after that.
- * The thread for calculating the next values (target position, etc.) does not
- * exit. 
- * TODO: Check description with actual code ...
- * 
  */
 void Controller::shutdownFormation()
 {
@@ -948,19 +918,8 @@ void Controller::shutdownFormation()
 		quadcopterMovementStatus[i] = CALCULATE_HOLD;
 		this->movementStatusMutex.unlock();
 	}
-
-	//usleep( 1000000 ); //FIXME usleep is no option, implement stabilize in land?
-
-	/* Decline */
-	 //Decline each quadcopter till it's not tracked anymore and then shutdown motor
-	for(int i = 0; i < formationAmount; i++)
-	{
-		this->movementStatusMutex.lock();
-		quadcopterMovementStatus[i] = CALCULATE_LAND;
-		this->movementStatusMutex.unlock();		
-	}
-	ROS_INFO("Shutdown function finished");
 	
+	ROS_INFO("Shutdown function finished");	
 }
 
 /*
@@ -1103,9 +1062,18 @@ bool closeToTarget( Position6DOF position1, Position6DOF position2 )
 	return false;
 }
 
-/*
- * Created by Sebastian, modify if necessary :)
- */
+void* startThreadCalculateMovement(void* something)
+{
+	Controller *someOther = (Controller *) something; 
+	someOther->calculateMovement();
+}
+
+void* startThreadBuildFormation(void* something)
+{
+	Controller *someOther = (Controller *) something; 
+	someOther->buildFormation();
+}
+
 void Controller::setTrackingArea(TrackingArea area)
 {
 	this->trackingArea = area;
