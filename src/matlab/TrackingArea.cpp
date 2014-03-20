@@ -260,6 +260,15 @@ void TrackingArea::increaseTrackingArea(double posChange, double heightPos, doub
     setLow(Vector(center.getV1(), center.getV2(), center.getV3() - heightNeg));
 }
 
+void TrackingArea::increaseTrackingArea(double posChange, double height, double heightPos, double heightNeg) {
+    Vector center = getCenter();
+    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + height));
+    setA2(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + height));
+    setA3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + height));
+    setA4(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + height));
+    setUp(Vector(center.getV1(), center.getV2(), center.getV3() + heightPos));
+    setLow(Vector(center.getV1(), center.getV2(), center.getV3() - heightNeg));
+}
 /*
  *  calculates the maximum TrackingArea in form of a quader
  */
@@ -382,24 +391,24 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         } while (newSideBorder > sideBorder);
 
         // maximal width of tracking area is between heightLower and heightLower/2
-        ROS_DEBUG("maximal width is between %f and %f", heightLower, heightLower/2);
-        increaseTrackingArea(sideBorder, heightLower/2);
-
+        ROS_DEBUG("maximal width %f is between %f and %f", sideBorder, heightLower, heightLower/2);
 
         double leftBorderHeight = heightLower/2;
         double rightBorderHeight = heightLower;
-        double middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
+        double middleHeight = leftBorderHeight - (-rightBorderHeight + leftBorderHeight)/2;
         newSideBorder = sideBorder;
 
-        while (rightBorderHeight - leftBorderHeight > 1) {
+        // binary search while |rightBorderHeight - leftBorderHeight| > 1
+        while (-rightBorderHeight + leftBorderHeight > 1) {
             increaseTrackingArea(sideBorder, middleHeight);
 
             sideBorder = newSideBorder;
             posChange = 0.5;
             if (!(inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
                     && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep))) {
+                ROS_DEBUG("%f is not in range anymore (%f)", middleHeight, sideBorder);
                 rightBorderHeight = middleHeight;
-                middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
+                middleHeight = leftBorderHeight - (-rightBorderHeight + leftBorderHeight)/2;
             } else {
                 // searching new side border of tracking area
                 while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
@@ -440,29 +449,16 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
                 } else {
                     rightBorderHeight = middleHeight;
                 }
-                middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
+                middleHeight = leftBorderHeight + (-rightBorderHeight + leftBorderHeight)/2;
                 ROS_DEBUG("lower %f, maximal quadrat size is %f", heightLower, 2 * (newSideBorder));
                 heightLower *= 2;
             }
 
-
-
-
-
         }
+        ROS_DEBUG("Found optimal middlepoint, between %f and %f with size %f", leftBorderHeight, rightBorderHeight, sideBorder);
 
-
-
-
-
-
-
-
-
-
-
-
-
+        double maxWidth = sideBorder;
+        double maxLower = leftBorder;
 
 
 
@@ -541,7 +537,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         }
 
         ROS_DEBUG("maximal lower size is %f", lowerBorder);
-        increaseTrackingArea(sideBorder, upperBorder, lowerBorder);
+
+
+
+        increaseTrackingArea(maxWidth, maxLower, upperBorder, lowerBorder);
+        ROS_DEBUG("Trackingarea has width %f and height %f", maxWidth * 2, lowerBorder + upperBorder);
 
     }
 }

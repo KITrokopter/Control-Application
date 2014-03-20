@@ -28,6 +28,9 @@ private:
      */
     void increaseTrackingArea(double posChange, double heightPos, double heightNeg);
 
+
+    void increaseTrackingArea(double posChange, double height, double heightPos, double heightNeg);
+
 public:
     TrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector>  cameraDirection, int numberCameras, double maxRange, Engine *ep);
     TrackingArea() {};
