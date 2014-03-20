@@ -130,6 +130,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				this->movementStatusMutex.lock();
 				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 				{
+					ROS_INFO("Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
 				}
 				this->movementStatusMutex.unlock();
@@ -227,7 +228,10 @@ void Controller::calculateMovement()
 					moveUp( i );
 					break;
 				case CALCULATE_STABILIZE:
-					ROS_INFO("Stabilize %i", i);
+					if( i = 0)
+					{
+						ROS_INFO("Stabilize %i", i);
+					}
 					stabilize( i );
 					break;
 				case CALCULATE_HOLD:	
@@ -775,7 +779,7 @@ void Controller::buildFormation()
 	//Start one quadcopter after another
 	for(int i = 0; i < formationAmount; i++)
 	{
-		ROS_INFO("Starting QC %i",i);
+		ROS_INFO("Starting QC %i", i);
 		//Starting/ Inclining process
 		this->shutdownMutex.lock();
 		bool shutdown = this->shutdownStarted;
@@ -805,12 +809,18 @@ void Controller::buildFormation()
 		//As long as the quadcopter isn't tracked, incline
 		while(quadStatus == CALCULATE_START)
 		{
+                	this->movementStatusMutex.lock();
+        	        quadStatus = this->quadcopterMovementStatus[i];
+	                this->movementStatusMutex.unlock();
+
+			//ROS_INFO("Starting");
 			//If Shutdown has been called, abort.
 			this->shutdownMutex.lock();
 			shutdown = this->shutdownStarted;
 			this->shutdownMutex.unlock();
 			if(shutdown)
 			{
+				ROS_INFO("Shutdown in BuildFormation");
 				return;
 			}
 		}
