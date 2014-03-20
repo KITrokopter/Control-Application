@@ -189,10 +189,9 @@ void Controller::calculateMovement()
 			this->movementStatusMutex.unlock();
 			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_HOLD) //only for testing TODO
 			{
-				ROS_INFO("land or hold");
+				//ROS_INFO("land or hold");
 				if( enoughData)
 				{
-					ROS_INFO("CheckInput");
 					checkInput(i);
 				}
 			}
@@ -220,7 +219,8 @@ void Controller::calculateMovement()
 					stabilize( i );
 					break;
 				case CALCULATE_HOLD:	
-					ROS_INFO("Hold %i", i);				
+					ROS_INFO("Hold %i", i);
+					hold( i );				
 					/* TODO */					
 					break;
 				case CALCULATE_MOVE:
@@ -362,6 +362,7 @@ void Controller::hold( int internId )
 {
 	/* TODO */
 	this->movementStatusMutex.lock();
+	ROS_INFO("%i now land", internId);
 	quadcopterMovementStatus[internId] = CALCULATE_LAND;
 	this->movementStatusMutex.unlock();		
 	
@@ -425,7 +426,7 @@ bool Controller::checkInput(int internId)
 	if(this->battery_status[internId] < LOW_BATTERY && quadStatus != CALCULATE_NONE && received)
 	{
 		std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, LOW_BATTERY);
-		ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, LOW_BATTERY);
+		//ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, LOW_BATTERY);
 		//emergencyRoutine(message);
 	}
 	long int currentTime = getNanoTime();
@@ -436,7 +437,7 @@ bool Controller::checkInput(int internId)
 	{
 		//std::string message = std::string("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		std::string message = "No new formation moevement data has been received";
-		ROS_INFO("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+		//ROS_INFO("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//emergencyRoutine(message);
 		return false;
 	}
@@ -445,7 +446,7 @@ bool Controller::checkInput(int internId)
 	this->lastCurrentMutex.unlock();
 	if(currentTime - lastCur > TIME_UPDATED_END && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
-		ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
+		//ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//std::string message2 = std::string("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		std::string message2 = "No new quadcopter position data has been received";
 		//emergencyRoutine(message2);
@@ -455,7 +456,7 @@ bool Controller::checkInput(int internId)
 		trackedArrayMutex.unlock();
 		return false;
 	}
-	ROS_INFO("Critical");
+	//ROS_INFO("Critical");
 	if(currentTime - lastCur > TIME_UPDATED_CRITICAL && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
 		trackedArrayMutex.lock();
