@@ -3,15 +3,18 @@
 #include <opencv2/core/core.hpp>
 
 #include <string>
+#include <map>
 
 class Graph
 {
 public:
 	
+// 	Graph(int maxValue, std::string windowName, std::map<int, cv::Scalar> colors);
 	Graph(int maxValue, std::string windowName);
 	~Graph();
 	
-	void nextPoint(double value);
+	void nextPoint(double value, int id);
+	void setColors(std::map<int, cv::Scalar> colors);
 	
 private:
 	
@@ -20,6 +23,7 @@ private:
 	
 	cv::Mat image;
 	std::string windowName;
+	std::map<int, cv::Scalar> colors;
 	int imageWidth, imageHeight;
 	int graphAreaWidth, graphAreaHeight;
 	int graphAreaHorizontalOffset, graphAreaVerticalOffset;

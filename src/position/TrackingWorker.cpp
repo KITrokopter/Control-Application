@@ -2,14 +2,23 @@
 
 #include <boost/chrono/duration.hpp>
 #include <ros/console.h>
+#include <opencv2/core/core.hpp>
+#include <map>
+
 #include "../matlab/profiling.hpp"
 
-TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(200, "Difference"), tracker(true)
+TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : tracker(true), errorGraph(200, "Difference")
 {
 	assert(receiver != 0);
 	
 	this->receiver = receiver;
 	stop = false;
+	
+	std::map<int, cv::Scalar> colors;
+	colors[0] = cv::Scalar(0, 255, 0);
+	colors[1] = cv::Scalar(0, 255, 255);
+	colors[2] = cv::Scalar(255, 0, 255);
+	errorGraph.setColors(colors);
 	
 	thread = new boost::thread(boost::bind(&TrackingWorker::run, this));
 }
@@ -35,7 +44,7 @@ void TrackingWorker::run()
 			
 			long int startTime = getNanoTime();
 			Vector position = tracker.updatePosition(data.cameraVector, data.camNo, data.quadcopterId);
-			errorGraph.nextPoint(tracker.getDistance());
+			errorGraph.nextPoint(tracker.getDistance(), data.camNo);
 			double duration = getNanoTime() - startTime;
 			duration /= 1e6;
 			

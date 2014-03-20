@@ -1,6 +1,7 @@
 #include "Graph.hpp"
 
 #include <opencv2/highgui/highgui.hpp>
+#include <ros/console.h>
 
 #include <sstream>
 
@@ -8,6 +9,7 @@ Graph::Graph(int maxValue, std::string windowName)
 {
 	this->maxValue = maxValue;
 	this->windowName = windowName;
+	this->colors = colors;
 	
 	imageWidth = 640;
 	imageHeight = 480;
@@ -28,6 +30,11 @@ Graph::Graph(int maxValue, std::string windowName)
 	
 	cv::startWindowThread();
 	cv::namedWindow(windowName);
+}
+
+void Graph::setColors(std::map<int, cv::Scalar> colors)
+{
+	this->colors = colors;
 }
 
 void Graph::drawMetadata()
@@ -51,8 +58,13 @@ uchar* Graph::getPixel(cv::Mat mat, int x, int y)
 	return mat.data + mat.step[0] * y + mat.step[1] * x;
 }
 
-void Graph::nextPoint(double value)
+void Graph::nextPoint(double value, int id)
 {
+	if (!colors.count(id)) {
+		ROS_ERROR("id %d has no color!", id);
+		return;
+	}
+	
 	int intValue = (int) (value / maxValue * graphAreaHeight);
 	
 	if (graphInitialized[currentPosition]) {
@@ -64,7 +76,7 @@ void Graph::nextPoint(double value)
 		graphInitialized[currentPosition] = true;
 	}
 	
-	cv::Scalar color(0, 255, 0);
+	cv::Scalar color = colors[id];
 	
 	if (intValue > graphAreaHeight) {
 		color = cv::Scalar(255, 0, 0);
