@@ -988,9 +988,6 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 	pthread_join(tCalculateMovement, &resultCalc);
 	void *resultBuild;
 	pthread_join(tBuildFormation, &resultBuild);
-	/* Unneccessary if move is not in loop */
-	//void *resultSend;
-	//pthread_join(tSend, &resultSend);
 	ROS_INFO("Shutdown finished");
 	return true;
 }

@@ -70,6 +70,7 @@ public:
 
 	/* Initializing */
 	void initialize();
+	void setTrackingArea(TrackingArea area);
 
 	/* Movement and Positioning */
 	void convertMovement(int internId);
@@ -78,26 +79,22 @@ public:
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovementAll();
 	void calculateMovement();
-	void land( int internId, int * nrLand  );
 	void buildFormation();
 	
-	/* Formation also services*/
+	/* Formation */
 	bool startBuildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
-	void shutdownFormation();
 
 	/* Service to set Quadcopter IDs*/
 	bool setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res);
-	
+
+	/* Shutdown */
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
-	
+	void shutdownFormation();
+
+	/* Helper functions */
 	int getLocalId(int globalId);
 	bool checkInput(int internId);
-	void emergencyRoutine(std::string message);
-	
-	// Sebastian: I didn't use a pointer here, because I think that is ok (TrackingArea itself
-	//            doesn't contain any pointer, so the copy should work just fine)
-	// (Remove after reading)
-	void setTrackingArea(TrackingArea area);
+	void emergencyRoutine(std::string message);	
     
 protected:
 	//Callbacks for Ros subscriber
@@ -106,32 +103,19 @@ protected:
 	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
 	void SystemCallback(const api_application::System::ConstPtr& msg);
 	
-	void moveUp();	// move up all
-	void moveUp(std::vector<int> ids);	// move up mentioned in ids
-	void moveUp( int internId );	// the calculation function
+	void moveUp( int internId );
 	void stabilize( int internId );
-	bool isStable( int internId );
+	void land( int internId, int * nrLand  );
 	void hold( int internId );
+
+	/* Helper functions */
+	bool isStable( int internId );
 
 private:
 	
-	/* 
-	 * TODO buildFormationStop/ -Finished, landFinished, ...
-	 * TODO thread für shutdown formation
-	 * 	Testing @Carina
-	 * 
-	 * /
-	
-	/* Identification of Quadcopters */
-	//Receive data over ROS
-	Formation *formation;
-	//int amount;	// Needed for formation
-	std::list<std::vector<float> > formationMovement;
-	
-	time_t lastFormationMovement;
-	time_t lastCurrent[MAX_NUMBER_QUADCOPTER];
-	unsigned int senderID;
-	//TODO Set area (Done by Sebastian, remove after reading :) )
+	/* static data */	
+	Formation *formation;	//Receive data over ROS
+	unsigned int senderID;	//Receive data over ROS	
 	TrackingArea trackingArea;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
@@ -154,6 +138,7 @@ private:
 	float yaw_stab[MAX_NUMBER_QUADCOPTER];
 	unsigned int thrust_stab[MAX_NUMBER_QUADCOPTER];
 	float battery_status[MAX_NUMBER_QUADCOPTER];
+	std::list<std::vector<float> > formationMovement;
 
 	/* Control variables */
 	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters
@@ -163,6 +148,8 @@ private:
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
 	bool buildFormationFinished;
 	bool shutdownStarted;
+	long int lastFormationMovement;
+	long int lastCurrent[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
 	Mutex shutdownMutex;
@@ -190,11 +177,9 @@ private:
 	*/
 	ros::NodeHandle n;
 
-	/* Subscriber */
-	//Subscriber for the MoveFormation data
-	ros::Subscriber MoveFormation_sub;
-	//Subscriber for Formation data from API
-	ros::Subscriber SetFormation_sub;
+	/* Subscriber */	
+	ros::Subscriber MoveFormation_sub;	//Subscriber for the MoveFormation data	
+	ros::Subscriber SetFormation_sub;	//Subscriber for Formation data from API
 	//Subscriber for Quadcopter data from QuadcopterModul
 	//ros::Subscriber QuadStatus_sub;
 	ros::Subscriber QuadStatus_sub[10];
