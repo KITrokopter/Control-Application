@@ -5,13 +5,14 @@
 #include <list>
 #include <time.h>
 #include <sys/time.h>
+#include "InterpolatorInfo.hpp"
 #include "MovementQuadruple.hpp"
 #include "Position6DOF.hpp"
 #include "../matlab/profiling.hpp"
 #include "ros/ros.h"
 
 #define MAX_STEPS_IN_ADVANCE 1 	// How delayed is the input?
-#define MAX_NUMBER_OF_QUADCOPTER_HIGH 10
+#define MAX_NUMBER_OF_QUADCOPTER_HIGH 10	// TODO equals MAX_NUMBER_QUADCOPTER
 #define MIN_TIME_TO_WAIT 500*1000*1000 // in ns
 
 #define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
@@ -26,13 +27,8 @@
 
 #define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
 
-
-
 /*
- * TODO start depeding on charge
- * 
- * TODO linear interpolation
- * 	TODO same in 3D-view
+ * TODO 3D-view
  * 
  * TODO hold
  * 
@@ -45,19 +41,14 @@
 class Interpolator {
 public:
 	Interpolator();
-
 	MovementQuadruple calibrate(int id, std::list<MovementQuadruple> sentQuadruples);
 	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id);
 
 protected:
 
 private:
-
-	long int lastUpdated[MAX_NUMBER_OF_QUADCOPTER_HIGH];
-	double northeast[MAX_NUMBER_OF_QUADCOPTER_HIGH][2];		// 0-pitch, 1-roll
+	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER];
 	double stepSizeOfChange; 	// depends on the distance of position to target
-
-	long int started[MAX_NUMBER_OF_QUADCOPTER_HIGH];
 
 };
 
