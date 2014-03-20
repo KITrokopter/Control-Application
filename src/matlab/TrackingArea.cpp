@@ -382,11 +382,74 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         } while (newSideBorder > sideBorder);
 
         // maximal width of tracking area is between heightLower and heightLower/2
-        ROS_DEBUG("maximal width is between %f and %f, might be %f", heightLower, heightLower/2, sideBorder);
+        ROS_DEBUG("maximal width is between %f and %f", heightLower, heightLower/2);
         increaseTrackingArea(sideBorder, heightLower/2);
 
 
+        double leftBorderHeight = heightLower/2;
+        double rightBorderHeight = heightLower;
+        double middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
+        newSideBorder = sideBorder;
 
+        while (rightBorderHeight - leftBorderHeight > 1) {
+            increaseTrackingArea(sideBorder, middleHeight);
+
+            sideBorder = newSideBorder;
+            posChange = 0.5;
+            if (!(inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+                    && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep))) {
+                rightBorderHeight = middleHeight;
+                middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
+            } else {
+                // searching new side border of tracking area
+                while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+                        && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
+                    posChange *= 2;
+                    increaseTrackingArea(sideBorder + posChange, heightLower);
+                    ROS_DEBUG("lower %f, increasing, side size: %f", heightLower, 2 * (posChange + sideBorder));
+                }
+
+                // new border is between leftBorder and rightBorder
+                leftBorder = posChange/2 + sideBorder;
+                rightBorder = posChange + sideBorder;
+                middle = leftBorder + (rightBorder - leftBorder)/2;
+                increaseTrackingArea(sideBorder + middle, heightLower);
+
+                newSideBorder = leftBorder;
+                // searching exact border of tracking area
+                while (rightBorder - leftBorder > 1) {
+
+                    // checks whether all corners of tracking area are still tracked of all cameras
+                    if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+                        && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
+
+                        // border is between middle and rightBorder
+                        leftBorder = middle;
+                    } else {
+                        // border is between leftBorder and middle
+                        rightBorder = middle;
+                    }
+
+                    newSideBorder = middle;
+                    middle = leftBorder + (rightBorder - leftBorder)/2;
+                    increaseTrackingArea(middle, heightLower);
+                    ROS_DEBUG("lower %f, binary search, side size: %f", heightLower, 2 * middle);
+                }
+                if (newSideBorder > sideBorder) {
+                    leftBorderHeight = middleHeight;
+                } else {
+                    rightBorderHeight = middleHeight;
+                }
+                middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
+                ROS_DEBUG("lower %f, maximal quadrat size is %f", heightLower, 2 * (newSideBorder));
+                heightLower *= 2;
+            }
+
+
+
+
+
+        }
 
 
 
