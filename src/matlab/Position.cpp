@@ -67,6 +67,7 @@ void Position::initialize() {
     distance = 0;
     Vector nan = Vector(NAN, NAN, NAN);
     Matrix nanMatrix = Matrix(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
+
     // if quadcopter maximal amount is higher than 50, you should change the range of i
     for (int i = 0; i < 50; i++) {
         std::vector<Vector> h(20, nan);
@@ -79,7 +80,13 @@ void Position::initialize() {
         realCameraOrient.push_back(nan);
         imageAge.push_back(0);
     }
+
     rotationMatrix = nanMatrix;
+    if (interpolationDependent) {
+        ROS_INFO("Using adaptive interpolation factor.");
+    } else {
+        ROS_INFO("Using always the same interpolation factor.");
+    }
 }
 
 bool Position::calibratedYet(int numberCameras) {
