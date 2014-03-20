@@ -27,6 +27,44 @@ Position::Position()
     } else {
         this->ep = ep;
     }
+    distance = 0;
+    this->interpolationDependent = false;
+    initialize();
+}
+
+Position::Position(bool interpolationDependent)
+{
+    this->numberCameras = 0;
+    Engine *ep;
+    // starts a MATLAB process
+    if (!(ep = engOpen(""))) {
+            fprintf(stderr, "\nCan't start MATLAB engine\n");
+    } else {
+        this->ep = ep;
+    }
+    this->interpolationDependent = interpolationDependent;
+    initialize();
+}
+
+Position::Position(Engine *ep, int numberCameras)
+{
+    this->numberCameras = numberCameras;
+    this->ep = ep;
+    this->interpolationDependent = false;
+    initialize();
+}
+
+Position::Position(Engine *ep, int numberCameras, bool interpolationDependent)
+{
+    this->numberCameras = numberCameras;
+    this->ep = ep;
+    this->interpolationDependent = interpolationDependent;
+    initialize();
+}
+
+void Position::initialize() {
+    this->transformed = false;
+    distance = 0;
     Vector nan = Vector(NAN, NAN, NAN);
     Matrix nanMatrix = Matrix(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
     // if quadcopter maximal amount is higher than 50, you should change the range of i
@@ -42,56 +80,6 @@ Position::Position()
         imageAge.push_back(0);
     }
     rotationMatrix = nanMatrix;
-    this->transformed = false;
-    distance = 0;
-    this->interpolationDependent = false;
-
-}
-
-Position::Position(Engine *ep, int numberCameras)
-{
-    this->numberCameras = numberCameras;
-    this->ep = ep;
-    Vector nan = Vector(NAN, NAN, NAN);
-    Matrix nanMatrix = Matrix(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
-    for (int i = 0; i < 50; i++) {
-        std::vector<Vector> h(20, nan);
-        quadPos.push_back(h);
-        oldPos.push_back(nan);
-        camCoordCameraPos.push_back(nan);
-        camCoordCameraOrient.push_back(nan);
-        camRotMat.push_back(nanMatrix);
-        realCameraPos.push_back(nan);
-        realCameraOrient.push_back(nan);
-        imageAge.push_back(0);
-    }
-    rotationMatrix = nanMatrix;
-    this->transformed = false;
-    distance = 0;
-    this->interpolationDependent = false;
-}
-
-Position::Position(Engine *ep, int numberCameras, bool interpolationDependent)
-{
-    this->numberCameras = numberCameras;
-    this->ep = ep;
-    Vector nan = Vector(NAN, NAN, NAN);
-    Matrix nanMatrix = Matrix(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
-    for (int i = 0; i < 50; i++) {
-        std::vector<Vector> h(20, nan);
-        quadPos.push_back(h);
-        oldPos.push_back(nan);
-        camCoordCameraPos.push_back(nan);
-        camCoordCameraOrient.push_back(nan);
-        camRotMat.push_back(nanMatrix);
-        realCameraPos.push_back(nan);
-        realCameraOrient.push_back(nan);
-        imageAge.push_back(0);
-    }
-    rotationMatrix = nanMatrix;
-    this->transformed = false;
-    distance = 0;
-    this->interpolationDependent = interpolationDependent;
 }
 
 bool Position::calibratedYet(int numberCameras) {
@@ -124,6 +112,7 @@ bool Position::calibratedYet(int numberCameras) {
     }
     return ok;
 }
+
 
 bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
 

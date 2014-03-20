@@ -23,25 +23,32 @@ private:
 	// saves whether the cameras are multicalibrated or not;
 	bool transformed;
 
-    // saves whether interpolationFactor should always be 0.5 (false) or should be dependent to the distance (true)
+    /**
+     * interpolationDependent: saves whether interpolationFactor should always be 0.5 (false) or should be dependent to the distance (true)
+     */
     bool interpolationDependent;
 
-    // distance of last seen position and actual position
+    /**
+     * distance of last seen position and actual position
+     */
     double distance;
 
-	// TrackingArea of cameras
+    /**
+     * TrackingArea of cameras
+     */
     TrackingArea tracking;
 
-	/* 
+    /**
 	 * (quadPos[i])[j] is the position of quadrocopter with ID i and camera with ID j
 	 *  default value is nan, maximum amount of quadcopter is 50, of cameras is 20
 	 */
 	std::vector< std::vector <Vector> > quadPos;
-	/* 
-	 * oldPos[i] is the last calculated position of quadcopter with ID i, default value is nan
-	 * maximum amount of quadcopters is 50
-	 */ 
-	std::vector<Vector> oldPos;
+
+    /**
+     * oldPos[i] is the last calculated position of quadcopter with ID i, default value is nan
+     * maximum amount of quadcopters is 50
+     */
+    std::vector<Vector> oldPos;
 	
 
 	// output of amcc toolbox
@@ -71,10 +78,16 @@ private:
 	// loads values of amcc toolbox calibration of camera with cameraId in matlab workspace
 	void loadValues(int cameraId);
 
+    /**
+     * initialize start values for constructor
+     */
+    void initialize();
+
 	std::vector<int> imageAge;
 public:
 	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
 	Position();
+    Position(bool interpolationDependent);
     Position(Engine *ep, int numberCameras);
     Position(Engine *ep, int numberCameras, bool interpolationDependent);
 
