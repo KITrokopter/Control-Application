@@ -370,13 +370,13 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId) {
 
             // calulating actual pos
             if ((interpolationDependent) && (distance != 0)) {
-                if (distance > 210) {
+                if (distance > 200) {
                     newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.7);
-                } else if (distance < 10) {
+                } else if (distance < 100) {
                     newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.2);
                 } else {
                     // diff is between 0 and 100
-                    double diff = (distance - 10) / 2;
+                    double diff = distance - 100;
                     // diff is between 0.2 and 0.7
                     diff = 0.2 + 0.5 * diff/100.0;
                     newPos = m->interpolateLine(tracked, oldPos[quadcopterId], diff);
