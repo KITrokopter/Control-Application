@@ -53,6 +53,11 @@ double InterpolatorInfo::getY()
     return this->y;
 }
 
+double InterpolatorInfo::getRotation()
+{
+    return this->rotation;
+}
+
 void InterpolatorInfo::setX( double newX )
 {
     this->x = newX;
@@ -61,5 +66,10 @@ void InterpolatorInfo::setX( double newX )
 void InterpolatorInfo::setY( double newY )
 {
     this->y = newY;
+}
+
+void InterpolatorInfo::setRotation( double newRotation )
+{
+    this->rotation = newRotation;
 }
 

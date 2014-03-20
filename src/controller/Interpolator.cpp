@@ -22,7 +22,7 @@ MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> s
 	double diff = 3.0f;
 	
 	checkState();	
-	switch( state.getState() )
+	switch( this->status.getState() )
 	{
 		case UNSTARTED:
 			break;			
@@ -39,11 +39,7 @@ MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> s
 			}
 			break;
 		case CALC:			
-			newMovement.setTimestamp( currentTime );
-			newMovement.setRollPitchYawrate( 0, 0, 0 );
 
-			
-			
 			break;
 		case DONE:
 
@@ -67,6 +63,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	/* A MovementQuadruple has been sent before. */
 	MovementQuadruple newMovement = sentQuadruples.back();
 	long int currentTime = getNanoTime();
+	newMovement.setTimestamp( currentTime );
 	
 	if( sentQuadruples.size() < 3 || positions.size() < 3 )
 	{
@@ -135,10 +132,36 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		float newRoll = newMovement.getRoll();
 		float newPitch = newMovement.getPitch();
 		float newYawrate = newMovement.getYawrate();
-		
-		//newRoll += calculatePlaneDiff();	//TODO
-		//newPitch += calculatePlaneDiff();	//TODO
-		newMovement.setRollPitchYawrate(newRoll, newPitch, newYawrate);
+
+		if( this->status.getState() == CALC )
+		{
+			newMovement.setRollPitchYawrate( 0, 0, 0 );
+			Position6DOF pos;
+			int counter = 0;
+			for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
+			{
+				pos.setTimestamp( (*it).getTimestamp() );
+				if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
+				{
+					pos.setPosition( (*it).getPosition() );
+					double diffX = pos.getPosition()[0] - target.getPosition()[0];
+					double diffY = pos.getPosition()[1] - target.getPosition()[1];
+					double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
+					diffX = diffX / absDistance;
+					diffY = diffY / absDistance;
+					status[id].setRotation( cos(diffY) );	// FIXME check
+					status[id].setLastUpdated( currentTime );					
+					break;
+				}
+				counter++;
+			}
+			this->status.setState( DONE ); 
+		} else
+		{
+			//newRoll += calculatePlaneDiff();	//TODO
+			//newPitch += calculatePlaneDiff();	//TODO
+			newMovement.setRollPitchYawrate(newRoll, newPitch, newYawrate);
+		}
 	}
 	
 	return newMovement;

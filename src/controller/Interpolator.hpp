@@ -8,8 +8,8 @@
 #include "InterpolatorInfo.hpp"
 #include "MovementQuadruple.hpp"
 #include "Position6DOF.hpp"
-#include "../matlab/profiling.hpp"
 #include "ros/ros.h"
+#include "../matlab/profiling.hpp"
 
 #define MAX_STEPS_IN_ADVANCE 1 	// How delayed is the input?
 #define MAX_NUMBER_OF_QUADCOPTER_HIGH 10	// TODO equals MAX_NUMBER_QUADCOPTER
@@ -28,13 +28,10 @@
 #define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
 
 /*
+ * TODO target before status.state==CACL
  * TODO 3D-view
- * 
  * TODO hold
- * 
  * TODO test of speed, either optimize or save data-to-sent in advance
- * TODO optimize interpolation (step size time-dependant)
- * TODO optimize interpolation (replace linear function)
  * 
  */
 
@@ -49,8 +46,7 @@ protected:
 
 private:
 	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER];
-	double stepSizeOfChange; 	// depends on the distance of position to target
-	
+	double stepSizeOfChange; 	// depends on the distance of position to target	
 	long int timeDiff1;
 	long int timeDiff2;
 

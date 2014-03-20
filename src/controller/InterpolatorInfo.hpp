@@ -35,8 +35,10 @@ public:
 	void setLastUpdated( long int newLastUpdated );
 	double getX();
 	double getY();
+	double getRotation();
 	void setX( double newX );
 	void setY( double newY );
+	void setRotation( double newRotation );
 
 protected:
 
@@ -55,6 +57,7 @@ private:
 	long int lastUpdated;	// in latest state
 	double x;		// 0-x-roll, 1-y-pitch
 	double y;
+	double rotation;	// in rad
 
 };
 
