@@ -454,19 +454,24 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
                 ROS_DEBUG("lower %f, maximal quadrat size is %f", heightLower, 2 * (newSideBorder));
                 heightLower *= 2;
             }
-
         }
         ROS_DEBUG("Found optimal middlepoint, between %f and %f with size %f", leftBorderHeight, rightBorderHeight, sideBorder);
 
         double maxWidth = sideBorder;
         double maxLower = leftBorder;
-
-
-
-
-
-
-
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
         posChange = 1;
         // searching upper border of tracking area
         while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, up, ep)) {
