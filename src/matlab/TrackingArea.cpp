@@ -294,7 +294,10 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         setLow(center);
         double posChange = 1;
 
-        // searching side border of tracking area
+
+        /**
+         * searching maximal size of square at height of center
+         */
         while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
                 && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
             posChange *= 2;
@@ -329,12 +332,9 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         }
         ROS_DEBUG("maximal quadrat size is %f", sideBorder * 2);
 
-
-
-
-
-
-
+        /**
+          * searching optimal height of square where the square size ist biggest
+          */
         // searching whether side size is bigger if height is lower
         double heightLower = -16;
         double newSideBorder = sideBorder;
@@ -461,19 +461,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         double maxLower = leftBorder;
 		
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+        /**
+          * searching upper border of tracking area
+          */
+
         posChange = 1;
-        // searching upper border of tracking area
         while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, up, ep)) {
             posChange *= 2;
             increaseTrackingArea(0, posChange, 0);
@@ -508,9 +500,10 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         ROS_DEBUG("maximal upper size is %f", upperBorder);
 
 
-
+        /**
+          * searching lower border of tracking area
+          */
         posChange = 1;
-        // searching lower border of tracking area
         while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, low, ep)) {
             posChange *= 2;
             increaseTrackingArea(0, 0, posChange);
@@ -544,8 +537,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
         ROS_DEBUG("maximal lower size is %f", lowerBorder);
 
-
-
+        // increase tracking area with calculated values
         increaseTrackingArea(maxWidth, maxLower, upperBorder, lowerBorder);
         ROS_DEBUG("Trackingarea has width %f and height %f", maxWidth * 2, lowerBorder + upperBorder);
 
