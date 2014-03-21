@@ -336,7 +336,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
 
         // searching whether side size is bigger if height is lower
-        double heightLower = -128;
+        double heightLower = -16;
         double newSideBorder = sideBorder;
 
         // decrease height while sideBorder gets bigger
@@ -392,6 +392,16 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
         // maximal width of tracking area is between heightLower and heightLower/2
         ROS_DEBUG("maximal width %f is between %f and %f", sideBorder, heightLower, heightLower/2);
+        increaseTrackingArea(sideBorder, -128, 0, 0);
+        if (!(inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+              && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep))) {
+            ROS_DEBUG("-128 is not in tracking area (%f)", sideBorder);
+        }
+        increaseTrackingArea(sideBorder, -129, 0, 0);
+        if (!(inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
+              && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep))) {
+            ROS_DEBUG("-129 is not in tracking area (%f)", sideBorder);
+        }
 
         double leftBorderHeight = heightLower/2;
         double rightBorderHeight = heightLower;

@@ -137,10 +137,31 @@ private:
     void setTrackingArea(double maxRange);
 
 public:
-	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
-	Position();
+
+    /**
+     * constructor, maximal amount of quadcopters is 50, maximal amount of cameras is 20.
+     */
+    Position();
+
+    /**
+     * constructor, maximal amount of quadcopters is 50, maximal amount of cameras is 20.
+     * @param interpolationDependent is interpolation factor that is always the same if false
+     */
     Position(bool interpolationDependent);
+
+    /**
+     * constructor, maximal amount of quadcopters is 50.
+     * @param ep Engine pointer
+     * @param numberCameras number of cameras
+     */
     Position(Engine *ep, int numberCameras);
+
+    /**
+     * constructor, maximal amount of quadcopters is 50.
+     * @param ep Engine pointer
+     * @param numberCameras number of cameras
+     * @param interpolationDependent is interpolation factor that is always the same if false
+     */
     Position(Engine *ep, int numberCameras, bool interpolationDependent);
 
     /**
