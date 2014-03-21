@@ -44,10 +44,6 @@ void TrackingWorker::run()
 		
 		if (data.valid) {
 			// ROS_DEBUG("Got valid data");
-			if (!receivedFirstPosition) {
-				receivedFirstPosition = true;
-				ROS_INFO("Found quadcopter %d", data.camNo);
-			}
 			
 			long int startTime = getNanoTime();
 			Vector position = tracker.updatePosition(data.cameraVector, data.camNo, data.quadcopterId);
@@ -63,6 +59,11 @@ void TrackingWorker::run()
 			updates.push_back(1);
 			
 			if (position.isValid()) {
+				if (!receivedFirstPosition) {
+					receivedFirstPosition = true;
+					ROS_INFO("Found quadcopter %d", data.camNo);
+				}
+				
 				receiver->updatePositions(positions, ids, updates);
 			} else {
 				// ROS_DEBUG("Not enough information to get position of quadcopter %d", data.quadcopterId);
