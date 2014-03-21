@@ -11,9 +11,10 @@
 #include "ros/ros.h"
 #include "../matlab/profiling.hpp"
 
-#define MAX_STEPS_IN_ADVANCE 1 	// How delayed is the input?
+#define MAX_STEPS_IN_ADVANCE 1 		// How delayed is the input?
 #define MAX_NUMBER_OF_QUADCOPTER_HIGH 10	// TODO equals MAX_NUMBER_QUADCOPTER
-#define MIN_TIME_TO_WAIT 500*1000*1000 // in ns
+#define MIN_TIME_TO_WAIT 500000000 	// in ns
+#define PREDICT_FUTURE_POSITION 200000000	// in ns
 
 #define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
 #define REACHING_HEIGHT_DIFF 0.6 // Factor 0 <= x <= 1
@@ -22,8 +23,8 @@
 #define SPEED_MAX_INCLINING 500 	// in mm/s
 #define SPEED_MIN_DECLINING -150 	// in mm/s
 #define SPEED_MAX_DECLINING -500 	// in mm/s
-#define SPEED_MIN_PLANE 80	// in mm/s
-#define SPEED_MAX_PLANE 300	// in mm/s
+#define SPEED_MIN_PLANE 80		// in mm/s
+#define SPEED_MAX_PLANE 300		// in mm/s
 
 #define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
 

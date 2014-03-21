@@ -21,6 +21,7 @@ public:
 	double getAbsoluteDistance();
 	double getAbsoluteDistance( Position6DOF otherPosition );
 	double getDistanceZ( Position6DOF otherPosition ); // positive if "this" is below "otherPosition"
+	Position6DOF predictNextPosition( Position6DOF olderPosition, long int timeInFuture );
 
 private:
 	double position[3];

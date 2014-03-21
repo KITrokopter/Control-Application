@@ -43,7 +43,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	{
 		ROS_INFO("Not enough data in calculateNextMQ.");
 		return newMovement;
-	} else if( this->lastUpdated[id] - currentTime < MIN_TIME_TO_WAIT)
+	} else if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
 		//ROS_INFO("Take old value, changes of sent values need to be visible for calculateNextMQ.");
 		return newMovement;
@@ -56,6 +56,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	double deltaSpeed[size-2];	// equals acceleration	/* arraysize FIXME */
 	int counter = 0;
 	Position6DOF positionA, positionB;	// positionA is older than positionB
+	this->status[id].setLastUpdated( currentTime );
 
 	/* Calculate values for declared arrays above for later usage. */
 	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
@@ -164,7 +165,16 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 				 * 2 Calculate next position (take last speedvector)
 				 * 3 Calculate correction (take last sent value and calibration data)
 				 */
+				Position6DOF assumedPos = positions.back();
+
+				/* 1 */
+				// TODO
 				
+				/* 2 */
+				assumedPos = assumedPos.predictNextPosition( positionB, PREDICT_FUTURE_POSITION );
+				
+				/* 3 */
+				// TODO
 			} 
 			else
 			{
