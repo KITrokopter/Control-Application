@@ -177,7 +177,7 @@ bool TrackingWorker::dataAvailable()
 {
 	for (int i = 0; i < maxCamNo; i++) {
 		if (positions[i].size() > 0) {
-			ROS_DEBUG("Found %d data for camno %d", positions[i].size(), i);
+			ROS_DEBUG("Found %ld data for camno %d", positions[i].size(), i);
 			return true;
 		}
 	}
