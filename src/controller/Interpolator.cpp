@@ -163,7 +163,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 				 * Calculate new value every MIN_TIME_TO_WAIT seconds
 				 * 1 Calculate new calibration (due to yaw-movement, if roll/pitch-diff high)
 				 * 2 Calculate next position (take last speedvector)
-				 * 3 Calculate correction (take last sent value and calibration data)
+				 * 3 Calculate correction (calibration data, predictedPosition, target)
 				 */
 				Position6DOF assumedPos = positions.back();
 
@@ -174,7 +174,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 				assumedPos = assumedPos.predictNextPosition( positionB, PREDICT_FUTURE_POSITION );
 				
 				/* 3 */
-				// TODO
+				//newMovement = setRollPitchYawrate();
 			} 
 			else
 			{
@@ -185,8 +185,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		default:	
 			newMovement.setRollPitchYawrate( 0, 0, 0 );		
 			break;
-	}	
-	
+	}		
 	return newMovement;
 }
 
@@ -231,6 +230,36 @@ int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double a
 		}
 		return newThrust;	
 	}
+}
+
+void Interpolator::checkState()
+{
+	long int currentTime = getNanoTime();
+	switch( this->status[id].getState() )
+	{
+		case UNSTARTED:
+			this->status[id].setState( STARTED );
+			this->status[id].setStarted( currentTime );
+			break;			
+		case STARTED:
+			if( currentTime > this->status[id].getStarted()+timeDiff2 )
+			{
+				this->status[id].setState( CALC );
+			}
+			break;
+		case CALC:
+			break;
+		case DONE:
+			break;
+		default:			
+			break;
+	}
+	/*	if( this->state[id] == UNSTARTED )*/
+}
+
+MovementQuadruple calculateRollPitch( double rotation )		// TODO
+{
+
 }
 
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest ) 
@@ -294,31 +323,6 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 	}
 	
 	return diff;
-}
-
-void Interpolator::checkState()
-{
-	long int currentTime = getNanoTime();
-	switch( this->status[id].getState() )
-	{
-		case UNSTARTED:
-			this->status[id].setState( STARTED );
-			this->status[id].setStarted( currentTime );
-			break;			
-		case STARTED:
-			if( currentTime > this->status[id].getStarted()+timeDiff2 )
-			{
-				this->status[id].setState( CALC );
-			}
-			break;
-		case CALC:
-			break;
-		case DONE:
-			break;
-		default:			
-			break;
-	}
-	/*	if( this->state[id] == UNSTARTED )*/
 }
 
 bool reachingTarget( double first, double last, double speed, long int timediff )
