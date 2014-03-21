@@ -287,19 +287,6 @@ void Controller::moveUp( int internId )
 
 void Controller::stabilize( int internId )
 {
-	/*
-	 * Delta der Position berechnen
-	 * 	falls nicht möglich: sende alten Wert (return)
-	 *
-	 * Delta der Beschleunigung berechnen
-	 *	falls nicht möglich: sende alten Wert (return) oder schätze ?
-	 * 
-	 * Geschwindigkeit und Beschleunigung der letzten x Male berechnen, Werte 
-	 * dementsprechend für Interpolation setzen (die Raten)
-	 *
-	 * Calculate only every 
-	 *
-	 */
 	Interpolator interpolator = Interpolator();
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
