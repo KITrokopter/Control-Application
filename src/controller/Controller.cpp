@@ -265,7 +265,7 @@ void Controller::moveUp( int internId )
 		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
-		ROS_INFO("Send Movement here for testing in moveup");
+		/*ROS_INFO("Send Movement here for testing in moveup");
         	control_application::quadcopter_movement msg;
         	msg.thrust = this->listFutureMovement[internId].back().getThrust();
         	ROS_INFO("Thrust in land is %u", msg.thrust);
@@ -405,14 +405,14 @@ void Controller::land( int internId, int * nrLand )
 		ROS_INFO("Landed: %i", *nrLand);
 	}
 	this->trackedArrayMutex.unlock();
-	ROS_INFO("Send Movement here for testing");
+	/*ROS_INFO("Send Movement here for testing");
 	control_application::quadcopter_movement msg;
 	msg.thrust = this->listFutureMovement[internId].back().getThrust();
 	ROS_INFO("Thrust in land is %u", msg.thrust);
 	msg.roll = this->listFutureMovement[internId].back().getRoll();
 	msg.pitch = this->listFutureMovement[internId].back().getPitch();
 	msg.yaw = this->listFutureMovement[internId].back().getYawrate();
-	this->Movement_pub[internId].publish(msg);	
+	this->Movement_pub[internId].publish(msg);*/	
 }
 
 /*
