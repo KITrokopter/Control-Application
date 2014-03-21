@@ -956,7 +956,7 @@ void Controller::shutdownFormation()
 bool Controller::shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res)
 {
 	ROS_INFO("Service shutdown has been called");
-	pthread_create(&tShutdownFormation, NULL, startThreadShutdown, this);
+	pthread_create(&tShutdownFormation, NULL, &startThreadShutdown, this);
 	ROS_INFO("Thread tshutdownFormation set up");
 	return true;
 	

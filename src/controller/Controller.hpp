@@ -169,6 +169,7 @@ private:
 	/* Threads */
 	pthread_t tCalculateMovement;
 	pthread_t tBuildFormation;
+	pthread_t tShutdownFormation;
 
 	/**
   	* NodeHandle is the main access point to communications with the ROS system.
