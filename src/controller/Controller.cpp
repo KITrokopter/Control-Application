@@ -67,6 +67,8 @@ Controller::Controller()
 	}
 	ROS_INFO("Constructing done");
 	this->time = getNanoTime();
+	this->time2 = getNanoTime();
+	this->thrustTest = THRUST_START;
 }
 
 void Controller::initialize()
@@ -266,9 +268,21 @@ void Controller::moveUp( int internId )
 	bool moveUpSmart = false;
 
 	if( !moveUpSmart ) {		
-		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
+		MovementQuadruple newMovement = MovementQuadruple( this->thrustTest, 0, 0, 0 );
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
+		this->thrustTest += 1000;
+		long int current = getNanoTime();	
+		if(this->thrustTest >= 25000 || current > this->time2 + 2000000000)
+		{
+			this->shutdownMutex.lock();
+			this->shutdownStarted = true;
+			this->shutdownMutex.unlock();
+			this->movementStatusMutex.lock();	
+			quadcopterMovementStatus[internId] = CALCULATE_LAND;
+			this->movementStatusMutex.unlock();
+		}
+			
 		/*ROS_INFO("Send Movement here for testing in moveup");
         	control_application::quadcopter_movement msg;
         	msg.thrust = this->listFutureMovement[internId].back().getThrust();

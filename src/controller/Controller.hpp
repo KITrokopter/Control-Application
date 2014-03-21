@@ -121,7 +121,9 @@ private:
 	std::vector<unsigned long int > quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int > quadcopterMovementStatus;
-	long int time;	
+	long int time;
+	long int time2;
+	unsigned int thrustTest;	
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;
