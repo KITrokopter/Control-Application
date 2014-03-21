@@ -262,9 +262,23 @@ void Controller::moveUp( int internId )
 	bool moveUpSmart = false;
 
 	if( !moveUpSmart ) {		
-		MovementQuadruple newMovement = MovementQuadruple( 12005, 0, 0, 0 );
+		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
+		ROS_INFO("Send Movement here for testing in moveup");
+        	control_application::quadcopter_movement msg;
+        	msg.thrust = this->listFutureMovement[internId].back().getThrust();
+        	ROS_INFO("Thrust in land is %i", msg.thrust);
+        	msg.roll = this->listFutureMovement[internId].back().getRoll();
+       		msg.pitch = this->listFutureMovement[internId].back().getPitch();
+       		msg.yaw = this->listFutureMovement[internId].back().getYawrate();
+        	this->Movement_pub[internId].publish(msg);
+		/*msg.thrust = 12005;
+                ROS_INFO("Thrust in land is %i", msg.thrust);
+                msg.roll = 0;
+                msg.pitch = 0;
+                msg.yaw = 0;
+                this->Movement_pub[internId].publish(msg);*/		
 	} else
 	{
 		if( this->listFutureMovement[internId].size() == 0 )
@@ -554,27 +568,6 @@ void Controller::sendMovementAll()
 		this->movementStatusMutex.unlock();
 		if( quadStatus != CALCULATE_NONE )
 		{			
-			// Remove Element if exists in list and timestamp < actual time
-			if( this->listFutureMovement.size() > 1 )
-			{				
-				//ROS_INFO("listFutureMovement-size > 1");
-				std::list<MovementQuadruple>::iterator it2 = this->listFutureMovement[i].begin();
-				long int aTimestamp = it2->getTimestamp();
- 				//ROS_INFO("   %ld ct, %ld timestamp", currentTime, aTimestamp); 
-				//usleep(500000);
-				int counter = 0;
-				while( it2->getTimestamp()<currentTime && it2 != this->listFutureMovement[i].end() )
-				{
-					++it2;
-					counter++;
-				}
-				if( counter > 0 )
-				{
-					//--it2;
-					counter--;
-					this->listFutureMovement[i].erase( this->listFutureMovement[i].begin(), it2 );
-				}
-			}
 			
 			//ROS_INFO("%i",i);
 			msg.thrust = this->listFutureMovement[i].front().getThrust();
