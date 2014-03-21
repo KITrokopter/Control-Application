@@ -49,6 +49,7 @@ private:
 	double stepSizeOfChange; 	// depends on the distance of position to target	
 	long int timeDiff1;
 	long int timeDiff2;
+	long int timeDiff3;
 
 };
 

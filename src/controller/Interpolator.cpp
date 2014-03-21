@@ -9,10 +9,11 @@ Interpolator::Interpolator()
 	this->stepSizeOfChange = 1;
 	for( int i = 0; i < MAX_NUMBER_OF_QUADCOPTER_HIGH; i++ )
 	{
-		state[i] = InterpolatorInfo();
+		this->state[i] = InterpolatorInfo();
 	}
 	timeDiff1 = 1500000000;
 	timeDiff2 = 2500000000;
+	timeDiff3 = 3500000000;
 }
 
 MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> sentQuadruples)
@@ -99,69 +100,69 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		newMovement.setThrust( newThrust ); 
 	}
 
-	double diff = 3.0f;	
+	/* Calculate rest */
 	checkState();	
-	switch( this->status.getState() )
+	switch( this->status[id].getState() )
 	{
 		case UNSTARTED:
 			break;			
 		case STARTED:
-			if( this->started[id] > currentTime + timeDiff1 )
+			double rpdiff = 3.0f;	// diff for roll and pitch values
+			if( this->status[id].getStarted() > currentTime + timeDiff1 )
 			{
-				newMovement.setRollPitchYawrate( -diff, -diff, 0 );
+				newMovement.setRollPitchYawrate( -rpdiff, -rpdiff, 0 );
 				return newMovement;
 			}
 			else
 			{
-				newMovement.setRollPitchYawrate( diff, diff, 0 );
+				newMovement.setRollPitchYawrate( rpdiff, rpdiff, 0 );
 				return newMovement;
 			}
 			break;
-		case CALC:	
+		case CALC:
+			if( this->status[id].getStarted() > currentTime + timeDiff3 )
+			{
+					if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
+					{
+						float newRoll = newMovement.getRoll();
+						float newPitch = newMovement.getPitch();
+						float newYawrate = newMovement.getYawrate();
+
+							newMovement.setRollPitchYawrate( 0, 0, 0 );
+							Position6DOF pos;
+							int counter = 0;
+							for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
+							{
+								pos.setTimestamp( (*it).getTimestamp() );
+								if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
+								{
+									pos.setPosition( (*it).getPosition() );
+									double diffX = pos.getPosition()[0] - target.getPosition()[0];
+									double diffY = pos.getPosition()[1] - target.getPosition()[1];
+									double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
+									diffX = diffX / absDistance;
+									diffY = diffY / absDistance;
+									this->status[id].setRotation( cos(diffY) );	// FIXME check
+									this->status[id].setLastUpdated( currentTime );					
+									break;
+								}
+								counter++;
+							}
+							this->status.setState( DONE ); 
+						
+					}
+			}
+			else
+			{
+				newMovement.setRollPitchYawrate( 0, 0, 0 );
+				return newMovement;
+			}	
 			break;
 		case DONE:
 			break;
 		default:			
 			break;
-	}
-	
-	/* Calculate rest */
-	if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
-	{
-		float newRoll = newMovement.getRoll();
-		float newPitch = newMovement.getPitch();
-		float newYawrate = newMovement.getYawrate();
-
-		if( this->status.getState() == CALC )
-		{
-			newMovement.setRollPitchYawrate( 0, 0, 0 );
-			Position6DOF pos;
-			int counter = 0;
-			for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
-			{
-				pos.setTimestamp( (*it).getTimestamp() );
-				if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
-				{
-					pos.setPosition( (*it).getPosition() );
-					double diffX = pos.getPosition()[0] - target.getPosition()[0];
-					double diffY = pos.getPosition()[1] - target.getPosition()[1];
-					double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
-					diffX = diffX / absDistance;
-					diffY = diffY / absDistance;
-					status[id].setRotation( cos(diffY) );	// FIXME check
-					status[id].setLastUpdated( currentTime );					
-					break;
-				}
-				counter++;
-			}
-			this->status.setState( DONE ); 
-		} else
-		{
-			//newRoll += calculatePlaneDiff();	//TODO
-			//newPitch += calculatePlaneDiff();	//TODO
-			newMovement.setRollPitchYawrate(newRoll, newPitch, newYawrate);
-		}
-	}
+	}	
 	
 	return newMovement;
 }
@@ -268,24 +269,9 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 	{
 		return diff;
 	}
-
-	if( aAbsDistance
 	
 	return diff;
 }
-
-bool reachingTarget( double first, double last, double speed, long int timediff )
-{
-	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
-	double distanceFactor = 0.5; // higher if further from target, between [0, 1]
-	double factor = REACHING_TARGET_DIFF * timediffNormalized * distanceFactor;
-	if( (last<first) && ((first-last) > factor*speed) )
-	{
-		return true;
-	}
-	return false;
-}
-
 
 void Interpolator::checkState()
 {
@@ -310,4 +296,16 @@ void Interpolator::checkState()
 			break;
 	}
 	/*	if( this->state[id] == UNSTARTED )*/
+}
+
+bool reachingTarget( double first, double last, double speed, long int timediff )
+{
+	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
+	double distanceFactor = 0.5; // higher if further from target, between [0, 1]
+	double factor = REACHING_TARGET_DIFF * timediffNormalized * distanceFactor;
+	if( (last<first) && ((first-last) > factor*speed) )
+	{
+		return true;
+	}
+	return false;
 }
