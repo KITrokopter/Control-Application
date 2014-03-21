@@ -3,6 +3,7 @@
 bool closeToTarget( Position6DOF position1, Position6DOF position2 );
 void* startThreadCalculateMovement(void* something);
 void* startThreadBuildFormation(void* something);
+void* startThreadShutdown(void* something);
 
 Controller::Controller()
 {
@@ -928,19 +929,6 @@ void Controller::shutdownFormation()
 		this->movementStatusMutex.unlock();
 	}
 	
-	ROS_INFO("Shutdown function finished");	
-}
-
-/*
- * Shutdown
- * Set all values to zero and thrust to minimum. Send the values and exit program
- * after that.
- * 
- */
-bool Controller::shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res)
-{
-	ROS_INFO("Service shutdown has been called");
-	shutdownFormation ();
 	this->landMutex.lock();
 	ROS_INFO("SHUTDOWN landFinished is %i", landFinished);
 	bool end = this->landFinished;
@@ -958,6 +946,22 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 	pthread_join(tBuildFormation, &resultBuild);
 	ROS_INFO("Shutdown finished");
 	return true;
+	ROS_INFO("Shutdown function finished");	
+}
+
+/*
+ * Shutdown
+ * Set all values to zero and thrust to minimum. Send the values and exit program
+ * after that.
+ * 
+ */
+bool Controller::shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res)
+{
+	ROS_INFO("Service shutdown has been called");
+	pthread_create(&tshutdownFormation, NULL, startThreadShutdown, this);
+	ROS_INFO("Thread tshutdownFormation set up");
+	return true;
+	
 }
 
 
@@ -1087,6 +1091,12 @@ void* startThreadBuildFormation(void* something)
 {
 	Controller *someOther = (Controller *) something; 
 	someOther->buildFormation();
+}
+
+void* startThreadShutdown(void* something)
+{
+	Controller *someOther = (Controller *) something;
+	someOther->shutdownFormation();
 }
 
 void Controller::setTrackingArea(TrackingArea area)
