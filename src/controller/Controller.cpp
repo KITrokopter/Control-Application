@@ -486,56 +486,6 @@ void Controller::emergencyRoutine(std::string message)
 	}
 }
 
-
-/*
- * Converts vector in yaw, pitch, roll and thrust values.
- */
-void Controller::convertMovement(int internId)
-{
-	/* Calculation */
-	double current[3];
-	double target[3];
-	double moveVector[3];
-	for(int k = 0; k < 3; k++)
-	{
-		this->listTargetsMutex.lock();
-		target[k] = this->listTargets[internId].back().getPosition()[k];
-		this->listTargetsMutex.unlock();
-		this->listPositionsMutex.lock();
-		current[k] = this->listPositions[internId].back().getPosition()[k];
-		this->listPositionsMutex.unlock();
-	}
-	moveVector[0] = target[0] - current[0];
-	moveVector[1] = target[1] - current[1];
-	moveVector[2] = target[2] - current[2];
-	/* TODO */
-	
-	/* conversion from vectors to thrust, yawrate, pitch... */
-	/*
-	int thrust_react_z_low = -5;
-	int thrust_react_z_high = 5;
-	int thrust = 0;
-	MovementQuadruple * movement = &(this->movementAll[internId]);
-	if (vector[2] > thrust_react_z_high) {
-		thrust = movement->getThrust() - THRUST_STEP;
-		movement->setThrust(thrust);
-	} else if (vector[2] < thrust_react_z_low) {
-		thrust = movement->getThrust() + THRUST_STEP;
-		movement->setThrust(thrust);
-	} 
-
-	double length = 0;
-	for (int i = 0; i < 3; i++) {
-		length = length + vector[i]*vector[i];
-	}
-	length = sqrt(length);
-
-	double ratio_roll = vector[0] / length;
-	double ratio_pitch = vector[1] / length;
-	movement->setRollPitchYawrate(	ratio_roll + ROLL_STEP, ratio_pitch + PITCH_STEP, 0.0);
-	*/
-}
-
 /*
  * Creates a Ros message for the movement of each quadcopter and sends this 
  * to the quadcopter modul
