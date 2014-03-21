@@ -301,7 +301,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
                 && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
             posChange *= 2;
-            increaseTrackingArea(posChange, 0, 0);
+            increaseTrackingArea(posChange, 0, 0, 0);
             ROS_DEBUG("increasing, side size of center: %f", 2 * posChange);
         }
 
@@ -309,7 +309,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         double leftBorder = posChange/2;
         double rightBorder = posChange;
         double middle = leftBorder + (rightBorder - leftBorder)/2;
-        increaseTrackingArea(middle, 0, 0);
+        increaseTrackingArea(middle, 0, 0, 0);
 
         double sideBorder = leftBorder;
         // searching exact border of tracking area
@@ -327,7 +327,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             }
             sideBorder = middle;
             middle = leftBorder + (rightBorder - leftBorder)/2;
-            increaseTrackingArea(middle, 0, 0);
+            increaseTrackingArea(middle, 0, 0, 0);
             ROS_DEBUG("binary search, side size: %f", 2 * middle);
         }
         ROS_DEBUG("maximal quadrat size is %f", sideBorder * 2);
@@ -344,7 +344,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             // saves old side border in sideBorder
             sideBorder = newSideBorder;
             posChange = 0.5;
-            increaseTrackingArea(sideBorder, heightLower);
+            increaseTrackingArea(sideBorder, heightLower, 0, 0);
 
             if (!(inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
                     && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep))) {
