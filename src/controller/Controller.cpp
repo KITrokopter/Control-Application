@@ -274,7 +274,7 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].push_front( newMovement );
 		this->thrustTest += 1000;
 		long int current = getNanoTime();	
-		if(this->thrustTest >= 30000 || current > this->time2 + 2000000000)
+		if(this->thrustTest >= 300000 || current > this->time2 + 20000000000)
 		{
 			ROS_DEBUG("Emergency Shutdown Test");
 			this->shutdownMutex.lock();
@@ -544,7 +544,7 @@ void Controller::sendMovementAll()
 			}
 			//ROS_INFO("%i",i);
 			msg.thrust = this->listFutureMovement[i].front().getThrust();
-			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_HOLD)
+			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_START)
 			{
 				ROS_INFO("Send thrust movement all %u", msg.thrust);
 			}
