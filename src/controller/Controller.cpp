@@ -263,6 +263,7 @@ void Controller::moveUp( int internId )
 
 	if( !moveUpSmart ) {		
 		MovementQuadruple newMovement = MovementQuadruple( 12005, 0, 0, 0 );
+		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
 	} else
 	{
