@@ -36,8 +36,8 @@
 //Ros messages/services
 
 #define THRUST_MIN 10
-#define THRUST_STAND_STILL 18001
-#define THRUST_START 901
+#define THRUST_STAND_STILL 901
+#define THRUST_START 25000
 #define THRUST_DECLINE 200
 #define THRUST_STEP 50
 #define ROLL_STEP 2
@@ -122,7 +122,7 @@ private:
 	std::vector<unsigned long int > quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int > quadcopterMovementStatus;
-	
+	long int time;	
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;

@@ -65,6 +65,7 @@ Controller::Controller()
 		trackedArrayMutex.unlock();
 	}
 	ROS_INFO("Constructing done");
+	this->time = getNanoTime();
 }
 
 void Controller::initialize()
@@ -1025,6 +1026,12 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	this->pitch_stab[quaId] = msg->stabilizer_pitch;
 	this->yaw_stab[quaId] = msg->stabilizer_yaw;
 	this->thrust_stab[quaId] = msg->stabilizer_thrust;
+	long int currentTime = getNanoTime();
+	if(quaId == 0 && currentTime > this->time + 2000000000)
+	{
+		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %i", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
+		this->time = currentTime;
+	}
 	this->receivedQCStMutex.lock();
 	this->receivedQuadStatus[quaId] = true;
 	this->receivedQCStMutex.unlock();
