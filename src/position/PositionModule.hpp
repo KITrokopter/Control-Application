@@ -22,6 +22,7 @@
 #include "../matlab/Position.h"
 #include "TrackingWorker.hpp"
 #include "IdDictionary.hpp"
+#include "Graph.hpp"
 
 class PositionModule {
 private:
@@ -37,6 +38,11 @@ private:
 	Mutex pictureCacheMutex;
 	std::map<int, cv::Mat*> pictureCache;
 	std::map<int, uint64_t> pictureTimes;
+	
+	std::map<int, cv::Mat> intrinsicsMatrices;
+	std::map<int, cv::Mat> distortionCoefficients;
+	std::map<int, std::string> windowNames;
+	std::map<int, bool> imageDisplayed;
 	
 	// Tracking
 	TrackingWorker trackingWorker;

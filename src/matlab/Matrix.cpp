@@ -71,3 +71,15 @@ double Matrix::getM33() {
 void Matrix::printMatrix() {
     printf("%f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", m11, m12, m13, m21, m22, m23, m31, m32, m33);
 }
+
+Matrix Matrix::multiplicate(Matrix A) {
+    double r11 = m11 * A.getM11() + m12 * A.getM21() + m13 * A.getM31();
+    double r12 = m11 * A.getM12() + m12 * A.getM22() + m13 * A.getM32();
+    double r13 = m11 * A.getM13() + m12 * A.getM23() + m13 * A.getM33();
+    double r21 = m21 * A.getM11() + m22 * A.getM21() + m23 * A.getM31();
+    double r22 = m21 * A.getM12() + m22 * A.getM22() + m23 * A.getM32();
+    double r23 = m21 * A.getM13() + m22 * A.getM23() + m23 * A.getM33();
+    double r31 = m31 * A.getM11() + m32 * A.getM21() + m33 * A.getM31();
+    double r32 = m31 * A.getM12() + m32 * A.getM22() + m33 * A.getM32();
+    double r33 = m31 * A.getM13() + m32 * A.getM23() + m33 * A.getM33();
+}
