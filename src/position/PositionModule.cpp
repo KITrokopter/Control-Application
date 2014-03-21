@@ -224,10 +224,10 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 // Service
 bool PositionModule::calculateCalibrationCallback(control_application::CalculateCalibration::Request &req, control_application::CalculateCalibration::Response &res)
 {
-	if (!isCalibrating) {
+	/*if (!isCalibrating) {
 		ROS_ERROR("Cannot calculate calibration! Start calibration first!");
 		return false;
-	}
+	}*/
 
 	if (!idDict.isTranslated()) {
 		ROS_WARN("Dictionary was not translated! Translating now.");
