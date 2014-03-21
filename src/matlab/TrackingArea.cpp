@@ -444,31 +444,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
                 ROS_DEBUG("lower %f, maximal quadrat size is %f", heightLower, 2 * (newSideBorder));
                 heightLower *= 2;
             }
-
-
-
-
-
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         posChange = 1;
         // searching upper border of tracking area
