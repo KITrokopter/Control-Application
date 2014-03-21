@@ -120,47 +120,60 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 			}
 			break;
 		case CALC:
-			if( this->status[id].getStarted() > currentTime + timeDiff3 )
-			{
-					if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
-					{
-						float newRoll = newMovement.getRoll();
-						float newPitch = newMovement.getPitch();
-						float newYawrate = newMovement.getYawrate();
-
-							newMovement.setRollPitchYawrate( 0, 0, 0 );
-							Position6DOF pos;
-							int counter = 0;
-							for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
-							{
-								pos.setTimestamp( (*it).getTimestamp() );
-								if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
-								{
-									pos.setPosition( (*it).getPosition() );
-									double diffX = pos.getPosition()[0] - target.getPosition()[0];
-									double diffY = pos.getPosition()[1] - target.getPosition()[1];
-									double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
-									diffX = diffX / absDistance;
-									diffY = diffY / absDistance;
-									this->status[id].setRotation( cos(diffY) );	// FIXME check
-									this->status[id].setLastUpdated( currentTime );					
-									break;
-								}
-								counter++;
-							}
-							this->status.setState( DONE ); 
-						
-					}
-			}
-			else
+			if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
 			{
 				newMovement.setRollPitchYawrate( 0, 0, 0 );
-				return newMovement;
+				Position6DOF pos;
+				int counter = 0;
+				for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
+				{
+					pos.setTimestamp( (*it).getTimestamp() );
+					if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
+					{
+						pos.setPosition( (*it).getPosition() );
+						double diffX = pos.getPosition()[0] - target.getPosition()[0];
+						double diffY = pos.getPosition()[1] - target.getPosition()[1];
+						double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
+						diffX = diffX / absDistance;
+						diffY = diffY / absDistance;
+						this->status[id].setRotation( cos(diffY) );	// FIXME check
+						this->status[id].setLastUpdated( currentTime );					
+						break;
+					}
+					counter++;
+				}
+				this->status.setState( DONE ); 				
 			}	
+			else
+			{
+				// TODO Error, shouldn't have happened after that time (timediff2)
+			}
+			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			break;
 		case DONE:
+			if( this->status[id].getStarted() > currentTime + timeDiff3 )
+			{
+				/* 
+				 * Calculate with given calibration data, actually
+				 * trying to "stabilize" now
+				 */
+
+				/*
+				 * Calculate new value every MIN_TIME_TO_WAIT seconds
+				 * 1 Calculate new calibration (due to yaw-movement, if roll/pitch-diff high)
+				 * 2 Calculate next position (take last speedvector)
+				 * 3 Calculate correction (take last sent value and calibration data)
+				 */
+				
+			} 
+			else
+			{
+				/* Wait before starting to stabilize */
+				newMovement.setRollPitchYawrate( 0, 0, 0 );
+			}
 			break;
-		default:			
+		default:	
+			newMovement.setRollPitchYawrate( 0, 0, 0 );		
 			break;
 	}	
 	
