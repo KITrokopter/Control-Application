@@ -16,6 +16,7 @@
 #include <cmath>
 #include <math.h>
 #include <ros/ros.h>
+#include "profiling.hpp"
 
 Position::Position()
 {
@@ -343,8 +344,10 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId, boo
             }
 
             Matlab *m = new Matlab(ep);
-
+            long int startTime = getNanoTime();
             Vector quadPosition = m->interpolateLines(quadPositions, numberCameras);
+            long int endTime = getNanoTime();
+            ROS_DEBUG("Calculation was %.3f long", (endTime - startTime) / 1e9);
 
             oldPos[quadcopterId] = quadPosition;
             ROS_DEBUG("First seen position of quadcopter %d is [%f, %f, %f]", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3());

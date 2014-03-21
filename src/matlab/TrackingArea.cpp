@@ -77,18 +77,6 @@ void TrackingArea::setCenter(Vector center) {
     this->center = center;
 }
 
-double TrackingArea::getWidth() {
-    return a1.add(a2.mult(-1)).getLength();
-}
-
-double TrackingArea::getLength() {
-    return a2.add(a3.mult(-1)).getLength();
-}
-
-double TrackingArea::getHeight() {
-    return (up.getV3() - low.getV3());
-}
-
 /*
  * calculates the distance of E: a + r*u + s*v and a point x
  */
@@ -242,26 +230,6 @@ bool TrackingArea::inCameraRange(std::vector<Vector> cameraPosition, std::vector
     } else {
         return false;
     }
-}
-
-void TrackingArea::increaseTrackingArea(double posChange, double height) {
-    Vector center = getCenter();
-    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + height));
-    setA2(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + height));
-    setA3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + height));
-    setA4(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + height));
-    setUp(Vector(center.getV1(), center.getV2(), center.getV3() + height));
-    setLow(Vector(center.getV1(), center.getV2(), center.getV3() + height));
-}
-
-void TrackingArea::increaseTrackingArea(double posChange, double heightPos, double heightNeg) {
-    Vector center = getCenter();
-    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3()));
-    setA2(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3()));
-    setA3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3()));
-    setA4(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3()));
-    setUp(Vector(center.getV1(), center.getV2(), center.getV3() + heightPos));
-    setLow(Vector(center.getV1(), center.getV2(), center.getV3() - heightNeg));
 }
 
 void TrackingArea::increaseTrackingArea(double posChange, double height, double heightPos, double heightNeg) {
