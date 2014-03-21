@@ -147,9 +147,9 @@ CameraData TrackingWorker::dequeue()
 		// ROS_DEBUG("dequeue: Got positions lock");
 		
 		if (!dataAvailable()) {
-			ROS_DEBUG("Not enough data available, waiting...");
+			//ROS_DEBUG("Not enough data available, waiting...");
 			positionsEmpty.timed_wait(lock, boost::get_system_time() + boost::posix_time::milliseconds(100));
-			ROS_DEBUG("Waited");
+			//ROS_DEBUG("Waited");
 		}
 		
 		if (dataAvailable()) {
@@ -177,7 +177,7 @@ bool TrackingWorker::dataAvailable()
 {
 	for (int i = 0; i < maxCamNo; i++) {
 		if (positions[i].size() > 0) {
-			ROS_DEBUG("Found %ld data for camno %d", positions[i].size(), i);
+			//ROS_DEBUG("Found %ld data for camno %d", positions[i].size(), i);
 			return true;
 		}
 	}
