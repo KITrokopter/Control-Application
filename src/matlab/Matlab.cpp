@@ -204,10 +204,10 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     std::string input;
     // E1 == g
     input = "A = [u(1) v(1) -w(1); u(2) v(2) -w(2); u(3) v(3) -w(3)];";
-    input = input + "diff = b - a;";
-    input = input + "bb = [diff(1); diff(2); diff(3)];";
+    input += "diff = b - a;";
+    input += "bb = [diff(1); diff(2); diff(3)];";
     // x = (r, s, t)
-    input = input + "x = inv(A) * bb;";
+    input += "x = inv(A) * bb;";
     // enter resulting string in matlab
     engEvalString(ep, input.c_str());
     mxArray *x = engGetVariable(ep, "x");
