@@ -175,7 +175,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 				assumedPos = assumedPos.predictNextPosition( positionB, PREDICT_FUTURE_POSITION );
 				
 				/* 3 */
-				//newMovement = setRollPitchYawrate();
+				newMovement = calculateRollPitch( status[id].getRotation(), assumedPos, target );
 			} 
 			else
 			{
@@ -258,9 +258,9 @@ void Interpolator::checkState( int id )
 	/*	if( this->status[id] == UNSTARTED )*/
 }
 
-MovementQuadruple calculateRollPitch( double rotation )		// TODO
+MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target )	
 {
-
+	
 }
 
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest ) 

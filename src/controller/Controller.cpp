@@ -567,7 +567,7 @@ void Controller::sendMovementAll()
 		if( quadStatus != CALCULATE_NONE )
 		{			
 			// Remove Element if exists in list and timestamp < actual time
-			if( this->listFutureMovement.size() > 1 )
+			if( this->listFutureMovement[i].size() > 1 )
 			{				
 				//ROS_INFO("listFutureMovement-size > 1");
 				std::list<MovementQuadruple>::iterator it2 = this->listFutureMovement[i].begin();
