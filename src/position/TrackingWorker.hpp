@@ -2,6 +2,7 @@
 
 #include <boost/thread.hpp>
 #include <queue>
+#include <map>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
@@ -9,6 +10,8 @@
 #include "../matlab/Vector.h"
 #include "../matlab/Position.h"
 #include "../controller/Mutex.hpp"
+
+#include "Graph.hpp"
 
 typedef struct {
 	Vector cameraVector;
@@ -24,15 +27,23 @@ private:
 	Position tracker;
 	volatile bool stop;
 
-	std::queue<CameraData> positions;
+	std::vector<std::queue<CameraData> > positions;
+	int rrCounter;
+	int maxCamNo;
+	int bufferSize;
+	int minUpdateCount;
 	boost::mutex positionsMutex;
 	boost::condition_variable positionsEmpty;
+	
+	// Graphing
+	Graph errorGraph;
 	
 	void run();
 	
 	void enqueue(CameraData data);
 	CameraData dequeue();
 	bool dataAvailable();
+	bool haveEnoughData(int count);
 public:
 	TrackingWorker(IPositionReceiver *receiver);
 	~TrackingWorker();
@@ -42,4 +53,6 @@ public:
 	
 	bool calibrate(ChessboardData *chessboard, int camNo);
 	Vector getCameraPosition(int camNo);
+	cv::Mat getIntrinsicsMatrix(int camNo);
+	cv::Mat getDistortionCoefficients(int camNo);
 };

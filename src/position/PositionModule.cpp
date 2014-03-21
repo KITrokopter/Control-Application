@@ -11,6 +11,7 @@
 #include <ros/console.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "sensor_msgs/Image.h"
 #include "api_application/Ping.h"
@@ -34,7 +35,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	this->pictureSendingActivationPublisher = n.advertise<camera_application::PictureSendingActivation>("PictureSendingActivation", 4);
 	this->pingPublisher = n.advertise<api_application::Ping>("Ping", 4);
 	
-	this->pictureSubscriber = n.subscribe("Picture", 128, &PositionModule::pictureCallback, this);
+	this->pictureSubscriber = n.subscribe("Picture", 12, &PositionModule::pictureCallback, this);
 	this->systemSubscriber = n.subscribe("System", 4, &PositionModule::systemCallback, this);
 	this->rawPositionSubscriber = n.subscribe("RawPosition", 1024, &PositionModule::rawPositionCallback, this);
 	
@@ -227,7 +228,7 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		ROS_ERROR("Cannot calculate calibration! Start calibration first!");
 		return false;
 	}
-		
+
 	if (!idDict.isTranslated()) {
 		ROS_WARN("Dictionary was not translated! Translating now.");
 		idDict.translateIds();
@@ -247,7 +248,6 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
 	
 	int camNumber = idDict.size();
-	
 	bool ok = trackingWorker.calibrate(&data, camNumber);
 	
 	if (ok) {
@@ -263,6 +263,17 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		res.cameraYPositions.push_back(position.getV2());
 		res.cameraZPositions.push_back(position.getV3());
 		res.IDs.push_back(idDict.getBackward(i));
+		
+		// DEBUG: Show calibration results visually
+		intrinsicsMatrices[idDict.getBackward(i)] = trackingWorker.getIntrinsicsMatrix(i);
+		distortionCoefficients[idDict.getBackward(i)] = trackingWorker.getDistortionCoefficients(i);
+		std::stringstream ss;
+		ss << "Calib Results CamId " << idDict.getBackward(i);
+		windowNames[idDict.getBackward(i)] = ss.str();
+		imageDisplayed[idDict.getBackward(i)] = false;
+		
+		cv::startWindowThread();
+		cv::namedWindow(ss.str());
 	}
 	
 	isCalibrating = false;
@@ -276,21 +287,32 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	// Insert camera id, if not already there.
 	idDict.insert(msg.ID);
 	
+	// DEBUG: Show calibration results visually
+	if (imageDisplayed.count(msg.ID) && !imageDisplayed[msg.ID] && intrinsicsMatrices.count(msg.ID) > 0
+		&& distortionCoefficients.count(msg.ID) > 0 && windowNames.count(msg.ID) > 0) {
+		cv::Mat image(cv::Size(640, 480), CV_8UC3);
+		
+		for (int i = 0; i < 640 * 480 * 3; i++)	{
+			image.data[i] = msg.image[i];
+		}
+		
+		cv::Mat undistorted(cv::Size(640, 480), CV_8UC3);
+		cv::undistort(image, undistorted, intrinsicsMatrices[msg.ID], distortionCoefficients[msg.ID]);
+		cv::imshow(windowNames[msg.ID], undistorted);
+		imageDisplayed[msg.ID] = true;
+	}
+	
 	pictureCacheMutex.lock();
 	
-	if (isCalibrating)
-	{
-		if (pictureCache[msg.ID] != 0)
-		{
+	if (isCalibrating) {
+		if (pictureCache[msg.ID] != 0) {
 			delete pictureCache[msg.ID];
 			pictureCache[msg.ID] = 0;
-			
 		}
 		
 		cv::Mat* image = new cv::Mat(cv::Size(640, 480), CV_8UC3);
 		
-		for (int i = 0; i < 640 * 480 * 3; i++)
-		{
+		for (int i = 0; i < 640 * 480 * 3; i++)	{
 			image->data[i] = msg.image[i];
 		}
 		
@@ -319,6 +341,7 @@ void PositionModule::systemCallback(const api_application::System &msg)
 			log << counter++ << ", " << *it << std::endl;
 		}
 		
+		cv::destroyAllWindows();
 		ros::shutdown();
 	}
 }
@@ -333,7 +356,7 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
  	// TODO: Calculate position in our coordinate system.
 	// TODO: Is this coordinate change correct for amcctoolbox?
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
-	ROS_DEBUG("Received position: msg.ID: %d idDict.getForward(msg.ID): %d msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID), msg.quadcopterId);
+	// ROS_DEBUG("Received position: msg.ID: %d idDict.getForward(msg.ID): %d msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID), msg.quadcopterId);
 	
 	trackingWorker.updatePosition(cameraVector, idDict.getForward(msg.ID), msg.quadcopterId);
 	
