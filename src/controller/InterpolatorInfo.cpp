@@ -2,7 +2,7 @@
 
 InterpolatorInfo::InterpolatorInfo()
 {
-	state = UNSTARTED;
+	this->state = UNSTARTED;
 	/*
 		this->lastUpdated[i] = 0;
 		this->northeast[i][0] = INVALID;
@@ -22,12 +22,12 @@ void InterpolatorInfo::setStarted( long int newStarted )
     this->started = newStarted;
 }
 
-int InterpolatorInfo::getState()
+short InterpolatorInfo::getState()
 {
     return this->state;
 }
 
-void InterpolatorInfo::setState( int newState )
+void InterpolatorInfo::setState( short newState )
 {
     this->state = newState;
 }
