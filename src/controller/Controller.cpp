@@ -268,7 +268,7 @@ void Controller::moveUp( int internId )
 	{
 		if( this->listFutureMovement[internId].size() == 0 )
 		{
-			int diff = 4000;
+			int diff = 80;
 			long int timeDiff = 400000000;
 			long int currentTime = getNanoTime();
 			MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0, currentTime );

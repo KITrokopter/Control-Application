@@ -1,6 +1,6 @@
 #include "TrackingWorker.hpp"
 
-#include <boost/chrono/duration.hpp>
+//#include <boost/chrono/duration.hpp>
 #include <ros/console.h>
 #include <opencv2/core/core.hpp>
 #include <map>
@@ -146,9 +146,9 @@ CameraData TrackingWorker::dequeue()
 		
 		// ROS_DEBUG("dequeue: Got positions lock");
 		
-		if (!dataAvailable()) {
+		/*if (!dataAvailable()) {
 			positionsEmpty.timed_wait(lock, boost::get_system_time() + boost::posix_time::milliseconds(100));
-		}
+		}*/
 		
 		if (dataAvailable()) {
 			do {

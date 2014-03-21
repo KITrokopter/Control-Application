@@ -1,4 +1,5 @@
 #include "Interpolator.hpp"
+#include "InterpolatorInfo.hpp"
 #include "Controller.hpp"
 
 int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized );
@@ -7,42 +8,58 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 Interpolator::Interpolator()
 {
 	this->stepSizeOfChange = 1;
-	for( int i = 0; i < MAX_NUMBER_OF_QUADCOPTER_HIGH; i++ )
+	for( int i = 0; i < MAX_NUMBER_QUADCOPTER_HIGH; i++ )
 	{
-		this->lastUpdated[i] = 0;
+		this->status[i] = InterpolatorInfo();
 	}
+	timeDiff1 = 1500000000;
+	timeDiff2 = 2500000000;
+	timeDiff3 = 3500000000;
 }
+
+MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> sentQuadruples)
+{
+	long int currentTime = getNanoTime();
+	MovementQuadruple newMovement = sentQuadruples.back();	
+	
+	return newMovement;
+}
+
 
 MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id)
 {
 
+	/* Nothing has been sent so far. */
 	if( sentQuadruples.size() == 0 )
 	{
 		return MovementQuadruple(THRUST_START, 0, 0, 0);
 	}
-	
+
+	/* A MovementQuadruple has been sent before. */
 	MovementQuadruple newMovement = sentQuadruples.back();
 	long int currentTime = getNanoTime();
+	newMovement.setTimestamp( currentTime );
 	
 	if( sentQuadruples.size() < 3 || positions.size() < 3 )
 	{
 		ROS_INFO("Not enough data in calculateNextMQ.");
 		return newMovement;
-	} else if( this->lastUpdated[id] - currentTime < MIN_TIME_TO_WAIT)
+	} else if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
-		//ROS_INFO("Take old value, changes need to be visible for calculateNextMQ.");
+		//ROS_INFO("Take old value, changes of sent values need to be visible for calculateNextMQ.");
 		return newMovement;
 	}
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
-	
-	//bool oscillate = false;
 	int size = positions.size();
-	double deltaTarget[size];
-	double deltaAbsPosition[size-1];	// equals speed	/* error-prone FIXME */
-	double deltaSpeed[size-2];	// equals acceleration	/* error-prone FIXME */
+	double deltaTarget[size];	// Absolute distance to latest target
+	double deltaAbsPosition[size-1];	// equals speed	/* arraysize FIXME */
+	double deltaSpeed[size-2];	// equals acceleration	/* arraysize FIXME */
 	int counter = 0;
 	Position6DOF positionA, positionB;	// positionA is older than positionB
+	this->status[id].setLastUpdated( currentTime );
+
+	/* Calculate values for declared arrays above for later usage. */
 	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 	{
 		positionA.setOrientation( (*it).getOrientation() );
@@ -86,17 +103,90 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	}
 
 	/* Calculate rest */
-	if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
+	double rpdiff = 3;	// diff for roll and pitch values
+	checkState( id );	
+	switch( this->status[id].getState() )
 	{
-		float newRoll = newMovement.getRoll();
-		float newPitch = newMovement.getPitch();
-		float newYawrate = newMovement.getYawrate();
-		
-		//newRoll += calculatePlaneDiff();	//TODO
-		//newPitch += calculatePlaneDiff();	//TODO
-		newMovement.setRollPitchYawrate(newRoll, newPitch, newYawrate);
-	}
-	
+		case UNSTARTED:
+			break;			
+		case STARTED:
+			if( this->status[id].getStarted() > currentTime + timeDiff1 )
+			{
+				newMovement.setRollPitchYawrate( -rpdiff, -rpdiff, 0 );
+				return newMovement;
+			}
+			else
+			{
+				newMovement.setRollPitchYawrate( rpdiff, rpdiff, 0 );
+				return newMovement;
+			}
+			break;
+		case CALC:
+			if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
+			{
+				newMovement.setRollPitchYawrate( 0, 0, 0 );
+				Position6DOF pos;
+				int counter = 0;
+				for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
+				{
+					pos.setTimestamp( (*it).getTimestamp() );
+					if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
+					{
+						pos.setPosition( (*it).getPosition() );
+						double diffX = pos.getPosition()[0] - target.getPosition()[0];
+						double diffY = pos.getPosition()[1] - target.getPosition()[1];
+						double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
+						diffX = diffX / absDistance;
+						diffY = diffY / absDistance;
+						this->status[id].setRotation( cos(diffY) );	// FIXME check
+						this->status[id].setLastUpdated( currentTime );					
+						break;
+					}
+					counter++;
+				}
+				this->status[id].setState( DONE ); 				
+			}	
+			else
+			{
+				// TODO Error, shouldn't have happened after that time (timediff2)
+			}
+			newMovement.setRollPitchYawrate( 0, 0, 0 );
+			break;
+		case DONE:
+			if( this->status[id].getStarted() > currentTime + timeDiff3 )
+			{
+				/* 
+				 * Calculate with given calibration data, actually
+				 * trying to "stabilize" now
+				 */
+
+				/*
+				 * Calculate new value every MIN_TIME_TO_WAIT seconds
+				 * 1 Calculate new calibration (due to yaw-movement, if roll/pitch-diff high)
+				 * 2 Calculate next position (take last speedvector)
+				 * 3 Calculate correction (calibration data, predictedPosition, target)
+				 */
+				Position6DOF assumedPos = positions.back();
+
+				/* 1 */
+				// TODO
+				
+				/* 2 */
+				assumedPos = assumedPos.predictNextPosition( positionB, PREDICT_FUTURE_POSITION );
+				
+				/* 3 */
+				//newMovement = setRollPitchYawrate();
+			} 
+			else
+			{
+				/* Wait before starting to stabilize */
+				newMovement.setRollPitchYawrate( 0, 0, 0 );
+			}
+			break;
+		default:	
+			newMovement.setRollPitchYawrate( 0, 0, 0 );		
+			break;
+	}		
 	return newMovement;
 }
 
@@ -143,6 +233,36 @@ int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double a
 	}
 }
 
+void Interpolator::checkState( int id )
+{
+	long int currentTime = getNanoTime();
+	switch( this->status[id].getState() )
+	{
+		case UNSTARTED:
+			this->status[id].setState( STARTED );
+			this->status[id].setStarted( currentTime );
+			break;			
+		case STARTED:
+			if( currentTime > this->status[id].getStarted()+timeDiff2 )
+			{
+				this->status[id].setState( CALC );
+			}
+			break;
+		case CALC:
+			break;
+		case DONE:
+			break;
+		default:			
+			break;
+	}
+	/*	if( this->status[id] == UNSTARTED )*/
+}
+
+MovementQuadruple calculateRollPitch( double rotation )		// TODO
+{
+
+}
+
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest ) 
 {
 
@@ -166,11 +286,22 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 	 * 	too fast
 	 * Negate value if
 	 * 	going in wrong direction
-	 * 
+	 */	
+	/* 
+	 * TODO if too slow, SPEED_MIN_PLANE needs to be changed
 	 */
+	
 	// right direction: (aSpeed>0 && aDistanceLatest>0) 
 	// close to target: abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET
-	if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE) )
+	if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE))
+	{
+		diff += ROLL_STEP; 
+	}
+	else if( -aSpeed>SPEED_MAX_PLANE )
+	{
+		diff += ROLL_STEP; 
+	}
+	else if( (-aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest<0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
 	{
 		diff += ROLL_STEP; 
 	}
@@ -182,32 +313,17 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 	{
 		diff -= ROLL_STEP; 
 	}
-	else if( -aSpeed>SPEED_MAX_PLANE )
-	{
-		diff += ROLL_STEP; 
-	}
 	else if( (aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest>0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
 	{
 		diff -= ROLL_STEP; 
 	}
-	else if( (-aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest<0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
+
+	if( diff != 0 )
 	{
-		diff += ROLL_STEP; 
+		return diff;
 	}
-	else if( (aSpeed>0) && aDistanceLatest>aDistanceLatest )
-	{
-		
-	}
-	                                   
-	/*
-	if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE) )
-		diff += ROLL_STEP; */
-	        
+	
 	return diff;
-	/*if( abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET ) 
-	{
-		return diff;		
-	}*/
 }
 
 bool reachingTarget( double first, double last, double speed, long int timediff )
