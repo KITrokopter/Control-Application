@@ -3,33 +3,33 @@
 
 Position6DOF::Position6DOF(double x, double y, double z,  double xOrientation,  double yOrientation,  double zOrientation)
 {
-	position[0] = (x);
-	position[1] = (y);
-	position[2] = (z);
-	orientation[0] = (xOrientation);
-	orientation[1] = (yOrientation);
-	orientation[2] = (zOrientation);
+	this->position[0] = (x);
+	this->position[1] = (y);
+	this->position[2] = (z);
+	this->orientation[0] = (xOrientation);
+	this->orientation[1] = (yOrientation);
+	this->orientation[2] = (zOrientation);
 }
 
 Position6DOF::Position6DOF(double x, double y, double z)
 {
-	position[0] = (x);
-	position[1] = (y);
-	position[2] = (z);
-	orientation[0] = 0;
-	orientation[1] = 0;
-	orientation[2] = 0;
+	this->position[0] = (x);
+	this->position[1] = (y);
+	this->position[2] = (z);
+	this->orientation[0] = 0;
+	this->orientation[1] = 0;
+	this->orientation[2] = 0;
 }
 
 double* Position6DOF::getPosition()
 {
-	return position;
+	return this->position;
 }
 
 
  double* Position6DOF::getOrientation()
 {
-	return orientation;
+	return this->orientation;
 }
 
 void Position6DOF::setPosition(double* position)
@@ -49,12 +49,41 @@ void Position6DOF::setOrientation( double* orientation)
 	}
 }
 
-time_t Position6DOF::getTimestamp()
+long int Position6DOF::getTimestamp()
 {
-	return timestamp;
+	return this->timestamp;
 }
 
-void Position6DOF::setTimestamp(time_t newTimestamp) 
+void Position6DOF::setTimestamp(long int newTimestamp) 
 {
 	this->timestamp = newTimestamp;
+}
+
+
+double Position6DOF::getAbsoluteDistance()
+{
+	double sum = 0;
+	for( int i = 0; i < 3; i++ )
+	{
+		sum = sum + (this->position[i] * this->position[i]);
+	}
+	return sqrt( sum );
+}
+
+double Position6DOF::getAbsoluteDistance( Position6DOF otherPosition )
+{
+	double sum = 0;
+	double distanceOfOne;
+	for( int i = 0; i < 3; i++ )
+	{
+		distanceOfOne = position[i] - otherPosition.getPosition()[i];
+		distanceOfOne *= distanceOfOne;
+		sum += distanceOfOne;
+	}
+	return sqrt( sum );
+}
+
+double Position6DOF::getDistanceZ( Position6DOF otherPosition )
+{
+	return (otherPosition.getPosition()[2] - this->position[2]);
 }

@@ -227,23 +227,27 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	/*if (!isCalibrating) {
 		ROS_ERROR("Cannot calculate calibration! Start calibration first!");
 		return false;
-	}
-	
-	if (idDict.size() < 2) {
-		ROS_ERROR("Have not enough images for calibration (Have %ld)!", netIdToCamNo.size());
 	}*/
-	
+
 	if (!idDict.isTranslated()) {
 		ROS_WARN("Dictionary was not translated! Translating now.");
 		idDict.translateIds();
 	}
 	
+	if (idDict.size() < 2) {
+		ROS_ERROR("Have not enough cameras for calibration (Have %d)!", idDict.size());
+		isCalibrating = false;
+		return false;
+	}
+	
+	if (idDict.size() < 3) {
+		ROS_WARN("Have not enough cameras for a useful setup! Have %d, but should be at least 3.", idDict.size());
+	}
+	
 	ROS_INFO("Calculating multi camera calibration. This could take up to 2 hours");
-	// ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
-	ChessboardData data(7, 7, 57, 57);
+	ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
 	
-	int camNumber = 3; // (int) idDict.size();
-	
+	int camNumber = idDict.size();
 	bool ok = trackingWorker.calibrate(&data, camNumber);
 	
 	if (ok) {

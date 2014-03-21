@@ -1,9 +1,11 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
+#include "CalculatorMoveUp.hpp"
 #include "Formation.hpp"
-#include "Position6DOF.hpp"
+#include "Interpolator.hpp"
 #include "MovementQuadruple.hpp"
 #include "Mutex.hpp"
+#include "Position6DOF.hpp"
 #include "ros/ros.h"
 #include "api_application/MoveFormation.h"
 #include "api_application/SetFormation.h"
@@ -18,6 +20,7 @@
 #include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "../position/IPositionReceiver.hpp"
+#include "../matlab/profiling.hpp"
 #include "../matlab/Vector.h"
 #include "../matlab/TrackingArea.h"
 #include <boost/bind.hpp>
@@ -28,31 +31,34 @@
 #include <sstream>
 #include <stdio.h>
 #include <string>
-#include <time.h>
 #include <unistd.h>
 #include <vector>
 //Ros messages/services
 
-#define THRUST_MIN 10001
-#define THRUST_STAND_STILL 18001
-#define THRUST_START 22000
-#define THRUST_DECLINE 20000
+#define THRUST_MIN 10
+#define THRUST_STAND_STILL 901
+#define THRUST_START 25000
+#define THRUST_DECLINE 200
 #define THRUST_STEP 50
 #define ROLL_STEP 2
 #define PITCH_STEP 2
 #define INVALID -1
-#define LOW_BATTERY 0.05 //TODO 100% = 1?
-#define TIME_UPDATED_END 1 //In seconds
-#define TIME_UPDATED_CRITICAL 0.2 //In seconds
+#define LOW_BATTERY 3.0//In V
+#define TIME_UPDATED_END 1*1000*1000 // in ns
+#define TIME_UPDATED_CRITICAL 200*1000 // in ns
 
 /* For calculateMovement */
-/*TODO choose QC for formation */
 #define CALCULATE_NONE 0 // Unused for formation
 #define CALCULATE_START 1 // Send high thrust to reach tracked area
 #define CALCULATE_STABILIZE 2 // Tries to hold position (with certain error value)
 #define CALCULATE_MOVE 3	// With target and current position
 #define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
 #define CALCULATE_LAND 5 //Shutdown quadcopter
+
+#define CALCULATE_STABILIZE_STEP 500	// time in ms after next value should be calculated
+
+#define RANGE_STABLE 0.1 // Distance of two points to be considered "equal" in m
+#define RANGE_STABLE_Z 0.08 // Difference of two height-Values to be considered "equal" in m
 
 #define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
 
@@ -64,36 +70,31 @@ public:
 
 	/* Initializing */
 	void initialize();
+	void setTrackingArea(TrackingArea area);
 
 	/* Movement and Positioning */
-	void convertMovement(double* const vector, int internId);
+	void convertMovement(int internId);
 	Position6DOF* getTargetPosition();
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovementAll();
 	void calculateMovement();
-	void reachTrackedArea(std::vector<int> ids);
-	void moveUp();	// move up all
-	void moveUp(std::vector<int> ids);	// move up mentioned in ids
-	void moveUp( int internId );	// the calculation function
-	void land( int internId );
 	void buildFormation();
 	
-	/* Formation also services*/
+	/* Formation */
 	bool startBuildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
-	void shutdownFormation();
 
 	/* Service to set Quadcopter IDs*/
 	bool setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res);
-	
+
+	/* Shutdown */
 	bool shutdown(control_application::Shutdown::Request &req, control_application::Shutdown::Response &res);
-	
+	void shutdownFormation();
+
+	/* Helper functions */
 	int getLocalId(int globalId);
-	bool checkInput();
-	void emergencyRoutine(std::string message);
-	
-	void setTrackingArea(TrackingArea area);
-	
+	bool checkInput(int internId);
+	void emergencyRoutine(std::string message);	
     
 protected:
 	//Callbacks for Ros subscriber
@@ -102,41 +103,33 @@ protected:
 	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
 	void SystemCallback(const api_application::System::ConstPtr& msg);
 	
-	void stopReachTrackedArea();
+	void moveUp( int internId );
 	void stabilize( int internId );
-	bool isStable( int internId );
+	void land( int internId, int * nrLand  );
 	void hold( int internId );
 
-	void listCleanup();	/* TODO */
+	/* Helper functions */
+	bool isStable( int internId );
 
 private:
-
-	/* Position */
-	//FIXME list of arrays to arrays of lists. + not dynamic but static
-	std::list<std::vector<Position6DOF> > listPositions;
-	std::list<std::vector<Position6DOF> > listTargets;
-	std::list<std::vector<Position6DOF> > listSendTargets;
 	
-	/* Identification of Quadcopters */
-	//Receive data over ROS
-	Formation *formation;
-	//TODO needs to be with service find all
-	int amount;	// Needed for formation
-	//TODO Do we need timestamp here?
-	std::list<std::vector<float> > formationMovement;
-	time_t lastFormationMovement;
-	time_t lastCurrent[MAX_NUMBER_QUADCOPTER];
-	unsigned int senderID;
-	//TODO Set area (Done by Sebastian, remove after reading :) )
+	/* static data */	
+	Formation *formation;	//Receive data over ROS
+	unsigned int senderID;	//Receive data over ROS	
 	TrackingArea trackingArea;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
 	std::vector<unsigned long int > quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int > quadcopterMovementStatus;
+	long int time;	
+	/* Position */
+	std::vector<std::list<Position6DOF> > listPositions;
+	std::vector<std::list<Position6DOF> > listTargets;
 	
 	/* Set data */ 
-	std::vector<MovementQuadruple > movementAll;
+	std::vector<std::list<MovementQuadruple> > listSentQuadruples;
+	std::vector<std::list<MovementQuadruple> > listFutureMovement;
 
 	/* Received data */ 
 	//Arrays for quadcopters sorted by intern id
@@ -145,50 +138,48 @@ private:
 	float yaw_stab[MAX_NUMBER_QUADCOPTER];
 	unsigned int thrust_stab[MAX_NUMBER_QUADCOPTER];
 	float battery_status[MAX_NUMBER_QUADCOPTER];
-	int startProcess[MAX_NUMBER_QUADCOPTER];
-	//TODO Still Needed?
-	//std::string idString[MAX_NUMBER_QUADCOPTER];
-	//TODO What's that?
-	//int idsToGetTracked[MAX_NUMBER_QUADCOPTER];
+	std::list<std::vector<float> > formationMovement;
 
 	/* Control variables */
-	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters	FIXME
-	bool shutdownStarted; //Set when we are in the shutdown process
-	bool getTracked;
+	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters
+	bool landFinished; //Set when we are in the shutdown process
 	bool receivedQuadcopters;
 	bool receivedFormation;
-	bool BuildFormationstarted;
+	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
+	bool buildFormationFinished;
+	bool shutdownStarted;
+	long int lastFormationMovement;
+	long int lastCurrent[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
-	Mutex curPosMutex;
-	Mutex tarPosMutex;
 	Mutex shutdownMutex;
-	Mutex formMovMutex;
-	//FIXME difference to curPosMutex? 
+	Mutex landMutex;
+	Mutex formationMovementMutex;
 	Mutex listPositionsMutex;
-	Mutex getTrackedMutex;
+	Mutex listTargetsMutex;
 	Mutex buildFormationMutex;
 	Mutex trackedArrayMutex;
 	Mutex receivedQCMutex;
 	Mutex receivedFormMutex;
+	Mutex receivedQCStMutex;
+	Mutex lastFormationMovementMutex;
+	Mutex lastCurrentMutex;
+	Mutex movementStatusMutex;
 
 	/* Threads */
-	pthread_t tCalc;
-	pthread_t tSend;
-	pthread_t tGetTracked;
+	pthread_t tCalculateMovement;
+	pthread_t tBuildFormation;
 
 	/**
-  	 * NodeHandle is the main access point to communications with the ROS system.
-	 * The first NodeHandle constructed will fully initialize this node, and the last
-     * NodeHandle destructed will close down the node.
-     */
-    ros::NodeHandle n;
+  	* NodeHandle is the main access point to communications with the ROS system.
+	* The first NodeHandle constructed will fully initialize this node, and the last
+	* NodeHandle destructed will close down the node.
+	*/
+	ros::NodeHandle n;
 
-	/* Subscriber */
-	//Subscriber for the MoveFormation data
-	ros::Subscriber MoveFormation_sub;
-	//Subscriber for Formation data from API
-	ros::Subscriber SetFormation_sub;
+	/* Subscriber */	
+	ros::Subscriber MoveFormation_sub;	//Subscriber for the MoveFormation data	
+	ros::Subscriber SetFormation_sub;	//Subscriber for Formation data from API
 	//Subscriber for Quadcopter data from QuadcopterModul
 	//ros::Subscriber QuadStatus_sub;
 	ros::Subscriber QuadStatus_sub[10];
@@ -211,8 +202,6 @@ private:
 	ros::ServiceServer QuadID_srv;
 
 	/* Clients */
-	//ros::ServiceClient FindAll_client;
-	ros::ServiceClient Blink_client;
 	ros::ServiceClient Announce_client;
 	ros::ServiceClient Shutdown_client;
 
