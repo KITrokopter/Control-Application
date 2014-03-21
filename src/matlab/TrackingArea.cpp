@@ -584,11 +584,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
                     } else {
                         rightBorderHeight = middleHeight;
                     }
-                    middleHeight = leftBorderHeight + (-rightBorderHeight + leftBorderHeight)/2;
+                    middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
                     ROS_DEBUG("upper %.2f, maximal quadrat size is %.2f", middleHeight, 2 * (newSideBorder));
                 }
-            ROS_DEBUG("Found optimal middlepoint, between %.2f and %.2f with size %.2f", leftBorderHeight, rightBorderHeight, 2* (sideBorder));
             }
+            ROS_DEBUG("Found optimal middlepoint, between %.2f and %.2f with size %.2f", leftBorderHeight, rightBorderHeight, 2* (sideBorder));
         }
 
         double maxWidth = sideBorder;
