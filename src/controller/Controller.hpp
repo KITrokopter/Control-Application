@@ -121,6 +121,7 @@ private:
 	std::vector<unsigned int > quadcopterMovementStatus;
 	long int time;
 	long int time2;
+	long int time3;
 	unsigned int thrustTest;	
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;

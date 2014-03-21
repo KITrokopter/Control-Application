@@ -68,6 +68,7 @@ Controller::Controller()
 	ROS_INFO("Constructing done");
 	this->time = getNanoTime();
 	this->time2 = getNanoTime();
+	this->time3 = getNanoTime();
 	this->thrustTest = THRUST_START;
 }
 
@@ -272,9 +273,13 @@ void Controller::moveUp( int internId )
 		ROS_DEBUG("Thrust is %u", this->thrustTest);
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
-		this->thrustTest += 1000;
-		long int current = getNanoTime();	
-		if(this->thrustTest >= 300000 || current > this->time2 + 20000000000)
+		long int current = getNanoTime();
+		if(current > this->time3 + 10000000)
+		{
+			this->thrustTest += 1000;
+			this->time3 = getNanoTime();
+		}
+		if(this->thrustTest >= 30000 || current > this->time2 + 2000000000)
 		{
 			ROS_DEBUG("Emergency Shutdown Test");
 			this->shutdownMutex.lock();
