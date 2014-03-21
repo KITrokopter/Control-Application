@@ -2,14 +2,27 @@
 
 //#include <boost/chrono/duration.hpp>
 #include <ros/console.h>
+#include <opencv2/core/core.hpp>
+#include <map>
+
 #include "../matlab/profiling.hpp"
 
-TrackingWorker::TrackingWorker(IPositionReceiver *receiver)
+TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : tracker(true), errorGraph(200, "Difference"), positions(50)
 {
 	assert(receiver != 0);
 	
 	this->receiver = receiver;
 	stop = false;
+	rrCounter = 0;
+	maxCamNo = 0;
+	bufferSize = 0;
+	minUpdateCount = 2;
+	
+	std::map<int, cv::Scalar> colors;
+	colors[0] = cv::Scalar(0, 255, 0);
+	colors[1] = cv::Scalar(0, 255, 255);
+	colors[2] = cv::Scalar(255, 0, 255);
+	errorGraph.setColors(colors);
 	
 	thread = new boost::thread(boost::bind(&TrackingWorker::run, this));
 }
@@ -35,6 +48,7 @@ void TrackingWorker::run()
 			
 			long int startTime = getNanoTime();
 			Vector position = tracker.updatePosition(data.cameraVector, data.camNo, data.quadcopterId);
+			errorGraph.nextPoint(tracker.getDistance(), data.camNo);
 			double duration = getNanoTime() - startTime;
 			duration /= 1e6;
 			
@@ -51,7 +65,7 @@ void TrackingWorker::run()
 				// ROS_DEBUG("Not enough information to get position of quadcopter %d", data.quadcopterId);
 			}
 			
-			ROS_DEBUG("Updating position of quadcopter %d took %.3f ms", data.quadcopterId, duration);
+			// ROS_DEBUG("Updating position of quadcopter %d took %.3f ms", data.quadcopterId, duration);
 		} else if (receivedFirstPosition) {
 			ROS_WARN("Position update buffer is empty!");
 		}
@@ -87,13 +101,25 @@ void TrackingWorker::enqueue(CameraData data)
 	{
 		boost::mutex::scoped_lock lock(positionsMutex);
 		// ROS_DEBUG("enqueue: Got positions lock");
-		positions.push(data);
 		
-		if (positions.size() > 25) {
+		maxCamNo = maxCamNo > data.camNo ? maxCamNo : data.camNo;
+		positions[data.camNo].push(data);
+		
+		bufferSize++;
+		
+		if (bufferSize > 25) {
 			ROS_WARN("Position update buffer is running full (%ld entries). Seems like the position updating can't keep up! Dropping 15 entries.", positions.size());
 			
-			for (int i = 0; i < 15; i++) {
-				positions.pop();
+			int deleted = 0;
+			int index = 0;
+			
+			while (deleted < 15) {
+				if (positions[index].size() > 0) {
+					positions[index].pop();
+					deleted++;
+				}
+				
+				index = (index + 1) % maxCamNo;
 			}
 		}
 	}
@@ -120,8 +146,14 @@ CameraData TrackingWorker::dequeue()
 		}*/
 		
 		if (dataAvailable()) {
-			CameraData data = positions.front();
-			positions.pop();
+			do {
+				rrCounter++;
+				rrCounter %= maxCamNo;
+			} while (positions[rrCounter].size() == 0);
+			
+			CameraData data = positions[rrCounter].front();
+			positions[rrCounter].pop();
+			bufferSize--;
 			
 			// ROS_DEBUG("dequeue: Released positions lock");
 			return data;
@@ -137,7 +169,30 @@ CameraData TrackingWorker::dequeue()
 
 bool TrackingWorker::dataAvailable()
 {
-	return positions.size() > 0;
+	for (int i = 0; i < maxCamNo; i++) {
+		if (positions[i].size() > 0) {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+bool TrackingWorker::haveEnoughData(int count)
+{
+	int data = 0;
+	
+	for (int i = 0; i < maxCamNo; i++) {
+		if (positions[i].size() > 0) {
+			data++;
+			
+			if (data >= count) {
+				return true;
+			}
+		}
+	}
+		
+	return false;
 }
 
 bool TrackingWorker::calibrate(ChessboardData *chessboard, int camNo)
@@ -148,4 +203,14 @@ bool TrackingWorker::calibrate(ChessboardData *chessboard, int camNo)
 Vector TrackingWorker::getCameraPosition(int camNo)
 {
 	return tracker.getPosition(camNo);
+}
+
+cv::Mat TrackingWorker::getIntrinsicsMatrix(int camNo)
+{
+	return tracker.getIntrinsicsMatrix(camNo);
+}
+
+cv::Mat TrackingWorker::getDistortionCoefficients(int camNo)
+{
+	return tracker.getDistortionCoefficients(camNo);
 }

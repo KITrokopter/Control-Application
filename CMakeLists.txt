@@ -122,7 +122,7 @@ set(MATLAB_PATH "~/matlab"
 # Skip the control application when matlab is not installed.
 if(EXISTS ${MATLAB_PATH})
   ## Declare a cpp executable
-  add_executable(control_application 
+  add_executable(control_application_node
   src/main.cpp
   src/KitrokopterMessages.cpp
   src/matlab/Matlab.cpp 
@@ -137,6 +137,7 @@ if(EXISTS ${MATLAB_PATH})
   src/position/ChessboardData.cpp
   src/position/TrackingWorker.cpp
   src/position/IdDictionary.cpp
+  src/position/Graph.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -145,7 +146,7 @@ if(EXISTS ${MATLAB_PATH})
   src/controller/Interpolator.cpp
 )
 
-add_dependencies(control_application
+add_dependencies(control_application_node
   control_application_generate_messages_cpp
   api_application_generate_messages_cpp
   camera_application_generate_messages_cpp
@@ -156,7 +157,7 @@ add_dependencies(control_application
 # add_dependencies(control_application_node Control-Application_generate_messages_cpp)
 
 # Use full path names to go around strange errors since matlab has some strange versions of some libs that are already included in ubuntu.
-target_link_libraries(control_application
+target_link_libraries(control_application_node
   ${catkin_LIBRARIES}
   ${MATLAB_PATH}/bin/glnxa64/libeng.so
   ${MATLAB_PATH}/bin/glnxa64/libmx.so
@@ -183,6 +184,7 @@ add_executable(control_application_test_calibration_node
   src/position/ChessboardData.cpp
   src/position/TrackingWorker.cpp
   src/position/IdDictionary.cpp
+  src/position/Graph.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -234,6 +236,7 @@ add_executable(profile_control
 	src/position/ChessboardData.cpp
 	src/position/TrackingWorker.cpp
 	src/position/IdDictionary.cpp
+	src/position/Graph.cpp
 	src/KitrokopterMessages.cpp
 )
 
@@ -262,6 +265,7 @@ add_executable(position_module
 	src/position/ChessboardData.cpp
 	src/position/TrackingWorker.cpp
 	src/position/IdDictionary.cpp
+	src/position/Graph.cpp
 	src/KitrokopterMessages.cpp
 	src/matlab/Vector.cpp
 	src/matlab/Line.cpp
