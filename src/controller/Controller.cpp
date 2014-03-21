@@ -268,7 +268,7 @@ void Controller::moveUp( int internId )
 		ROS_INFO("Send Movement here for testing in moveup");
         	control_application::quadcopter_movement msg;
         	msg.thrust = this->listFutureMovement[internId].back().getThrust();
-        	ROS_INFO("Thrust in land is %i", msg.thrust);
+        	ROS_INFO("Thrust in land is %u", msg.thrust);
         	msg.roll = this->listFutureMovement[internId].back().getRoll();
        		msg.pitch = this->listFutureMovement[internId].back().getPitch();
        		msg.yaw = this->listFutureMovement[internId].back().getYawrate();
@@ -408,7 +408,7 @@ void Controller::land( int internId, int * nrLand )
 	ROS_INFO("Send Movement here for testing");
 	control_application::quadcopter_movement msg;
 	msg.thrust = this->listFutureMovement[internId].back().getThrust();
-	ROS_INFO("Thrust in land is %i", msg.thrust);
+	ROS_INFO("Thrust in land is %u", msg.thrust);
 	msg.roll = this->listFutureMovement[internId].back().getRoll();
 	msg.pitch = this->listFutureMovement[internId].back().getPitch();
 	msg.yaw = this->listFutureMovement[internId].back().getYawrate();
@@ -573,7 +573,7 @@ void Controller::sendMovementAll()
 			msg.thrust = this->listFutureMovement[i].front().getThrust();
 			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_HOLD)
 			{
-				ROS_INFO("Send thrust movement all %i", msg.thrust);
+				ROS_INFO("Send thrust movement all %u", msg.thrust);
 			}
 			msg.roll = this->listFutureMovement[i].front().getRoll();
 			msg.pitch = this->listFutureMovement[i].front().getPitch();
@@ -1014,7 +1014,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	long int currentTime = getNanoTime();
 	if(quaId == 0 && currentTime > this->time + 2000000000)
 	{
-		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %i", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
+		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
 		this->time = currentTime;
 	}
 	this->receivedQCStMutex.lock();
