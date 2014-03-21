@@ -158,17 +158,17 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         Vector v2 = realCameraPos[2];
         Vector d2 = realCameraOrient[2];
 
-        ROS_DEBUG("Position camera 0: [%f, %f, %f] is directed in [%f, %f, %f]", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
-        ROS_DEBUG("Position camera 1: [%f, %f, %f] is directed in [%f, %f, %f]", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
-        ROS_DEBUG("Position camera 2: [%f, %f, %f] is directed in [%f, %f, %f]", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
+        ROS_DEBUG("Position camera 0: [%.2f, %.2f, %.2f] is directed in [%.2f, %.2f, %.2f]", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
+        ROS_DEBUG("Position camera 1: [%.2f, %.2f, %.2f] is directed in [%.2f, %.2f, %.2f]", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
+        ROS_DEBUG("Position camera 2: [%.2f, %.2f, %.2f] is directed in [%.2f, %.2f, %.2f]", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
 
-        ROS_DEBUG("Distance between camera 0 and 1 is %f", v0.add(v1.mult(-1)).getLength());
-        ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
-        ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
+        ROS_DEBUG("Distance between camera 0 and 1 is %.2f", v0.add(v1.mult(-1)).getLength());
+        ROS_DEBUG("Distance between camera 0 and 2 is %.2f", v0.add(v2.mult(-1)).getLength());
+        ROS_DEBUG("Distance between camera 1 and 2 is %.2f", v1.add(v2.mult(-1)).getLength());
 
-        ROS_DEBUG("Calculating tracking area");
-        setTrackingArea(2000);
-        tracking.printTrackingArea();
+        //ROS_DEBUG("Calculating tracking area");
+        //setTrackingArea(2000);
+        //tracking.printTrackingArea();
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
