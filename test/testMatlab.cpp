@@ -100,14 +100,18 @@ void perp(Matlab *m) {
     }
 }
 
+void trackingArea() {
+    Position p = Position();
+    ChessboardData *c = new ChessboardData(7, 7, 57, 57);
+    p.calibrate(c, 3);
+}
+
 int main(int argc, char** argv) {
     // Enable debug level logging.
     if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
         ros::console::notifyLoggerLevelsChanged();
     }
-
-    Matlab *m = new Matlab();
-    tracking(m);
+    trackingArea();
     /*Vector a1 = *(new Vector(0.000000, -0.000000, 0.000000));
     Vector u1 = * (new Vector(0.315551, -0.962110, -0.234050));
     Vector a2 = * (new Vector(730.285416, -753.080314, 0.000243));
@@ -138,5 +142,4 @@ int main(int argc, char** argv) {
     printf("skew: [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
     printf("skew: [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
 */
-    m->destroyMatlab();
 }

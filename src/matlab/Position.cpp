@@ -166,9 +166,9 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
 
-        //ROS_DEBUG("Calculating tracking area");
-        //setTrackingArea(2000);
-        //tracking.printTrackingArea();
+        ROS_DEBUG("Calculating tracking area");
+        setTrackingArea(2000);
+        tracking.printTrackingArea();
     }
 
     ROS_INFO("Finished multi camera calibration: %s",(ok)?"true":"false");
@@ -348,6 +348,11 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId, boo
 
             oldPos[quadcopterId] = quadPosition;
             ROS_DEBUG("First seen position of quadcopter %d is [%f, %f, %f]", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3());
+            if (tracking.contains(quadPosition)) {
+                ROS_DEBUG("In tracking area");
+            } else {
+                ROS_DEBUG("Not in tracking area");
+            }
             return quadPosition;
         } else {
             // not calculated before, first time calculating
@@ -396,9 +401,21 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId, boo
                 // saving new Pos
                 ROS_DEBUG("New position of quadcopter %d seen of camera %d is [%f, %f, %f]", quadcopterId, cameraId, newPos.getV1(), newPos.getV2(), newPos.getV3());
                 oldPos[quadcopterId] = newPos;
+                if (tracking.contains(newPos)) {
+                    ROS_DEBUG("In tracking area");
+                } else {
+                    ROS_DEBUG("Not in tracking area");
+                }
                 return newPos;
             } else {
-                return m->perpFootOneLine(tracked, oldPos[quadcopterId]);
+                Vector perp = m->perpFootOneLine(tracked, oldPos[quadcopterId]);
+                ROS_DEBUG("Perpendicular foot point is [%f, %f, %f]", perp.getV1(), perp.getV2(), perp.getV3());
+                if (tracking.contains(perp)) {
+                    ROS_DEBUG("In tracking area");
+                } else {
+                    ROS_DEBUG("Not in tracking area");
+                }
+                return perp;
             }
         }
     }
