@@ -96,7 +96,7 @@ Position6DOF Position6DOF::predictNextPosition( Position6DOF olderPosition, long
 	double rate = timeInFuture / timediff;
 	double xNew = this->position[0] + xDiff*rate;
 	double yNew = this->position[1] + yDiff*rate;
-	double zNew = this->position[2];	// Value should be ignored
+	double zOld = this->position[2];	// Value should be ignored
 
 	Position6DOF newPosition = Position6DOF( xNew, yNew, zOld );
 	return newPosition;

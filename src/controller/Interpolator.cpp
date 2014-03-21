@@ -1,4 +1,5 @@
 #include "Interpolator.hpp"
+#include "InterpolatorInfo.hpp"
 #include "Controller.hpp"
 
 int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized );
@@ -7,9 +8,9 @@ float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double 
 Interpolator::Interpolator()
 {
 	this->stepSizeOfChange = 1;
-	for( int i = 0; i < MAX_NUMBER_OF_QUADCOPTER_HIGH; i++ )
+	for( int i = 0; i < MAX_NUMBER_QUADCOPTER_HIGH; i++ )
 	{
-		this->state[i] = InterpolatorInfo();
+		this->status[i] = InterpolatorInfo();
 	}
 	timeDiff1 = 1500000000;
 	timeDiff2 = 2500000000;
@@ -102,13 +103,13 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	}
 
 	/* Calculate rest */
-	checkState();	
+	double rpdiff = 3;	// diff for roll and pitch values
+	checkState( id );	
 	switch( this->status[id].getState() )
 	{
 		case UNSTARTED:
 			break;			
 		case STARTED:
-			double rpdiff = 3.0f;	// diff for roll and pitch values
 			if( this->status[id].getStarted() > currentTime + timeDiff1 )
 			{
 				newMovement.setRollPitchYawrate( -rpdiff, -rpdiff, 0 );
@@ -143,7 +144,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 					}
 					counter++;
 				}
-				this->status.setState( DONE ); 				
+				this->status[id].setState( DONE ); 				
 			}	
 			else
 			{
@@ -232,7 +233,7 @@ int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double a
 	}
 }
 
-void Interpolator::checkState()
+void Interpolator::checkState( int id )
 {
 	long int currentTime = getNanoTime();
 	switch( this->status[id].getState() )
@@ -254,7 +255,7 @@ void Interpolator::checkState()
 		default:			
 			break;
 	}
-	/*	if( this->state[id] == UNSTARTED )*/
+	/*	if( this->status[id] == UNSTARTED )*/
 }
 
 MovementQuadruple calculateRollPitch( double rotation )		// TODO

@@ -12,7 +12,7 @@
 #include "../matlab/profiling.hpp"
 
 #define MAX_STEPS_IN_ADVANCE 1 		// How delayed is the input?
-#define MAX_NUMBER_OF_QUADCOPTER_HIGH 10	// TODO equals MAX_NUMBER_QUADCOPTER
+#define MAX_NUMBER_QUADCOPTER_HIGH 10	// TODO equals MAX_NUMBER_QUADCOPTER
 #define MIN_TIME_TO_WAIT 500000000 	// in ns
 #define PREDICT_FUTURE_POSITION 200000000	// in ns
 
@@ -43,10 +43,10 @@ public:
 	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id);
 
 protected:
-	void checkState();
+	void checkState( int id );
 
 private:
-	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER];
+	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER_HIGH];
 	double stepSizeOfChange; 	// depends on the distance of position to target	
 	long int timeDiff1;
 	long int timeDiff2;
