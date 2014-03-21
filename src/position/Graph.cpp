@@ -79,7 +79,7 @@ void Graph::nextPoint(double value, int id)
 	cv::Scalar color = colors[id];
 	
 	if (intValue > graphAreaHeight) {
-		color = cv::Scalar(255, 0, 0);
+		color = cv::Scalar(0, 0, 255);
 		intValue = graphAreaHeight;
 	}
 	
