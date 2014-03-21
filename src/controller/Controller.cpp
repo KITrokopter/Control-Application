@@ -920,7 +920,7 @@ void Controller::shutdownFormation()
 	shutdownMutex.unlock();
 	int formationAmount = this->formation->getAmount();
 	
-	/* Bring all quadcopters to a hold */	
+	/* Bring all quadcopters to a hold */
 	for(unsigned int i = 0; i < formationAmount; i++)
 	{
 		this->movementStatusMutex.lock();

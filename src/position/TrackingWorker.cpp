@@ -117,6 +117,7 @@ void TrackingWorker::enqueue(CameraData data)
 				if (positions[index].size() > 0) {
 					positions[index].pop();
 					deleted++;
+					bufferSize--;
 				}
 				
 				index = (index + 1) % maxCamNo;
