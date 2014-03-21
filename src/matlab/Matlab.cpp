@@ -201,12 +201,15 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     Vector v = directV1.add(f.getA().mult(-1));
     v.putVariable("v", ep);
 
+    std::string input;
     // E1 == g
-    engEvalString(ep, "A = [u(1) v(1) -w(1); u(2) v(2) -w(2); u(3) v(3) -w(3)]");
-    engEvalString(ep, "diff = b - a");
-    engEvalString(ep, "bb = [diff(1); diff(2); diff(3)]");
+    input = "A = [u(1) v(1) -w(1); u(2) v(2) -w(2); u(3) v(3) -w(3)];";
+    input = input + "diff = b - a;";
+    input = input + "bb = [diff(1); diff(2); diff(3)];";
     // x = (r, s, t)
-    engEvalString(ep, "x = inv(A) * bb");
+    input = input + "x = inv(A) * bb;";
+    // enter resulting string in matlab
+    engEvalString(ep, input.c_str());
     mxArray *x = engGetVariable(ep, "x");
     // point on the intersectionline
     Vector intersection1 = g.getA().add(g.getU().mult(mxGetPr(x)[2]));
@@ -214,13 +217,7 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     // w = directV2 - b, is second direction vector of second plain
     Vector w = directV2.add(g.getA().mult(-1));
     w.putVariable("w", ep);
-
-    // E1 == g.getA() + r * (directV2 - g.getA())
-    engEvalString(ep, "A = [u(1) v(1) -w(1); u(2) v(2) -w(2); u(3) v(3) -w(3)]");
-    engEvalString(ep, "diff = b - a");
-    engEvalString(ep, "bb = [diff(1); diff(2); diff(3)]");
-    // x = (r, s, z)
-    engEvalString(ep, "x = inv(A) * bb");
+    engEvalString(ep, input.c_str());
     x = engGetVariable(ep, "x");
     // point on the intersectionline
     Vector intersection2 = g.getA().add(w.mult(mxGetPr(x)[2]));
