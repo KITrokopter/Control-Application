@@ -126,6 +126,8 @@ void TrackingWorker::enqueue(CameraData data)
 				
 				index = (index + 1) % maxCamNo;
 			}
+			
+			ROS_DEBUG("Deleted deleted entries");
 		}
 	}
 	
