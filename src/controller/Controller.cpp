@@ -276,6 +276,7 @@ void Controller::moveUp( int internId )
 		long int current = getNanoTime();
 		if(current > this->time3 + 10000000)
 		{
+			usleep(5000);
 			this->thrustTest += 1000;
 			this->time3 = getNanoTime();
 		}
