@@ -218,7 +218,7 @@ void Controller::calculateMovement()
 					{
 						//ROS_INFO("Stabilize %i", i);
 					}
-					stabilize( i );
+					//stabilize( i );
 					break;
 				case CALCULATE_HOLD:	
 					ROS_INFO("Hold %i", i);
@@ -268,7 +268,7 @@ void Controller::moveUp( int internId )
 	{
 		if( this->listFutureMovement[internId].size() == 0 )
 		{
-			int diff = 4000;
+			int diff = 80;
 			long int timeDiff = 400000000;
 			long int currentTime = getNanoTime();
 			MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0, currentTime );
@@ -287,19 +287,6 @@ void Controller::moveUp( int internId )
 
 void Controller::stabilize( int internId )
 {
-	/*
-	 * Delta der Position berechnen
-	 * 	falls nicht möglich: sende alten Wert (return)
-	 *
-	 * Delta der Beschleunigung berechnen
-	 *	falls nicht möglich: sende alten Wert (return) oder schätze ?
-	 * 
-	 * Geschwindigkeit und Beschleunigung der letzten x Male berechnen, Werte 
-	 * dementsprechend für Interpolation setzen (die Raten)
-	 *
-	 * Calculate only every 
-	 *
-	 */
 	Interpolator interpolator = Interpolator();
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
@@ -699,7 +686,9 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->receivedQCStMutex.unlock();
 		this->listTargetsMutex.unlock();
 		this->listPositionsMutex.unlock();
-		std::list<MovementQuadruple> newEmptyListMovement;		
+		MovementQuadruple noMovement = MovementQuadruple( 0, 0, 0, 0 );
+		std::list<MovementQuadruple> newEmptyListMovement;	
+		newEmptyListMovement.push_back( noMovement );
 		this->listSentQuadruples.push_back(newEmptyListMovement);
 		this->listFutureMovement.push_back(newEmptyListMovement);
 		ROS_INFO("Initialization done");
@@ -956,7 +945,7 @@ void Controller::shutdownFormation()
 bool Controller::shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res)
 {
 	ROS_INFO("Service shutdown has been called");
-	pthread_create(&tShutdownFormation, NULL, startThreadShutdown, this);
+	pthread_create(&tShutdownFormation, NULL, &startThreadShutdown, this);
 	ROS_INFO("Thread tshutdownFormation set up");
 	return true;
 	

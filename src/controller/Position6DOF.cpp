@@ -87,3 +87,17 @@ double Position6DOF::getDistanceZ( Position6DOF otherPosition )
 {
 	return (otherPosition.getPosition()[2] - this->position[2]);
 }
+
+Position6DOF Position6DOF::predictNextPosition( Position6DOF olderPosition, long int timeInFuture )
+{
+	long int timediff = this->timestamp - olderPosition.getTimestamp();
+	double xDiff = this->position[0] - olderPosition.getPosition()[0];
+	double yDiff = this->position[1] - olderPosition.getPosition()[1];
+	double rate = timeInFuture / timediff;
+	double xNew = this->position[0] + xDiff*rate;
+	double yNew = this->position[1] + yDiff*rate;
+	double zOld = this->position[2];	// Value should be ignored
+
+	Position6DOF newPosition = Position6DOF( xNew, yNew, zOld );
+	return newPosition;
+}
