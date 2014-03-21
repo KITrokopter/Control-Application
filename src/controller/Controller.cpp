@@ -732,6 +732,7 @@ void Controller::buildFormation()
 		{
 			this->movementStatusMutex.lock();
 			this->quadcopterMovementStatus[i] = CALCULATE_START;
+			this->time2 = getNanoTime();
 			this->movementStatusMutex.unlock();
 		}
 		//Calculate Target Position of current qc using formation positions and the formation distance
