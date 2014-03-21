@@ -133,7 +133,6 @@ bool TrackingArea::contains(Vector x) {
             Vector u = Vector(1, 0, 0);
             Vector v = Vector(0, 1, 0);
             distZ = getDistPointPlane(a, u, v, x);
-            ROS_DEBUG("Z: [%f, %f, %f]", distZ.getV1(), distZ.getv2(), distZ.getV3());
 
             u = Vector(1, 0, 0);
             v = Vector(0, 0, 1);
@@ -233,12 +232,17 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
  * checks whether all cameras observe x
  */
 bool TrackingArea::inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep) {
+    double notTracked = 0;
     for (int i = 0; i < numberCameras; i++) {
         if (inTrackingArea(cameraPosition[i], cameraDirection[i], maxRange, x, ep) == false) {
-            return false;
+            notTracked++;
         }
     }
-    return true;
+    if (notTracked < 2) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void TrackingArea::increaseTrackingArea(double posChange, double height) {
