@@ -15,13 +15,22 @@
 #include <opencv2/core/core.hpp>
 
 class Position {
-private: 
-	// enigne pointer to matlab application
-	Engine *ep;
-	// number of cameras
-	int numberCameras;
-	// saves whether the cameras are multicalibrated or not;
-	bool transformed;
+private:
+
+    /**
+     * ep enigne pointer to matlab application
+     */
+    Engine *ep;
+
+    /**
+     * numberCameras is the number of cameras
+     */
+    int numberCameras;
+
+    /**
+     * transformed: saves whether the cameras are multicalibrated or not
+     */
+    bool transformed;
 
     /**
      * interpolationDependent: saves whether interpolationFactor should always be 0.5 (false) or should be dependent to the distance (true)
@@ -51,39 +60,82 @@ private:
     std::vector<Vector> oldPos;
 	
 
-	// output of amcc toolbox
-	// camera position in camera coordinate system of camera 0
-	std::vector<Vector> camCoordCameraPos;
-	// camera orientation in camera coordinate system of camera 0
-	std::vector<Vector> camCoordCameraOrient;
-	// camera rotation matrices of cameras to rotate in coordinate system of camera 0
-	std::vector<Matrix> camRotMat;
+    /// output of amcc toolbox
+
+    /**
+     * camCoordCameraPos: camera position in camera coordinate system of camera 0
+     */
+    std::vector<Vector> camCoordCameraPos;
+
+    /**
+     * camCoordCameraOrient: camera orientation in camera coordinate system of camera 0
+     */
+    std::vector<Vector> camCoordCameraOrient;
+
+    /**
+     * @brief camRotMat: camera rotation matrices of cameras to rotate in coordinate system of camera 0
+     */
+    std::vector<Matrix> camRotMat;
 
 
-	// calculated of results of amcc toolbox
-	// real position of cameras
-	std::vector<Vector> realCameraPos;
-	// real orientation of cameras
-	std::vector<Vector> realCameraOrient;
-	// rotationmatrix to calculate coordinate system of camera 0 to real coordinate system	
-	Matrix rotationMatrix;
 
-	/// calculates camera position, that is saved in realCameraPos[cameraId]
-	void calculatePosition(int cameraId);
-	/// calculates orientation, that is saved in realCameraOrient[cameraId]
-	void calculateOrientation(int cameraId);
+    /// calculated of results of amcc toolbox
 
-	// transforming coordinate system with positiv or negative angle (sign should only be -1 or 1)	
-	void angleTry(int sign);
-	// loads values of amcc toolbox calibration of camera with cameraId in matlab workspace
-	void loadValues(int cameraId);
+    /**
+     * realCameraPos: real position of cameras
+     */
+    std::vector<Vector> realCameraPos;
+
+    /**
+     * @brief realCameraOrient: real orientation of cameras
+     */
+    std::vector<Vector> realCameraOrient;
+
+    /**
+     * rotationMatrix to calculate coordinate system of camera 0 to real coordinate system
+     */
+    Matrix rotationMatrix;
+
+    /**
+     * calculates camera position, that is saved in realCameraPos[cameraId]
+     * @param cameraId of camera
+     */
+    void calculatePosition(int cameraId);
+
+    /**
+     * calculates orientation, that is saved in realCameraOrient[cameraId]
+     * @param cameraId of camera
+     */
+    void calculateOrientation(int cameraId);
+
+    /**
+     * transforming coordinate system with positiv or negative angle
+     * @param sign sign of angle
+     */
+    void angleTry(int sign);
+
+    /**
+     * loads values of amcc toolbox stereo calibration of camera with cameraId in matlab workspace
+     * @param cameraId of camera
+     */
+    void loadValues(int cameraId);
 
     /**
      * initialize start values for constructor
      */
     void initialize();
 
+    /**
+     * imageAge[i]: number of new received images that hasn't been sent of camera with cameraId i
+     */
 	std::vector<int> imageAge;
+
+    /**
+     * calculates tracking area and sets it after calibration
+     * @param maxRange
+     */
+    void setTrackingArea(double maxRange);
+
 public:
 	// maximal amount of quadcopters is 50, maximal amount of cameras is 20
 	Position();
@@ -91,40 +143,91 @@ public:
     Position(Engine *ep, int numberCameras);
     Position(Engine *ep, int numberCameras, bool interpolationDependent);
 
-	// checks whether the calibration has been made successfully
-	bool calibratedYet(int numberCameras);
+    /**
+     * checks whether the calibration has been made successfully
+     * @param numberCameras number of cameras
+     * @return true, if calibration has been made successfully, false otherwise
+     */
+    bool calibratedYet(int numberCameras);
 
-	// calibrating with amcc toolbox, saving matlab variables in workspace after calibration
-	bool calibrate(ChessboardData *chessboardData, int numberCameras);
-	// calculating angle between vector u and vector v
-	double getAngle(Vector u, Vector v);
-	// setter
+    /**
+     * calibrating with amcc toolbox, saving matlab variables in workspace after calibration.
+     * @param chessboardData of checkboard
+     * @param numberCameras number of cameras
+     * @return true if everything worked
+     */
+    bool calibrate(ChessboardData *chessboardData, int numberCameras);
+
+    /**
+     * calculating angle between vector u and vector v.
+     * @param u first vector
+     * @param v second vector
+     * @return angle
+     */
+    double getAngle(Vector u, Vector v);
+
+    /**
+     * setter.
+     * @param numberCameras number of cameras
+     */
 	void setNumberCameras(int numberCameras);
 
-	// sets the tracking area after calibration
-	void setTrackingArea(double maxRange);
+    /**
+     * getter.
+     * @return tracking area of calibrated area.
+     */
 	TrackingArea getTrackingArea();	
 
-	// transforming coordinate system of camera 0 to coordinate system where all cameras are on the xy-plane, returns vector w in real co-system
-	Vector calculateCoordinateTransformation(Vector w, int cameraId);
+    /**
+     * transforming coordinate system of camera 0 to coordinate system where all cameras are on the xy-plane.
+     * @param w vector that should be rotated
+     * @return vector w in real co-system.
+     */
+    Vector calculateCoordinateTransformation(Vector w);
 
-    // quad is vector of camera with cameraId, that points to quadcopter with quadcopterId, returns (Nan, NaN, NaN) the first time, the position is calculated, or if not all cameras did track it yet
-	Vector updatePosition(Vector quad, int cameraId, int quadcopterId);
+    /**
+     * updates new position of quadcopter.
+     * @param quad is vector pointing to quadcopter of camera with cameraId
+     * @param cameraId Id of camera
+     * @param quadcopterId Id of quadcopter
+     * @param getPerpFootPoint if true return is perpendicular foot point of line to quad and old position of quadcopter, otherwise returns new interpolated position
+     * @return new position of quadcopter or perpendicular foot point
+     */
+    Vector updatePosition(Vector quad, int cameraId, int quadcopterId, bool getPerpFootPoint = false);
 
 	
-	// returns position of camera with cameraId, returns NAN, if not yet calibrated
-	Vector getPosition(int cameraId);
+    /**
+     * getter.
+     * @param cameraId id of camera
+     * @return position of camera with cameraId, NAN if ID is invalid
+     */
+    Vector getPosition(int cameraId);
 
-    // returns distance between last seen position and last calculated position
+    /**
+     * getter.
+     * @return distance between last seen position and last calculated position. First time is 0.
+     */
     double getDistance();
 
-    // saves distorion coefficient of camera with cameraId in distCoeff
+    /**
+     * loads distortion coefficients of camera with cameraId based on amcc toolbox results.
+     * @param cameraId Id of camera
+     * @return distortion coefficients of camera with cameraId
+     */
     cv::Mat getDistortionCoefficients(int cameraId);
 
-    // calculates intrinsic matrix as can be seen here: http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
+    /**
+     * loads and calculates intrinsic matrix of camera with cameraId based on amcc toolbox results.
+     * @param cameraId Id of camera
+     * @return intrinsic matrix calculated as described here: http://www.vision.caltech.edu/bouguetj/calib_doc/htmls/parameters.html
+     */
     cv::Mat getIntrinsicsMatrix(int cameraId);
 
-    // returns rotationMatrix, that calculates camera co-system of camera with cameraId in real co-system
+    /**
+     * getter.
+     * @param cameraId
+     * @return rotation matrix , that transforms camera co-system of camera with cameraId in real co-system
+     */
     Matrix getRotationMatrix(int cameraId);
 
 };

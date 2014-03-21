@@ -29,8 +29,7 @@ private:
     void increaseTrackingArea(double posChange, double heightPos, double heightNeg);
 
 public:
-    TrackingArea(Vector a1, Vector a2, Vector a3, Vector a4, Vector low, Vector up);
-	TrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector>  cameraDirection, int numberCameras, double maxRange, Engine *ep); 
+    TrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector>  cameraDirection, int numberCameras, double maxRange, Engine *ep);
     TrackingArea() {};
     Vector getA1();
     Vector getA2();
@@ -44,9 +43,8 @@ public:
 	void setA4(Vector a4);
     void setLow(Vector low);
     void setUp(Vector up);
-	Vector getCenter();
-	void setCenter(Vector center);
-	Vector* calculateCenter(Engine *ep);
+    Vector getCenter();
+    void setCenter(Vector center);
 	double getHeight();
 	double getWidth();
 	double getLength();
