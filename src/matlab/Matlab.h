@@ -30,6 +30,11 @@ public:
      * @param ep matlab engine
      */
 	Matlab(Engine *ep);
+
+    /**
+     * getter.
+     * @return engine pointer
+     */
 	Engine* getEngine();
 
     /**

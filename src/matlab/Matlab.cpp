@@ -11,6 +11,7 @@
 #include <string.h>
 #include <iostream>
 #include <ros/ros.h>
+#include "profiling.hpp"
 #define  BUFSIZE 256
 
 Matlab::Matlab() {
@@ -134,6 +135,8 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 
 Vector Matlab::interpolateLines(Line *lines, int quantity) {
 
+    long int startTimeAll = getNanoTime();
+
     // saving perpendicular foot points of all lines of array lines
     Vector *points = new Vector[2*quantity];
 	int pos = 0;
@@ -143,7 +146,12 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
     // calculating perpendicular foot points/intersection points
 	for (int i = 0; i < quantity; i++) {
 		for (int j = i + 1; j < quantity; j++) {
+
+            long int startTime = getNanoTime();
             intersects = perpFootTwoLines(lines[i], lines[j], result);
+            long int endTime = getNanoTime();
+            ROS_DEBUG("Calculation perp foot point of %d and %d was %.3f long", i, j, (endTime - startTime) / 1e9);
+
             if (intersects == 1) {
                 // lines interct
                 //printf("intersects: [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
@@ -173,6 +181,10 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 	v1 = v1 / pos;
 	v2 = v2 / pos;
 	v3 = v3 / pos;
+
+    long int endTimeAll = getNanoTime();
+    ROS_DEBUG("Calculation perp foot point was %.3f long", (endTimeAll - startTimeAll) / 1e9);
+
     return Vector(v1, v2, v3);
 }
 

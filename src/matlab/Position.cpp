@@ -167,6 +167,17 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 0 and 2 is %.2f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %.2f", v1.add(v2.mult(-1)).getLength());
 
+        // let's run interpolateLines a few times and hope that it runs faster after that
+        ROS_DEBUG("caluclating interpolateLines() ten times.");
+        Line *quadPositions = new Line[numberCameras];
+        Matlab *m = new Matlab(ep);
+        for (int j = 0; j < 10; j++) {
+            for (int i = 0; i < numberCameras; i++) {
+                quadPositions[i] = Line(realCameraPos[i], realCameraOrient[i]);
+            }
+            Vector test = m->interpolateLines(quadPositions, numberCameras);
+        }
+
         //ROS_DEBUG("Calculating tracking area");
         //setTrackingArea(2000);
         //tracking.printTrackingArea();
