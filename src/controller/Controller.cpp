@@ -124,6 +124,10 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				{
 					ROS_INFO("Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_LAND;
+				        this->shutdownMutex.lock();
+					this->shutdownStarted = true;
+		                        this->shutdownMutex.unlock();
+
 				}
 				this->movementStatusMutex.unlock();
 			}
@@ -728,9 +732,9 @@ void Controller::buildFormation()
 		//As long as the quadcopter isn't tracked, incline
 		while(quadStatus == CALCULATE_START)
 		{
-        	this->movementStatusMutex.lock();
-	        quadStatus = this->quadcopterMovementStatus[i];
-            this->movementStatusMutex.unlock();
+        		this->movementStatusMutex.lock();
+	        	quadStatus = this->quadcopterMovementStatus[i];
+   		        this->movementStatusMutex.unlock();
 
 			//ROS_INFO("Starting");
 			//If Shutdown has been called, abort.
