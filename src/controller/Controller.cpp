@@ -262,9 +262,23 @@ void Controller::moveUp( int internId )
 	bool moveUpSmart = false;
 
 	if( !moveUpSmart ) {		
-		MovementQuadruple newMovement = MovementQuadruple( 12005, 0, 0, 0 );
+		MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0 );
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
+		/*ROS_INFO("Send Movement here for testing in moveup");
+        	control_application::quadcopter_movement msg;
+        	msg.thrust = this->listFutureMovement[internId].back().getThrust();
+        	ROS_INFO("Thrust in land is %u", msg.thrust);
+        	msg.roll = this->listFutureMovement[internId].back().getRoll();
+       		msg.pitch = this->listFutureMovement[internId].back().getPitch();
+       		msg.yaw = this->listFutureMovement[internId].back().getYawrate();
+        	this->Movement_pub[internId].publish(msg);
+		/*msg.thrust = 12005;
+                ROS_INFO("Thrust in land is %i", msg.thrust);
+                msg.roll = 0;
+                msg.pitch = 0;
+                msg.yaw = 0;
+                this->Movement_pub[internId].publish(msg);*/		
 	} else
 	{
 		if( this->listFutureMovement[internId].size() == 0 )
@@ -391,14 +405,14 @@ void Controller::land( int internId, int * nrLand )
 		ROS_INFO("Landed: %i", *nrLand);
 	}
 	this->trackedArrayMutex.unlock();
-	ROS_INFO("Send Movement here for testing");
+	/*ROS_INFO("Send Movement here for testing");
 	control_application::quadcopter_movement msg;
 	msg.thrust = this->listFutureMovement[internId].back().getThrust();
-	ROS_INFO("Thrust in land is %i", msg.thrust);
+	ROS_INFO("Thrust in land is %u", msg.thrust);
 	msg.roll = this->listFutureMovement[internId].back().getRoll();
 	msg.pitch = this->listFutureMovement[internId].back().getPitch();
 	msg.yaw = this->listFutureMovement[internId].back().getYawrate();
-	this->Movement_pub[internId].publish(msg);	
+	this->Movement_pub[internId].publish(msg);*/	
 }
 
 /*
@@ -504,33 +518,12 @@ void Controller::sendMovementAll()
 		this->movementStatusMutex.unlock();
 		if( quadStatus != CALCULATE_NONE )
 		{			
-			// Remove Element if exists in list and timestamp < actual time
-			if( this->listFutureMovement.size() > 1 )
-			{				
-				//ROS_INFO("listFutureMovement-size > 1");
-				std::list<MovementQuadruple>::iterator it2 = this->listFutureMovement[i].begin();
-				long int aTimestamp = it2->getTimestamp();
- 				//ROS_INFO("   %ld ct, %ld timestamp", currentTime, aTimestamp); 
-				//usleep(500000);
-				int counter = 0;
-				while( it2->getTimestamp()<currentTime && it2 != this->listFutureMovement[i].end() )
-				{
-					++it2;
-					counter++;
-				}
-				if( counter > 0 )
-				{
-					//--it2;
-					counter--;
-					this->listFutureMovement[i].erase( this->listFutureMovement[i].begin(), it2 );
-				}
-			}
 			
 			//ROS_INFO("%i",i);
 			msg.thrust = this->listFutureMovement[i].front().getThrust();
 			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_HOLD)
 			{
-				ROS_INFO("Send thrust movement all %i", msg.thrust);
+				ROS_INFO("Send thrust movement all %u", msg.thrust);
 			}
 			msg.roll = this->listFutureMovement[i].front().getRoll();
 			msg.pitch = this->listFutureMovement[i].front().getPitch();
@@ -971,7 +964,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	long int currentTime = getNanoTime();
 	if(quaId == 0 && currentTime > this->time + 2000000000)
 	{
-		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %i", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
+		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
 		this->time = currentTime;
 	}
 	this->receivedQCStMutex.lock();
