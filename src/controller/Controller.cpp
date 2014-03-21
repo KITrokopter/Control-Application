@@ -273,7 +273,7 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].push_front( newMovement );
 		this->thrustTest += 1000;
 		long int current = getNanoTime();	
-		if(this->thrustTest >= 25000 || current > this->time2 + 2000000000)
+		if(this->thrustTest >= 25000 || current > this->time2 + 200000000)
 		{
 			this->shutdownMutex.lock();
 			this->shutdownStarted = true;
