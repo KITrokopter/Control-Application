@@ -686,7 +686,9 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->receivedQCStMutex.unlock();
 		this->listTargetsMutex.unlock();
 		this->listPositionsMutex.unlock();
-		std::list<MovementQuadruple> newEmptyListMovement;		
+		MovementQuadruple noMovement = MovementQuadruple( 0, 0, 0, 0 );
+		std::list<MovementQuadruple> newEmptyListMovement;	
+		newEmptyListMovement.push_back( noMovement );
 		this->listSentQuadruples.push_back(newEmptyListMovement);
 		this->listFutureMovement.push_back(newEmptyListMovement);
 		ROS_INFO("Initialization done");
