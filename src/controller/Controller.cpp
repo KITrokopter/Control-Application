@@ -280,7 +280,7 @@ void Controller::moveUp( int internId )
 			this->thrustTest += 1000;
 			this->time3 = getNanoTime();
 		}
-		if(this->thrustTest >= 30000 || current > this->time2 + 2000000000)
+		if(this->thrustTest >= 50000 || current > this->time2 + 2000000000)
 		{
 			ROS_DEBUG("Emergency Shutdown Test");
 			this->shutdownMutex.lock();
