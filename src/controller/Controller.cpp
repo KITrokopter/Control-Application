@@ -269,12 +269,14 @@ void Controller::moveUp( int internId )
 
 	if( !moveUpSmart ) {		
 		MovementQuadruple newMovement = MovementQuadruple( this->thrustTest, 0, 0, 0 );
+		ROS_DEBUG("Thrust is %u", this->thrustTest);
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
 		this->thrustTest += 1000;
 		long int current = getNanoTime();	
-		if(this->thrustTest >= 25000 || current > this->time2 + 2000000000)
+		if(this->thrustTest >= 30000 || current > this->time2 + 2000000000)
 		{
+			ROS_DEBUG("Emergency Shutdown Test");
 			this->shutdownMutex.lock();
 			this->shutdownStarted = true;
 			this->shutdownMutex.unlock();
