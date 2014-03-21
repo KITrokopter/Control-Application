@@ -198,6 +198,12 @@ public:
      * prints two opposite placed points of the square and lowest and highest point
      */
     void printTrackingArea();
+
+    /**
+     * getter.
+     * @return center of tracking area
+     */
+    Vector getCenterOfTrackingArea();
 };
 
 #endif /* TRACKINGAREA_H_ */
