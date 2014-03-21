@@ -102,7 +102,11 @@ void TrackingWorker::enqueue(CameraData data)
 		boost::mutex::scoped_lock lock(positionsMutex);
 		// ROS_DEBUG("enqueue: Got positions lock");
 		
-		maxCamNo = maxCamNo > data.camNo ? maxCamNo : data.camNo;
+		if (data.camNo + 1 > maxCamNo) {
+			maxCamNo = data.camNo + 1;
+			ROS_DEBUG("Increased max cam no to %d", maxCamNo);
+		}
+		
 		positions[data.camNo].push(data);
 		
 		bufferSize++;
@@ -111,12 +115,13 @@ void TrackingWorker::enqueue(CameraData data)
 			ROS_WARN("Position update buffer is running full (%ld entries). Seems like the position updating can't keep up! Dropping 15 entries.", positions.size());
 			
 			int deleted = 0;
-			int index = 0;
+			int index = rrCounter;
 			
 			while (deleted < 15) {
 				if (positions[index].size() > 0) {
 					positions[index].pop();
 					deleted++;
+					bufferSize--;
 				}
 				
 				index = (index + 1) % maxCamNo;
@@ -155,7 +160,6 @@ CameraData TrackingWorker::dequeue()
 			positions[rrCounter].pop();
 			bufferSize--;
 			
-			// ROS_DEBUG("dequeue: Released positions lock");
 			return data;
 		} else {
 			CameraData data;
