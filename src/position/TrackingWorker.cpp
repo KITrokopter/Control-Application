@@ -102,8 +102,8 @@ void TrackingWorker::enqueue(CameraData data)
 		boost::mutex::scoped_lock lock(positionsMutex);
 		// ROS_DEBUG("enqueue: Got positions lock");
 		
-		if (data.camNo > maxCamNo) {
-			maxCamNo = data.camNo;
+		if (data.camNo + 1 > maxCamNo) {
+			maxCamNo = data.camNo + 1;
 			ROS_DEBUG("Increased max cam no to %d", maxCamNo);
 		}
 		
@@ -126,8 +126,6 @@ void TrackingWorker::enqueue(CameraData data)
 				
 				index = (index + 1) % maxCamNo;
 			}
-			
-			ROS_DEBUG("Deleted deleted entries");
 		}
 	}
 	
@@ -162,7 +160,6 @@ CameraData TrackingWorker::dequeue()
 			positions[rrCounter].pop();
 			bufferSize--;
 			
-			ROS_DEBUG("dequeue: Found something");
 			return data;
 		} else {
 			CameraData data;
