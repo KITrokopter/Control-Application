@@ -123,8 +123,8 @@ set(MATLAB_PATH "~/matlab"
 if(EXISTS ${MATLAB_PATH})
   ## Find all files for the position package
   file(GLOB_RECURSE POSITION_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS src/position/*.cpp)
-  list(REMOVE_ITEM POSITION_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/position/DummyPositionReceiver.cpp)
-  list(REMOVE_ITEM POSITION_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/position/tmpmain.cpp)
+  list(REMOVE_ITEM POSITION_SOURCES src/position/DummyPositionReceiver.cpp)
+  list(REMOVE_ITEM POSITION_SOURCES src/position/tmpmain.cpp)
   
   message(WARNING "${CMAKE_CURRENT_SOURCE_DIR}/src/position")
   message(WARNING "${POSITION_SOURCES}")
