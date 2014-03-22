@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include "TrackingArea.h"
 #include <ros/ros.h>
+#include "profiling.hpp"
 
 using namespace std;
 
@@ -215,12 +216,15 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
 }
 
 bool TrackingArea::inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep) {
+    double startTime = getNanoTime();
     double notTracked = 0;
     for (int i = 0; i < numberCameras; i++) {
         if (inTrackingArea(cameraPosition[i], cameraDirection[i], maxRange, x, ep) == false) {
             notTracked++;
         }
     }
+    double endTime = getNanoTime();
+    ROS_DEBUG("Calculation was %f long", (endTime - startTime) / 1e9);
     if (notTracked < 2) {
         return true;
     } else {
