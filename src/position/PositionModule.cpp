@@ -358,7 +358,7 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
 	// ROS_DEBUG("Received position: msg.ID: %d idDict.getForward(msg.ID): %d msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID), msg.quadcopterId);
 	
-	trackingWorker.updatePosition(cameraVector, idDict.getForward(msg.ID), msg.quadcopterId);
+	trackingWorker.updatePosition(cameraVector, idDict.getForward(msg.ID), msg.quadcopterId, msg.timestamp);
 	
 	/*#ifdef QC_PROFILE
 	long int trackingClock = getNanoTime();

@@ -135,9 +135,9 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/AmccCalibration.cpp
   src/position/PositionModule.cpp
   src/position/ChessboardData.cpp
-  src/position/TrackingWorker.cpp
   src/position/IdDictionary.cpp
-  src/position/Graph.cpp
+  src/position/tracking/TrackingWorker.cpp
+  src/position/tracking/Graph.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -182,9 +182,9 @@ add_executable(control_application_test_calibration_node
   src/matlab/profiling.cpp
   src/position/PositionModule.cpp
   src/position/ChessboardData.cpp
-  src/position/TrackingWorker.cpp
   src/position/IdDictionary.cpp
-  src/position/Graph.cpp
+  src/position/tracking/TrackingWorker.cpp
+  src/position/tracking/Graph.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -217,28 +217,28 @@ target_link_libraries(control_application_test_calibration_node
 
 
 add_executable(profile_control
-	test/ProfileControl.cpp
-	test/helpers/MovementGenerator.cpp
-	src/controller/Controller.cpp
-	src/controller/Position6DOF.cpp
-	src/controller/Formation.cpp
-	src/controller/MovementQuadruple.cpp
-	src/controller/Mutex.cpp
-	src/controller/Interpolator.cpp
-	src/matlab/Matlab.cpp 
-	src/matlab/Vector.cpp 
-	src/matlab/Line.cpp
-  	src/matlab/Matrix.cpp
-	src/matlab/profiling.cpp
-	src/matlab/TrackingArea.cpp
-	src/matlab/Position.cpp
-	src/matlab/AmccCalibration.cpp
-	src/position/PositionModule.cpp
-	src/position/ChessboardData.cpp
-	src/position/TrackingWorker.cpp
-	src/position/IdDictionary.cpp
-	src/position/Graph.cpp
-	src/KitrokopterMessages.cpp
+  test/ProfileControl.cpp
+  test/helpers/MovementGenerator.cpp
+  src/controller/Controller.cpp
+  src/controller/Position6DOF.cpp
+  src/controller/Formation.cpp
+  src/controller/MovementQuadruple.cpp
+  src/controller/Mutex.cpp
+  src/controller/Interpolator.cpp
+  src/matlab/Matlab.cpp 
+  src/matlab/Vector.cpp 
+  src/matlab/Line.cpp
+  src/matlab/Matrix.cpp
+  src/matlab/profiling.cpp
+  src/matlab/TrackingArea.cpp
+  src/matlab/Position.cpp
+  src/matlab/AmccCalibration.cpp
+  src/position/PositionModule.cpp
+  src/position/ChessboardData.cpp
+  src/position/IdDictionary.cpp
+  src/position/tracking/TrackingWorker.cpp
+  src/position/tracking/Graph.cpp
+  src/KitrokopterMessages.cpp
 )
 
 add_dependencies(profile_control
@@ -260,23 +260,23 @@ target_link_libraries(profile_control
 )
 
 add_executable(position_module
-	src/position/tmpmain.cpp
-	src/position/PositionModule.cpp
-	src/position/DummyPositionReceiver.cpp
-	src/position/ChessboardData.cpp
-	src/position/TrackingWorker.cpp
-	src/position/IdDictionary.cpp
-	src/position/Graph.cpp
-	src/KitrokopterMessages.cpp
-	src/matlab/Vector.cpp
-	src/matlab/Line.cpp
-  	src/matlab/Matrix.cpp
-	src/matlab/Matlab.cpp
-	src/matlab/Position.cpp
-  	src/matlab/TrackingArea.cpp
-	src/matlab/AmccCalibration.cpp
-	src/matlab/profiling.cpp
-	src/controller/Mutex.cpp
+  src/position/tmpmain.cpp
+  src/position/PositionModule.cpp
+  src/position/DummyPositionReceiver.cpp
+  src/position/ChessboardData.cpp
+  src/position/IdDictionary.cpp
+  src/position/tracking/TrackingWorker.cpp
+  src/position/tracking/Graph.cpp
+  src/KitrokopterMessages.cpp
+  src/matlab/Vector.cpp
+  src/matlab/Line.cpp
+  src/matlab/Matrix.cpp
+  src/matlab/Matlab.cpp
+  src/matlab/Position.cpp
+  src/matlab/TrackingArea.cpp
+  src/matlab/AmccCalibration.cpp
+  src/matlab/profiling.cpp
+  src/controller/Mutex.cpp
 )
 
 add_dependencies(position_module

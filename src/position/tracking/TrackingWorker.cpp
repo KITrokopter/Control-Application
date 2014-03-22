@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <map>
 
-#include "../matlab/profiling.hpp"
+#include "../../matlab/profiling.hpp"
 
 TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : tracker(true), errorGraph(200, "Difference"), positions(50)
 {
@@ -77,13 +77,14 @@ void TrackingWorker::run()
 	ROS_INFO("Stopped tracking thread");
 }
 
-void TrackingWorker::updatePosition(Vector cameraVector, int camNo, int quadcopterId)
+void TrackingWorker::updatePosition(Vector cameraVector, int camNo, int quadcopterId, long int time)
 {
 	CameraData data;
 	data.cameraVector = cameraVector;
 	data.camNo = camNo;
 	data.quadcopterId = quadcopterId;
 	data.valid = true;
+	data.time = time;
 	
 	updatePosition(data);
 }
