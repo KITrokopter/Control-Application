@@ -90,7 +90,7 @@ double Matrix::determinant() {
 }
 
 double Matrix::determinant2x2(double a, double b, double c, double d) {
-    return (a*c - b*d);
+    return (a*d - b*c);
 }
 
 Matrix Matrix::inverse() {

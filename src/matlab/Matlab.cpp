@@ -11,6 +11,7 @@
 #include <string.h>
 #include <iostream>
 #include <ros/ros.h>
+#include "Matrix 2x2.h"
 #include "profiling.hpp"
 #define  BUFSIZE 256
 
@@ -47,6 +48,73 @@ Vector Matlab::perpFootOneLine(Line f, Vector b) {
     // result = a + u * ((a - b) * u)/(- u^2))
     Vector result = a.add(u.mult(x));
     return result;
+}
+
+int Matlab::perpFootTwoLinesFastCalculation(Line f, Line g, Vector *result) {
+    bool same;
+    Vector x;
+    // Vectors to check later, if the Matrix of two components of both Vectors can be inverted
+    Vector f12 = Vector(f.getU().getV1(), f.getU().getV2(), 0);
+    Vector f13 = Vector(f.getU().getV1(), 0, f.getU().getV3());
+    Vector g12 = Vector(g.getU().getV1(), g.getU().getV2(), 0);
+    Vector g13 = Vector(g.getU().getV1(), 0, g.getU().getV3());
+
+    // first checking, whether the lines are parallel
+    if (f.getU().isLinearDependent(g.getU())) {
+            return 0;
+    }
+    // aren't parallel, need to check, whether intersect. has to make sure, that A can be inverted.
+    // A*x = bb, x = (r, s)
+    else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV2() == 0) && (g.getU().getV2() == 0))
+                 || ((f.getU().getV1() == 0) && (f.getU().getV2() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV2() == 0))
+                 || (f12.isLinearDependent(g12)))) {
+        Matrix2x2 A = Matrix2x2(-f.getU().getV1(), g.getU().getV1(), -f.getU().getV2(), g.getU().getV2());
+        Vector bb = f.getA().add(g.getA().mult(-1));
+        x = A.inverse().multiplicate(bb);
+        // checks if equation is also right for the third vectorcomponent.
+        same = (f.getA().getV3() + x.getV1() * f.getU().getV3() == g.getA().getV3() + x.getV2() * g.getU().getV3());
+
+    } else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV3() == 0) && (g.getU().getV3() == 0))
+                 || ((f.getU().getV1() == 0) && (f.getU().getV3() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV3() == 0))
+                 || (f13.isLinearDependent(g13)))) {
+        Matrix2x2 A = Matrix2x2(-f.getU().getV1(), g.getU().getV1(), -f.getU().getV3(), g.getU().getV3());
+        Vector bb = f.getA().add(g.getA().mult(-1));
+        double v2 = bb.getV3();
+        bb.setV2(v2);
+        x = A.inverse().multiplicate(bb);
+        // checks if equation is also right for the third vectorcomponent.
+        same = (f.getA().getV2() + x.getV1() * f.getU().getV2() == g.getA().getV2() + x.getV2() * g.getU().getV2());
+    } else {
+        Matrix2x2 A = Matrix2x2(-f.getU().getV2(), g.getU().getV2(), -f.getU().getV3(), g.getU().getV3());
+        Vector bb = f.getA().add(g.getA().mult(-1));
+        double v1 = bb.getV2();
+        double v2 = bb.getV3();
+        bb.setV1(v1);
+        bb.setV2(v2);
+        x = A.inverse().multiplicate(bb);
+        // checks if equation is also right for the third vectorcomponent.
+        same = (f.getA().getV1() + x.getV1() * f.getU().getV1() == g.getA().getV1() + x.getV2() * g.getU().getV1());
+    }
+
+    // if same = 0, lines intersect
+    if (same != 0.0) {
+        Vector intersectionpoint = f.getA().add(f.getU().mult(x.getV1()));
+        result[0] = intersectionpoint;
+        return 1;
+    }
+
+    // lines are skew, calculating perpendicular foot points.
+    Vector n = f.getU().cross(g.getU());
+    Matrix A = Matrix(-f.getU().getV1(), -n.getV1(), g.getU().getV1(), -f.getU().getV2(), -n.getV2(), g.getU().getV2(), -f.getU().getV3(), -n.getV3(), g.getU().getV3());
+    Vector bb = f.getA().add(g.getA().mult(-1));
+
+    // A*x = bb, x = (r, t, s)
+    x = bb.aftermult(A.inverse());
+    Vector perpFootf = f.getA().add(f.getU().mult(x.getV1()));
+    Vector perpFootg = g.getA().add(g.getU().mult(x.getV3()));
+    result[0] = perpFootf;
+    result[1] = perpFootg;
+    return 2;
 }
 
 int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
@@ -141,29 +209,29 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
     Vector *points = new Vector[2*quantity];
 	int pos = 0;
     int intersects;
-	Vector* result[2];
+    Vector result[2];
 
     // calculating perpendicular foot points/intersection points
 	for (int i = 0; i < quantity; i++) {
 		for (int j = i + 1; j < quantity; j++) {
 
             long int startTime = getNanoTime();
-            intersects = perpFootTwoLines(lines[i], lines[j], result);
+            intersects = perpFootTwoLinesFastCalculation(lines[i], lines[j], result);
             long int endTime = getNanoTime();
             ROS_DEBUG("Calculation perp foot point of %d and %d was %.3f long", i, j, (endTime - startTime) / 1e9);
 
             if (intersects == 1) {
                 // lines interct
                 //printf("intersects: [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
-                points[pos] = *result[0];
+                points[pos] = result[0];
                 pos++;
             } else if (intersects == 2) {
                 // lines are skew
                 //printf("skew: [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
                 //printf("skew: [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
-				points[pos] = *result[0];
+                points[pos] = result[0];
                 pos++;
-				points[pos] = *result[1];
+                points[pos] = result[1];
                 pos++;
 			}
 		}

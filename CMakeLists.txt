@@ -126,6 +126,7 @@ if(EXISTS ${MATLAB_PATH})
   src/main.cpp
   src/KitrokopterMessages.cpp
   src/matlab/Matlab.cpp 
+  src/matlab/Matrix2x2.cpp
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp
   src/matlab/Matrix.cpp
@@ -176,6 +177,7 @@ add_executable(control_application_test_calibration_node
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp
   src/matlab/Matrix.cpp
+  src/matlab/Matrix2x2.cpp
   src/matlab/profiling.cpp
   src/matlab/TrackingArea.cpp
   src/matlab/Position.cpp
@@ -229,6 +231,7 @@ add_executable(profile_control
 	src/controller/Interpolator.cpp
   	src/controller/InterpolatorInfo.cpp
 	src/matlab/Matlab.cpp 
+	src/matlab/Matrix2x2.cpp
 	src/matlab/Vector.cpp 
 	src/matlab/Line.cpp
   	src/matlab/Matrix.cpp
@@ -274,6 +277,7 @@ add_executable(position_module
 	src/matlab/Vector.cpp
 	src/matlab/Line.cpp
   	src/matlab/Matrix.cpp
+	src/matlab/Matrix2x2.cpp
 	src/matlab/Matlab.cpp
 	src/matlab/Position.cpp
   	src/matlab/TrackingArea.cpp

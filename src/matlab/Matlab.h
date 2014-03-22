@@ -50,6 +50,9 @@ public:
      */
 	Vector perpFootOneLine(Line f, Vector b);
 
+
+    int perpFootTwoLinesFastCalculation(Line f, Line g, Vector *result);
+
     /**
      * calculates perpendicular foot of line f and line g. Result is saved in result
      * @param f Line where the first perpendicular foot should lie on
