@@ -121,8 +121,18 @@ set(MATLAB_PATH "~/matlab"
 
 # Skip the control application when matlab is not installed.
 if(EXISTS ${MATLAB_PATH})
+  ## Find all files for the position package
+  file(GLOB_RECURSE POSITION_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS src/position/*.cpp)
+  list(REMOVE_ITEM POSITION_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/position/DummyPositionReceiver.cpp)
+  
+  message(WARNING "${CMAKE_CURRENT_SOURCE_DIR}/src/position")
+  message(WARNING "${POSITION_SOURCES}")
+
+
   ## Declare a cpp executable
   add_executable(control_application_node
+  ${POSITION_SOURCES}
+  
   src/main.cpp
   src/KitrokopterMessages.cpp
   src/matlab/Matlab.cpp 
@@ -133,12 +143,6 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/TrackingArea.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
-  src/position/PositionModule.cpp
-  src/position/ChessboardData.cpp
-  src/position/IdDictionary.cpp
-  src/position/tracking/TrackingWorker.cpp
-  src/position/tracking/Graph.cpp
-  src/position/tracking/AbstractCameraQueue.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -170,6 +174,8 @@ target_link_libraries(control_application_node
 )
 
 add_executable(control_application_test_calibration_node
+  ${POSITION_SOURCES}
+  
   test/testMatlab.cpp
   src/KitrokopterMessages.cpp
   src/matlab/Matlab.cpp 
@@ -181,12 +187,6 @@ add_executable(control_application_test_calibration_node
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
   src/matlab/profiling.cpp
-  src/position/PositionModule.cpp
-  src/position/ChessboardData.cpp
-  src/position/IdDictionary.cpp
-  src/position/tracking/TrackingWorker.cpp
-  src/position/tracking/Graph.cpp
-  src/position/tracking/AbstractCameraQueue.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -219,6 +219,8 @@ target_link_libraries(control_application_test_calibration_node
 
 
 add_executable(profile_control
+  ${POSITION_SOURCES}
+  
   test/ProfileControl.cpp
   test/helpers/MovementGenerator.cpp
   src/controller/Controller.cpp
@@ -235,12 +237,6 @@ add_executable(profile_control
   src/matlab/TrackingArea.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
-  src/position/PositionModule.cpp
-  src/position/ChessboardData.cpp
-  src/position/IdDictionary.cpp
-  src/position/tracking/TrackingWorker.cpp
-  src/position/tracking/Graph.cpp
-  src/position/tracking/AbstractCameraQueue.cpp
   src/KitrokopterMessages.cpp
 )
 
@@ -263,14 +259,11 @@ target_link_libraries(profile_control
 )
 
 add_executable(position_module
+  ${POSITION_SOURCES}
+  
   src/position/tmpmain.cpp
-  src/position/PositionModule.cpp
   src/position/DummyPositionReceiver.cpp
-  src/position/ChessboardData.cpp
-  src/position/IdDictionary.cpp
-  src/position/tracking/TrackingWorker.cpp
-  src/position/tracking/Graph.cpp
-  src/position/tracking/AbstractCameraQueue.cpp
+  
   src/KitrokopterMessages.cpp
   src/matlab/Vector.cpp
   src/matlab/Line.cpp
