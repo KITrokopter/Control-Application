@@ -11,6 +11,7 @@ public:
 	
 	// Implementations of AbstractCameraQueue
 	size_t getSize();
+	bool dataAvailable();
 	std::vector<CameraData> dequeue();
 	
 protected:

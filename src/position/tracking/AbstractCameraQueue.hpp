@@ -12,6 +12,7 @@ public:
 	void enqueue(CameraData data);
 	
 	virtual size_t getSize() = 0;
+	virtual bool dataAvailable() = 0;
 	virtual std::vector<CameraData> dequeue() = 0;
 	
 protected:

@@ -13,6 +13,7 @@
 
 #include "Graph.hpp"
 #include "CameraData.hpp"
+#include "TrackingQueue.hpp"
 
 class TrackingWorker {
 private:

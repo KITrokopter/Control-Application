@@ -45,6 +45,11 @@ std::vector<CameraData> RRCameraQueue::dequeue()
 	}
 }
 
+bool RRCameraQueue::dataAvailable()
+{
+	return size > 0;
+}
+
 size_t RRCameraQueue::getSize()
 {
 	return size;
