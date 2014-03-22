@@ -231,6 +231,7 @@ add_executable(profile_control
   src/controller/MovementQuadruple.cpp
   src/controller/Mutex.cpp
   src/controller/Interpolator.cpp
+  src/controller/InterpolatorInfo.cpp
   src/matlab/Matlab.cpp 
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp

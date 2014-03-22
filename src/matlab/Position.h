@@ -11,7 +11,7 @@
 #include "engine.h"
 #include <vector>
 #include "TrackingArea.h"
-#include "../position/TrackingWorker.hpp"
+#include "../position/tracking/CameraData.hpp"
 
 #include <opencv2/core/core.hpp>
 

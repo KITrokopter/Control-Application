@@ -39,10 +39,10 @@ void TrackingWorker::run()
 		if (data.size() > 0) {
 			if (!receivedFirstPosition) {
 				receivedFirstPosition = true;
-				ROS_INFO("Found quadcopter %d", data[0].camNo);
+				ROS_INFO("Found quadcopter %d", data[0].quadcopterId);
 			}
 			
-			Vector position = tracker.updatePosition(data[0].cameraVector, data[0].camNo, data[0].quadcopterId);
+			Vector position = tracker.updatePosition(data);
 			
 			for (size_t i = 0; i < data.size(); i++) {
 				errorGraph.nextPoint(tracker.getDistance(), data[i].camNo);

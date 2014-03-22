@@ -17,7 +17,6 @@
 #include <math.h>
 #include <ros/ros.h>
 #include "profiling.hpp"
-#include "../position/TrackingWorker.hpp"
 
 Position::Position()
 {
