@@ -28,3 +28,15 @@ CameraData AbstractCameraQueue::getInvalidCameraData()
 	data.valid = false;
 	return data;
 }
+
+std::vector<CameraData> AbstractCameraQueue::getInvalidCameraDataVector()
+{
+	return toVector(getInvalidCameraData());
+}
+
+std::vector<CameraData> AbstractCameraQueue::toVector(CameraData data)
+{
+	std::vector<CameraData> result;
+	result.push_back(data);
+	return result;
+}
