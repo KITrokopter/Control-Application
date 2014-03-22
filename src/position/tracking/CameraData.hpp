@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../matlab/Vector.h"
+
 typedef struct {
 	Vector cameraVector;
 	int camNo;

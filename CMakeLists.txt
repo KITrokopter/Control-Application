@@ -138,6 +138,7 @@ if(EXISTS ${MATLAB_PATH})
   src/position/IdDictionary.cpp
   src/position/tracking/TrackingWorker.cpp
   src/position/tracking/Graph.cpp
+  src/position/tracking/AbstractCameraQueue.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -185,6 +186,7 @@ add_executable(control_application_test_calibration_node
   src/position/IdDictionary.cpp
   src/position/tracking/TrackingWorker.cpp
   src/position/tracking/Graph.cpp
+  src/position/tracking/AbstractCameraQueue.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -238,6 +240,7 @@ add_executable(profile_control
   src/position/IdDictionary.cpp
   src/position/tracking/TrackingWorker.cpp
   src/position/tracking/Graph.cpp
+  src/position/tracking/AbstractCameraQueue.cpp
   src/KitrokopterMessages.cpp
 )
 
@@ -267,6 +270,7 @@ add_executable(position_module
   src/position/IdDictionary.cpp
   src/position/tracking/TrackingWorker.cpp
   src/position/tracking/Graph.cpp
+  src/position/tracking/AbstractCameraQueue.cpp
   src/KitrokopterMessages.cpp
   src/matlab/Vector.cpp
   src/matlab/Line.cpp
