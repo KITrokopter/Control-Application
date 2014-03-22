@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include "TrackingArea.h"
 #include <ros/ros.h>
+#include "profiling.hpp"
 
 using namespace std;
 
@@ -75,18 +76,6 @@ Vector TrackingArea::getCenter() {
 
 void TrackingArea::setCenter(Vector center) {
     this->center = center;
-}
-
-double TrackingArea::getWidth() {
-    return a1.add(a2.mult(-1)).getLength();
-}
-
-double TrackingArea::getLength() {
-    return a2.add(a3.mult(-1)).getLength();
-}
-
-double TrackingArea::getHeight() {
-    return (up.getV3() - low.getV3());
 }
 
 /*
@@ -174,24 +163,23 @@ bool TrackingArea::contains(Vector x) {
     }
 }
 
-// übergebe linie von ursprung auf flacher Ebene und ebene aus drei punkten bestehen mit maxRange abstand
 bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection, double maxRange, Vector x, Engine *ep) {
     Matlab *m = new Matlab(ep);
-    // center point of the floor of the pyramidb1
+    // center point of the floor of the pyramid1
     Vector n = cameraPosition.add(cameraDirection.mult(maxRange/cameraDirection.getLength()));
-    // finding direction vectors of the plain of the floor of the camera range pyramid.
+    // finding direction vectors of the plane of the floor of the camera range pyramid.
     Vector *u = new Vector(cameraDirection.getV1(), cameraDirection.getV2(), -(cameraDirection.getV1()*cameraDirection.getV1() + cameraDirection.getV2()*cameraDirection.getV2())/cameraDirection.getV3());
     Vector v = cameraDirection.cross(*u);
 
-    // describing plain by line f and direction vector v
+    // describing plane by line f and direction vector v
     Line *f = new Line(cameraDirection, *u);
 
-    // describing floor plain by a and b and cameraPosition
+    // describing floor plane by a and b and cameraPosition
     Vector *a = new Vector(cameraDirection.getV1(), cameraDirection.getV2(), 0);
     Vector *b = new Vector(cameraDirection.getV1(), cameraDirection.getV2() + 0.1, 0);
     Line *g = new Line(cameraPosition, *a);
 
-    Line horizontal = m->getIntersectionLine(*f, v, *g, *b);
+    Line horizontal = m->getIntersectionLineFastCalculation(*f, v, *g, *b);
 
     v = cameraDirection.cross(horizontal.getU());
 
@@ -227,41 +215,21 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
     }
 }
 
-/*
- * checks whether all cameras observe x
- */
 bool TrackingArea::inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep) {
+    double startTime = getNanoTime();
     double notTracked = 0;
     for (int i = 0; i < numberCameras; i++) {
         if (inTrackingArea(cameraPosition[i], cameraDirection[i], maxRange, x, ep) == false) {
             notTracked++;
         }
     }
+    double endTime = getNanoTime();
+    ROS_DEBUG("Calculation was %f long", (endTime - startTime) / 1e9);
     if (notTracked < 2) {
         return true;
     } else {
         return false;
     }
-}
-
-void TrackingArea::increaseTrackingArea(double posChange, double height) {
-    Vector center = getCenter();
-    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + height));
-    setA2(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + height));
-    setA3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + height));
-    setA4(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + height));
-    setUp(Vector(center.getV1(), center.getV2(), center.getV3() + height));
-    setLow(Vector(center.getV1(), center.getV2(), center.getV3() + height));
-}
-
-void TrackingArea::increaseTrackingArea(double posChange, double heightPos, double heightNeg) {
-    Vector center = getCenter();
-    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3()));
-    setA2(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3()));
-    setA3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3()));
-    setA4(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3()));
-    setUp(Vector(center.getV1(), center.getV2(), center.getV3() + heightPos));
-    setLow(Vector(center.getV1(), center.getV2(), center.getV3() - heightNeg));
 }
 
 void TrackingArea::increaseTrackingArea(double posChange, double height, double heightPos, double heightNeg) {
@@ -273,9 +241,7 @@ void TrackingArea::increaseTrackingArea(double posChange, double height, double 
     setUp(Vector(center.getV1(), center.getV2(), center.getV3() + heightPos));
     setLow(Vector(center.getV1(), center.getV2(), center.getV3() - heightNeg));
 }
-/*
- *  calculates the maximum TrackingArea in form of a quader
- */
+
 void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep) {
     Matlab *m = new Matlab(ep);
     Line *cameraLines = new Line[numberCameras];
@@ -678,4 +644,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
 void TrackingArea::printTrackingArea() {
     ROS_DEBUG("Tracking area is from [%.2f, %.2f, %.2f] to [%.2f, %.2f, %.2f], quadrat is of size %.2f, upper point is [%.2f, %.2f, %.2f], lower point is [%.2f, %.2f, %.2f].", a1.getV1(), a1.getV2(), a1.getV3(), a3.getV1(), a3.getV2(), a3.getV3(), a1.add(a2.mult(-1)).getLength(), up.getV1(), up.getV2(), up.getV3(), low.getV1(), low.getV2(), low.getV3());
+}
+
+Vector TrackingArea::getCenterOfTrackingArea() {
+    Vector c = center;
+    // center is center, just moved up/down
+    c.setV3(a1.getV3());
+    return c;
 }

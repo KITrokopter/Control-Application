@@ -41,6 +41,7 @@ double Vector::getV3() {
 void Vector::setV1(double v1) {
 	this->v1 = v1;
 }
+
 void Vector::setV2(double v2) {
 	this->v2 = v2;
 }

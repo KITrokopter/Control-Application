@@ -14,6 +14,16 @@ private:
      * values of the Matrix, mij is value of i. line and j. column
      */
     double m11, m12, m13, m21, m22, m23, m31, m32, m33;
+
+    /**
+     * calculates a determinant of a 2x2 matrix
+     * @param a m11
+     * @param b m12
+     * @param c m21
+     * @param d m22
+     * @return
+     */
+    double determinant2x2(double a, double b, double c, double d);
 public:
     /**
      * empty constructor.
@@ -99,6 +109,19 @@ public:
      * @return product
      */
     Matrix multiplicate(Matrix A);
+
+    /**
+     * calculates determinant of 3x3 Matrix
+     * @return determinant
+     */
+    double determinant();
+
+    /**
+     * calculates inverse of Matrix
+     * @return inverse
+     */
+    Matrix inverse();
+
 };
 
 #endif /* MATRIX_H_ */
