@@ -36,7 +36,7 @@ std::vector<CameraData> dequeue()
 	int index = rrIndex;
 	
 	do {
-		if (queues[ids[index]].size() > 0) {
+		if (queues[ids[index]].dataAvailable()) {
 			break;
 		}
 		
