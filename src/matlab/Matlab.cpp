@@ -202,9 +202,6 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 }
 
 Vector Matlab::interpolateLines(Line *lines, int quantity) {
-
-    long int startTimeAll = getNanoTime();
-
     // saving perpendicular foot points of all lines of array lines
     Vector *points = new Vector[2*quantity];
 	int pos = 0;
@@ -215,20 +212,14 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 	for (int i = 0; i < quantity; i++) {
 		for (int j = i + 1; j < quantity; j++) {
 
-            long int startTime = getNanoTime();
             intersects = perpFootTwoLinesFastCalculation(lines[i], lines[j], result);
-            long int endTime = getNanoTime();
-            ROS_DEBUG("Calculation perp foot point of %d and %d was %.3f long", i, j, (endTime - startTime) / 1e9);
 
             if (intersects == 1) {
                 // lines interct
-                //printf("intersects: [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
                 points[pos] = result[0];
                 pos++;
             } else if (intersects == 2) {
                 // lines are skew
-                //printf("skew: [%f, %f, %f]\n", result[0]->getV1(), result[0]->getV2(), result[0]->getV3());
-                //printf("skew: [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
                 points[pos] = result[0];
                 pos++;
                 points[pos] = result[1];
@@ -248,10 +239,7 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
     }
 	v1 = v1 / pos;
 	v2 = v2 / pos;
-	v3 = v3 / pos;
-
-    long int endTimeAll = getNanoTime();
-    ROS_DEBUG("Calculation perp foot point was %.3f long", (endTimeAll - startTimeAll) / 1e9);
+    v3 = v3 / pos;
 
     return Vector(v1, v2, v3);
 }
@@ -305,5 +293,27 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     // intersection line is line through both points
     Line intersectionLine = Line(intersection1, (intersection2.add(intersection1.mult(-1))));
     mxDestroyArray(x);
+    return intersectionLine;
+}
+
+Line Matlab::getIntersectionLineFastCalculation(Line f, Vector directV1, Line g, Vector directV2) {
+
+    // E1 == g
+    Vector v = directV1.add(f.getA().mult(-1));
+    Matrix A = Matrix(f.getU().getV1(), v.getV1(), -g.getU().getV1(), f.getU().getV2(), v.getV2(), -g.getU().getV2(), f.getU().getV3(), v.getV3(), -g.getU().getV3());
+    Vector diff = g.getA().add(f.getA().mult(-1));
+
+    // x = (r, s, t)
+    Vector x = diff.aftermult(A.inverse());
+    Vector intersection1 = g.getA().add(g.getU().mult(x.getV3()));
+
+    // w = directV2 - g.getA(), is second direction vector of second plain
+    Vector w = directV2.add(g.getA().mult(-1));
+    A = Matrix(f.getU().getV1(), v.getV1(), -w.getV1(), f.getU().getV2(), v.getV2(), -w.getV2(), f.getU().getV3(), v.getV3(), -w.getV3());
+    x = diff.aftermult(A.inverse());
+    Vector intersection2 = g.getA().add(w.mult(x.getV3()));
+
+    // intersection line is line through both points
+    Line intersectionLine = Line(intersection1, (intersection2.add(intersection1.mult(-1))));
     return intersectionLine;
 }
