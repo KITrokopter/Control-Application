@@ -11,7 +11,11 @@ public:
 	void enqueue(std::vector<CameraData> data);
 	void enqueue(CameraData data);
 	
-	virtual size_t size() = 0;
-	virtual void enqueueInternal(CameraData data) = 0;
+	virtual size_t getSize() = 0;
 	virtual std::vector<CameraData> dequeue() = 0;
+	
+protected:
+	CameraData getInvalidCameraData();
+	
+	virtual void enqueueInternal(CameraData data) = 0;
 };

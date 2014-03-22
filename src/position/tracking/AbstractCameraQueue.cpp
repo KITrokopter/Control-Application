@@ -13,11 +13,18 @@ void AbstractCameraQueue::enqueue(CameraData data)
 {
 	enqueueInternal(data);
 	
-	if (size() > 15) {
+	if (getSize() > 15) {
 		ROS_WARN("Camera queue running full. Removing 10 entries");
 		
-		while (size() > 5) {
+		while (getSize() > 5) {
 			dequeue();
 		}
 	}
+}
+
+CameraData AbstractCameraQueue::getInvalidCameraData()
+{
+	CameraData data;
+	data.valid = false;
+	return data;
 }
