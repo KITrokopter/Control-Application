@@ -13,6 +13,7 @@
 
 #include "Graph.hpp"
 #include "CameraData.hpp"
+#include "RRCameraQueue.hpp"
 #include "TrackingQueue.hpp"
 
 class TrackingWorker {
@@ -22,13 +23,9 @@ private:
 	Position tracker;
 	volatile bool stop;
 
-	std::vector<std::queue<CameraData> > positions;
-	int rrCounter;
-	int maxCamNo;
-	int bufferSize;
-	int minUpdateCount;
-	boost::mutex positionsMutex;
-	boost::condition_variable positionsEmpty;
+	TrackingQueue<RRCameraQueue> queue;
+	boost::mutex queueMutex;
+	boost::condition_variable queueEmpty;
 	
 	// Graphing
 	Graph errorGraph;
@@ -36,7 +33,7 @@ private:
 	void run();
 	
 	void enqueue(CameraData data);
-	CameraData dequeue();
+	std::vector<CameraData> dequeue();
 	bool dataAvailable();
 	bool haveEnoughData(int count);
 public:

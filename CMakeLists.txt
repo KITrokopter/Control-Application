@@ -125,9 +125,6 @@ if(EXISTS ${MATLAB_PATH})
   file(GLOB_RECURSE POSITION_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS src/position/*.cpp)
   list(REMOVE_ITEM POSITION_SOURCES src/position/DummyPositionReceiver.cpp)
   list(REMOVE_ITEM POSITION_SOURCES src/position/tmpmain.cpp)
-  
-  message(WARNING "${CMAKE_CURRENT_SOURCE_DIR}/src/position")
-  message(WARNING "${POSITION_SOURCES}")
 
 
   ## Declare a cpp executable
