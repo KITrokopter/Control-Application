@@ -216,15 +216,15 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
 }
 
 bool TrackingArea::inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep) {
-    double startTime = getNanoTime();
+    //double startTime = getNanoTime();
     double notTracked = 0;
     for (int i = 0; i < numberCameras; i++) {
         if (inTrackingArea(cameraPosition[i], cameraDirection[i], maxRange, x, ep) == false) {
             notTracked++;
         }
     }
-    double endTime = getNanoTime();
-    ROS_DEBUG("Calculation was %f long", (endTime - startTime) / 1e9);
+    /*double endTime = getNanoTime();
+    ROS_DEBUG("Calculation was %f long", (endTime - startTime) / 1e9);*/
     if (notTracked < 2) {
         return true;
     } else {
@@ -306,10 +306,10 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
           * searching optimal height (down) of square where the square size ist biggest
           */
         // searching whether side size is bigger if height is lower
-        double heightLower = -2;
+        double heightLower = -1;
         double newSideBorder = sideBorder;
         // boolean that saves, whether size improves if going down.
-        bool lower = true;
+        bool lower = false;
 
         // decrease height while sideBorder gets bigger
         do {
@@ -321,14 +321,14 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             if (!(inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
                     && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep))) {
                 ROS_DEBUG("lower %.2f, not in range anymore", heightLower);
-                // size doesn't improve if going down, checking whether size improves if going up.
-                lower = false;
             } else {
                 // searching new side border of tracking area
                 while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
                         && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
                     posChange *= 2;
                     increaseTrackingArea(sideBorder + posChange, heightLower, 0, 0);
+                    // size does improve if going down
+                    lower = true;
                     ROS_DEBUG("lower %.2f, increasing, side size: %.2f", heightLower, 2 * (posChange + sideBorder));
                 }
 
@@ -364,14 +364,16 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             }
         } while (newSideBorder > sideBorder);
 
+        double leftBorderHeight, rightBorderHeight, middleHeight;
+
         if (lower) {
             // maximal width of tracking area is between heightLower and heightLower/2
             ROS_DEBUG("maximal width %.2f is between %.2f and %.2f", sideBorder, heightLower, heightLower/2);
 
 
-            double leftBorderHeight = heightLower/2;
-            double rightBorderHeight = heightLower;
-            double middleHeight = leftBorderHeight - (-rightBorderHeight + leftBorderHeight)/2;
+            leftBorderHeight = heightLower/2;
+            rightBorderHeight = heightLower;
+            middleHeight = leftBorderHeight - (-rightBorderHeight + leftBorderHeight)/2;
             newSideBorder = sideBorder;
 
             // binary search while |rightBorderHeight - leftBorderHeight| > 1
@@ -435,9 +437,9 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         /**
           * searching optimal height (up) of square where the square size ist biggest
           */
-        if (lower == false) {
+        else {
             // searching whether side size is bigger if height is lower
-            double heightHigher = 2;
+            double heightHigher = 1;
             double newSideBorder = sideBorder;
 
             // decrease height while sideBorder gets bigger
@@ -492,12 +494,12 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
             } while (newSideBorder > sideBorder);
 
             // maximal width of tracking area is between heightLower and heightLower/2
-            ROS_DEBUG("maximal width %.2f is between %.2f and %.2f", sideBorder, heightHigher, heightHigher/2);
+            ROS_DEBUG("maximal width %.2f is between %.2f and %.2f", sideBorder, heightHigher/2, heightHigher);
 
 
-            double leftBorderHeight = heightHigher/2;
-            double rightBorderHeight = heightHigher;
-            double middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
+            leftBorderHeight = heightHigher/2;
+            rightBorderHeight = heightHigher;
+            middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
             newSideBorder = sideBorder;
 
             // binary search while |rightBorderHeight - leftBorderHeight| > 1
@@ -558,7 +560,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
         }
 
         double maxWidth = sideBorder;
-        double maxLower = leftBorder;
+        double maxLower = leftBorderHeight;
 		
 		
         /**
@@ -643,7 +645,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 }
 
 void TrackingArea::printTrackingArea() {
-    ROS_DEBUG("Tracking area is from [%.2f, %.2f, %.2f] to [%.2f, %.2f, %.2f], quadrat is of size %.2f, upper point is [%.2f, %.2f, %.2f], lower point is [%.2f, %.2f, %.2f].", a1.getV1(), a1.getV2(), a1.getV3(), a3.getV1(), a3.getV2(), a3.getV3(), a1.add(a2.mult(-1)).getLength(), up.getV1(), up.getV2(), up.getV3(), low.getV1(), low.getV2(), low.getV3());
+    ROS_DEBUG("Tracking area is from [%.2f, %.2f, %.2f] to [%.2f, %.2f, %.2f], square is of size %.2f, upper point is [%.2f, %.2f, %.2f], lower point is [%.2f, %.2f, %.2f].", a1.getV1(), a1.getV2(), a1.getV3(), a3.getV1(), a3.getV2(), a3.getV3(), a1.add(a2.mult(-1)).getLength(), up.getV1(), up.getV2(), up.getV3(), low.getV1(), low.getV2(), low.getV3());
 }
 
 Vector TrackingArea::getCenterOfTrackingArea() {
