@@ -16,8 +16,6 @@
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
-//#include "quadcopter_application/find_all.h"
-#include "quadcopter_application/blink.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "../position/IPositionReceiver.hpp"
 #include "../matlab/profiling.hpp"
@@ -37,7 +35,7 @@
 
 #define THRUST_MIN 0
 #define THRUST_STAND_STILL 18001
-#define THRUST_START 11000
+#define THRUST_START 28000
 #define THRUST_DECLINE 200
 #define THRUST_STEP 50
 #define ROLL_STEP 2
@@ -73,7 +71,6 @@ public:
 	void setTrackingArea(TrackingArea area);
 
 	/* Movement and Positioning */
-	void convertMovement(int internId);
 	Position6DOF* getTargetPosition();
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
@@ -122,7 +119,10 @@ private:
 	std::vector<unsigned long int > quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int > quadcopterMovementStatus;
-	long int time;	
+	long int time;
+	long int time2;
+	long int time3;
+	unsigned int thrustTest;	
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;
@@ -169,6 +169,7 @@ private:
 	/* Threads */
 	pthread_t tCalculateMovement;
 	pthread_t tBuildFormation;
+	pthread_t tShutdownFormation;
 
 	/**
   	* NodeHandle is the main access point to communications with the ROS system.

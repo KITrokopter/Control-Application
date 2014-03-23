@@ -83,3 +83,26 @@ Matrix Matrix::multiplicate(Matrix A) {
     double r32 = m31 * A.getM12() + m32 * A.getM22() + m33 * A.getM32();
     double r33 = m31 * A.getM13() + m32 * A.getM23() + m33 * A.getM33();
 }
+
+double Matrix::determinant() {
+    double d = m11 * m22 * m33 + m12 * m23 * m31 + m13 * m21 * m32 - m31 * m22 * m13 - m32 * m23 * m11 - m33 * m21 * m12;
+    return d;
+}
+
+double Matrix::determinant2x2(double a, double b, double c, double d) {
+    return (a*d - b*c);
+}
+
+Matrix Matrix::inverse() {
+    double det = 1/determinant();
+    double i11 = det * determinant2x2(m22, m23, m32, m33);
+    double i12 = det * determinant2x2(m13, m12, m33, m32);
+    double i13 = det * determinant2x2(m12, m13, m22, m23);
+    double i21 = det * determinant2x2(m23, m21, m33, m31);
+    double i22 = det * determinant2x2(m11, m13, m31, m33);
+    double i23 = det * determinant2x2(m13, m11, m23, m21);
+    double i31 = det * determinant2x2(m21, m22, m31, m32);
+    double i32 = det * determinant2x2(m12, m11, m32, m31);
+    double i33 = det * determinant2x2(m11, m12, m21, m22);
+    return Matrix(i11, i12, i13, i21, i22, i23, i31, i32, i33);
+}

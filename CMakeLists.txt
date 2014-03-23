@@ -121,11 +121,20 @@ set(MATLAB_PATH "~/matlab"
 
 # Skip the control application when matlab is not installed.
 if(EXISTS ${MATLAB_PATH})
+  ## Find all files for the position package
+  file(GLOB_RECURSE POSITION_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS src/position/*.cpp)
+  list(REMOVE_ITEM POSITION_SOURCES src/position/DummyPositionReceiver.cpp)
+  list(REMOVE_ITEM POSITION_SOURCES src/position/tmpmain.cpp)
+
+
   ## Declare a cpp executable
   add_executable(control_application_node
+  ${POSITION_SOURCES}
+  
   src/main.cpp
   src/KitrokopterMessages.cpp
   src/matlab/Matlab.cpp 
+  src/matlab/Matrix2x2.cpp
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp
   src/matlab/Matrix.cpp
@@ -133,11 +142,6 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/TrackingArea.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
-  src/position/PositionModule.cpp
-  src/position/ChessboardData.cpp
-  src/position/TrackingWorker.cpp
-  src/position/IdDictionary.cpp
-  src/position/Graph.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -170,22 +174,20 @@ target_link_libraries(control_application_node
 )
 
 add_executable(control_application_test_calibration_node
+  ${POSITION_SOURCES}
+  
   test/testMatlab.cpp
   src/KitrokopterMessages.cpp
   src/matlab/Matlab.cpp 
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp
   src/matlab/Matrix.cpp
+  src/matlab/Matrix2x2.cpp
   src/matlab/profiling.cpp
   src/matlab/TrackingArea.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
   src/matlab/profiling.cpp
-  src/position/PositionModule.cpp
-  src/position/ChessboardData.cpp
-  src/position/TrackingWorker.cpp
-  src/position/IdDictionary.cpp
-  src/position/Graph.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
@@ -199,6 +201,7 @@ add_dependencies(control_application_test_calibration_node
   control_application_generate_messages_cpp
   api_application_generate_messages_cpp
   camera_application_generate_messages_cpp
+  quadcopter_application_generate_messages_cpp
 )
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -218,29 +221,27 @@ target_link_libraries(control_application_test_calibration_node
 
 
 add_executable(profile_control
-	test/ProfileControl.cpp
-	test/helpers/MovementGenerator.cpp
-	src/controller/Controller.cpp
-	src/controller/Position6DOF.cpp
-	src/controller/Formation.cpp
-	src/controller/MovementQuadruple.cpp
-	src/controller/Mutex.cpp
-	src/controller/Interpolator.cpp
-  	src/controller/InterpolatorInfo.cpp
-	src/matlab/Matlab.cpp 
-	src/matlab/Vector.cpp 
-	src/matlab/Line.cpp
-  	src/matlab/Matrix.cpp
-	src/matlab/profiling.cpp
-	src/matlab/TrackingArea.cpp
-	src/matlab/Position.cpp
-	src/matlab/AmccCalibration.cpp
-	src/position/PositionModule.cpp
-	src/position/ChessboardData.cpp
-	src/position/TrackingWorker.cpp
-	src/position/IdDictionary.cpp
-	src/position/Graph.cpp
-	src/KitrokopterMessages.cpp
+  ${POSITION_SOURCES}
+  
+  test/ProfileControl.cpp
+  test/helpers/MovementGenerator.cpp
+  src/controller/Controller.cpp
+  src/controller/Position6DOF.cpp
+  src/controller/Formation.cpp
+  src/controller/MovementQuadruple.cpp
+  src/controller/Mutex.cpp
+  src/controller/Interpolator.cpp
+  src/controller/InterpolatorInfo.cpp
+  src/matlab/Matlab.cpp 
+  src/matlab/Vector.cpp 
+  src/matlab/Line.cpp
+  src/matlab/Matrix.cpp
+  src/matlab/Matrix2x2.cpp
+  src/matlab/profiling.cpp
+  src/matlab/TrackingArea.cpp
+  src/matlab/Position.cpp
+  src/matlab/AmccCalibration.cpp
+  src/KitrokopterMessages.cpp
 )
 
 add_dependencies(profile_control
@@ -262,23 +263,22 @@ target_link_libraries(profile_control
 )
 
 add_executable(position_module
-	src/position/tmpmain.cpp
-	src/position/PositionModule.cpp
-	src/position/DummyPositionReceiver.cpp
-	src/position/ChessboardData.cpp
-	src/position/TrackingWorker.cpp
-	src/position/IdDictionary.cpp
-	src/position/Graph.cpp
-	src/KitrokopterMessages.cpp
-	src/matlab/Vector.cpp
-	src/matlab/Line.cpp
-  	src/matlab/Matrix.cpp
-	src/matlab/Matlab.cpp
-	src/matlab/Position.cpp
-  	src/matlab/TrackingArea.cpp
-	src/matlab/AmccCalibration.cpp
-	src/matlab/profiling.cpp
-	src/controller/Mutex.cpp
+  ${POSITION_SOURCES}
+  
+  src/position/tmpmain.cpp
+  src/position/DummyPositionReceiver.cpp
+  
+  src/KitrokopterMessages.cpp
+  src/matlab/Vector.cpp
+  src/matlab/Line.cpp
+  src/matlab/Matrix.cpp
+  src/matlab/Matrix2x2.cpp
+  src/matlab/Matlab.cpp
+  src/matlab/Position.cpp
+  src/matlab/TrackingArea.cpp
+  src/matlab/AmccCalibration.cpp
+  src/matlab/profiling.cpp
+  src/controller/Mutex.cpp
 )
 
 add_dependencies(position_module

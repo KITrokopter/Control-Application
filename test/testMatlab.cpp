@@ -15,7 +15,7 @@
 #include <ros/ros.h>
 
 bool calibrate(Matlab *m) {
-    Position *h = new Position(m->getEngine(), 3);
+    /*Position *h = new Position(m->getEngine(), 3);
     ChessboardData *c = new ChessboardData(7, 7, 57, 57);
     bool ok = h->calibrate(c, 3);
     Vector cam0 = h->getPosition(0);
@@ -34,8 +34,9 @@ bool calibrate(Matlab *m) {
     for (int i = 0; i < 100; i++) {
         pos = h->updatePosition(x, 2, 1);
         printf("Quadcopter 1 moved at position [%f, %f, %f]\n", pos.getV1(), pos.getV2(), pos.getV3());
-    }
     return ok;
+    }*/
+    return true;
 }
 
 void tracking(Matlab *m) {

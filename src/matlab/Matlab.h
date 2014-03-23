@@ -30,6 +30,11 @@ public:
      * @param ep matlab engine
      */
 	Matlab(Engine *ep);
+
+    /**
+     * getter.
+     * @return engine pointer
+     */
 	Engine* getEngine();
 
     /**
@@ -44,6 +49,18 @@ public:
      * @return perpendicular foot of line f and point b
      */
 	Vector perpFootOneLine(Line f, Vector b);
+
+    /**
+     * working without matlab.
+     * calculates perpendicular foot of line f and line g. Result is saved in result
+     * @param f Line where the first perpendicular foot should lie on
+     * @param g Line where the second perpendicular foot should lie on
+     * @param result array of vectors where the perpendicular points should be saved
+     * @return 0 if lines are parallel, result isn't changed
+     *         1 if f and g intersects, result[0] is the intersection point
+     *         2 if f and g are scew, result[0] and result[1] are the perpendicular foot
+     */
+    int perpFootTwoLinesFastCalculation(Line f, Line g, Vector *result);
 
     /**
      * calculates perpendicular foot of line f and line g. Result is saved in result
@@ -85,6 +102,20 @@ public:
      * @return intersection line of E1 and E2
      */
 	Line getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2);
+
+    /**
+     * Working without matlab
+     * Warning: Only working, if line g and E1 or line g.getA() + r * (directV2-g.getA()) intersects!!
+     * calculates intersection line of two plains
+     * @param f Line, that is positionated in plane E1
+     * @param directV1 Point, that is not in line f and is on the plane E1
+     * E1 = f.getA() + r*f.getU() + s*(directV1 - f.getA())
+     * @param g Line that is positionated in plane E2
+     * @param directV2 point, that is not in line g and is on the plane E2
+     * E2 = g.getA() + t* g.getU() + z * (directV2-g.getA())
+     * @return intersection line of E1 and E2
+     */
+    Line getIntersectionLineFastCalculation(Line f, Vector directV1, Line g, Vector directV2);
 };
 
 #endif /* MATLAB_H_ */

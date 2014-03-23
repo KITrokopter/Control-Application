@@ -1,6 +1,6 @@
 #include "MovementQuadruple.hpp"
 
-MovementQuadruple::MovementQuadruple(int newThrust, float newRoll, float newPitch, float newYawrate)
+MovementQuadruple::MovementQuadruple( unsigned int newThrust, float newRoll, float newPitch, float newYawrate)
 {
 	this->thrust = newThrust;
 	this->roll = newRoll;
@@ -8,7 +8,7 @@ MovementQuadruple::MovementQuadruple(int newThrust, float newRoll, float newPitc
 	this->yawrate = newYawrate;		
 }
 
-MovementQuadruple::MovementQuadruple(int newThrust, float newRoll, float newPitch, float newYawrate, long int newTimestamp)
+MovementQuadruple::MovementQuadruple( unsigned int newThrust, float newRoll, float newPitch, float newYawrate, long int newTimestamp)
 {
 	this->thrust = newThrust;
 	this->roll = newRoll;
@@ -17,7 +17,7 @@ MovementQuadruple::MovementQuadruple(int newThrust, float newRoll, float newPitc
 	this->timestamp = newTimestamp;		
 }
 
-void MovementQuadruple::setThrust( int newThrust )
+void MovementQuadruple::setThrust( unsigned int newThrust )
 {
 	this->thrust = newThrust;
 }
@@ -29,7 +29,7 @@ void MovementQuadruple::setRollPitchYawrate(float newRoll, float newPitch, float
 	this->yawrate = newYawrate;	
 }
 
-int MovementQuadruple::getThrust()
+unsigned int MovementQuadruple::getThrust()
 {
 	return this->thrust;
 }

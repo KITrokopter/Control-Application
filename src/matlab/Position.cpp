@@ -16,6 +16,7 @@
 #include <cmath>
 #include <math.h>
 #include <ros/ros.h>
+#include "profiling.hpp"
 
 Position::Position()
 {
@@ -27,7 +28,6 @@ Position::Position()
     } else {
         this->ep = ep;
     }
-    distance = 0;
     this->interpolationDependent = false;
     initialize();
 }
@@ -158,13 +158,13 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         Vector v2 = realCameraPos[2];
         Vector d2 = realCameraOrient[2];
 
-        ROS_DEBUG("Position camera 0: [%f, %f, %f] is directed in [%f, %f, %f]", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
-        ROS_DEBUG("Position camera 1: [%f, %f, %f] is directed in [%f, %f, %f]", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
-        ROS_DEBUG("Position camera 2: [%f, %f, %f] is directed in [%f, %f, %f]", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
+        ROS_DEBUG("Position camera 0: [%.2f, %.2f, %.2f] is directed in [%.2f, %.2f, %.2f]", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
+        ROS_DEBUG("Position camera 1: [%.2f, %.2f, %.2f] is directed in [%.2f, %.2f, %.2f]", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
+        ROS_DEBUG("Position camera 2: [%.2f, %.2f, %.2f] is directed in [%.2f, %.2f, %.2f]", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
 
-        ROS_DEBUG("Distance between camera 0 and 1 is %f", v0.add(v1.mult(-1)).getLength());
-        ROS_DEBUG("Distance between camera 0 and 2 is %f", v0.add(v2.mult(-1)).getLength());
-        ROS_DEBUG("Distance between camera 1 and 2 is %f", v1.add(v2.mult(-1)).getLength());
+        ROS_DEBUG("Distance between camera 0 and 1 is %.2f", v0.add(v1.mult(-1)).getLength());
+        ROS_DEBUG("Distance between camera 0 and 2 is %.2f", v0.add(v2.mult(-1)).getLength());
+        ROS_DEBUG("Distance between camera 1 and 2 is %.2f", v1.add(v2.mult(-1)).getLength());
 
         ROS_DEBUG("Calculating tracking area");
         setTrackingArea(2000);
@@ -283,27 +283,37 @@ void Position::loadValues(int cameraId) {
     }
 }
 
-Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId, bool getPerpFootPoint) {
+Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
+
+    int quadcopterId = cameraLines[0].quadcopterId;
+
     // increments counter for other cameras
     for (int i = 0; i < numberCameras; i++) {
-        if (i != cameraId) {
+        bool tracked = false;
+        for(int j = 0; j < cameraLines.size(); j++) {
+            if (i == cameraLines[j].camNo) {
+                tracked = true;
+            }
+        }
+        if (!(tracked)) {
             imageAge[i]++;
         }
     }
     // resets counter of camera with cameraId
-    imageAge[cameraId] = 0;
-
-    Vector direction;
-    if (cameraId == -1) {
-        return Vector(NAN, NAN, NAN);
+    for(int i = 0; i < cameraLines.size(); i++) {
+        imageAge[cameraLines[i].camNo] = 0;
     }
+
+    Vector* direction = new Vector[cameraLines.size()];
 
     // rotating coordinate system in coordinate system of camera 0 and then in real coordination system
     // direction = rotationMatrix * (camRotMat * quad)
-    direction = (quad.aftermult(camRotMat[cameraId])).aftermult(rotationMatrix);
+    for (int i = 0; i < cameraLines.size(); i++) {
+        direction[i] = (cameraLines[i].cameraVector.aftermult(camRotMat[cameraLines[i].camNo])).aftermult(rotationMatrix);
+        // save result
+        (quadPos[quadcopterId])[cameraLines[i].camNo] = direction[i];
+    }
 
-    // save result
-    (quadPos[quadcopterId])[cameraId] = direction;
 
     // controlling whether all cameras already tracked the quadcopter once
     int valid = 0;
@@ -312,9 +322,10 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId, boo
             valid++;
         }
     }
+
     if (valid != numberCameras) {
         // default value, when not all cameras tracked it yet
-        ROS_DEBUG("Not all cameras did track quadcopter %d yet. Camera %d tracked it at position [%f, %f, %f]\n", quadcopterId, cameraId, direction.getV1(), direction.getV2(), direction.getV3());
+        ROS_DEBUG("Not all cameras did track quadcopter %d yet.\n", quadcopterId);
         Vector nan = Vector(NAN, NAN, NAN);
         return nan;
     } else {
@@ -343,41 +354,49 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId, boo
             }
 
             Matlab *m = new Matlab(ep);
-
+            long int startTime = getNanoTime();
             Vector quadPosition = m->interpolateLines(quadPositions, numberCameras);
+            long int endTime = getNanoTime();
+            ROS_DEBUG("Calculation was %.3f long", (endTime - startTime) / 1e9);
 
             oldPos[quadcopterId] = quadPosition;
             ROS_DEBUG("First seen position of quadcopter %d is [%f, %f, %f]", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3());
-            if (tracking.contains(quadPosition)) {
+            /*if (tracking.contains(quadPosition)) {
                 ROS_DEBUG("In tracking area");
             } else {
                 ROS_DEBUG("Not in tracking area");
-            }
+            }*/
+
+            // as distance of 150 has interpolation factor 0.5
+            distance = 150;
             return quadPosition;
         } else {
-            // not calculated before, first time calculating
+            // calculated before
+
             int tooOld = 0;
             for (int i = 0; i < numberCameras; i++) {
-                if (imageAge[i] > 20) {
+                if (imageAge[i] > 10) {
                     ROS_DEBUG("Information of camera %d is too old.", i);
                     tooOld++;
                 }
             }
 
             if (2 > numberCameras - tooOld) {
-                ROS_DEBUG("Information can't be used, as too much cameras can't track it anymore");
-                return Vector(NAN, NAN, NAN);
+                ROS_WARN("Only camera %d still tracks quadcopter %d.", cameraLines[0].camNo, cameraLines[0].quadcopterId);
             }
 
             Matlab *m = new Matlab(ep);
-
-            // interpolation factor should be tested.
-            Vector position = getPosition(cameraId);
-            // line from camera to tracked object
-            Line tracked = Line(position, direction);
             Vector newPos;
 
-            if (getPerpFootPoint == false) {
+            if (cameraLines.size() > 1) {
+                Line* tracking = new Line[cameraLines.size()];
+                for (int i = 0; i < cameraLines.size(); i++) {
+                    tracking[i] = Line(getPosition(cameraLines[i].camNo), cameraLines[i].cameraVector);
+                }
+                newPos = m->interpolateLines(tracking, cameraLines.size());
+            } else {
+                Vector position = getPosition(cameraLines[0].camNo);
+                Line tracked = Line(position, cameraLines[0].cameraVector);
                 // calulating actual pos
                 if ((interpolationDependent) && (distance != 0)) {
                     if (distance > 200) {
@@ -394,29 +413,20 @@ Vector Position::updatePosition(Vector quad, int cameraId, int quadcopterId, boo
                 } else {
                     newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
                 }
-
-                // calculates distance between last seen position and new calculated position
-                distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
-
-                // saving new Pos
-                ROS_DEBUG("New position of quadcopter %d seen of camera %d is [%f, %f, %f]", quadcopterId, cameraId, newPos.getV1(), newPos.getV2(), newPos.getV3());
-                oldPos[quadcopterId] = newPos;
-                if (tracking.contains(newPos)) {
-                    ROS_DEBUG("In tracking area");
-                } else {
-                    ROS_DEBUG("Not in tracking area");
-                }
-                return newPos;
-            } else {
-                Vector perp = m->perpFootOneLine(tracked, oldPos[quadcopterId]);
-                ROS_DEBUG("Perpendicular foot point is [%f, %f, %f]", perp.getV1(), perp.getV2(), perp.getV3());
-                if (tracking.contains(perp)) {
-                    ROS_DEBUG("In tracking area");
-                } else {
-                    ROS_DEBUG("Not in tracking area");
-                }
-                return perp;
             }
+
+            // calculates distance between last seen position and new calculated position
+            distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
+
+            // saving new Pos
+            ROS_DEBUG("New position of quadcopter %d is [%f, %f, %f]", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3());
+            oldPos[quadcopterId] = newPos;
+            /*if (tracking.contains(newPos)) {
+                ROS_DEBUG("In tracking area");
+            } else {
+                ROS_DEBUG("Not in tracking area");
+            }*/
+            return newPos;
         }
     }
 }
@@ -486,10 +496,6 @@ cv::Mat Position::getDistortionCoefficients(int cameraId) {
 	distortionCoefficients.at<double>(3) = mxGetPr(r)[3];
 	distortionCoefficients.at<double>(4) = mxGetPr(r)[4];
 	
-// 	for (int i = 0; i < 5; i++) {
-// 		ROS_DEBUG("DistortionCoefficients %d: %f", i, distortionCoefficients.at<double>(i));
-// 	}
-	
     mxDestroyArray(r);
 	
 	return distortionCoefficients;
@@ -517,11 +523,7 @@ cv::Mat Position::getIntrinsicsMatrix(int cameraId) {
 	intrinsicsMatrix.at<double>(2, 0) = 0;
 	intrinsicsMatrix.at<double>(2, 1) = 0;
 	intrinsicsMatrix.at<double>(2, 2) = 1;
-	
-// 	for (int i = 0; i < 9; i++) {
-// 		ROS_DEBUG("IntrinsicsMatrix %d: %f", i, intrinsicsMatrix.at<double>(i));
-// 	}
-	
+
     mxDestroyArray(fc);
     mxDestroyArray(cc);
     mxDestroyArray(alpha);

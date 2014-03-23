@@ -6,19 +6,15 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
-#include "IPositionReceiver.hpp"
-#include "../matlab/Vector.h"
-#include "../matlab/Position.h"
-#include "../controller/Mutex.hpp"
+#include "../IPositionReceiver.hpp"
+#include "../../matlab/Vector.h"
+#include "../../matlab/Position.h"
+#include "../../controller/Mutex.hpp"
 
 #include "Graph.hpp"
-
-typedef struct {
-	Vector cameraVector;
-	int camNo;
-	int quadcopterId;
-	bool valid;
-} CameraData;
+#include "CameraData.hpp"
+#include "RRCameraQueue.hpp"
+#include "TrackingQueue.hpp"
 
 class TrackingWorker {
 private:
@@ -27,13 +23,9 @@ private:
 	Position tracker;
 	volatile bool stop;
 
-	std::vector<std::queue<CameraData> > positions;
-	int rrCounter;
-	int maxCamNo;
-	int bufferSize;
-	int minUpdateCount;
-	boost::mutex positionsMutex;
-	boost::condition_variable positionsEmpty;
+	TrackingQueue<RRCameraQueue> queue;
+	boost::mutex queueMutex;
+	boost::condition_variable queueEmpty;
 	
 	// Graphing
 	Graph errorGraph;
@@ -41,14 +33,14 @@ private:
 	void run();
 	
 	void enqueue(CameraData data);
-	CameraData dequeue();
+	std::vector<CameraData> dequeue();
 	bool dataAvailable();
 	bool haveEnoughData(int count);
 public:
 	TrackingWorker(IPositionReceiver *receiver);
 	~TrackingWorker();
 	
-	void updatePosition(Vector cameraVector, int camNo, int quadcopterId);
+	void updatePosition(Vector cameraVector, int camNo, int quadcopterId, long int time);
 	void updatePosition(CameraData cameraData);
 	
 	bool calibrate(ChessboardData *chessboard, int camNo);

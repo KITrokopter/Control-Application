@@ -11,6 +11,7 @@
 #include "engine.h"
 #include <vector>
 #include "TrackingArea.h"
+#include "../position/tracking/CameraData.hpp"
 
 #include <opencv2/core/core.hpp>
 
@@ -208,13 +209,10 @@ public:
 
     /**
      * updates new position of quadcopter.
-     * @param quad is vector pointing to quadcopter of camera with cameraId
-     * @param cameraId Id of camera
-     * @param quadcopterId Id of quadcopter
-     * @param getPerpFootPoint if true return is perpendicular foot point of line to quad and old position of quadcopter, otherwise returns new interpolated position
-     * @return new position of quadcopter or perpendicular foot point
+     * @param cameraLines are lines of some cameras to the same tracked quadcopter
+     * @return new position of quadcopter
      */
-    Vector updatePosition(Vector quad, int cameraId, int quadcopterId, bool getPerpFootPoint = false);
+    Vector updatePosition(std::vector<CameraData> cameraLines);
 
 	
     /**

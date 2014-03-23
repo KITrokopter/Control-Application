@@ -20,9 +20,8 @@
 #include "api_application/System.h"
 #include "../controller/Mutex.hpp"
 #include "../matlab/Position.h"
-#include "TrackingWorker.hpp"
+#include "tracking/TrackingWorker.hpp"
 #include "IdDictionary.hpp"
-#include "Graph.hpp"
 
 class PositionModule {
 private:
