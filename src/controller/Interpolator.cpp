@@ -50,7 +50,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	/* Save latest Position and before-latest Position */
 	Position6DOF positionPast;
 	Position6DOF positionNow;	// positionPast is older than positionNow
-	Position6DOF assumedPos;
+	Position6DOF posAssumed;
 	std::list<Position6DOF>::iterator it = positions.end();
 	int counter = 0;
 	while( (it!=positions.begin()) && (counter<2) )
@@ -68,17 +68,26 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	ROS_INFO("Got positionPast, positionNow.");
 
 	/* Calculate predicted actual position */
-	assumedPos = positions.back();
-	assumedPos = assumedPos.predictNextPosition( positionPast, PREDICT_FUTURE_POSITION_TIME );
+	posAssumed = positions.back();
+	posAssumed = posAssumed.predictNextPosition( positionPast, PREDICT_FUTURE_POSITION_TIME );
+	ROS_INFO("calculated assumedPos");
+
 
 	/* Calculate thrust value - always */
-	double zDistanceA = positionPast.getDistanceZ( target );
-	double zDistanceB = positionNow.getDistanceZ( target );
-	double timediffAB = positionNow.getTimestamp() - positionPast.getTimestamp();
-	double timediffNormalized = (double) timediffAB / 1000000000;	// should be in seconds
-	double absDistanceAB = positionPast.getAbsoluteDistance( positionNow );
-	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDistanceA, zDistanceB, absDistanceAB, timediffNormalized);
+	double zDiffPast = positionPast.getDistanceZ( target );	// unnecessary if prediction works
+	double zDiffNow = positionNow.getDistanceZ( target );
+	double zDiffAssumed = posAssumed.getDistanceZ( target );
+	// unnecessary if prediction works
+/*	double timediffPastNow = positionNow.getTimestamp() - positionPast.getTimestamp();
+	double timediffNormalized = (double) timediffPastNow / 1000000000;	// should be in seconds
+	double absDistancePastNow = positionPast.getAbsoluteDistance( positionNow );
+	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffPast, zDiffNow, absDistancePastNow, timediffNormalized);*/
+	double timediffNowAssumed = posAssumed.getTimestamp() - positionNow.getTimestamp();
+	double timediffNormalized = (double) timediffNowAssumed / 1000000000;	// should be in seconds
+	double absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
+	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized);
 	newMovement.setThrust( newThrust );
+	ROS_INFO("calculated thrust with assumed position");
 	
 	/*if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT ) FIXME
 	{
@@ -192,10 +201,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 				// TODO
 				
 				/* 2 */
-				assumedPos = assumedPos.predictNextPosition( positionNow, PREDICT_FUTURE_POSITION );
+				posAssumed = posAssumed.predictNextPosition( positionNow, PREDICT_FUTURE_POSITION );
 				
 				/* 3 */
-				newMovement = calculateRollPitch( status[id].getRotation(), assumedPos, target );
+				newMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
 			} 
 			else
 			{
