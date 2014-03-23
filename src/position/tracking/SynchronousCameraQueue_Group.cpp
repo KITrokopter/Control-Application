@@ -41,7 +41,7 @@ void SynchronousCameraQueue::Group::calculateValue()
 	// Calculate another value defined by the age of the oldest CameraData
 	double timeValue = minTime - (currentTime - arrivalDelay);
 	timeValue /= maxDelay - arrivalDelay;
-	timeValue *= maxGroupInterval * 1;
+	timeValue *= maxGroupInterval;
 	
 	// Combine base and time value
 	value += (long int) timeValue;

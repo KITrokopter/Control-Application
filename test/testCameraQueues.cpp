@@ -48,14 +48,22 @@ string testGrouping()
 	insertData(&q, 2, 17);
 	insertData(&q, 2, 29);
 	insertData(&q, 2, 36);
-	insertData(&q, 1, 40);
+	insertData(&q, 1, 41);
 	
 	setNanoTime(45);
 	
 	vector<CameraData> result = q.dequeue();
 	
-	for (vector<CameraData>::iterator it = result.begin(); it != result.end(); it++) {
+	/*for (vector<CameraData>::iterator it = result.begin(); it != result.end(); it++) {
 		cout << "Result cam/time: " << it->camNo << "/" << it->time << endl;
+	}*/
+	
+	if (result.size() != 3) {
+		return "1: Result size should be 3, but is " + toString(result.size());
+	}
+	
+	if (q.getSize() != 3) {
+		return "2: Queue size should be 3, but is " + toString(q.getSize());
 	}
 	
 	return "";
@@ -133,9 +141,7 @@ string testDequeue()
 	data.cameraVector = Vector(3, 3, 3);
 	q.enqueue(data);
 	
-	ROS_DEBUG("testDequeue(): Dequeueing");
 	vector<CameraData> result = q.dequeue();
-	ROS_DEBUG("testDequeue(): Dequeued");
 	
 	if (result.size() != 3) {
 		return "1: Result size should be 3, but is " + toString(result.size());
