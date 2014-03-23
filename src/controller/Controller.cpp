@@ -332,7 +332,6 @@ void Controller::calculateMovement()
 					break;
 				case CALCULATE_MOVE:
 					//ROS_INFO("Move %i", i);
-					//convertMovement(i);
 					break;
 				case CALCULATE_LAND:
 					if(numberOfLanded > 1 && i == 0)
@@ -610,7 +609,7 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 {
 	ROS_INFO("Service shutdown has been called");
 	pthread_create(&tShutdownFormation, NULL, &startThreadShutdown, this);
-	ROS_INFO("Thread tshutdownFormation set up");
+	ROS_INFO("Thread tShutdownFormation set up");
 	return true;
 	
 }
@@ -690,7 +689,7 @@ bool Controller::checkInput(int internId)
 	if(currentTime - lastForm > TIME_UPDATED_END && quadStatus == CALCULATE_MOVE)
 	{
 		//std::string message = std::string("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
-		std::string message = "No new formation moevement data has been received";
+		std::string message = "No new formation movement data has been received";
 		//ROS_INFO("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//emergencyRoutine(message);
 		return false;
