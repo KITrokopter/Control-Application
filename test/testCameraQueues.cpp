@@ -66,6 +66,31 @@ string testGrouping()
 		return "2: Queue size should be 3, but is " + toString(q.getSize());
 	}
 	
+	for (vector<CameraData>::iterator it = result.begin(); it != result.end(); it++) {
+		switch (it->camNo) {
+			case 0:
+				if (it->time != 30) {
+					return "3: Time should be 30, but was " + toString(it->time);
+				}
+				
+				break;
+				
+			case 1:
+				if (it->time != 31) {
+					return "4: Time should be 31, but was " + toString(it->time);
+				}
+				
+				break;
+				
+			case 2:
+				if (it->time != 29) {
+					return "5: Time should be 29, but was " + toString(it->time);
+				}
+				
+				break;
+		}
+	}
+	
 	return "";
 }
 
