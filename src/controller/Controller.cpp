@@ -599,12 +599,12 @@ void Controller::sendMovementAll()
  				//ROS_INFO("   %ld ct, %ld timestamp", currentTime, aTimestamp); 
 				//usleep(500000);
 				int counter = 0;
-				while( it2->getTimestamp()<currentTime && it2 != this->listFutureMovement[i].end() )
+				while( (it2->getTimestamp()<currentTime) && (it2!=this->listFutureMovement[i].end()) )
 				{
 					++it2;
 					counter++;
 				}
-				if( counter > 0 )
+				if( counter > 1 )
 				{
 					//--it2;
 					counter--;
