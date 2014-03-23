@@ -204,6 +204,10 @@ public:
      * @return center of tracking area
      */
     Vector getCenterOfTrackingArea();
+
+    double increaseSearch(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep, double posChange, double height, double heightPos, double heightNeg, int value);
+    double binarySearch(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep, double leftBorder, double rightBorder, double posChange, double height, double heightPos, double heightNeg, int value);
+
 };
 
 #endif /* TRACKINGAREA_H_ */
