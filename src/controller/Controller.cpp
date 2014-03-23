@@ -610,24 +610,25 @@ void Controller::sendMovementAll()
 					counter--;
 					this->listFutureMovement[i].erase( this->listFutureMovement[i].begin(), it2 );
 				}
-			//ROS_INFO("%i",i);
-			msg.thrust = this->listFutureMovement[i].front().getThrust();
-			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_START)
-			{
-				ROS_INFO("Send thrust movement all %u", msg.thrust);
-			}
-			msg.roll = this->listFutureMovement[i].front().getRoll();
-			msg.pitch = this->listFutureMovement[i].front().getPitch();
-			msg.yaw = this->listFutureMovement[i].front().getYawrate();
-			this->Movement_pub[i].publish(msg);		
-			//this->listFutureMovement[i].front().setTimestamp( currentTime );
+				//ROS_INFO("%i",i);
+				msg.thrust = this->listFutureMovement[i].front().getThrust();
+				if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_START)
+				{
+					ROS_INFO("Send thrust movement all %u", msg.thrust);
+				}
+				msg.roll = this->listFutureMovement[i].front().getRoll();
+				msg.pitch = this->listFutureMovement[i].front().getPitch();
+				msg.yaw = this->listFutureMovement[i].front().getYawrate();
+				this->Movement_pub[i].publish(msg);
+				//this->listFutureMovement[i].front().setTimestamp( currentTime );
 
-			// Save Element (TODO only if not too young)
-			this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
-			while( this->listSentQuadruples[i].size() > 5 )	// TODO global variable
-			{
-				// Remove oldest elements
-				this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
+				// Save Element (TODO only if not too young)
+				this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
+				while( this->listSentQuadruples[i].size() > 5 )	// TODO global variable
+				{
+					// Remove oldest elements
+					this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
+				}
 			}
 		}
 	}
