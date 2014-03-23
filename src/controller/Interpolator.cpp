@@ -28,23 +28,114 @@ MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> s
 
 MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id)
 {
-
-	/* Nothing has been sent so far. */
-	if( sentQuadruples.size() == 0 )
-	{
-		return MovementQuadruple(THRUST_START, 0, 0, 0);
-	}
-
-	/* A MovementQuadruple has been sent before. */
-	MovementQuadruple newMovement = sentQuadruples.back();
 	long int currentTime = getNanoTime();
-	newMovement.setTimestamp( currentTime );
-	
-	if( sentQuadruples.size() < 3 || positions.size() < 3 )
+	MovementQuadruple newMovement = MovementQuadruple(THRUST_START, 0, 0, 0); // Nothing has been sent so far
+
+	if( sentQuadruples.size() > 0 )
 	{
-		ROS_INFO("Not enough data in calculateNextMQ.");
-		return newMovement;
+		newMovement = sentQuadruples.back();	// A MovementQuadruple has been sent before
 	}
+	newMovement.setTimestamp( currentTime );
+
+	checkState( id );
+	switch( this->status[id].getState() )
+	{
+		case UNSTARTED:
+			ROS_INFO("Error in switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
+			newMovement.setThrust( THRUST_MIN );
+			newMovement.setRollPitchYawrate( 0, 0, 0 );
+			return newMovement;
+			//break;
+		case STARTED:
+			if( this->status[id].getStarted() > currentTime + timeDiff1 )
+			{
+				newMovement.setRollPitchYawrate( -ROLL_MAX, -PITCH_MAX, 0 );
+			}
+			else
+			{
+				newMovement.setRollPitchYawrate( ROLL_MAX, PITCH_MAX, 0 );
+			}
+			return newMovement;
+			//break;
+		case CALC:
+			if( positions.size() > 2 )	// Enough data to calculate new rpy values (at least two values)
+			{
+				newMovement.setRollPitchYawrate( 0, 0, 0 );
+				Position6DOF pos;
+				int counter = 0;
+				for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
+				{
+					pos.setTimestamp( (*it).getTimestamp() );
+					if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
+					{
+						pos.setPosition( (*it).getPosition() );
+						double diffX = pos.getPosition()[0] - target.getPosition()[0];
+						double diffY = pos.getPosition()[1] - target.getPosition()[1];
+						double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
+						diffX = diffX / absDistance;
+						diffY = diffY / absDistance;
+						this->status[id].setRotation( cos(diffY) );	// FIXME check
+						this->status[id].setLastUpdated( currentTime );
+						break;
+					}
+					counter++;
+				}
+				this->status[id].setState( DONE );
+			}
+			else
+			{
+				// TODO Error, shouldn't have happened after that time (timediff2)
+			}
+			newMovement.setRollPitchYawrate( 0, 0, 0 );
+			return newMovement;
+		default:
+			break;
+	}
+
+	switch( this->status[id].getState() )
+	{
+		case DONE:
+			if( this->status[id].getStarted() <= currentTime + timeDiff3 )
+			{
+				/* Wait before starting to stabilize */
+				newMovement.setRollPitchYawrate( 0, 0, 0 );
+				return newMovement;
+			}
+
+			if( sentQuadruples.size() < 3 || positions.size() < 3 )
+			{
+				ROS_INFO("Not enough data in calculateNextMQ, some assumption is wrong..."); // FIXME error not info
+				return newMovement;
+			}
+			/*
+			 * Calculate with given calibration data, actually
+			 * trying to "stabilize" now
+			 */
+
+			/*
+			 * Calculate new value every MIN_TIME_TO_WAIT seconds
+			 * 1 Calculate new calibration (due to yaw-movement, if roll/pitch-diff high)
+			 * 2 Calculate next position (take last speedvector)
+			 * 3 Calculate correction (calibration data, predictedPosition, target)
+			 */
+
+			/* 1 */
+			// TODO
+
+			/* 2 */
+			posAssumed = posAssumed.predictNextPosition( positionNow, PREDICT_FUTURE_POSITION );
+
+			/* 3 */
+			newMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
+
+			break;
+		default:
+			ROS_INFO("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
+			return newMovement;
+			//break;
+	}
+	
+
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
 	/* Save latest Position and before-latest Position */
@@ -65,7 +156,20 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		--it;
 		counter++;
 	}
-	ROS_INFO("Got positionPast, positionNow.");
+	// FIXME the following is an alternative to the previous while-construct. Both untested.
+/*	while( (it!=positions.begin()) && (counter<2) )
+	{
+		if( counter == 1 )
+		{
+			positionPast.setOrientation( (*it).getOrientation() );
+			positionPast.setPosition( (*it).getPosition() );
+			positionPast.setTimestamp( (*it).getTimestamp() );
+			positionNow = positions.front();
+		}
+		--it;
+		counter++;
+	}*/
+	ROS_INFO("Got positionPast and positionNow.");
 
 	/* Calculate predicted actual position */
 	posAssumed = positions.back();
@@ -77,7 +181,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	double zDiffPast = positionPast.getDistanceZ( target );	// unnecessary if prediction works
 	double zDiffNow = positionNow.getDistanceZ( target );
 	double zDiffAssumed = posAssumed.getDistanceZ( target );
-	// unnecessary if prediction works
+	// unnecessary if prediction works, leave for testing
 /*	double timediffPastNow = positionNow.getTimestamp() - positionPast.getTimestamp();
 	double timediffNormalized = (double) timediffPastNow / 1000000000;	// should be in seconds
 	double absDistancePastNow = positionPast.getAbsoluteDistance( positionNow );
@@ -89,11 +193,11 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	newMovement.setThrust( newThrust );
 	ROS_INFO("calculated thrust with assumed position");
 	
-	/*if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT ) FIXME
+	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
-		//ROS_INFO("Take old value, changes of sent values need to be visible for calculateNextMQ.");
+		ROS_INFO("Do not change rpy-values, movement of sent values need to be visible.");
 		return newMovement;
-	}*/	
+	}
 
 	int size = positions.size();
 	double deltaTarget[size];	// Absolute distance to latest target
@@ -133,89 +237,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	
 
 
-	double rpdiff = 4;	// diff for roll and pitch values
-	checkState( id );	
-	switch( this->status[id].getState() )
-	{
-		case UNSTARTED:
-			break;			
-		case STARTED:
-			if( this->status[id].getStarted() > currentTime + timeDiff1 )
-			{
-				newMovement.setRollPitchYawrate( -rpdiff, -rpdiff, 0 );
-				return newMovement;
-			}
-			else
-			{
-				newMovement.setRollPitchYawrate( rpdiff, rpdiff, 0 );
-				return newMovement;
-			}
-			break;
-		case CALC:
-			if( counter > 1 )	// Enough data to calculate new rpy values (at least two values)
-			{
-				newMovement.setRollPitchYawrate( 0, 0, 0 );
-				Position6DOF pos;
-				int counter = 0;
-				for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
-				{
-					pos.setTimestamp( (*it).getTimestamp() );
-					if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
-					{
-						pos.setPosition( (*it).getPosition() );
-						double diffX = pos.getPosition()[0] - target.getPosition()[0];
-						double diffY = pos.getPosition()[1] - target.getPosition()[1];
-						double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
-						diffX = diffX / absDistance;
-						diffY = diffY / absDistance;
-						this->status[id].setRotation( cos(diffY) );	// FIXME check
-						this->status[id].setLastUpdated( currentTime );					
-						break;
-					}
-					counter++;
-				}
-				this->status[id].setState( DONE ); 				
-			}	
-			else
-			{
-				// TODO Error, shouldn't have happened after that time (timediff2)
-			}
-			newMovement.setRollPitchYawrate( 0, 0, 0 );
-			break;
-		case DONE:
-			if( this->status[id].getStarted() > currentTime + timeDiff3 )
-			{
-				/* 
-				 * Calculate with given calibration data, actually
-				 * trying to "stabilize" now
-				 */
 
-				/*
-				 * Calculate new value every MIN_TIME_TO_WAIT seconds
-				 * 1 Calculate new calibration (due to yaw-movement, if roll/pitch-diff high)
-				 * 2 Calculate next position (take last speedvector)
-				 * 3 Calculate correction (calibration data, predictedPosition, target)
-				 */
-
-				/* 1 */
-				// TODO
-				
-				/* 2 */
-				posAssumed = posAssumed.predictNextPosition( positionNow, PREDICT_FUTURE_POSITION );
-				
-				/* 3 */
-				newMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
-			} 
-			else
-			{
-				/* Wait before starting to stabilize */
-				newMovement.setRollPitchYawrate( 0, 0, 0 );
-			}
-			break;
-		default:	
-			newMovement.setRollPitchYawrate( 0, 0, 0 );		
-			break;
-	}		
 	return newMovement;
 }
 

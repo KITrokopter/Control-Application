@@ -229,6 +229,13 @@ void Controller::sendMovementAll()
 			{
 				this->listFutureMovement[i].pop_back();
 			}
+			/* Checking Quadruple to send */
+			if( this->listFutureMovement[i].size() > 0 )
+			{
+				// returns a boolean, could be used... FIXME
+				this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+			}
+
 			//ROS_INFO("%i",i);
 			msg.thrust = this->listFutureMovement[i].front().getThrust();
 			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_START)
