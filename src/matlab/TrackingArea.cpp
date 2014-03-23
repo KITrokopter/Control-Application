@@ -325,7 +325,7 @@ double TrackingArea::binarySearch(std::vector<Vector> cameraPosition, std::vecto
         while (fabs(rightBorder - leftBorder) > 1) {
 
             // checks whether all corners of tracking area are still tracked of all cameras
-            if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, up, ep)) {
+            if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, low, ep)) {
 
                 // border is between middle and rightBorder
                 leftBorder = middle;
@@ -541,7 +541,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
         double upperBorder = increaseSearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, 0, 0, 0, 0, 2);
         upperBorder = binarySearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, upperBorder, 2 * upperBorder, 0, 0, 0, 0, 2);
-        ROS_DEBUG("maximal upper size is %.2f", maxCenterSize * 2);
+        ROS_DEBUG("maximal upper size is %.2f", upperBorder);
 
         /**
           * searching lower border of tracking area
@@ -551,7 +551,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
         double lowerBorder = increaseSearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, 0, 0, 0, 0, 3);
         lowerBorder = binarySearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, lowerBorder, 2 * lowerBorder, 0, 0, 0, 0, 3);
-        ROS_DEBUG("maximal lower size is %.2f", lowerBorder * 2);
+        ROS_DEBUG("maximal lower size is %.2f", lowerBorder);
 
         // increase tracking area with calculated values
         increaseTrackingArea(maxWidth, optHeight, upperBorder, lowerBorder);
