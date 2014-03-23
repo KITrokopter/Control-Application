@@ -13,8 +13,8 @@
 x
 #define MAX_NUMBER_QUADCOPTER_HIGH 10	// TODO equals MAX_NUMBER_QUADCOPTER
 #define MIN_TIME_TO_WAIT 500000000 	// in ns, only for rpy-values
-#define PREDICT_FUTURE_POSITION 200000000	// in ns
-#define PREDICT_WITH_STEPS_IN_ADVANCE 1 	// Interpolate with ? number of latest positions (unused)
+#define PREDICT_FUTURE_POSITION_TIME 200000000	// in ns
+#define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
 
 #define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
 #define REACHING_HEIGHT_DIFF 0.6 // Factor 0 <= x <= 1
@@ -35,7 +35,7 @@ x
  * TODO test of speed, either optimize or save data-to-sent in advance
  * 
  * TODO list future movement - fix
- * TODO 
+ * TODO use of timestamps
  * 
  */
 

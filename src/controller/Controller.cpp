@@ -170,9 +170,9 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			//ROS_INFO("Valid");
 			/* Quadcopter is tracked */
 			trackedArrayMutex.lock();
-			bool track = this->tracked[id];
+			bool trackedLocal = this->tracked[id];
 			trackedArrayMutex.unlock();
-			if( track == false )
+			if( trackedLocal == false )
 			{
 				//ROS_INFO("track false");
 				/* Quadcopter has not been tracked before */
