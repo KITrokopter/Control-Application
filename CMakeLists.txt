@@ -308,7 +308,7 @@ add_executable(test_camera_queues
   
   src/matlab/Vector.cpp
   src/matlab/Matrix.cpp
-  src/matlab/profiling.cpp
+  test/helpers/profiling.cpp
 )
 
 target_link_libraries(test_camera_queues

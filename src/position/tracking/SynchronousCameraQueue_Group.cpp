@@ -31,8 +31,9 @@ SynchronousCameraQueue::Group::Group(std::list<Bucket>::iterator it, long int cu
 void SynchronousCameraQueue::Group::calculateValue()
 {
 	// First, define base value by interval length times camera count
-	long int value = 2 * maxGroupInterval - (maxTime - minTime);
+	long int value = maxGroupInterval - (maxTime - minTime);
 	value *= data.size();
+	value += maxGroupInterval;
 	
 	// Calculate another value defined by the age of the oldest CameraData
 	double timeValue = minTime - (currentTime - arrivalDelay);
