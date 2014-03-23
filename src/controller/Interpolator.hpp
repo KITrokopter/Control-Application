@@ -32,11 +32,14 @@ x
 #define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
 
 /*
- * TODO hold
  * TODO test of speed, either optimize or save data-to-sent in advance
  * 
  * TODO list future movement - fix
  * TODO use of timestamps
+ * TODO ROS_INFO, ROS_WARN, ROS_ERROR, ROS_DEBUG - correct use
+ * TODO flight of circles, rotation, ...
+ *
+ * TODO hold
  * 
  */
 
