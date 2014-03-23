@@ -44,17 +44,21 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	{
 		ROS_INFO("Not enough data in calculateNextMQ.");
 		return newMovement;
-	} else if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
+	} 
+	
+	/* Calculate predicted actual position */
+	
+	/*if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT ) FIXME
 	{
 		//ROS_INFO("Take old value, changes of sent values need to be visible for calculateNextMQ.");
 		return newMovement;
-	}
+	}*/	
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
 	int size = positions.size();
 	double deltaTarget[size];	// Absolute distance to latest target
 	double deltaAbsPosition[size-1];	// equals speed	/* arraysize FIXME */
-	double deltaSpeed[size-2];	// equals acceleration	/* arraysize FIXME */
+	//double deltaSpeed[size-2];	// equals acceleration	/* arraysize FIXME */
 	int counter = 0;
 	Position6DOF positionA, positionB;	// positionA is older than positionB
 	this->status[id].setLastUpdated( currentTime );
@@ -68,7 +72,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		deltaTarget[counter] = positionA.getAbsoluteDistance( target );
 		if( counter > 0 )
 		{
-			deltaAbsPosition[counter-1] = positionB.getAbsoluteDistance( positionA );
+			//deltaAbsPosition[counter-1] = positionB.getAbsoluteDistance( positionA );
 			if( counter > 1 )
 			{
 				double speedDelta = deltaAbsPosition[counter-1] - deltaAbsPosition[counter-2];	
@@ -78,7 +82,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 					speedDelta = -speedDelta;
 				}
 				double timeDelta = positionB.getTimestamp() - positionA.getTimestamp();
-				deltaSpeed[counter-2] = speedDelta / timeDelta;
+				//deltaSpeed[counter-2] = speedDelta / timeDelta;
 			}
 		} 
 		if( positionA.getTimestamp() != positions.back().getTimestamp() )
@@ -88,7 +92,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		counter++;
 	}
 	
-	/* Calculate thrust value */	
+	/* Calculate thrust value - always */	
 	if( counter > 1 )	// Enough data to calculate new thrust value (at least two values)
 	{
 		/*positionA.setPosition( positions.back().getPosition() );
@@ -102,8 +106,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		newMovement.setThrust( newThrust ); 
 	}
 
-	/* Calculate rest */
-	double rpdiff = 3;	// diff for roll and pitch values
+	double rpdiff = 4;	// diff for roll and pitch values
 	checkState( id );	
 	switch( this->status[id].getState() )
 	{

@@ -12,7 +12,7 @@
 #include "../matlab/profiling.hpp"
 x
 #define MAX_NUMBER_QUADCOPTER_HIGH 10	// TODO equals MAX_NUMBER_QUADCOPTER
-#define MIN_TIME_TO_WAIT 500000000 	// in ns
+#define MIN_TIME_TO_WAIT 500000000 	// in ns, only for rpy-values
 #define PREDICT_FUTURE_POSITION 200000000	// in ns
 #define PREDICT_WITH_STEPS_IN_ADVANCE 1 	// Interpolate with ? number of latest positions (unused)
 
