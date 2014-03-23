@@ -225,7 +225,7 @@ void Controller::sendMovementAll()
 		this->movementStatusMutex.unlock();
 		if( quadStatus != CALCULATE_NONE )
 		{			
-			while( this->listFutureMovement[i].size() > 1 )
+			while( this->listFutureMovement[i].size() > 1 )	// TODO
 			{
 				this->listFutureMovement[i].pop_back();
 			}
@@ -324,14 +324,14 @@ void Controller::calculateMovement()
 					{
 						//ROS_INFO("Stabilize %i", i);
 					}
-					//stabilize( i );
+					stabilize( i );	/* TODO */
 					break;
 				case CALCULATE_HOLD:	
 					ROS_INFO("Hold %i", i);
-					hold( i );				
-					/* TODO */					
+					hold( i );	/* TODO */					
 					break;
 				case CALCULATE_MOVE:
+					/* TODO */
 					//ROS_INFO("Move %i", i);
 					//convertMovement(i);
 					break;
@@ -1304,12 +1304,7 @@ void Controller::stabilize( int internId )
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
 	this->listTargetsMutex.unlock();
-	/*
-	if() // TODO dateNow-dateOfLatestCalculation < CALCULATE_STABILIZE_STEP )
-	{
-		return;
-	}
-	*/
+	
 	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
 	
 	this->listFutureMovement[internId].clear();
