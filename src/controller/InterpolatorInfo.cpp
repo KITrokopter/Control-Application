@@ -73,3 +73,11 @@ void InterpolatorInfo::setRotation( double newRotation )
     this->rotation = newRotation;
 }
 
+bool InterpolatorInfo::isNegativeSign()
+{
+	return negativeSign;
+}
+
+void InterpolatorInfo::setNegativeSign(bool negativeSign) {
+	this->negativeSign = negativeSign;
+}

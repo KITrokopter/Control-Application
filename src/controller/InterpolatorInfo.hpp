@@ -39,6 +39,8 @@ public:
 	void setX( double newX );
 	void setY( double newY );
 	void setRotation( double newRotation );
+	bool isNegativeSign();
+	void setNegativeSign(bool negativeSign);
 
 protected:
 
@@ -58,6 +60,7 @@ private:
 	double x;		// 0-x-roll, 1-y-pitch
 	double y;
 	double rotation;	// in rad; compared to "North" (pitch=1), counterclockwise
+	bool negativeSign;
 
 };
 

@@ -4,6 +4,7 @@
 
 unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized );
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest );
+bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF target );
 
 Interpolator::Interpolator()
 {
@@ -75,6 +76,8 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 						diffX = diffX / absDistance;
 						diffY = diffY / absDistance;
 						this->status[id].setRotation( acos( diffY ) );	// FIXME check
+						this->status[id].setNegativeSign( negativeRotationalSign(this->status[id].getRotation(), pos, target ) );	// FIXME check
+
 						this->status[id].setLastUpdated( currentTime );
 						break;
 					}
@@ -185,7 +188,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 
 
 	 /* Calculate new calibration (due to yaw-movement, if |roll|,|pitch| were high enough) */
-	// TODO
+	if( ROTATIONAL_CORRECTION )
+	{
+		// TODO
+	}
 
 	/* Calculate correction (calibration data, predictedPosition, target) */
 	MovementQuadruple rpyMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
@@ -300,9 +306,34 @@ void Interpolator::checkState( int id )
 	/*	if( this->status[id] == UNSTARTED )*/
 }
 
+bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF target )
+{
+	/* values of the Matrix, mij is value of i. line and j. column  */
+	double m11 = cos( rotation );
+	double m12 = -sin( rotation );
+	double m21 = sin( rotation );
+	double m22 = cos( rotation );
+	double current = pos.getPosition();
+    double v1 = m11 * current[0] + m12 * current[1];
+    double v2 = m21 * current[0] + m22 * current[1];
+    double error = sqrt((v1-current[0])*(v1-current[0]) + (v2-current[1])*(v2-current[1]));
+    if( error < 0.5 )
+    {
+    	return false;
+    }
+    return true;
+}
+
 MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target )	
 {
-	
+	/* values of the Matrix, mij is value of i. line and j. column  */
+	double m11 = cos( rotation );
+	double m12 = -sin( rotation );
+	double m21 = sin( rotation );
+	double m22 = cos( rotation );
+	double current = pos.getPosition();
+    double v1 = m11 * current[0] + m12 * current[1];
+    double v2 = m21 * current[0] + m22 * current[1];
 }
 
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest ) 
