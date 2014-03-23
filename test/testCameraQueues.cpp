@@ -1,11 +1,21 @@
 #include <iostream>
 #include <string>
+#include <sstream>
+
+#include <ros/ros.h>
 
 #define DEBUG_TIME
 #include "../src/matlab/profiling.hpp"
 #include "../src/position/tracking/SynchronousCameraQueue.hpp"
 
 using namespace std;
+
+string toString(long int i)
+{
+	stringstream ss;
+	ss << i;
+	return ss.str();
+}
 
 string testDataAvailable()
 {
@@ -51,6 +61,70 @@ string testDataAvailable()
 	return "";
 }
 
+string testDequeue()
+{
+	setNanoTime(0);
+	
+	SynchronousCameraQueue q(10, 20, 10);
+	
+	CameraData data;
+	data.valid = true;
+	data.camNo = 0;
+	data.quadcopterId = 23;
+	data.time = 0;
+	data.cameraVector = Vector(1, 1, 1);
+	q.enqueue(data);
+	
+	data.camNo = 1;
+	data.cameraVector = Vector(2, 2, 2);
+	q.enqueue(data);
+	
+	data.camNo = 2;
+	data.cameraVector = Vector(3, 3, 3);
+	q.enqueue(data);
+	
+	vector<CameraData> result = q.dequeue();
+	
+	if (result.size() != 3) {
+		return "1: Result size should be 3, but is " + toString(result.size());
+	}
+	
+	if (q.getSize() != 0) {
+		return "2: Queue size should be 0, but is " + toString(result.size());
+	}
+	
+	return "";
+}
+
+string testEnqueue()
+{
+	setNanoTime(0);
+	
+	SynchronousCameraQueue q(10, 20, 10);
+	
+	CameraData data;
+	data.valid = true;
+	data.camNo = 0;
+	data.quadcopterId = 23;
+	data.time = 0;
+	data.cameraVector = Vector(1, 1, 1);
+	q.enqueue(data);
+	
+	data.camNo = 1;
+	data.cameraVector = Vector(2, 2, 2);
+	q.enqueue(data);
+	
+	data.camNo = 2;
+	data.cameraVector = Vector(3, 3, 3);
+	q.enqueue(data);
+	
+	if (q.getSize() != 3) {
+		return "1: Size should be 3, but is " + toString(q.getSize());
+	}
+	
+	return "";
+}
+
 void test(string name, string (*f)())
 {
 	cout << "EXECUTING: " << name << " ... ";
@@ -71,6 +145,13 @@ int main()
 	cout << "=====================================================================";
 	cout << endl;
 	
+	// Enable debug level logging.
+	if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+		ros::console::notifyLoggerLevelsChanged();
+	}
+	
+	test("TestEnqueue", testEnqueue);
+	test("TestDequeue", testDequeue);
 	test("TestDataAvailable", testDataAvailable);
 	
 	cout << "=====================================================================";
