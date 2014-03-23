@@ -1,6 +1,6 @@
 #include "Controller.hpp"
 
-bool closeToTarget( Position6DOF position1, Position6DOF position2 );
+bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
 void* startThreadCalculateMovement(void* something);
 void* startThreadBuildFormation(void* something);
 void* startThreadShutdown(void* something);
@@ -1394,7 +1394,7 @@ bool Controller::isStable( int internId )
 		{
 			if( counter==compareTime[0] || counter==compareTime[1] || counter==compareTime[2] )
 			{
-				if( !closeToTarget( listPositions[internId].back(), *rit ) )
+				if( !closeToTarget( listPositions[internId].back(), *rit, RANGE_STABLE ) )
 				{
 					return false;
 				}
@@ -1416,10 +1416,10 @@ bool Controller::isStable( int internId )
     }
 }
 
-bool closeToTarget( Position6DOF position1, Position6DOF position2 )
+bool closeToTarget( Position6DOF position1, Position6DOF position2, double range )
 {
 	double distance = position1.getAbsoluteDistance( position2 );
-	if( distance < RANGE_STABLE )
+	if( distance < range )
 	{
 		return true;
 	}

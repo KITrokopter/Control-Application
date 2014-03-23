@@ -189,7 +189,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	 /* Calculate new calibration (due to yaw-movement, if |roll|,|pitch| were high enough) */
 	if( ROTATIONAL_CORRECTION )
 	{
-		// TODO
+		/*
+		 * sent |roll|+|pitch| = change
+		 * change > some threshold?
+		 */
 	}
 
 	/* Calculate correction (calibration data, predictedPosition, target) */
@@ -336,6 +339,11 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
     double newRoll = v1 * ROLL_MAX;
     double newPitch = v2 * PITCH_MAX;
     double newYawrate = 0;
+    if( closeToTarget( pos, target, RANGE_STABLE ) )
+    {
+        double newRoll = newRoll / 2;
+        double newPitch = newPitch / 2;
+    }
     return MovementQuadruple( 0, newRoll, newPitch, newYawrate );
 }
 
