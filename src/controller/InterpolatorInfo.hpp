@@ -57,7 +57,7 @@ private:
 	long int lastUpdated;	// used in latest state "DONE", before only "started" is relevant
 	double x;		// 0-x-roll, 1-y-pitch
 	double y;
-	double rotation;	// in rad
+	double rotation;	// in rad; compared to "North" (pitch=1), counterclockwise
 
 };
 

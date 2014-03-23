@@ -16,6 +16,9 @@ x
 #define PREDICT_FUTURE_POSITION_TIME 200000000	// in ns
 #define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
 
+#define ROTATIONAL_CORRECTION 0	// 0-no correction; 1-always take new value; linear in between wouldn't work
+#define POSITIONED_NORTH_AT_START 0	// 0 or 1, used as bool, North means pitch+ -> y+
+
 #define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
 #define REACHING_HEIGHT_DIFF 0.6 // Factor 0 <= x <= 1
 

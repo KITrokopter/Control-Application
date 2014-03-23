@@ -29,6 +29,13 @@ void MovementQuadruple::setRollPitchYawrate(float newRoll, float newPitch, float
 	this->yawrate = newYawrate;	
 }
 
+void MovementQuadruple::setRollPitchYawrate( MovementQuadruple toCopy)
+{
+	this->roll = toCopy.getRoll();
+	this->pitch = toCopy.getPitch();
+	this->yawrate = toCopy.getYawrate();
+}
+
 unsigned int MovementQuadruple::getThrust()
 {
 	return this->thrust;

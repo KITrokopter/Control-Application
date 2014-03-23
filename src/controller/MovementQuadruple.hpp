@@ -15,6 +15,7 @@ class MovementQuadruple
 		float getPitch();
 		float getYawrate();
 		void setRollPitchYawrate(float newRoll, float newPitch, float newYawrate);
+		void setRollPitchYawrate( MovementQuadruple toCopy);
 		
 		long int getTimestamp();
 		void setTimestamp( long int newTimestamp );

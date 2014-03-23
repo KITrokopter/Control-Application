@@ -74,7 +74,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 						double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
 						diffX = diffX / absDistance;
 						diffY = diffY / absDistance;
-						this->status[id].setRotation( cos(diffY) );	// FIXME check
+						this->status[id].setRotation( acos( diffY ) );	// FIXME check
 						this->status[id].setLastUpdated( currentTime );
 						break;
 					}
@@ -183,12 +183,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		return newMovement;
 	}
 
-	/*
-	 * Calculate new calibration (due to yaw-movement, if roll/pitch-diff high)
-	 * Calculate correction (calibration data, predictedPosition, target)
-	 */
 
-	newMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
+	 /* Calculate new calibration (due to yaw-movement, if |roll|,|pitch| were high enough) */
+	// TODO
+
+	/* Calculate correction (calibration data, predictedPosition, target) */
+	MovementQuadruple rpyMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
 	this->status[id].setLastUpdated( currentTime );
 	
 
