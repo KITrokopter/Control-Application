@@ -176,29 +176,20 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	newMovement.setThrust( newThrust );
 	ROS_INFO("calculated thrust with assumed position");
 
+	/* Calculate new rpy-values every MIN_TIME_TO_WAIT nanoseconds */
 	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
 		ROS_INFO("Do not change rpy-values, movement of sent values need to be visible.");
 		return newMovement;
 	}
 
-
 	/*
-	 * Calculate new value every MIN_TIME_TO_WAIT seconds
-	 * 1 Calculate new calibration (due to yaw-movement, if roll/pitch-diff high)
-	 * 2 Calculate next position (take last speedvector)
-	 * 3 Calculate correction (calibration data, predictedPosition, target)
+	 * Calculate new calibration (due to yaw-movement, if roll/pitch-diff high)
+	 * Calculate correction (calibration data, predictedPosition, target)
 	 */
 
-	/* 1 */
-	// TODO
-
-	/* 2 */
-	posAssumed = posAssumed.predictNextPosition( positionNow, PREDICT_FUTURE_POSITION );
-
-	/* 3 */
 	newMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
-
+	this->status[id].setLastUpdated( currentTime );
 	
 
 	int size = positions.size();
@@ -265,8 +256,6 @@ unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest,
 	 * 	declining too slow
 	 * 	negative distance to target is increasing
 	 * 	(speed is too high)
-	 * 
-	 * All that iff received position-values seem realistic 	TODO
 	 */
 	
 	if( abs(zDistanceLatest) < DISTANCE_CLOSE_TO_TARGET ) 
