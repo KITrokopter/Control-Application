@@ -100,6 +100,7 @@ protected:
 	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
 	void SystemCallback(const api_application::System::ConstPtr& msg);
 	
+	void dontMove( int internId);
 	void moveUp( int internId );
 	void stabilize( int internId );
 	void land( int internId, int * nrLand  );
