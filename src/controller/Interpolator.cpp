@@ -92,50 +92,31 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 			break;
 	}
 
-	switch( this->status[id].getState() )
+	if( this->status[id].getState() != DONE )
 	{
-		case DONE:
-			if( this->status[id].getStarted() <= currentTime + timeDiff3 )
-			{
-				/* Wait before starting to stabilize */
-				newMovement.setRollPitchYawrate( 0, 0, 0 );
-				return newMovement;
-			}
-
-			if( sentQuadruples.size() < 3 || positions.size() < 3 )
-			{
-				ROS_INFO("Not enough data in calculateNextMQ, some assumption is wrong..."); // FIXME error not info
-				return newMovement;
-			}
-			/*
-			 * Calculate with given calibration data, actually
-			 * trying to "stabilize" now
-			 */
-
-			/*
-			 * Calculate new value every MIN_TIME_TO_WAIT seconds
-			 * 1 Calculate new calibration (due to yaw-movement, if roll/pitch-diff high)
-			 * 2 Calculate next position (take last speedvector)
-			 * 3 Calculate correction (calibration data, predictedPosition, target)
-			 */
-
-			/* 1 */
-			// TODO
-
-			/* 2 */
-			posAssumed = posAssumed.predictNextPosition( positionNow, PREDICT_FUTURE_POSITION );
-
-			/* 3 */
-			newMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
-
-			break;
-		default:
 			ROS_INFO("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			return newMovement;
-			//break;
 	}
-	
 
+	/* Now in state "DONE" */
+	if( this->status[id].getStarted() <= currentTime + timeDiff3 )
+	{
+		/* Wait some more before starting to stabilize */
+		newMovement.setRollPitchYawrate( 0, 0, 0 );
+		return newMovement;
+	}
+	if( sentQuadruples.size() < 3 || positions.size() < 3 )
+	{
+		/* Might not get enough data from camera in a certain time.
+		 * Depends probably on how fast the QC will leave the tracking area again. */
+		ROS_INFO("Not enough data in calculateNextMQ, some assumption is wrong..."); // FIXME error not info
+		return newMovement;
+	}
+
+	/*
+	 * Calculate with given calibration data, actually
+	 * trying to "stabilize" now
+	 */
 
 	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
 	/* Save latest Position and before-latest Position */
@@ -156,20 +137,22 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 		--it;
 		counter++;
 	}
-	// FIXME the following is an alternative to the previous while-construct. Both untested.
-/*	while( (it!=positions.begin()) && (counter<2) )
-	{
-		if( counter == 1 )
+		// FIXME the following is an alternative to the previous while-construct. Both untested.
+	/*
+		while( (it!=positions.begin()) && (counter<2) )
 		{
-			positionPast.setOrientation( (*it).getOrientation() );
-			positionPast.setPosition( (*it).getPosition() );
-			positionPast.setTimestamp( (*it).getTimestamp() );
-			positionNow = positions.front();
+			if( counter == 1 )
+			{
+				positionPast.setOrientation( (*it).getOrientation() );
+				positionPast.setPosition( (*it).getPosition() );
+				positionPast.setTimestamp( (*it).getTimestamp() );
+				positionNow = positions.front();
+			}
+			--it;
+			counter++;
 		}
-		--it;
-		counter++;
-	}*/
-	ROS_INFO("Got positionPast and positionNow.");
+	*/
+		ROS_INFO("Got positionPast and positionNow.");
 
 	/* Calculate predicted actual position */
 	posAssumed = positions.back();
@@ -192,12 +175,31 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized);
 	newMovement.setThrust( newThrust );
 	ROS_INFO("calculated thrust with assumed position");
-	
+
 	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
 		ROS_INFO("Do not change rpy-values, movement of sent values need to be visible.");
 		return newMovement;
 	}
+
+
+	/*
+	 * Calculate new value every MIN_TIME_TO_WAIT seconds
+	 * 1 Calculate new calibration (due to yaw-movement, if roll/pitch-diff high)
+	 * 2 Calculate next position (take last speedvector)
+	 * 3 Calculate correction (calibration data, predictedPosition, target)
+	 */
+
+	/* 1 */
+	// TODO
+
+	/* 2 */
+	posAssumed = posAssumed.predictNextPosition( positionNow, PREDICT_FUTURE_POSITION );
+
+	/* 3 */
+	newMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
+
+	
 
 	int size = positions.size();
 	double deltaTarget[size];	// Absolute distance to latest target
