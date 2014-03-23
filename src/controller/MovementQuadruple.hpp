@@ -8,15 +8,18 @@ class MovementQuadruple
 	public:
 		MovementQuadruple(unsigned int newThrust, float newRoll, float newPitch, float newYawrate);
 		MovementQuadruple(unsigned int newThrust, float newRoll, float newPitch, float newYawrate, long int newTimestamp);
-		void setThrust( unsigned int newThrust );
-		void setRollPitchYawrate(float newRoll, float newPitch, float newYawrate);
+
 		unsigned int getThrust();
+		void setThrust( unsigned int newThrust );
 		float getRoll();
 		float getPitch();
 		float getYawrate();
+		void setRollPitchYawrate(float newRoll, float newPitch, float newYawrate);
 		
 		long int getTimestamp();
 		void setTimestamp( long int newTimestamp );
+
+		bool checkQuadruple( int maxThrust, float maxRoll, float maxPitch, float maxYawrate );
 
 	private:
 		unsigned int thrust;
