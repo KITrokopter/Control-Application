@@ -277,9 +277,12 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 			msg.intrinsics[j] = intrinsicsMatrices[idDict.getBackward(i)].at<double>(j);
 		}
 		
-		for (int j = 0; j < 9; j++) {
+		for (int j = 0; j < 4; j++) {
 			msg.distortion[j] = distortionCoefficients[idDict.getBackward(i)].at<double>(j);
 		}
+		
+		msg.distortion[4] = 0;
+		cameraCalibrationDataPublisher.publish(msg);
 		
 		// DEBUG: Show calibration results visually
 		std::stringstream ss;
