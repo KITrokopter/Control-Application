@@ -77,7 +77,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 						diffY = diffY / absDistance;
 						this->status[id].setRotation( acos( diffY ) );	// FIXME check
 						this->status[id].setNegativeSign( negativeRotationalSign(this->status[id].getRotation(), pos, target ) );	// FIXME check
-
 						this->status[id].setLastUpdated( currentTime );
 						break;
 					}
@@ -196,48 +195,45 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> sen
 	/* Calculate correction (calibration data, predictedPosition, target) */
 	MovementQuadruple rpyMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
 	this->status[id].setLastUpdated( currentTime );
-	
-
-	int size = positions.size();
-	double deltaTarget[size];	// Absolute distance to latest target
-	double deltaAbsPosition[size-1];	// equals speed	/* arraysize FIXME */
-	//double deltaSpeed[size-2];	// equals acceleration	/* arraysize FIXME */
-	int counter = 0;
-	this->status[id].setLastUpdated( currentTime );
-
-	/* Calculate values for declared arrays above for later usage. */
-	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
-	{
-		positionPast.setOrientation( (*it).getOrientation() );
-		positionPast.setPosition( (*it).getPosition() );
-		positionPast.setTimestamp( (*it).getTimestamp() );
-		deltaTarget[counter] = positionPast.getAbsoluteDistance( target );
-		if( counter > 0 )
-		{
-			//deltaAbsPosition[counter-1] = positionB.getAbsoluteDistance( positionA );
-			if( counter > 1 )
-			{
-				double speedDelta = deltaAbsPosition[counter-1] - deltaAbsPosition[counter-2];	
-				if( speedDelta < 0 )
-				{
-					//oscillate = true;
-					speedDelta = -speedDelta;
-				}
-				double timeDelta = positionNow.getTimestamp() - positionPast.getTimestamp();
-				//deltaSpeed[counter-2] = speedDelta / timeDelta;
-			}
-		} 
-		if( positionPast.getTimestamp() != positions.back().getTimestamp() )
-		{
-			positionNow = positionPast;
-		}
-		counter++;
-	}
-	
-
-
 
 	return newMovement;
+
+//	int size = positions.size();
+//	double deltaTarget[size];	// Absolute distance to latest target
+//	double deltaAbsPosition[size-1];	// equals speed	/* arraysize FIXME */
+//	//double deltaSpeed[size-2];	// equals acceleration	/* arraysize FIXME */
+//	int counter = 0;
+//	this->status[id].setLastUpdated( currentTime );
+//
+//	/* Calculate values for declared arrays above for later usage. */
+//	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
+//	{
+//		positionPast.setOrientation( (*it).getOrientation() );
+//		positionPast.setPosition( (*it).getPosition() );
+//		positionPast.setTimestamp( (*it).getTimestamp() );
+//		deltaTarget[counter] = positionPast.getAbsoluteDistance( target );
+//		if( counter > 0 )
+//		{
+//			//deltaAbsPosition[counter-1] = positionB.getAbsoluteDistance( positionA );
+//			if( counter > 1 )
+//			{
+//				double speedDelta = deltaAbsPosition[counter-1] - deltaAbsPosition[counter-2];
+//				if( speedDelta < 0 )
+//				{
+//					//oscillate = true;
+//					speedDelta = -speedDelta;
+//				}
+//				double timeDelta = positionNow.getTimestamp() - positionPast.getTimestamp();
+//				//deltaSpeed[counter-2] = speedDelta / timeDelta;
+//			}
+//		}
+//		if( positionPast.getTimestamp() != positions.back().getTimestamp() )
+//		{
+//			positionNow = positionPast;
+//		}
+//		counter++;
+//	}
+
 }
 
 unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized )
@@ -334,6 +330,13 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
 	double current = pos.getPosition();
     double v1 = m11 * current[0] + m12 * current[1];
     double v2 = m21 * current[0] + m22 * current[1];
+    double factor = sqrt(v1*v1 + v2*v2);
+    v1 = v1 / factor;
+    v2 = v2 / factor;
+    double newRoll = v1 * ROLL_MAX;
+    double newPitch = v2 * PITCH_MAX;
+    double newYawrate = 0;
+    return MovementQuadruple( 0, newRoll, newPitch, newYawrate );
 }
 
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest ) 
