@@ -17,6 +17,7 @@
 #include "camera_application/PictureSendingActivation.h"
 #include "camera_application/Picture.h"
 #include "camera_application/RawPosition.h"
+#include "camera_application/CameraCalibrationData.h"
 #include "api_application/System.h"
 #include "../controller/Mutex.hpp"
 #include "../matlab/Position.h"
@@ -55,6 +56,7 @@ private:
 	
 	ros::Publisher pictureSendingActivationPublisher;
 	ros::Publisher pingPublisher;
+	ros::Publisher cameraCalibrationDataPublisher;
 	
 	ros::Subscriber pictureSubscriber;
 	ros::Subscriber systemSubscriber;

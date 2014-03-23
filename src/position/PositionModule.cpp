@@ -34,6 +34,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	
 	this->pictureSendingActivationPublisher = n.advertise<camera_application::PictureSendingActivation>("PictureSendingActivation", 4);
 	this->pingPublisher = n.advertise<api_application::Ping>("Ping", 4);
+	this->cameraCalibrationDataPublisher = n.advertise<camera_application::CameraCalibrationData>("CameraCalibrationData", 10);
 	
 	this->pictureSubscriber = n.subscribe("Picture", 12, &PositionModule::pictureCallback, this);
 	this->systemSubscriber = n.subscribe("System", 4, &PositionModule::systemCallback, this);
@@ -264,9 +265,23 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		res.cameraZPositions.push_back(position.getV3());
 		res.IDs.push_back(idDict.getBackward(i));
 		
-		// DEBUG: Show calibration results visually
+		// Send calibration data to cameras
 		intrinsicsMatrices[idDict.getBackward(i)] = trackingWorker.getIntrinsicsMatrix(i);
 		distortionCoefficients[idDict.getBackward(i)] = trackingWorker.getDistortionCoefficients(i);
+		
+		camera_application::CameraCalibrationData msg;
+		msg.ID = idDict.getBackward(i);
+		msg.createdByCamera = false;
+		
+		for (int j = 0; j < 9; j++) {
+			msg.intrinsics[j] = intrinsicsMatrices[idDict.getBackward(i)].at<double>(j);
+		}
+		
+		for (int j = 0; j < 9; j++) {
+			msg.distortion[j] = distortionCoefficients[idDict.getBackward(i)].at<double>(j);
+		}
+		
+		// DEBUG: Show calibration results visually
 		std::stringstream ss;
 		ss << "Calib Results CamId " << idDict.getBackward(i);
 		windowNames[idDict.getBackward(i)] = ss.str();
