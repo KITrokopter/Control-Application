@@ -291,11 +291,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                 // border is between middle and rightBorder
                 leftBorder = middle;
+                sideBorder = middle;
             } else {
                 // border is between leftBorder and middle
                 rightBorder = middle;
             }
-            sideBorder = middle;
             middle = leftBorder + (rightBorder - leftBorder)/2;
             increaseTrackingArea(middle, 0, 0, 0);
             ROS_DEBUG("binary search, side size: %.2f", 2 * middle);
@@ -348,11 +348,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                         // border is between middle and rightBorder
                         leftBorder = middle;
+                        newSideBorder = middle;
                     } else {
                         // border is between leftBorder and middle
                         rightBorder = middle;
                     }
-                    newSideBorder = middle;
 
                     middle = leftBorder + (rightBorder - leftBorder)/2;
                     increaseTrackingArea(middle, heightLower, 0, 0);
@@ -368,7 +368,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
         if (lower) {
             // maximal width of tracking area is between heightLower and heightLower/2
-            ROS_DEBUG("maximal width %.2f is between %.2f and %.2f", sideBorder, heightLower, heightLower/2);
+            ROS_DEBUG("maximal width %.2f is between %.2f and %.2f", sideBorder * 2, heightLower, heightLower/2);
 
 
             leftBorderHeight = heightLower/2;
@@ -411,12 +411,12 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                             // border is between middle and rightBorder
                             leftBorder = middle;
+                            newSideBorder = middle;
                         } else {
                             // border is between leftBorder and middle
                             rightBorder = middle;
                         }
 
-                        newSideBorder = middle;
                         middle = leftBorder + (rightBorder - leftBorder)/2;
                         increaseTrackingArea(middle, middleHeight, 0, 0);
                         ROS_DEBUG("lower %.2f, binary search, side size: %.2f", middleHeight, 2 * middle);
@@ -430,7 +430,7 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
                     ROS_DEBUG("lower %.2f, maximal quadrat size is %.2f", middleHeight, 2 * (newSideBorder));
                 }
             }
-            ROS_DEBUG("Found optimal middlepoint, between %.2f and %.2f with size %.2f", leftBorderHeight, rightBorderHeight, sideBorder);
+            ROS_DEBUG("Found optimal middlepoint, between %.2f and %.2f with size %.2f", rightBorderHeight,leftBorderHeight, 2 * sideBorder);
         }
 
 
@@ -477,11 +477,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                             // border is between middle and rightBorder
                             leftBorder = middle;
+                            newSideBorder = middle;
                         } else {
                             // border is between leftBorder and middle
                             rightBorder = middle;
                         }
-                        newSideBorder = middle;
 
                         middle = leftBorder + (rightBorder - leftBorder)/2;
                         increaseTrackingArea(middle, heightHigher, 0, 0);
@@ -537,12 +537,12 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                             // border is between middle and rightBorder
                             leftBorder = middle;
+                            newSideBorder = middle;
                         } else {
                             // border is between leftBorder and middle
                             rightBorder = middle;
                         }
 
-                        newSideBorder = middle;
                         middle = leftBorder + (rightBorder - leftBorder)/2;
                         increaseTrackingArea(middle, middleHeight, 0, 0);
                         ROS_DEBUG("upper %.2f, binary search, side size: %.2f", middleHeight, 2 * middle);
@@ -589,11 +589,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                 // border is between middle and rightBorder
                 leftBorder = middle;
+                upperBorder = middle;
             } else {
                 // border is between leftBorder and middle
                 rightBorder = middle;
             }
-            upperBorder = middle;
             middle = leftBorder + (rightBorder - leftBorder)/2;
             increaseTrackingArea(0, 0, middle, 0);
             ROS_DEBUG("binary search, upper size: %.2f", middle);
@@ -626,11 +626,11 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
 
                 // border is between middle and rightBorder
                 leftBorder = middle;
+                lowerBorder = middle;
             } else {
                 // border is between leftBorder and middle
                 rightBorder = middle;
             }
-            lowerBorder = middle;
             middle = leftBorder + (rightBorder - leftBorder)/2;
             increaseTrackingArea(0, 0, 0, middle);
             ROS_DEBUG("binary search, lower size: %.2f", middle);

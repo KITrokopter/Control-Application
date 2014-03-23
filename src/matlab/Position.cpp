@@ -244,14 +244,14 @@ Vector Position::calculateCoordinateTransformation(Vector w) {
         rotationMatrix = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
         Vector result = firstCam.aftermult(rotationMatrix);
 
-        ROS_DEBUG("first calculation of transformation matrix, camera 1 would be at position [%f, %f, %f]", result.getV1(), result.getV2(), result.getV3());
         if (!((result.getV3() < 0.5) && (result.getV3() > -0.5))) {
+            ROS_DEBUG("first calculation of transformation matrix, camera 1 would be at position [%.2f, %.2f, %.2f]", result.getV1(), result.getV2(), result.getV3());
             // if value is wrong, the angle has to be negativ
             angleTry(-1);
             r = engGetVariable(ep, "rotationMatrix");
             rotationMatrix = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
             result = firstCam.aftermult(rotationMatrix);
-            ROS_DEBUG("new calculation has result [%f, %f, %f]", result.getV1(), result.getV2(), result.getV3());
+            ROS_DEBUG("new calculation has result [%.2f, %.2f, %.2f]", result.getV1(), result.getV2(), result.getV3());
 
             if (!((result.getV3() < 0.5) && (result.getV3() > -0.5))) {
                 ROS_ERROR("Transformation didn't work!");

@@ -109,7 +109,8 @@ int main(int argc, char** argv) {
         ros::console::notifyLoggerLevelsChanged();
     }
     Matlab *m = new Matlab();
-    tracking(m);
+    trackingArea();
+    m->destroyMatlab();
     /*Vector a1 = *(new Vector(0.000000, -0.000000, 0.000000));
     Vector u1 = * (new Vector(0.315551, -0.962110, -0.234050));
     Vector a2 = * (new Vector(730.285416, -753.080314, 0.000243));
