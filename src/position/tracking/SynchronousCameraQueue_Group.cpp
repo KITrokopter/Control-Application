@@ -1,5 +1,7 @@
 #include "SynchronousCameraQueue.hpp"
 
+#include <ros/console.h>
+
 SynchronousCameraQueue::Group::Group()
 {
 	canBeValid = false;
@@ -19,6 +21,7 @@ SynchronousCameraQueue::Group::Group(std::list<Bucket>::iterator it, long int cu
 	this->maxDelay = maxDelay;
 	this->maxGroupInterval = maxGroupInterval;
 	this->cameraCount = cameraCount;
+	youngest = it;
 	oldest = it;
 	data.push_back(it->data);
 	
@@ -38,7 +41,7 @@ void SynchronousCameraQueue::Group::calculateValue()
 	// Calculate another value defined by the age of the oldest CameraData
 	double timeValue = minTime - (currentTime - arrivalDelay);
 	timeValue /= maxDelay - arrivalDelay;
-	timeValue *= maxGroupInterval;
+	timeValue *= maxGroupInterval * 1;
 	
 	// Combine base and time value
 	value += (long int) timeValue;
@@ -55,6 +58,10 @@ void SynchronousCameraQueue::Group::add(std::list<Bucket>::iterator it)
 		maxTime = it->data.time;
 	}
 	
+	if (it->arrivalTime > youngest->arrivalTime) {
+		youngest = it;
+	}
+	
 	if (it->arrivalTime < oldest->arrivalTime) {
 		oldest = it;
 	}
@@ -64,7 +71,7 @@ void SynchronousCameraQueue::Group::add(std::list<Bucket>::iterator it)
 
 bool SynchronousCameraQueue::Group::isValid()
 {
-	return data.size() >= 2 && (hasWaiting() || data.size() == cameraCount) && canBeValid;
+	return canBeValid && data.size() >= 2 && (hasWaiting() || data.size() == cameraCount);
 }
 
 long int SynchronousCameraQueue::Group::getMinTime()
@@ -94,10 +101,14 @@ std::vector<CameraData> SynchronousCameraQueue::Group::getData()
 
 bool SynchronousCameraQueue::Group::hasWaiting()
 {
+	if (!canBeValid) {
+		return false;
+	}
+	
 	return currentTime - oldest->arrivalTime > arrivalDelay;
 }
 
-std::list<SynchronousCameraQueue::Bucket>::iterator SynchronousCameraQueue::Group::getOldest()
+std::list<SynchronousCameraQueue::Bucket>::iterator SynchronousCameraQueue::Group::getYoungest()
 {
-	return oldest;
+	return youngest;
 }

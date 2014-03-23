@@ -301,6 +301,7 @@ target_link_libraries(position_module
 
 add_executable(test_camera_queues
   test/testCameraQueues.cpp
+  test/helpers/profiling.cpp
   
   src/position/tracking/SynchronousCameraQueue.cpp
   src/position/tracking/SynchronousCameraQueue_Group.cpp
@@ -308,7 +309,6 @@ add_executable(test_camera_queues
   
   src/matlab/Vector.cpp
   src/matlab/Matrix.cpp
-  test/helpers/profiling.cpp
 )
 
 target_link_libraries(test_camera_queues

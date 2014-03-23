@@ -44,7 +44,7 @@ private:
 		long int getValue();
 		long int getMinTime();
 		long int getMaxTime();
-		std::list<Bucket>::iterator getOldest();
+		std::list<Bucket>::iterator getYoungest();
 		std::vector<CameraData> getData();
 		
 	private:
@@ -57,6 +57,7 @@ private:
 		long int maxDelay;
 		long int maxGroupInterval;
 		long int cameraCount;
+		std::list<Bucket>::iterator youngest;
 		std::list<Bucket>::iterator oldest;
 		std::vector<CameraData> data;
 	};
@@ -68,7 +69,12 @@ private:
 	long int arrivalDelay;
 	long int maxGroupInterval;
 	
-	size_t size;
+	/// Make arrival time unique
+	long int lastArrivalTime;
+	
+	/// Ensure that tracking does not run backward
+	long int minimumPictureTime;
+	
 	std::list<Bucket> queue;
 	std::set<int> camNos;
 };

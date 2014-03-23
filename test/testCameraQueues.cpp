@@ -17,6 +17,50 @@ string toString(long int i)
 	return ss.str();
 }
 
+void insertData(SynchronousCameraQueue *q, int camNo, long int time)
+{
+	
+	setNanoTime(time + 4);
+	CameraData data;
+	data.valid = true;
+	data.camNo = camNo;
+	data.quadcopterId = 42;
+	data.time = time;
+	data.cameraVector = Vector(camNo, time, -1);
+	q->enqueue(data);
+}
+
+string testGrouping()
+{
+	setNanoTime(0);
+	
+	SynchronousCameraQueue q(10, 20, 10);
+	
+	insertData(&q, 0, 2);
+	insertData(&q, 1, 1);
+	insertData(&q, 2, 5);
+	insertData(&q, 0, 14);
+	insertData(&q, 0, 30);
+	insertData(&q, 1, 12);
+	insertData(&q, 0, 39);
+	insertData(&q, 1, 22);
+	insertData(&q, 1, 31);
+	insertData(&q, 2, 17);
+	insertData(&q, 2, 29);
+	insertData(&q, 2, 36);
+	insertData(&q, 1, 40);
+	
+	setNanoTime(45);
+	
+	vector<CameraData> result = q.dequeue();
+	
+	for (vector<CameraData>::iterator it = result.begin(); it != result.end(); it++) {
+		cout << "Result cam/time: " << it->camNo << "/" << it->time << endl;
+	}
+	
+	return "";
+}
+
 string testDataAvailable()
 {
 	setNanoTime(0);
@@ -27,7 +71,7 @@ string testDataAvailable()
 	data.valid = true;
 	data.camNo = 0;
 	data.quadcopterId = 23;
-	data.time = 0;
+	data.time = 1;
 	data.cameraVector = Vector(1, 1, 1);
 	q.enqueue(data);
 	
@@ -40,6 +84,12 @@ string testDataAvailable()
 	q.enqueue(data);
 	
 	q.dequeue();
+	
+	if (q.getSize() != 0) {
+		return "4: Size should be 0, but is " + toString(q.getSize());
+	}
+	
+	data.time = 2;
 	q.enqueue(data);
 	
 	if (q.dataAvailable()) {
@@ -52,7 +102,7 @@ string testDataAvailable()
 		return "2: There should not be data available";
 	}
 	
-	setNanoTime(23);
+	setNanoTime(27);
 	
 	if (!q.dataAvailable()) {
 		return "3: There should be data available";
@@ -71,7 +121,7 @@ string testDequeue()
 	data.valid = true;
 	data.camNo = 0;
 	data.quadcopterId = 23;
-	data.time = 0;
+	data.time = 2;
 	data.cameraVector = Vector(1, 1, 1);
 	q.enqueue(data);
 	
@@ -83,14 +133,16 @@ string testDequeue()
 	data.cameraVector = Vector(3, 3, 3);
 	q.enqueue(data);
 	
+	ROS_DEBUG("testDequeue(): Dequeueing");
 	vector<CameraData> result = q.dequeue();
+	ROS_DEBUG("testDequeue(): Dequeued");
 	
 	if (result.size() != 3) {
 		return "1: Result size should be 3, but is " + toString(result.size());
 	}
 	
 	if (q.getSize() != 0) {
-		return "2: Queue size should be 0, but is " + toString(result.size());
+		return "2: Queue size should be 0, but is " + toString(q.getSize());
 	}
 	
 	return "";
@@ -106,7 +158,7 @@ string testEnqueue()
 	data.valid = true;
 	data.camNo = 0;
 	data.quadcopterId = 23;
-	data.time = 0;
+	data.time = 3;
 	data.cameraVector = Vector(1, 1, 1);
 	q.enqueue(data);
 	
@@ -153,6 +205,7 @@ int main()
 	test("TestEnqueue", testEnqueue);
 	test("TestDequeue", testDequeue);
 	test("TestDataAvailable", testDataAvailable);
+	test("TestGrouping", testGrouping);
 	
 	cout << "=====================================================================";
 	cout << "=====================================================================";
