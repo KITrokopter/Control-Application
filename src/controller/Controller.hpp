@@ -71,7 +71,7 @@ public:
 	void setTrackingArea(TrackingArea area);
 
 	/* Movement and Positioning */
-	Position6DOF* getTargetPosition();
+	//Position6DOF* getTargetPosition();
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovementAll();
