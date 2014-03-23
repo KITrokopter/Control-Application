@@ -32,19 +32,37 @@ private:
 	
 	class Group {
 	public:
-		Group()
-		{
-			valid = false;
-			value = 0;
-		}
+		Group();
+		Group(std::list<Bucket>::iterator it, long int currentTime, long int arrivalDelay, long int maxDelay, long int maxGroupInterval, long int cameraCount);
 		
-		bool valid;
+		void calculateValue();
+		void add(std::list<Bucket>::iterator it);
+		
+		bool isValid();
+		bool hasWaiting();
+		bool wouldInvalidateGroup(std::list<Bucket>::iterator it);
+		long int getValue();
+		long int getMinTime();
+		long int getMaxTime();
+		std::list<Bucket>::iterator getOldest();
+		std::vector<CameraData> getData();
+		
+	private:
+		bool canBeValid;
 		long int value;
+		long int minTime;
+		long int maxTime;
+		long int currentTime;
+		long int arrivalDelay;
+		long int maxDelay;
+		long int maxGroupInterval;
+		long int cameraCount;
+		std::list<Bucket>::iterator oldest;
 		std::vector<CameraData> data;
 	};
 	
 	Group searchGroup(std::list<Bucket>::iterator it, long int currentTime, std::list<Bucket>::iterator begin, std::list<Bucket>::iterator end);
-	void calculateValue(Group *group, long int minTime, long int maxTime, long int currentTime, bool hasWaiting);
+	void cutOffQueue(std::list<Bucket>::iterator it);
 	
 	long int maxDelay;
 	long int arrivalDelay;
