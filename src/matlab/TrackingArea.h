@@ -77,18 +77,6 @@ private:
      */
     bool inTrackingArea(Vector cameraPosition, Vector cameraDirection, double maxRange, Vector x, Engine *ep);
 
-    /**
-     * checks whether a point can be tracked of at least 2 cameras
-     * @param cameraPosition camera positions
-     * @param cameraDirection camera directions
-     * @param numberCameras number of cameras
-     * @param maxRange maximal range
-     * @param x point
-     * @param ep engine pointer
-     * @return true if at least 2 cameras can track x
-     */
-    bool inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep);
-
 public:
     /**
      * constructor.
@@ -238,6 +226,18 @@ public:
      * @return
      */
     double binarySearch(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep, double leftBorder, double rightBorder, double posChange, double height, double heightPos, double heightNeg, int value);
+
+    /**
+     * checks whether a point can be tracked of at least 2 cameras
+     * @param cameraPosition camera positions
+     * @param cameraDirection camera directions
+     * @param numberCameras number of cameras
+     * @param maxRange maximal range
+     * @param x point
+     * @param ep engine pointer
+     * @return true if at least 2 cameras can track x
+     */
+    bool inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep);
 
 };
 

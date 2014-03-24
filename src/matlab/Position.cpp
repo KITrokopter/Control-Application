@@ -361,11 +361,11 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
             oldPos[quadcopterId] = quadPosition;
             ROS_DEBUG("First seen position of quadcopter %d is [%f, %f, %f]", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3());
-            /*if (tracking.contains(quadPosition)) {
+            if (tracking.inCameraRange(realCameraPos, realCameraOrient, numberCameras, 2000, quadPosition, ep)) {
                 ROS_DEBUG("In tracking area");
             } else {
                 ROS_DEBUG("Not in tracking area");
-            }*/
+            }
 
             // as distance of 150 has interpolation factor 0.5
             distance = 150;
@@ -421,11 +421,11 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             // saving new Pos
             ROS_DEBUG("New position of quadcopter %d is [%f, %f, %f]", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3());
             oldPos[quadcopterId] = newPos;
-            /*if (tracking.contains(newPos)) {
+            if (tracking.inCameraRange(realCameraPos, realCameraOrient, numberCameras, 2000, newPos, ep)) {
                 ROS_DEBUG("In tracking area");
             } else {
                 ROS_DEBUG("Not in tracking area");
-            }*/
+            }
             return newPos;
         }
     }
