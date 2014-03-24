@@ -55,7 +55,7 @@ void TrackingQueue<T>::enqueue(CameraData data)
 	}
 	
 	size++;
-	queues[data.quadcopterId].enqueue(data);
+	queues[data.quadcopterId]->enqueue(data);
 }
 
 template <class T>
