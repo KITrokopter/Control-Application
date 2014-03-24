@@ -2,10 +2,11 @@
 
 #include "../../matlab/Vector.h"
 
-typedef struct {
+class CameraData {
+public:
 	Vector cameraVector;
 	int camNo;
 	int quadcopterId;
 	long int time;
 	bool valid;
-} CameraData;
+};

@@ -5,6 +5,8 @@
 #include <opencv2/core/core.hpp>
 #include <map>
 
+#include "../../matlab/profiling.hpp"
+
 TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(200, "Difference")
 {
 	assert(receiver != 0);
@@ -32,15 +34,20 @@ void TrackingWorker::run()
 	ROS_INFO("Started tracking thread");
 	
 	bool receivedFirstPosition = false;
+	int emptyCount = 0;
 	
 	while (!stop) {
 		std::vector<CameraData> data = dequeue();
 		
 		if (data.size() > 0) {
+			emptyCount = 0;
+			
 			if (!receivedFirstPosition) {
 				receivedFirstPosition = true;
 				ROS_INFO("Found quadcopter %d", data[0].quadcopterId);
 			}
+			
+			ROS_DEBUG("Got info from camera %d: [%.2f, %.2f, %.2f]", data[0].camNo, data[0].cameraVector.getV1(), data[0].cameraVector.getV2(), data[0].cameraVector.getV3());
 			
 			Vector position = tracker.updatePosition(data);
 			
@@ -58,10 +65,17 @@ void TrackingWorker::run()
 			if (position.isValid()) {
 				receiver->updatePositions(positions, ids, updates);
 			}
-			
-			// ROS_DEBUG("Updating position of quadcopter %d took %.3f ms", data.quadcopterId, duration);
 		} else if (receivedFirstPosition) {
-			ROS_WARN("Position update buffer is empty!");
+			emptyCount++;
+			
+			if (emptyCount == 5) {
+				ROS_WARN("Position update buffer is empty!");
+				emptyCount = 0;
+			}
+			
+			long int time = getNanoTime();
+			usleep(0);
+			ROS_DEBUG("Waited %.2f ms", (getNanoTime() - time) / 1.0e6);
 		}
 	}
 	
@@ -132,4 +146,9 @@ cv::Mat TrackingWorker::getIntrinsicsMatrix(int camNo)
 cv::Mat TrackingWorker::getDistortionCoefficients(int camNo)
 {
 	return tracker.getDistortionCoefficients(camNo);
+}
+
+void TrackingWorker::updateTrackingArea()
+{
+	receiver->setTrackingArea(tracker.getTrackingArea());
 }

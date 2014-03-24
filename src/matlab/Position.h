@@ -249,6 +249,13 @@ public:
      */
     Matrix getRotationMatrix(int cameraId);
 
+    /**
+     * checks whether quadcopter is in tracking area or not.
+     * @param quadPos position of seen quadcopter
+     * @return true if in tracking area, otherwise false
+     */
+    bool tracked(Vector quadPos);
+
 };
 
 #endif // POSITION_H //
