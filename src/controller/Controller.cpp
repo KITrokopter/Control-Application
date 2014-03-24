@@ -246,14 +246,6 @@ void Controller::sendMovementAll()
 		{
 			// Remove oldest elements
 			this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
-
-			// Save Element (TODO only if not too young)
-			this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
-			while( this->listSentQuadruples[i].size() > 5 )	// TODO global variable
-			{
-				// Remove oldest elements
-				this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
-			}
 		}
 	}
 	//ROS_INFO("sendMovementAll finished");
@@ -884,14 +876,14 @@ void Controller::land( int internId, int * nrLand )
 	}
 	this->trackedArrayMutex.unlock();
 	//TODO This is here just for testing.
-	ROS_INFO("Send Movement here for testing");
+	/*ROS_INFO("Send Movement here for testing");
 	control_application::quadcopter_movement msg;
 	msg.thrust = this->listFutureMovement[internId].front().getThrust();
 	ROS_INFO("Thrust in land is %u", msg.thrust);
 	msg.roll = this->listFutureMovement[internId].front().getRoll();
 	msg.pitch = this->listFutureMovement[internId].front().getPitch();
 	msg.yaw = this->listFutureMovement[internId].front().getYawrate();
-	this->Movement_pub[internId].publish(msg);	
+	this->Movement_pub[internId].publish(msg);*/	
 }
 
 
