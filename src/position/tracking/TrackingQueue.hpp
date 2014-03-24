@@ -29,6 +29,7 @@ template <class T>
 TrackingQueue<T>::TrackingQueue()
 {
 	size = 0;
+	rrIndex = 0;
 }
 
 template <class T>
