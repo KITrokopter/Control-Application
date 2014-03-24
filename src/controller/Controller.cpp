@@ -236,7 +236,7 @@ void Controller::sendMovementAll()
 		
 			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_START)
 			{
-				ROS_INFO("Send thrust movement all %u", msg.thrust);
+			//	ROS_INFO("Send thrust movement all %u", msg.thrust);
 			}
 		}
 		msg.roll = this->listFutureMovement[i].front().getRoll();
