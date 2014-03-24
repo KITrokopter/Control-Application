@@ -150,7 +150,6 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
             return 0;
     }
 
-
     // aren't parallel, need to check, whether intersect. has to make sure, that A can be inverted.
     // A*x = bb, x = (r, s)
     else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV2() == 0) && (g.getU().getV2() == 0))
@@ -215,6 +214,7 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 }
 
 Vector Matlab::interpolateLines(Line *lines, int quantity) {
+
     // saving perpendicular foot points of all lines of array lines
     Vector *points = new Vector[2*quantity];
 	int pos = 0;
