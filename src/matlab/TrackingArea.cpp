@@ -21,6 +21,9 @@ using namespace std;
 
 TrackingArea::TrackingArea(vector<Vector> cameraPosition, vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep) {
     setTrackingArea(cameraPosition, cameraDirection, numberCameras, maxRange, ep);
+    this->maxRange = maxRange;
+    realCameraPos = cameraPosition;
+    realCameraOrient = cameraDirection;
 }
 
 Vector TrackingArea::getA1() {
