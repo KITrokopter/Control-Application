@@ -1,8 +1,9 @@
 #pragma once
 
-#include "AbstractCameraQueue.hpp"
-
 #include <map>
+#include <ros/console.h>
+
+#include "AbstractCameraQueue.hpp"
 
 template <class T>
 class TrackingQueue {
@@ -74,6 +75,7 @@ std::vector<CameraData> TrackingQueue<T>::dequeue()
 	int index = rrIndex;
 	
 	do {
+		ROS_DEBUG("TrackingQueue: Loop, index = %d", index);
 		if (queues[ids[index]]->dataAvailable()) {
 			break;
 		}
@@ -84,6 +86,7 @@ std::vector<CameraData> TrackingQueue<T>::dequeue()
 	if (index == rrIndex) {
 		return std::vector<CameraData>();
 	} else {
+		ROS_DEBUG("TrackingQueue: Found something");
 		rrIndex = (index + 1) % ids.size();
 		std::vector<CameraData> result = queues[ids[index]]->dequeue();
 		size -= result.size();
