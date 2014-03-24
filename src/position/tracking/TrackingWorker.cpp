@@ -133,3 +133,8 @@ cv::Mat TrackingWorker::getDistortionCoefficients(int camNo)
 {
 	return tracker.getDistortionCoefficients(camNo);
 }
+
+void TrackingWorker::updateTrackingArea()
+{
+	receiver->setTrackingArea(tracker.getTrackingArea());
+}
