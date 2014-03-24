@@ -708,7 +708,7 @@ bool Controller::checkInput(int internId)
 		std::string message2 = "No new quadcopter position data has been received";
 		//emergencyRoutine(message2);
 		trackedArrayMutex.lock();
-		ROS_INFO("tracked false");
+		//ROS_INFO("tracked false");
 		tracked[internId] = false;
 		trackedArrayMutex.unlock();
 		return false;
@@ -717,7 +717,7 @@ bool Controller::checkInput(int internId)
 	if(currentTime - lastCur > TIME_UPDATED_CRITICAL && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
 		trackedArrayMutex.lock();
-		ROS_INFO("tracked false");	
+		//ROS_INFO("tracked false");	
 		tracked[internId] = false;
 		trackedArrayMutex.unlock();
 		return false;
