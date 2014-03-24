@@ -170,14 +170,14 @@ bool TrackingArea::contains(Vector x) {
 
 bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection, Vector x) {
     Matlab *m = new Matlab(ep);
-    // center point of the floor of the pyramid1
+    // center point of the floor of the pyramid
     Vector n = cameraPosition.add(cameraDirection.mult(maxRange/cameraDirection.getLength()));
     // finding direction vectors of the plane of the floor of the camera range pyramid.
-    Vector *u = new Vector(cameraDirection.getV1(), cameraDirection.getV2(), -(cameraDirection.getV1()*cameraDirection.getV1() + cameraDirection.getV2()*cameraDirection.getV2())/cameraDirection.getV3());
-    Vector v = cameraDirection.cross(*u);
+    Vector u = Vector(cameraDirection.getV1(), cameraDirection.getV2(), -(cameraDirection.getV1()*cameraDirection.getV1() + cameraDirection.getV2()*cameraDirection.getV2())/cameraDirection.getV3());
+    Vector v = cameraDirection.cross(u);
 
     // describing plane by line f and direction vector v
-    Line *f = new Line(cameraDirection, *u);
+    Line *f = new Line(cameraDirection, u);
 
     // describing floor plane by a and b and cameraPosition
     Vector *a = new Vector(cameraDirection.getV1(), cameraDirection.getV2(), 0);
