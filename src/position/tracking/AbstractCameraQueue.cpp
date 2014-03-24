@@ -14,24 +14,8 @@ void AbstractCameraQueue::enqueue(CameraData data)
 	enqueueInternal(data);
 	
 	if (getSize() > 15) {
-		ROS_WARN("Camera queue running full. Removing 10 entries");
-		
-		while (getSize() > 5) {
-			dequeue();
-		}
+		ROS_WARN("Camera queue running full. Quadcopter id: %d", data.quadcopterId);
 	}
-}
-
-CameraData AbstractCameraQueue::getInvalidCameraData()
-{
-	CameraData data;
-	data.valid = false;
-	return data;
-}
-
-std::vector<CameraData> AbstractCameraQueue::getInvalidCameraDataVector()
-{
-	return toVector(getInvalidCameraData());
 }
 
 std::vector<CameraData> AbstractCameraQueue::toVector(CameraData data)

@@ -24,6 +24,32 @@ private:
      */
     Vector center, low, up;
 
+
+    /**
+     * cameraPosition: positions of cameras
+     */
+    std::vector<Vector> cameraPosition;
+
+    /**
+     * cameraDirection: orientation of cameras
+     */
+    std::vector<Vector> cameraDirection;
+
+    /**
+     * maximal range of camera
+     */
+    double maxRange;
+
+    /**
+     * number of cameras that track the tracking area
+     */
+    int numberCameras;
+
+    /**
+     * engine pointer
+     */
+    Engine *ep;
+
     /**
      * increases tracking area as middle point center, values are the difference to the values of center point.
      * @param posChange +- x-values and y-values of a1 to a4
@@ -70,12 +96,10 @@ private:
      * checks whether a point can be tracked of a single camera
      * @param cameraPosition position of camera
      * @param cameraDirection orientation of camera
-     * @param maxRange maximal range of camera
      * @param x point that should be checked
-     * @param ep engine pointer
      * @return true if x can be tracked
      */
-    bool inTrackingArea(Vector cameraPosition, Vector cameraDirection, double maxRange, Vector x, Engine *ep);
+    bool inTrackingArea(Vector cameraPosition, Vector cameraDirection, Vector x);
 
 public:
     /**
@@ -174,13 +198,8 @@ public:
 
     /**
      * sets/calculates the tracking area with binary search
-     * @param cameraPosition vector of camera positions
-     * @param cameraDirection vector of camera orientations
-     * @param numberCameras number of cameras
-     * @param maxRange maximal range of a camera
-     * @param ep engine pointer
      */
-    void setTrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep);
+    void setTrackingArea();
 
     /**
      * prints two opposite placed points of the square and lowest and highest point
@@ -195,11 +214,6 @@ public:
 
     /**
      * searches border thorugh multiplication of 2
-     * @param cameraPosition vector of camera positions
-     * @param cameraDirection vector of camera orientations
-     * @param numberCameras number of cameras
-     * @param maxRange maximal range of a camera
-     * @param ep engine pointer
      * @param posChange difference of x-/y-values to center of a1 to a4
      * @param height difference of z-values to center of a1 to a4
      * @param heightPos difference of z-value of up to center z-value
@@ -207,15 +221,10 @@ public:
      * @param value 0: posChange, 1: height, 2: heightPos, 3: heightNeg increasing
      * @return
      */
-    double increaseSearch(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep, double posChange, double height, double heightPos, double heightNeg, int value);
+    double increaseSearch(double posChange, double height, double heightPos, double heightNeg, int value);
 
     /**
      * binary search
-     * @param cameraPosition vector of camera positions
-     * @param cameraDirection vector of camera orientations
-     * @param numberCameras number of cameras
-     * @param maxRange maximal range of a camera
-     * @param ep engine pointer
      * @param leftBorder left border of binary search
      * @param rightBorder right border of binary search
      * @param posChange difference of x-/y-values to center of a1 to a4
@@ -225,19 +234,14 @@ public:
      * @param value 0: posChange, 1: height, 2: heightPos, 3: heightNeg binary searching
      * @return
      */
-    double binarySearch(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep, double leftBorder, double rightBorder, double posChange, double height, double heightPos, double heightNeg, int value);
+    double binarySearch(double leftBorder, double rightBorder, double posChange, double height, double heightPos, double heightNeg, int value);
 
     /**
      * checks whether a point can be tracked of at least 2 cameras
-     * @param cameraPosition camera positions
-     * @param cameraDirection camera directions
-     * @param numberCameras number of cameras
-     * @param maxRange maximal range
      * @param x point
-     * @param ep engine pointer
      * @return true if at least 2 cameras can track x
      */
-    bool inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep);
+    bool inCameraRange(Vector x);
 
 };
 
