@@ -2,10 +2,16 @@
 
 #include <ros/console.h>
 
-RRCameraQueue::RRCameraQueue()
+RRCameraQueue::RRCameraQueue() : graph(10, "Queue sizes")
 {
 	rrIndex = 0;
 	size = 0;
+	
+	std::map<int, cv::Scalar> colors;
+	colors[0] = cv::Scalar(0, 255, 0);
+	colors[1] = cv::Scalar(0, 255, 255);
+	colors[2] = cv::Scalar(255, 0, 255);
+	graph.setColors(colors);
 }
 
 void RRCameraQueue::enqueueInternal(CameraData data)
@@ -51,6 +57,14 @@ std::vector<CameraData> RRCameraQueue::dequeue()
 
 bool RRCameraQueue::dataAvailable()
 {
+	static int counter = 0;
+	
+	if (counter++ % 20 == 0) {
+		for (std::map<int, std::queue<CameraData> >::iterator it = queues.begin(); it != queues.end(); it++) {
+			graph.nextPoint(it->second.size(), it->first);
+		}
+	}
+	
 	return size > 0;
 }
 

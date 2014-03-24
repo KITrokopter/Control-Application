@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AbstractCameraQueue.hpp"
+#include "Graph.hpp"
 
 #include <queue>
 #include <map>
@@ -23,4 +24,6 @@ private:
 	size_t rrIndex;
 	std::map<int, std::queue<CameraData> > queues;
 	std::vector<int> camNos;
+	
+	Graph graph;
 };
