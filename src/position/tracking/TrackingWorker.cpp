@@ -5,6 +5,8 @@
 #include <opencv2/core/core.hpp>
 #include <map>
 
+#include "../../matlab/profiling.hpp"
+
 TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(200, "Difference")
 {
 	assert(receiver != 0);
@@ -45,7 +47,7 @@ void TrackingWorker::run()
 				ROS_INFO("Found quadcopter %d", data[0].quadcopterId);
 			}
 			
-									ROS_DEBUG("Got info from camera %d: [%.2f, %.2f, %.2f]", data[0].camNo, data[0].cameraVector.getV1(), data[0].cameraVector.getV2(), data[0].cameraVector.getV3());
+			ROS_DEBUG("Got info from camera %d: [%.2f, %.2f, %.2f]", data[0].camNo, data[0].cameraVector.getV1(), data[0].cameraVector.getV2(), data[0].cameraVector.getV3());
 			
 			Vector position = tracker.updatePosition(data);
 			
@@ -71,7 +73,9 @@ void TrackingWorker::run()
 				emptyCount = 0;
 			}
 			
+			long int time = getNanoTime();
 			usleep(0);
+			ROS_DEBUG("Waited %.2f ms", (getNanoTime() - time) / 1.0e6);
 		}
 	}
 	

@@ -44,10 +44,10 @@ void Graph::drawMetadata()
 	std::stringstream ssZero;
 	ssZero << "0";
 	
-	cv::putText(image, ssMaxValue.str(), cv::Point(10, imageHeight - graphAreaHeight - graphAreaVerticalOffset - 10),
-				cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 255));
+	cv::putText(image, ssMaxValue.str(), cv::Point(10, imageHeight - graphAreaHeight - graphAreaVerticalOffset - 30),
+				cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(255, 255, 255));
 	cv::putText(image, ssZero.str(), cv::Point(10, imageHeight - graphAreaVerticalOffset),
-				cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 255));
+				cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(255, 255, 255));
 	
 	cv::rectangle(image, cv::Point(graphAreaHorizontalOffset - 1, imageHeight - graphAreaVerticalOffset - graphAreaHeight - 1),
 				  cv::Point(graphAreaHorizontalOffset + graphAreaWidth + 1, imageHeight - graphAreaVerticalOffset + 1), cv::Scalar(150, 150, 150));
