@@ -427,7 +427,117 @@ void Controller::buildFormation()
 			pos[k] = formPos[i].getPosition()[k];
 			target[k] = pos[k] * distance;
 		}
+		this->movementStatusMutex.lock();
+		unsigned int quadStatus = this->quadcopterMovementStatus[i];
+		this->movementStatusMutex.unlock();
+		//As long as the quadcopter isn't tracked, incline
+		while(quadStatus == CALCULATE_START)
+		{
+        		this->movementStatusMutex.lock();
+	        	quadStatus = this->quadcopterMovementStatus[i];
+   		        this->movementStatusMutex.unlock();
+
+			//ROS_INFO("Starting");
+			//If Shutdown has been called, abort.
+			this->shutdownMutex.lock();
+			shutdown = this->shutdownStarted;
+			this->shutdownMutex.unlock();
+			if(shutdown)
+			{
+				ROS_INFO("Shutdown in BuildFormation");
+				return;
+			}
+		}
+		ROS_INFO("Tracked");
+		//If this is the first tracked quadcopter set it as a reference point for all the others
+		if( i == 0)
+		{
+			ROS_INFO("First one");
+			this->listPositionsMutex.lock();
+			//Get Position of first quadcopter
+			if(!listPositions[0].empty())
+			{
+				for(int k = 0; k < 3; k++)
+				{
+					first[k] = listPositions[0].back().getPosition()[k];
+				}
+			}
+			this->listPositionsMutex.unlock();
+			ROS_INFO("First set");
+			Position6DOF firstElement;
+			firstElement.setPosition(first);
+			this->listTargetsMutex.lock();
+			this->listTargets[0].push_back(firstElement);
+			this->listTargetsMutex.unlock();
+		}
+		else
+		{
+			//Set all the other positions according to the first crazyflie
+			ROS_INFO("Set the others");
+			target[0] += first[0];
+			target[1] += first[1];
+			target[2] += first[2];
+			Position6DOF targetElement;
+			targetElement.setPosition(target);
+			this->listTargetsMutex.lock();
+			this->listTargets[i].push_back(targetElement);
+			this->listTargetsMutex.unlock();
+			//If Shutdown has been called, abort.
+			this->shutdownMutex.lock();
+			shutdown = this->shutdownStarted;
+			this->shutdownMutex.unlock();
+			if(shutdown)
+			{
+				return;
+			}
+			else
+			{
+				this->movementStatusMutex.lock();
+				//FIXME for testing
+				this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
+				//this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
+				this->movementStatusMutex.unlock();
+			}
+		}
+		ROS_INFO("Inclining");
+		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
+		double pointer[3];
+		this->listTargetsMutex.lock();
+		for(int k = 0; k < 3; k++)
+		{
+			pointer[k] = this->listTargets[i].back().getPosition()[k];
+		}
+		this->listTargetsMutex.unlock();
+		pointer[0] += 0;
+		pointer[1] += 0;
+		pointer[2] += distance;
+		Position6DOF element;
+		element.setPosition(pointer);
+		this->listTargetsMutex.lock();
+		this->listTargets[i].push_back(element);
+		this->listTargetsMutex.unlock();
+		this->shutdownMutex.lock();
+		//If Shutdown has been called, abort.
+		shutdown = this->shutdownStarted;
+		this->shutdownMutex.unlock();
+		if(shutdown)
+		{
+			return;
+		}
+		else
+		{
+			this->movementStatusMutex.lock();
+			//FIXME for testing
+			this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
+			//this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
+			this->movementStatusMutex.unlock();
+		}
+		ROS_INFO("Done with %i",i);
 	}
+	ROS_INFO("BuildFormation finished");
+	this->buildFormationMutex.lock();
+	this->buildFormationFinished = true;
+	this->buildFormationMutex.unlock();		
 }
 
 /*
