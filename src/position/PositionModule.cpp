@@ -281,7 +281,6 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 			msg.distortion[j] = distortionCoefficients[idDict.getBackward(i)].at<double>(j);
 		}
 		
-		msg.distortion[4] = 0;
 		cameraCalibrationDataPublisher.publish(msg);
 		
 		// DEBUG: Show calibration results visually
