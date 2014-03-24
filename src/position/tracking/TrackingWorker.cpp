@@ -115,8 +115,10 @@ std::vector<CameraData> TrackingWorker::dequeue()
 	}
 	
 	if (dataAvailable()) {
+		ROS_DEBUG("Data available");
 		return queue.dequeue();
 	} else {
+		ROS_DEBUG("Data not available");
 		return std::vector<CameraData>();
 	}
 }
