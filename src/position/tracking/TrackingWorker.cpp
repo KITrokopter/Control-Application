@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <map>
 
-#include "../../matlab/profiling.cpp"
+#include "../../matlab/profiling.hpp"
 
 TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(200, "Difference")
 {
