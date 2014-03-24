@@ -2,6 +2,7 @@
 #define MOVEMENT_QUADRUPLE_HPP
 
 #include <sys/time.h>
+#include "ros/ros.h"
 
 class MovementQuadruple
 {	
