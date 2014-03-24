@@ -407,7 +407,7 @@ void TrackingArea::setTrackingArea() {
     }
     Vector center = m->interpolateLines(cameraLines, numberCameras);
     ROS_DEBUG("center is [%.2f, %.2f, %.2f]", center.getV1(), center.getV2(), center.getV3());
-    if (!(inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, center, ep))) {
+    if (!(inCameraRange(center))) {
         ROS_ERROR("center isn't tracked, maximal range is too small!");
         ROS_DEBUG("Maximal range is %f", maxRange);
         ROS_DEBUG("camera 0: [%f, %f, %f] + r * [%f, %f, %f]", cameraPosition[0].getV1(), cameraPosition[0].getV2(), cameraPosition[0].getV3(), cameraDirection[0].getV1(), cameraDirection[0].getV2(), cameraDirection[0].getV3());
@@ -432,8 +432,8 @@ void TrackingArea::setTrackingArea() {
 
         ROS_INFO("Searching maximal square size at center height.");
 
-        double maxCenterSize = increaseSearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, 0, 0, 0, 0, 0);
-        maxCenterSize = binarySearch(cameraPosition, cameraDirection, numberCameras, maxRange,ep, maxCenterSize, 2 * maxCenterSize, 0, 0, 0, 0, 0);
+        double maxCenterSize = increaseSearch(0, 0, 0, 0, 0);
+        maxCenterSize = binarySearch(maxCenterSize, 2 * maxCenterSize, 0, 0, 0, 0, 0);
         ROS_DEBUG("maximal square size at center height is %.2f", maxCenterSize * 2);
 
         /**
@@ -448,8 +448,7 @@ void TrackingArea::setTrackingArea() {
         // if lower = true, then the optimal middlepoint of trackingarea is lower than center
         bool lower = true;
         increaseTrackingArea(maxCenterSize, heightLower, 0, 0);
-        if (!(inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep))) {
+        if (!(inCameraRange(a1) && inCameraRange(a2) && inCameraRange(a3) && inCameraRange(a4))) {
             lower = false;
         }
 
@@ -460,8 +459,8 @@ void TrackingArea::setTrackingArea() {
 
             do {
                 oldSize = newSize;
-                double diff = increaseSearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, newSize, heightLower, 0, 0, 0);
-                newSize = binarySearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, newSize + diff, newSize + diff * 2, newSize, heightLower, 0, 0, 0);
+                double diff = increaseSearch(newSize, heightLower, 0, 0, 0);
+                newSize = binarySearch(newSize + diff, newSize + diff * 2, newSize, heightLower, 0, 0, 0);
                 heightLower *= 2;
             } while (newSize > oldSize);
 
@@ -474,8 +473,8 @@ void TrackingArea::setTrackingArea() {
 
             // binary search while |rightBorderHeight - leftBorderHeight| > 1
             while (-rightBorderHeight + leftBorderHeight > 1) {
-                double diff = increaseSearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, oldSize, middleHeight, 0, 0, 0);
-                newSize = binarySearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, oldSize + diff, oldSize + diff * 2, 0, heightLower, 0, 0, 0);
+                double diff = increaseSearch(oldSize, middleHeight, 0, 0, 0);
+                newSize = binarySearch(oldSize + diff, oldSize + diff * 2, 0, heightLower, 0, 0, 0);
                 if (newSize > oldSize) {
                     leftBorderHeight = middleHeight;
                     oldSize = newSize;
@@ -517,8 +516,8 @@ void TrackingArea::setTrackingArea() {
 
             // binary search while |rightBorderHeight - leftBorderHeight| > 1
             while (rightBorderHeight - leftBorderHeight > 1) {
-                double diff = increaseSearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, oldSize, middleHeight, 0, 0, 0);
-                newSize = binarySearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, oldSize + diff, oldSize + diff * 2, 0, heightLower, 0, 0, 0);
+                double diff = increaseSearch(oldSize, middleHeight, 0, 0, 0);
+                newSize = binarySearch(oldSize + diff, oldSize + diff * 2, 0, heightLower, 0, 0, 0);
                 if (newSize > oldSize) {
                     leftBorderHeight = middleHeight;
                     oldSize = newSize;
