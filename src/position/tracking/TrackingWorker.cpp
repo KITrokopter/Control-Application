@@ -38,13 +38,14 @@ void TrackingWorker::run()
 		std::vector<CameraData> data = dequeue();
 		
 		if (data.size() > 0) {
-			
 			emptyCount = 0;
 			
 			if (!receivedFirstPosition) {
 				receivedFirstPosition = true;
 				ROS_INFO("Found quadcopter %d", data[0].quadcopterId);
 			}
+			
+			ROS_DEBUG("Got info from camera %d", data.camNo);
 			
 			Vector position = tracker.updatePosition(data);
 			
