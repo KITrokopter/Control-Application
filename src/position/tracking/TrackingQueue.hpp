@@ -108,8 +108,12 @@ std::vector<CameraData> TrackingQueue<T>::dequeue()
 template <class T>
 bool TrackingQueue<T>::dataAvailable()
 {
-	for (std::map<int, AbstractCameraQueue*>::iterator it = queues.begin(); it != queues.end(); it++) {
-		graph.nextPoint(it->second->getSize(), it->first);
+	static int counter = 0;
+	
+	if (counter++ % 20 == 0) {
+		for (std::map<int, AbstractCameraQueue*>::iterator it = queues.begin(); it != queues.end(); it++) {
+			graph.nextPoint(it->second->getSize(), it->first);
+		}
 	}
 	
 	for (std::map<int, AbstractCameraQueue*>::iterator it = queues.begin(); it != queues.end(); it++) {
