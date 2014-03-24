@@ -1,5 +1,7 @@
 #include "RRCameraQueue.hpp"
 
+#include <ros/console.h>
+
 RRCameraQueue::RRCameraQueue()
 {
 	rrIndex = 0;
