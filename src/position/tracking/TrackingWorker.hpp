@@ -47,4 +47,5 @@ public:
 	Vector getCameraPosition(int camNo);
 	cv::Mat getIntrinsicsMatrix(int camNo);
 	cv::Mat getDistortionCoefficients(int camNo);
+	void updateTrackingArea();
 };

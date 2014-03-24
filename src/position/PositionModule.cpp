@@ -293,6 +293,8 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		cv::namedWindow(ss.str());
 	}
 	
+	trackingWorker.updateTrackingArea();
+	
 	isCalibrating = false;
 	
 	return ok;
