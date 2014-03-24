@@ -54,6 +54,7 @@ std::vector<CameraData> RRCameraQueue::dequeue()
 
 bool RRCameraQueue::dataAvailable()
 {
+	ROS_DEBUG("Size is %ld in dataAvailable()", size);
 	return size > 0;
 }
 

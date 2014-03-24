@@ -375,7 +375,7 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
  	// TODO: Calculate position in our coordinate system.
 	// TODO: Is this coordinate change correct for amcctoolbox?
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
-	// ROS_DEBUG("Received position: msg.ID: %d idDict.getForward(msg.ID): %d msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID), msg.quadcopterId);
+	ROS_DEBUG("Received position: msg.ID: %d idDict.getForward(msg.ID): %d msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID), msg.quadcopterId);
 	
 	trackingWorker.updatePosition(cameraVector, idDict.getForward(msg.ID), msg.quadcopterId, msg.timestamp);
 	
