@@ -28,21 +28,6 @@ Position::Position()
     } else {
         this->ep = ep;
     }
-    this->interpolationDependent = false;
-    initialize();
-}
-
-Position::Position(bool interpolationDependent)
-{
-    this->numberCameras = 0;
-    Engine *ep;
-    // starts a MATLAB process
-    if (!(ep = engOpen(""))) {
-            fprintf(stderr, "\nCan't start MATLAB engine\n");
-    } else {
-        this->ep = ep;
-    }
-    this->interpolationDependent = interpolationDependent;
     initialize();
 }
 
@@ -50,20 +35,12 @@ Position::Position(Engine *ep, int numberCameras)
 {
     this->numberCameras = numberCameras;
     this->ep = ep;
-    this->interpolationDependent = false;
-    initialize();
-}
-
-Position::Position(Engine *ep, int numberCameras, bool interpolationDependent)
-{
-    this->numberCameras = numberCameras;
-    this->ep = ep;
-    this->interpolationDependent = interpolationDependent;
     initialize();
 }
 
 void Position::initialize() {
     this->transformed = false;
+    this->interpolationDependent = true;
     distance = 0;
     Vector nan = Vector(NAN, NAN, NAN);
     Matrix nanMatrix = Matrix(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
@@ -299,14 +276,13 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
         for(int j = 0; j < cameraLines.size(); j++) {
             if (i == cameraLines[j].camNo) {
                 tracked = true;
-                ROS_DEBUG("camera %d tracked quadcopter %d", i, quadcopterId);
             }
         }
         if (!(tracked)) {
             imageAge[i]++;
         }
     }
-    // resets counter of camera with cameraId
+    // resets counter of cameras that are tracking quadcopter
     for(int i = 0; i < cameraLines.size(); i++) {
         imageAge[cameraLines[i].camNo] = 0;
     }
@@ -357,7 +333,6 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             for (int i = 0; i < numberCameras; i++) {
                 Vector camPos = getPosition(i);
                 quadPositions[i] = Line(camPos, quadPos[quadcopterId][i]);
-                printf("%d: [%f, %f, %f] + r * [%f, %f, %f]\n", i, camPos.getV1(), camPos.getV2(), camPos.getV3(), quadPos[quadcopterId][i].getV1(), quadPos[quadcopterId][i].getV2(), quadPos[quadcopterId][i].getV3());
             }
 
             Matlab *m = new Matlab(ep);
@@ -403,9 +378,10 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 newPos = m->interpolateLines(tracking, cameraLines.size());
             } else {
                 Vector position = getPosition(cameraLines[0].camNo);
-                Line tracked = Line(position, cameraLines[0].cameraVector);
+                Line tracked = Line(position, direction[0]);
+
                 // calulating actual pos
-                if ((interpolationDependent) && (distance != 0)) {
+                if (interpolationDependent) {
                     if (distance > 200) {
                         newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.7);
                     } else if (distance < 100) {

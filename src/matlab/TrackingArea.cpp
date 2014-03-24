@@ -407,6 +407,13 @@ void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vect
     ROS_DEBUG("center is [%.2f, %.2f, %.2f]", center.getV1(), center.getV2(), center.getV3());
     if (!(inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, center, ep))) {
         ROS_ERROR("center isn't tracked, maximal range is too small!");
+        ROS_DEBUG("Maximal range is %f", maxRange);
+        ROS_DEBUG("camera 0: [%f, %f, %f] + r * [%f, %f, %f]", cameraPosition[0].getV1(), cameraPosition[0].getV2(), cameraPosition[0].getV3(), cameraDirection[0].getV1(), cameraDirection[0].getV2(), cameraDirection[0].getV3());
+        ROS_DEBUG("camera 0: [%f, %f, %f] + r * [%f, %f, %f]", cameraPosition[1].getV1(), cameraPosition[1].getV2(), cameraPosition[1].getV3(), cameraDirection[1].getV1(), cameraDirection[1].getV2(), cameraDirection[1].getV3());
+        ROS_DEBUG("camera 0: [%f, %f, %f] + r * [%f, %f, %f]", cameraPosition[2].getV1(), cameraPosition[2].getV2(), cameraPosition[2].getV3(), cameraDirection[2].getV1(), cameraDirection[2].getV2(), cameraDirection[2].getV3());
+        ROS_DEBUG("Distance of camera 0 to center is %f", center.add(cameraPosition[0].mult(-1)).getLength());
+        ROS_DEBUG("Distance of camera 1 to center is %f", center.add(cameraPosition[1].mult(-1)).getLength());
+        ROS_DEBUG("Distance of camera 2 to center is %f", center.add(cameraPosition[2].mult(-1)).getLength());
     } else {
 
         setCenter(center);
