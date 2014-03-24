@@ -16,8 +16,6 @@ public:
 	virtual std::vector<CameraData> dequeue() = 0;
 	
 protected:
-	CameraData getInvalidCameraData();
-	std::vector<CameraData> getInvalidCameraDataVector();
 	std::vector<CameraData> toVector(CameraData data);
 	
 	virtual void enqueueInternal(CameraData data) = 0;

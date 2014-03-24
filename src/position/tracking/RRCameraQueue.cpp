@@ -25,22 +25,24 @@ std::vector<CameraData> RRCameraQueue::dequeue()
 {
 	if (size == 0) {
 		ROS_DEBUG("Size is 0");
-		return getInvalidCameraDataVector();
+		return std::vector<CameraData>();
 	}
 	
 	int index = rrIndex;
+	int loopCount = 0;
 	
 	do {
 		index = (index + 1) % camNos.size();
+		loopCount++;
 		
 		if (queues[camNos[index]].size() > 0) {
 			break;
 		}
 	} while (index != rrIndex);
 	
-	if (index == rrIndex) {
+	if (loopCount > camNos.size()) {
 		ROS_DEBUG("Didn't find CameraData");
-		return getInvalidCameraDataVector();
+		return std::vector<CameraData>();
 	} else {
 		ROS_DEBUG("Found CameraData");
 		CameraData result = queues[camNos[index]].front();
