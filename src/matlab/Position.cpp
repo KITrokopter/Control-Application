@@ -287,12 +287,19 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
     int quadcopterId = cameraLines[0].quadcopterId;
 
+    for(int i = 1; i < cameraLines.size(); i++) {
+        if (cameraLines[i].quadcopterId != quadcopterId) {
+            ROS_ERROR("scheduler passes datas of different quadcopter ids.");
+        }
+    }
+
     // increments counter for other cameras
     for (int i = 0; i < numberCameras; i++) {
         bool tracked = false;
         for(int j = 0; j < cameraLines.size(); j++) {
             if (i == cameraLines[j].camNo) {
                 tracked = true;
+                ROS_DEBUG("camera %d tracked quadcopter %d", i, quadcopterId);
             }
         }
         if (!(tracked)) {
@@ -361,11 +368,11 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
             oldPos[quadcopterId] = quadPosition;
             ROS_DEBUG("First seen position of quadcopter %d is [%f, %f, %f]", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3());
-            if (tracked(quadPosition)) {
+            /*if (tracked(quadPosition)) {
                 ROS_DEBUG("In tracking area");
             } else {
                 ROS_DEBUG("Not in tracking area");
-            }
+            }*/
 
             // as distance of 150 has interpolation factor 0.5
             distance = 150;
@@ -421,11 +428,11 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             // saving new Pos
             ROS_DEBUG("New position of quadcopter %d is [%f, %f, %f]", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3());
             oldPos[quadcopterId] = newPos;
-            if (tracked(newPos)) {
+            /*if (tracked(newPos)) {
                 ROS_DEBUG("In tracking area");
             } else {
                 ROS_DEBUG("Not in tracking area");
-            }
+            }*/
             return newPos;
         }
     }

@@ -215,6 +215,9 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 }
 
 Vector Matlab::interpolateLines(Line *lines, int quantity) {
+
+    ROS_DEBUG("Interpolate lines");
+
     // saving perpendicular foot points of all lines of array lines
     Vector *points = new Vector[2*quantity];
 	int pos = 0;
@@ -225,6 +228,7 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 	for (int i = 0; i < quantity; i++) {
 		for (int j = i + 1; j < quantity; j++) {
 
+            ROS_DEBUG("perpFootTwoLines()");
             intersects = perpFootTwoLinesFastCalculation(lines[i], lines[j], result);
 
             if (intersects == 1) {
@@ -258,6 +262,8 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 }
 
 Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
+
+    ROS_DEBUG("Interpolate lines with factor %f", interpolationFactor);
 
     // caculate perpendicular foor point of line and quadPos
     Vector newPos = perpFootOneLine(line, quadPos);
