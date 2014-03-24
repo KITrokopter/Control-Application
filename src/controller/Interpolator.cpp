@@ -1,5 +1,5 @@
 #include "Interpolator.hpp"
-#include "InterpolatorInfo.hpp"
+//#include "InterpolatorInfo.hpp"
 #include "Controller.hpp"
 
 unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized );
