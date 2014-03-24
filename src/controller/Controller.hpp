@@ -37,9 +37,11 @@
 #define THRUST_STAND_STILL 18001
 #define THRUST_START 28000
 #define THRUST_DECLINE 200
+#define THRUST_MAX 40000
 #define THRUST_STEP 50
-#define ROLL_STEP 2
-#define PITCH_STEP 2
+#define ROLL_MAX 5
+#define PITCH_MAX 5
+#define YAWRATE_MAX 0
 #define INVALID -1
 #define LOW_BATTERY 3.0//In V
 #define TIME_UPDATED_END 1*1000*1000 // in ns
@@ -55,8 +57,8 @@
 
 #define CALCULATE_STABILIZE_STEP 500	// time in ms after next value should be calculated
 
-#define RANGE_STABLE 0.1 // Distance of two points to be considered "equal" in m
-#define RANGE_STABLE_Z 0.08 // Difference of two height-Values to be considered "equal" in m
+#define RANGE_STABLE 10 // Distance of two points to be considered "equal" in mm
+#define RANGE_STABLE_Z 6 // Difference of two height-Values to be considered "equal" in mm
 
 #define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
 
@@ -108,7 +110,6 @@ protected:
 
 	/* Helper functions */
 	bool isStable( int internId );
-
 private:
 	
 	/* static data */	

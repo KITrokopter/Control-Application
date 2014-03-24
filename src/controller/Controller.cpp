@@ -1,9 +1,9 @@
 #include "Controller.hpp"
 
-bool closeToTarget( Position6DOF position1, Position6DOF position2 );
 void* startThreadCalculateMovement(void* something);
 void* startThreadBuildFormation(void* something);
 void* startThreadShutdown(void* something);
+static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
 
 Controller::Controller()
 {
@@ -170,9 +170,9 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			//ROS_INFO("Valid");
 			/* Quadcopter is tracked */
 			trackedArrayMutex.lock();
-			bool track = this->tracked[id];
+			bool trackedLocal = this->tracked[id];
 			trackedArrayMutex.unlock();
-			if( track == false )
+			if( trackedLocal == false )
 			{
 				//ROS_INFO("track false");
 				/* Quadcopter has not been tracked before */
@@ -246,6 +246,14 @@ void Controller::sendMovementAll()
 		{
 			// Remove oldest elements
 			this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
+
+			// Save Element (TODO only if not too young)
+			this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
+			while( this->listSentQuadruples[i].size() > 5 )	// TODO global variable
+			{
+				// Remove oldest elements
+				this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
+			}
 		}
 	}
 	//ROS_INFO("sendMovementAll finished");
@@ -323,14 +331,14 @@ void Controller::calculateMovement()
 					{
 						//ROS_INFO("Stabilize %i", i);
 					}
-					//stabilize( i );
+					stabilize( i );	/* TODO */
 					break;
 				case CALCULATE_HOLD:	
 					ROS_INFO("Hold %i", i);
-					hold( i );				
-					/* TODO */					
+					hold( i );	/* TODO */					
 					break;
 				case CALCULATE_MOVE:
+					/* TODO */
 					//ROS_INFO("Move %i", i);
 					break;
 				case CALCULATE_LAND:
@@ -421,117 +429,7 @@ void Controller::buildFormation()
 			pos[k] = formPos[i].getPosition()[k];
 			target[k] = pos[k] * distance;
 		}
-		this->movementStatusMutex.lock();
-		unsigned int quadStatus = this->quadcopterMovementStatus[i];
-		this->movementStatusMutex.unlock();
-		//As long as the quadcopter isn't tracked, incline
-		while(quadStatus == CALCULATE_START)
-		{
-        		this->movementStatusMutex.lock();
-	        	quadStatus = this->quadcopterMovementStatus[i];
-   		        this->movementStatusMutex.unlock();
-
-			//ROS_INFO("Starting");
-			//If Shutdown has been called, abort.
-			this->shutdownMutex.lock();
-			shutdown = this->shutdownStarted;
-			this->shutdownMutex.unlock();
-			if(shutdown)
-			{
-				ROS_INFO("Shutdown in BuildFormation");
-				return;
-			}
-		}
-		ROS_INFO("Tracked");
-		//If this is the first tracked quadcopter set it as a reference point for all the others
-		if( i == 0)
-		{
-			ROS_INFO("First one");
-			this->listPositionsMutex.lock();
-			//Get Position of first quadcopter
-			if(!listPositions[0].empty())
-			{
-				for(int k = 0; k < 3; k++)
-				{
-					first[k] = listPositions[0].back().getPosition()[k];
-				}
-			}
-			this->listPositionsMutex.unlock();
-			ROS_INFO("First set");
-			Position6DOF firstElement;
-			firstElement.setPosition(first);
-			this->listTargetsMutex.lock();
-			this->listTargets[0].push_back(firstElement);
-			this->listTargetsMutex.unlock();
-		}
-		else
-		{
-			//Set all the other positions according to the first crazyflie
-			ROS_INFO("Set the others");
-			target[0] += first[0];
-			target[1] += first[1];
-			target[2] += first[2];
-			Position6DOF targetElement;
-			targetElement.setPosition(target);
-			this->listTargetsMutex.lock();
-			this->listTargets[i].push_back(targetElement);
-			this->listTargetsMutex.unlock();
-			//If Shutdown has been called, abort.
-			this->shutdownMutex.lock();
-			shutdown = this->shutdownStarted;
-			this->shutdownMutex.unlock();
-			if(shutdown)
-			{
-				return;
-			}
-			else
-			{
-				this->movementStatusMutex.lock();
-				//FIXME for testing
-				this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
-				//this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
-				this->movementStatusMutex.unlock();
-			}
-		}
-		ROS_INFO("Inclining");
-		//Incline a little bit to avoid collisions (there is a level with the qc which are already in position and a moving level)
-		double pointer[3];
-		this->listTargetsMutex.lock();
-		for(int k = 0; k < 3; k++)
-		{
-			pointer[k] = this->listTargets[i].back().getPosition()[k];
-		}
-		this->listTargetsMutex.unlock();
-		pointer[0] += 0;
-		pointer[1] += 0;
-		pointer[2] += distance;
-		Position6DOF element;
-		element.setPosition(pointer);
-		this->listTargetsMutex.lock();
-		this->listTargets[i].push_back(element);
-		this->listTargetsMutex.unlock();
-		this->shutdownMutex.lock();
-		//If Shutdown has been called, abort.
-		shutdown = this->shutdownStarted;
-		this->shutdownMutex.unlock();
-		if(shutdown)
-		{
-			return;
-		}
-		else
-		{
-			this->movementStatusMutex.lock();
-			//FIXME for testing
-			this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
-			//this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
-			this->movementStatusMutex.unlock();
-		}
-		ROS_INFO("Done with %i",i);
 	}
-	ROS_INFO("BuildFormation finished");
-	this->buildFormationMutex.lock();
-	this->buildFormationFinished = true;
-	this->buildFormationMutex.unlock();		
 }
 
 /*
@@ -934,17 +832,11 @@ void Controller::stabilize( int internId )
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
 	this->listTargetsMutex.unlock();
-	/*
-	if() // TODO dateNow-dateOfLatestCalculation < CALCULATE_STABILIZE_STEP )
-	{
-		return;
-	}
-	*/
+	
 	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
 	
 	this->listFutureMovement[internId].clear();
-	this->listFutureMovement[internId].push_front( newMovement );
-	   
+	this->listFutureMovement[internId].push_front( newMovement );	   
 }
 
 void Controller::hold( int internId )
@@ -954,7 +846,6 @@ void Controller::hold( int internId )
 	ROS_INFO("%i now land", internId);
 	quadcopterMovementStatus[internId] = CALCULATE_LAND;
 	this->movementStatusMutex.unlock();		
-	
 }
 
 void Controller::land( int internId, int * nrLand )
@@ -1026,7 +917,7 @@ bool Controller::isStable( int internId )
 		{
 			if( counter==compareTime[0] || counter==compareTime[1] || counter==compareTime[2] )
 			{
-				if( !closeToTarget( listPositions[internId].back(), *rit ) )
+				if( !closeToTarget( listPositions[internId].back(), *rit, RANGE_STABLE ) )
 				{
 					return false;
 				}
@@ -1048,10 +939,10 @@ bool Controller::isStable( int internId )
     }
 }
 
-bool closeToTarget( Position6DOF position1, Position6DOF position2 )
+static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range )
 {
 	double distance = position1.getAbsoluteDistance( position2 );
-	if( distance < RANGE_STABLE )
+	if( distance < range )
 	{
 		return true;
 	}

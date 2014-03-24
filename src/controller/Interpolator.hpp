@@ -10,11 +10,13 @@
 #include "Position6DOF.hpp"
 #include "ros/ros.h"
 #include "../matlab/profiling.hpp"
-
-#define MAX_STEPS_IN_ADVANCE 1 		// How delayed is the input?
 #define MAX_NUMBER_QUADCOPTER_HIGH 10	// TODO equals MAX_NUMBER_QUADCOPTER
-#define MIN_TIME_TO_WAIT 500000000 	// in ns
-#define PREDICT_FUTURE_POSITION 200000000	// in ns
+#define MIN_TIME_TO_WAIT 500000000 	// in ns, only for rpy-values
+#define PREDICT_FUTURE_POSITION_TIME 200000000	// in ns
+#define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
+
+#define ROTATIONAL_CORRECTION 0	// 0-no correction; 1-always take new value; linear in between wouldn't work
+#define POSITIONED_NORTH_AT_START 0	// 0 or 1, used as bool, North means pitch+ -> y+
 
 #define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
 #define REACHING_HEIGHT_DIFF 0.6 // Factor 0 <= x <= 1
@@ -29,10 +31,14 @@
 #define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
 
 /*
- * TODO target before status.state==CACL
- * TODO 3D-view
- * TODO hold
  * TODO test of speed, either optimize or save data-to-sent in advance
+ * 
+ * TODO list future movement - fix
+ * TODO use of timestamps
+ * TODO ROS_INFO, ROS_WARN, ROS_ERROR, ROS_DEBUG - correct use
+ * TODO flight of circles, rotation, ...
+ *
+ * TODO hold
  * 
  */
 
