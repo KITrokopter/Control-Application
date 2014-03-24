@@ -343,7 +343,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
             oldPos[quadcopterId] = quadPosition;
             ROS_DEBUG("First seen position of quadcopter %d is [%f, %f, %f]", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3());
-            if (tracked(quadPosition)) {
+            if (tracking.inCameraRange(quadPosition)) {
                 ROS_DEBUG("In tracking area");
             } else {
                 ROS_DEBUG("Not in tracking area");
@@ -404,21 +404,13 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             // saving new Pos
             ROS_DEBUG("New position of quadcopter %d is [%f, %f, %f]", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3());
             oldPos[quadcopterId] = newPos;
-            if (tracked(newPos)) {
+            if (tracking.inCameraRange(newPos)) {
                 ROS_DEBUG("In tracking area");
             } else {
                 ROS_DEBUG("Not in tracking area");
             }
             return newPos;
         }
-    }
-}
-
-bool Position::tracked(Vector quadPos) {
-    if (tracking.inCameraRange(realCameraPos, realCameraOrient, numberCameras, 2000, quadPos, ep)) {
-        return true;
-    } else {
-        return false;
     }
 }
 

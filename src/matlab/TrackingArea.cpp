@@ -21,8 +21,8 @@ using namespace std;
 
 TrackingArea::TrackingArea(vector<Vector> cameraPosition, vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep) {
     this->maxRange = maxRange;
-    realCameraPos = cameraPosition;
-    realCameraOrient = cameraDirection;
+    this->cameraPosition = cameraPosition;
+    this->cameraDirection = cameraDirection;
     this->numberCameras = numberCameras;
     this->ep = ep;
     setTrackingArea();
@@ -168,7 +168,7 @@ bool TrackingArea::contains(Vector x) {
     }
 }
 
-bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection, double maxRange, Vector x, Engine *ep) {
+bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection, Vector x) {
     Matlab *m = new Matlab(ep);
     // center point of the floor of the pyramid1
     Vector n = cameraPosition.add(cameraDirection.mult(maxRange/cameraDirection.getLength()));
@@ -223,7 +223,7 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
 bool TrackingArea::inCameraRange(Vector x) {
     int tracked = 0;
     for (int i = 0; i < numberCameras; i++) {
-        if (inTrackingArea(cameraPosition[i], cameraDirection[i], maxRange, x, ep)) {
+        if (inTrackingArea(cameraPosition[i], cameraDirection[i], x)) {
             tracked++;
         }
     }
@@ -502,8 +502,8 @@ void TrackingArea::setTrackingArea() {
             // decrease height while sideBorder gets bigger
             do {
                 oldSize = newSize;
-                double diff = increaseSearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, newSize, heightHigher, 0, 0, 0);
-                newSize = binarySearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, newSize + diff, newSize + diff * 2, 0, heightHigher, 0, 0, 0);
+                double diff = increaseSearch(newSize, heightHigher, 0, 0, 0);
+                newSize = binarySearch(newSize + diff, newSize + diff * 2, 0, heightHigher, 0, 0, 0);
                 heightHigher *= 2;
             } while (newSize > oldSize);
 
@@ -539,8 +539,8 @@ void TrackingArea::setTrackingArea() {
 
         ROS_INFO("Searching highest point.");
 
-        double upperBorder = increaseSearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, 0, 0, 0, 0, 2);
-        upperBorder = binarySearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, upperBorder, 2 * upperBorder, 0, 0, 0, 0, 2);
+        double upperBorder = increaseSearch(0, 0, 0, 0, 2);
+        upperBorder = binarySearch(upperBorder, 2 * upperBorder, 0, 0, 0, 0, 2);
         ROS_DEBUG("maximal upper size is %.2f", upperBorder);
 
         /**
@@ -549,8 +549,8 @@ void TrackingArea::setTrackingArea() {
 
         ROS_INFO("Searching lowest point.");
 
-        double lowerBorder = increaseSearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, 0, 0, 0, 0, 3);
-        lowerBorder = binarySearch(cameraPosition, cameraDirection, numberCameras, maxRange, ep, lowerBorder, 2 * lowerBorder, 0, 0, 0, 0, 3);
+        double lowerBorder = increaseSearch(0, 0, 0, 0, 3);
+        lowerBorder = binarySearch(lowerBorder, 2 * lowerBorder, 0, 0, 0, 0, 3);
         ROS_DEBUG("maximal lower size is %.2f", lowerBorder);
 
         // increase tracking area with calculated values

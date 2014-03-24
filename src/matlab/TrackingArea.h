@@ -26,14 +26,14 @@ private:
 
 
     /**
-     * realCameraPos: real position of cameras
+     * cameraPosition: positions of cameras
      */
-    std::vector<Vector> realCameraPos;
+    std::vector<Vector> cameraPosition;
 
     /**
-     * @brief realCameraOrient: real orientation of cameras
+     * cameraDirection: orientation of cameras
      */
-    std::vector<Vector> realCameraOrient;
+    std::vector<Vector> cameraDirection;
 
     /**
      * maximal range of camera
@@ -96,12 +96,10 @@ private:
      * checks whether a point can be tracked of a single camera
      * @param cameraPosition position of camera
      * @param cameraDirection orientation of camera
-     * @param maxRange maximal range of camera
      * @param x point that should be checked
-     * @param ep engine pointer
      * @return true if x can be tracked
      */
-    bool inTrackingArea(Vector cameraPosition, Vector cameraDirection, double maxRange, Vector x, Engine *ep);
+    bool inTrackingArea(Vector cameraPosition, Vector cameraDirection, Vector x);
 
 public:
     /**
