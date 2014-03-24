@@ -38,7 +38,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	
 	this->pictureSubscriber = n.subscribe("Picture", 12, &PositionModule::pictureCallback, this);
 	this->systemSubscriber = n.subscribe("System", 4, &PositionModule::systemCallback, this);
-	this->rawPositionSubscriber = n.subscribe("RawPosition", 1024, &PositionModule::rawPositionCallback, this);
+	this->rawPositionSubscriber = n.subscribe("RawPosition", 32, &PositionModule::rawPositionCallback, this);
 	
 	this->startCalibrationService = n.advertiseService("StartCalibration", &PositionModule::startCalibrationCallback, this);
 	this->takeCalibrationPictureService = n.advertiseService("TakeCalibrationPicture", &PositionModule::takeCalibrationPictureCallback, this);

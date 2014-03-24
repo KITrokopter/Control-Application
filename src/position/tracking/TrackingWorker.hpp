@@ -14,6 +14,7 @@
 #include "Graph.hpp"
 #include "CameraData.hpp"
 #include "RRCameraQueue.hpp"
+#include "SynchronousCameraQueue.hpp"
 #include "TrackingQueue.hpp"
 
 class TrackingWorker {
@@ -23,7 +24,7 @@ private:
 	Position tracker;
 	volatile bool stop;
 
-	TrackingQueue<RRCameraQueue> queue;
+	TrackingQueue<SynchronousCameraQueue> queue;
 	boost::mutex queueMutex;
 	boost::condition_variable queueEmpty;
 	
