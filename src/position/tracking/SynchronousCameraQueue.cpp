@@ -82,6 +82,11 @@ std::vector<CameraData> SynchronousCameraQueue::dequeue()
 	
 	if (result.isValid()) {
 		cutOffQueue(result.getYoungest());
+		
+		if (result.getData().size() < camNos.size()) {
+			ROS_WARN("Quadcopter %d is only seen by %ld cameras", result.getData()[0].quadcopterId, result.getData().size());
+		}
+		
 		return result.getData();
 	} else {
 		// Search for element which is older than maxDelay
