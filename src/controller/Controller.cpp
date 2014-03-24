@@ -233,6 +233,7 @@ void Controller::sendMovementAll()
 		{
 			ROS_INFO("Send thrust movement all %u", msg.thrust);
 		}
+		this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		msg.roll = this->listFutureMovement[i].front().getRoll();
 		msg.pitch = this->listFutureMovement[i].front().getPitch();
 		msg.yaw = this->listFutureMovement[i].front().getYawrate();
@@ -323,11 +324,11 @@ void Controller::calculateMovement()
 					{
 						//ROS_INFO("Stabilize %i", i);
 					}
-					stabilize( i );	/* TODO */
+					stabilize( i );
 					break;
 				case CALCULATE_HOLD:	
 					ROS_INFO("Hold %i", i);
-					hold( i );	/* TODO */					
+					hold( i );				
 					break;
 				case CALCULATE_MOVE:
 					/* TODO */
