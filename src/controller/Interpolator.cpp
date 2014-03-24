@@ -5,6 +5,8 @@
 unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized );
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest );
 bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF target );
+MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target );
+static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
 
 Interpolator::Interpolator()
 {
@@ -312,7 +314,7 @@ bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF tar
 	double m12 = -sin( rotation );
 	double m21 = sin( rotation );
 	double m22 = cos( rotation );
-	double current = pos.getPosition();
+	double *current = pos.getPosition();
     double v1 = m11 * current[0] + m12 * current[1];
     double v2 = m21 * current[0] + m22 * current[1];
     double error = sqrt((v1-current[0])*(v1-current[0]) + (v2-current[1])*(v2-current[1]));
@@ -330,7 +332,7 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
 	double m12 = -sin( rotation );
 	double m21 = sin( rotation );
 	double m22 = cos( rotation );
-	double current = pos.getPosition();
+	double *current = pos.getPosition();
     double v1 = m11 * current[0] + m12 * current[1];
     double v2 = m21 * current[0] + m22 * current[1];
     double factor = sqrt(v1*v1 + v2*v2);
@@ -339,7 +341,7 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
     double newRoll = v1 * ROLL_MAX;
     double newPitch = v2 * PITCH_MAX;
     double newYawrate = 0;
-    if( Controller::closeToTarget( pos, target, RANGE_STABLE ) )
+    if( closeToTarget( pos, target, RANGE_STABLE ) )
     {
         double newRoll = newRoll / 2;
         double newPitch = newPitch / 2;
@@ -421,3 +423,14 @@ bool reachingTarget( double first, double last, double speed, long int timediff 
 	}
 	return false;
 }
+
+static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range )
+{
+	double distance = position1.getAbsoluteDistance( position2 );
+	if( distance < range )
+	{
+		return true;
+	}
+	return false;
+}
+

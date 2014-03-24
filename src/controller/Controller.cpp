@@ -1,9 +1,9 @@
 #include "Controller.hpp"
 
-bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
 void* startThreadCalculateMovement(void* something);
 void* startThreadBuildFormation(void* something);
 void* startThreadShutdown(void* something);
+static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
 
 Controller::Controller()
 {
@@ -924,7 +924,7 @@ bool Controller::isStable( int internId )
     }
 }
 
-bool closeToTarget( Position6DOF position1, Position6DOF position2, double range )
+static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range )
 {
 	double distance = position1.getAbsoluteDistance( position2 );
 	if( distance < range )

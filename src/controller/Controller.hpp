@@ -109,7 +109,6 @@ protected:
 
 	/* Helper functions */
 	bool isStable( int internId );
-
 private:
 	
 	/* static data */	
