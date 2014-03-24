@@ -61,6 +61,7 @@
 #define RANGE_STABLE_Z 6 // Difference of two height-Values to be considered "equal" in mm
 
 #define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
+#define MAX_SAVED_SENT_QUADRUPLES 8
 
 class Formation;
 class Controller : public IPositionReceiver {

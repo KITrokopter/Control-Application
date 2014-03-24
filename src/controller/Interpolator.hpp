@@ -37,6 +37,8 @@
  * TODO use of timestamps
  * TODO ROS_INFO, ROS_WARN, ROS_ERROR, ROS_DEBUG - correct use
  * TODO flight of circles, rotation, ...
+ * 
+ * TODO convertMovement (Controller)
  *
  * TODO hold
  * 

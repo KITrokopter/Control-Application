@@ -246,14 +246,13 @@ void Controller::sendMovementAll()
 		this->Movement_pub[i].publish(msg);		
 		//this->listFutureMovement[i].front().setTimestamp( currentTime );
 		
-		//FIXME Shouldn't we first erase and then add? Doesn't that erase newer items?
-		// Save Element (TODO only if not too young)
-		this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
-		while( this->listSentQuadruples[i].size() > 5 )	// TODO global variable
+		while( this->listSentQuadruples[i].size() > MAX_SAVED_SENT_QUADRUPLES )
 		{
 			// Remove oldest elements
 			this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
 		}
+		// Save Element (TODO only if not too young, in calculateMovement())
+		this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
 	}
 	//ROS_INFO("sendMovementAll finished");
 }
@@ -385,7 +384,6 @@ void Controller::buildFormation()
 	      notEnoughData = !receivedQuadcopters || !receivedFormation ;
 	      receivedFormMutex.unlock();
 	      receivedQCMutex.unlock();
-	      //TODO check if setquadcopters/ setformation
 	} while( notEnoughData );
 	
 	//Get the formation Positions and the distance.
@@ -599,7 +597,6 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	receivedQuadcopters = true;
 	receivedQCMutex.unlock();
 	
-	/* TODO: Error-handling. */
 	pthread_create(&tCalculateMovement, NULL, startThreadCalculateMovement, this);
 	ROS_INFO("Thread tCalculateMovement set up");
 	
@@ -856,7 +853,6 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 			}*/
 			shutdown(srv.request, srv.response);
 		}
-		//TODO Do we need to clean up something here? Free space, join threads ...
 	}
 }
 
@@ -873,13 +869,14 @@ void Controller::dontMove( int internId)
 void Controller::moveUp( int internId )
 {
 	bool moveUpSmart = false;
-	//TODO Why don't we set a timestamp for newMovement?
+	long int current = getNanoTime();
+	
 	if( !moveUpSmart ) {		
 		MovementQuadruple newMovement = MovementQuadruple( this->thrustTest, 0, 0, 0 );
+		newMovement.setTimestamp( current );
 		ROS_DEBUG("Thrust is %u", this->thrustTest);
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
-		long int current = getNanoTime();
 		//Increases thrust step by step to ensure slow inclining
 		if(current > this->time3 + 10000000)
 		{
@@ -897,22 +894,7 @@ void Controller::moveUp( int internId )
 			this->movementStatusMutex.lock();	
 			quadcopterMovementStatus[internId] = CALCULATE_LAND;
 			this->movementStatusMutex.unlock();
-		}
-			
-		/*ROS_INFO("Send Movement here for testing in moveup");
-        	control_application::quadcopter_movement msg;
-        	msg.thrust = this->listFutureMovement[internId].back().getThrust();
-        	ROS_INFO("Thrust in land is %u", msg.thrust);
-        	msg.roll = this->listFutureMovement[internId].back().getRoll();
-       		msg.pitch = this->listFutureMovement[internId].back().getPitch();
-       		msg.yaw = this->listFutureMovement[internId].back().getYawrate();
-        	this->Movement_pub[internId].publish(msg);
-		/*msg.thrust = 12005;
-                ROS_INFO("Thrust in land is %i", msg.thrust);
-                msg.roll = 0;
-                msg.pitch = 0;
-                msg.yaw = 0;
-                this->Movement_pub[internId].publish(msg);*/		
+		}		
 	} else
 	{
 		if( this->listFutureMovement[internId].size() == 0 )
@@ -969,7 +951,7 @@ void Controller::land( int internId, int * nrLand )
 		{
 			this->listFutureMovement[internId].pop_back();
 		}*/
-		//MovementQuadruple newMovement = MovementQuadruple( THRUST_DECLINE, 0, 0, 0 ); TODO @problem sendMovementAll
+		//MovementQuadruple newMovement = MovementQuadruple( THRUST_DECLINE, 0, 0, 0 ); FIXME 
 		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
 		newMovement.setThrust( THRUST_DECLINE );
 		newMovement.setTimestamp( currentTime );
@@ -979,7 +961,7 @@ void Controller::land( int internId, int * nrLand )
 	{
 		ROS_INFO("min");
 		//Shutdown crazyflie after having left the tracking area.
-		//MovementQuadruple newMovement = MovementQuadruple( THRUST_DECLINE, 0, 0, 0 ); TODO @problem sendMovementAll
+		//MovementQuadruple newMovement = MovementQuadruple( THRUST_DECLINE, 0, 0, 0 ); FIXME 
 		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
 		newMovement.setThrust( THRUST_MIN );
 		newMovement.setTimestamp(currentTime);
@@ -991,15 +973,6 @@ void Controller::land( int internId, int * nrLand )
 		ROS_INFO("Landed: %i", *nrLand);
 	}
 	this->trackedArrayMutex.unlock();
-	//TODO This is here just for testing.
-	/*ROS_INFO("Send Movement here for testing");
-	control_application::quadcopter_movement msg;
-	msg.thrust = this->listFutureMovement[internId].front().getThrust();
-	ROS_INFO("Thrust in land is %u", msg.thrust);
-	msg.roll = this->listFutureMovement[internId].front().getRoll();
-	msg.pitch = this->listFutureMovement[internId].front().getPitch();
-	msg.yaw = this->listFutureMovement[internId].front().getYawrate();
-	this->Movement_pub[internId].publish(msg);*/	
 }
 
 
