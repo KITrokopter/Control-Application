@@ -116,6 +116,7 @@ private:
 	Formation *formation;	//Receive data over ROS
 	unsigned int senderID;	//Receive data over ROS	
 	TrackingArea trackingArea;
+	Interpolator interpolator;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
 	std::vector<unsigned long int > quadcopters;

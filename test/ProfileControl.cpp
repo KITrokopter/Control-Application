@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 	ROS_INFO("Updating");
 	std::vector<int> ids;
 	ids.push_back(0);
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 100; i++)
 	{
 	  receiver->updatePositions(from, ids, ids);
 	  usleep(100);
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 	}
 	from.push_back(Vector(1,0,0));
 	ids.push_back(3);
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 100000; i++)
 	{
 	  receiver->updatePositions(from, ids, ids);
 	  usleep(100);
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 	ROS_INFO("Wait");
 	usleep(10000000);
 	ROS_INFO("Long Update");
-	for(int i = 0; i < 10000; i++)
+	for(int i = 0; i < 100; i++)
         {
           receiver->updatePositions(from, ids, ids);
           usleep(2000);

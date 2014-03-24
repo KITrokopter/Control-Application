@@ -46,7 +46,7 @@ class Interpolator {
 public:
 	Interpolator();
 	MovementQuadruple calibrate(int id, std::list<MovementQuadruple> sentQuadruples);
-	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> sentQuadruples, std::list<Position6DOF> positions, Position6DOF target, int id);
+	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, int id);
 
 protected:
 	void checkState( int id );

@@ -177,13 +177,14 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				//ROS_INFO("track false");
 				/* Quadcopter has not been tracked before */
 				this->movementStatusMutex.lock();
-				if(this->quadcopterMovementStatus[id] == CALCULATE_STABILIZE)
+				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 				{
 					ROS_INFO("Stabilizing now %i", id);
-					this->quadcopterMovementStatus[id] = CALCULATE_LAND;
-				    this->shutdownMutex.lock();
+					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
+					this->time2 = getNanoTime();
+					/*this->shutdownMutex.lock();
 					this->shutdownStarted = true;
-					this->shutdownMutex.unlock();
+					this->shutdownMutex.unlock();*/
 
 				}
 				this->movementStatusMutex.unlock();
@@ -299,7 +300,7 @@ void Controller::calculateMovement()
 			this->movementStatusMutex.lock();
 			unsigned int quadStatus = this->quadcopterMovementStatus[i];
 			this->movementStatusMutex.unlock();
-			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_HOLD) //only for testing TODO
+			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_STABILIZE) //only for testing TODO
 			{
 				//ROS_INFO("land or hold");
 				if( enoughData)
@@ -327,7 +328,7 @@ void Controller::calculateMovement()
 				case CALCULATE_STABILIZE:
 					if( i == 0)
 					{
-						//ROS_INFO("Stabilize %i", i);
+					//	ROS_INFO("Stabilize %i", i);
 					}
 					stabilize( i );
 					break;
@@ -674,7 +675,7 @@ int Controller::getLocalId(int globalId)	// TODO testme
  */
 bool Controller::checkInput(int internId)
 {
-	ROS_INFO("Checking");
+	//ROS_INFO("Checking");
 	this->receivedQCStMutex.lock();
 	bool received = this->receivedQuadStatus[internId];
 	this->receivedQCStMutex.unlock();
@@ -880,23 +881,23 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].push_front( newMovement );
 		long int current = getNanoTime();
 		//Increases thrust step by step to ensure slow inclining
-		if(current > this->time3 + 10000000)
+		/*if(current > this->time3 + 10000000)
 		{
 			usleep(85000);
 			this->thrustTest += 700;
 			this->time3 = getNanoTime();
-		}
+		}*/
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustTest >= 50000 || current > this->time2 + 4000000000)
+		/*if(this->thrustTest >= 50000 || current > this->time2 + 4000000000)
 		{
-			ROS_DEBUG("Emergency Shutdown Test");
+			ROS_INFO("Emergency Shutdown Test");
 			this->shutdownMutex.lock();
 			this->shutdownStarted = true;
 			this->shutdownMutex.unlock();
 			this->movementStatusMutex.lock();	
 			quadcopterMovementStatus[internId] = CALCULATE_LAND;
 			this->movementStatusMutex.unlock();
-		}
+		}*/
 			
 		/*ROS_INFO("Send Movement here for testing in moveup");
         	control_application::quadcopter_movement msg;
@@ -936,13 +937,12 @@ void Controller::moveUp( int internId )
 
 void Controller::stabilize( int internId )
 {
-	Interpolator interpolator = Interpolator();
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
+	this->listPositionsMutex.lock();
+	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
+	this->listPositionsMutex.unlock();
 	this->listTargetsMutex.unlock();
-	
-	MovementQuadruple newMovement = interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
-	
 	this->listFutureMovement[internId].clear();
 	this->listFutureMovement[internId].push_front( newMovement );	   
 }
