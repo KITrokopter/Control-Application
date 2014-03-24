@@ -47,7 +47,7 @@ void TrackingWorker::run()
 				ROS_INFO("Found quadcopter %d", data[0].quadcopterId);
 			}
 			
-			ROS_DEBUG("Got info from camera %d: [%.2f, %.2f, %.2f]", data[0].camNo, data[0].cameraVector.getV1(), data[0].cameraVector.getV2(), data[0].cameraVector.getV3());
+			// ROS_DEBUG("Got info from camera %d: [%.2f, %.2f, %.2f]", data[0].camNo, data[0].cameraVector.getV1(), data[0].cameraVector.getV2(), data[0].cameraVector.getV3());
 			
 			Vector position = tracker.updatePosition(data);
 			
