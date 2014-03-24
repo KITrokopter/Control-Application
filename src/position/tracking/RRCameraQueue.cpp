@@ -20,6 +20,7 @@ void RRCameraQueue::enqueueInternal(CameraData data)
 std::vector<CameraData> RRCameraQueue::dequeue()
 {
 	if (size == 0) {
+		ROS_DEBUG("Size is 0");
 		return getInvalidCameraDataVector();
 	}
 	
@@ -30,12 +31,14 @@ std::vector<CameraData> RRCameraQueue::dequeue()
 			break;
 		}
 		
-		index++;
+		index = (index + 1) % camNos.size();
 	} while (index != rrIndex);
 	
 	if (index == rrIndex) {
+		ROS_DEBUG("Didn't find CameraData");
 		return getInvalidCameraDataVector();
 	} else {
+		ROS_DEBUG("Found CameraData");
 		rrIndex = (index + 1) % camNos.size();
 		CameraData result = queues[camNos[index]].front();
 		queues[camNos[index]].pop();
