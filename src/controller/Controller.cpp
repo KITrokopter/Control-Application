@@ -884,11 +884,11 @@ void Controller::moveUp( int internId )
 		if(current > this->time3 + 10000000)
 		{
 			usleep(85000);
-			this->thrustTest += 600;
+			this->thrustTest += 800;
 			this->time3 = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustTest >= 50000 || current > this->time2 + 4000000000)
+		if(this->thrustTest >= 60000 || current > this->time2 + 4000000000)
 		{
 			ROS_INFO("Emergency Shutdown Test");
 			this->shutdownMutex.lock();
