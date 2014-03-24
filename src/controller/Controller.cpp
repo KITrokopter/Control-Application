@@ -177,7 +177,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				//ROS_INFO("track false");
 				/* Quadcopter has not been tracked before */
 				this->movementStatusMutex.lock();
-				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
+				if(this->quadcopterMovementStatus[id] == CALCULATE_STABILIZE)
 				{
 					ROS_INFO("Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_LAND;
@@ -228,12 +228,17 @@ void Controller::sendMovementAll()
 			this->listFutureMovement[i].pop_back();
 		}
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
-		ROS_INFO("Trust of %i is %u",i, msg.thrust);
-		if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_START)
-		{
-			ROS_INFO("Send thrust movement all %u", msg.thrust);
-		}
 		this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		msg.thrust = this->listFutureMovement[i].front().getThrust();
+		if(msg.thrust > 4000)
+		{
+			//ROS_INFO("Trust of %i is %u",i, msg.thrust);
+		
+			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_START)
+			{
+				ROS_INFO("Send thrust movement all %u", msg.thrust);
+			}
+		}
 		msg.roll = this->listFutureMovement[i].front().getRoll();
 		msg.pitch = this->listFutureMovement[i].front().getPitch();
 		msg.yaw = this->listFutureMovement[i].front().getYawrate();
