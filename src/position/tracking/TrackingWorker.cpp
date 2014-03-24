@@ -35,12 +35,9 @@ void TrackingWorker::run()
 	int emptyCount = 0;
 	
 	while (!stop) {
-		ROS_DEBUG("Dequeueing");
 		std::vector<CameraData> data = dequeue();
-		ROS_DEBUG("Dequeued");
 		
 		if (data.size() > 0) {
-			ROS_DEBUG("data is valid");
 			
 			emptyCount = 0;
 			
@@ -115,10 +112,8 @@ std::vector<CameraData> TrackingWorker::dequeue()
 	}
 	
 	if (dataAvailable()) {
-		ROS_DEBUG("Data available");
 		return queue.dequeue();
 	} else {
-		ROS_DEBUG("Data not available");
 		return std::vector<CameraData>();
 	}
 }
