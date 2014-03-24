@@ -17,6 +17,8 @@ void RRCameraQueue::enqueueInternal(CameraData data)
 	
 	queues[data.camNo].push(data);
 	size++;
+	
+	ROS_DEBUG("Enqueue: size = %ld, queues[data.camNo].size() = %ld", size, queues[data.camNo].size());
 }
 
 std::vector<CameraData> RRCameraQueue::dequeue()

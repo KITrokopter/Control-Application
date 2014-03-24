@@ -77,7 +77,7 @@ std::vector<CameraData> TrackingQueue<T>::dequeue()
 			break;
 		}
 		
-		index++;
+		index  = (index + 1) % ids.size();
 	} while (index != rrIndex);
 	
 	if (index == rrIndex) {
