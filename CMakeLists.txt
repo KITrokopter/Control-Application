@@ -282,21 +282,40 @@ add_executable(position_module
 )
 
 add_dependencies(position_module
-	control_application_generate_messages_cpp
-	api_application_generate_messages_cpp
-	camera_application_generate_messages_cpp
-	quadcopter_application_generate_messages_cpp
+  control_application_generate_messages_cpp
+  api_application_generate_messages_cpp
+  camera_application_generate_messages_cpp
+  quadcopter_application_generate_messages_cpp
 )
 
 target_link_libraries(position_module
-	${catkin_LIBRARIES}
-	${MATLAB_PATH}/bin/glnxa64/libeng.so
-	${MATLAB_PATH}/bin/glnxa64/libmx.so
-	${MATLAB_PATH}/bin/glnxa64/libmat.so
-	libopencv_core.so
-	libopencv_highgui.so
-	libopencv_calib3d.so
-	libopencv_imgproc.so
+  ${catkin_LIBRARIES}
+  ${MATLAB_PATH}/bin/glnxa64/libeng.so
+  ${MATLAB_PATH}/bin/glnxa64/libmx.so
+  ${MATLAB_PATH}/bin/glnxa64/libmat.so
+  libopencv_core.so
+  libopencv_highgui.so
+  libopencv_calib3d.so
+  libopencv_imgproc.so
+)
+
+add_executable(test_camera_queues
+  test/testCameraQueues.cpp
+  test/helpers/profiling.cpp
+  
+  src/position/tracking/SynchronousCameraQueue.cpp
+  src/position/tracking/SynchronousCameraQueue_Group.cpp
+  src/position/tracking/AbstractCameraQueue.cpp
+  
+  src/matlab/Vector.cpp
+  src/matlab/Matrix.cpp
+)
+
+target_link_libraries(test_camera_queues
+  ${catkin_LIBRARIES}
+  ${MATLAB_PATH}/bin/glnxa64/libeng.so
+  ${MATLAB_PATH}/bin/glnxa64/libmx.so
+  ${MATLAB_PATH}/bin/glnxa64/libmat.so
 )
 
 else()
