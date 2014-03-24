@@ -24,7 +24,8 @@ TrackingArea::TrackingArea(vector<Vector> cameraPosition, vector<Vector> cameraD
     realCameraPos = cameraPosition;
     realCameraOrient = cameraDirection;
     this->numberCameras = numberCameras;
-    setTrackingArea(cameraPosition, cameraDirection, numberCameras, maxRange, ep);
+    this->ep = ep;
+    setTrackingArea();
 }
 
 Vector TrackingArea::getA1() {
@@ -219,7 +220,7 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
     }
 }
 
-bool TrackingArea::inCameraRange(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Vector x, Engine *ep) {
+bool TrackingArea::inCameraRange(Vector x) {
     int tracked = 0;
     for (int i = 0; i < numberCameras; i++) {
         if (inTrackingArea(cameraPosition[i], cameraDirection[i], maxRange, x, ep)) {
@@ -239,7 +240,7 @@ void TrackingArea::increaseTrackingArea(double posChange, double height, double 
     setLow(Vector(center.getV1(), center.getV2(), center.getV3() - heightNeg));
 }
 
-double TrackingArea::binarySearch(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep, double leftBorder, double rightBorder, double posChange, double height, double heightPos, double heightNeg, int value) {
+double TrackingArea::binarySearch(double leftBorder, double rightBorder, double posChange, double height, double heightPos, double heightNeg, int value) {
 
     double sideBorder = leftBorder;
     double middle = leftBorder + (rightBorder - leftBorder)/2;
@@ -252,8 +253,7 @@ double TrackingArea::binarySearch(std::vector<Vector> cameraPosition, std::vecto
             ROS_DEBUG("binary search, side size: %.2f", 2 * middle);
 
             // checks whether all corners of tracking area are still tracked of all cameras
-            if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
+            if (inCameraRange(a1) && inCameraRange(a2) && inCameraRange(a3) && inCameraRange(a4)) {
 
                 // border is between middle and rightBorder
                 leftBorder = middle;
@@ -275,9 +275,8 @@ double TrackingArea::binarySearch(std::vector<Vector> cameraPosition, std::vecto
         while (fabs(rightBorder - leftBorder) > 1) {
 
             // checks whether all corners of tracking area are still tracked of all cameras
-            if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
 
+            if (inCameraRange(a1) && inCameraRange(a2) && inCameraRange(a3) && inCameraRange(a4)) {
                 // border is between middle and rightBorder
                 leftBorder = middle;
                 sideBorder = middle;
@@ -299,7 +298,7 @@ double TrackingArea::binarySearch(std::vector<Vector> cameraPosition, std::vecto
         while (fabs(rightBorder - leftBorder) > 1) {
 
             // checks whether all corners of tracking area are still tracked of all cameras
-            if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, up, ep)) {
+            if (inCameraRange(up)) {
 
                 // border is between middle and rightBorder
                 leftBorder = middle;
@@ -322,7 +321,7 @@ double TrackingArea::binarySearch(std::vector<Vector> cameraPosition, std::vecto
         while (fabs(rightBorder - leftBorder) > 1) {
 
             // checks whether all corners of tracking area are still tracked of all cameras
-            if (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, low, ep)) {
+            if (inCameraRange(low)) {
 
                 // border is between middle and rightBorder
                 leftBorder = middle;
@@ -349,15 +348,14 @@ double TrackingArea::binarySearch(std::vector<Vector> cameraPosition, std::vecto
 
 // border is between basis + return and basis + return * 2
 // value = 0, posChange, value = 1, height, value = 2, heightPos, value = 3, heightNeg
-double TrackingArea::increaseSearch(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep, double posChange, double height, double heightPos, double heightNeg, int value) {
+double TrackingArea::increaseSearch(double posChange, double height, double heightPos, double heightNeg, int value) {
 
     double diff = 0.5;
 
     increaseTrackingArea(posChange, height, heightPos, heightNeg);
     switch(value) {
     case 0: {
-        while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
+        while (inCameraRange(a1) && inCameraRange(a2) && inCameraRange(a3) && inCameraRange(a4)) {
             diff *= 2;
             increaseTrackingArea(posChange + diff, height, heightPos, heightNeg);
             ROS_DEBUG("increasing side size : %.2f", 2 * (posChange + diff));
@@ -365,8 +363,7 @@ double TrackingArea::increaseSearch(std::vector<Vector> cameraPosition, std::vec
         break;
     }
     case 1: {
-        while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a1, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a2, ep)
-                && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a3, ep) && inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, a4, ep)) {
+        while (inCameraRange(a1) && inCameraRange(a2) && inCameraRange(a3) && inCameraRange(a4)) {
             diff *= 2;
             increaseTrackingArea(posChange, height + diff, heightPos, heightNeg);
             ROS_DEBUG("increasing height: %.2f", (height + diff));
@@ -374,7 +371,7 @@ double TrackingArea::increaseSearch(std::vector<Vector> cameraPosition, std::vec
         break;
     }
     case 2: {
-        while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, up, ep)) {
+        while (inCameraRange(up)) {
             diff *= 2;
             increaseTrackingArea(posChange, height, heightPos + diff, heightNeg);
             ROS_DEBUG("increasing heightPos: %.2f", diff + heightPos);
@@ -382,7 +379,7 @@ double TrackingArea::increaseSearch(std::vector<Vector> cameraPosition, std::vec
         break;
     }
     case 3: {
-        while (inCameraRange(cameraPosition, cameraDirection, numberCameras, maxRange, low, ep)) {
+        while (inCameraRange(low)) {
             diff *= 2;
             increaseTrackingArea(posChange, height, heightPos, heightNeg + diff);
             ROS_DEBUG("increasing heightNeg: %.2f", diff + heightNeg);
@@ -401,7 +398,7 @@ double TrackingArea::increaseSearch(std::vector<Vector> cameraPosition, std::vec
     }
 }
 
-void TrackingArea::setTrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep) {
+void TrackingArea::setTrackingArea() {
     Matlab *m = new Matlab(ep);
     Line *cameraLines = new Line[numberCameras];
     for (int i = 0; i < numberCameras; i++) {
