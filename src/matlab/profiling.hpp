@@ -20,3 +20,9 @@
 long int getNanoTime();
 
 #endif // PROFILING_HPP
+
+#ifdef DEBUG_TIME
+
+void setNanoTime(long int time);
+
+#endif

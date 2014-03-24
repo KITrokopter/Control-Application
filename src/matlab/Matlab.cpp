@@ -11,6 +11,7 @@
 #include <string.h>
 #include <iostream>
 #include <ros/ros.h>
+#include <cmath>
 #include "Matrix 2x2.h"
 #include "profiling.hpp"
 #define  BUFSIZE 256
@@ -72,7 +73,11 @@ int Matlab::perpFootTwoLinesFastCalculation(Line f, Line g, Vector *result) {
         Vector bb = f.getA().add(g.getA().mult(-1));
         x = A.inverse().multiplicate(bb);
         // checks if equation is also right for the third vectorcomponent.
-        same = (f.getA().getV3() + x.getV1() * f.getU().getV3() == g.getA().getV3() + x.getV2() * g.getU().getV3());
+        if (fabs(f.getA().getV3() + x.getV1() * f.getU().getV3() - g.getA().getV3() + x.getV2() * g.getU().getV3()) < 0.0000000001) {
+            same = true;
+        } else {
+            same = false;
+        }
 
     } else if (!(((f.getU().getV1() == 0) && (g.getU().getV1() == 0)) || ((f.getU().getV3() == 0) && (g.getU().getV3() == 0))
                  || ((f.getU().getV1() == 0) && (f.getU().getV3() == 0)) || ((g.getU().getV1() == 0) && (g.getU().getV3() == 0))
@@ -83,7 +88,11 @@ int Matlab::perpFootTwoLinesFastCalculation(Line f, Line g, Vector *result) {
         bb.setV2(v2);
         x = A.inverse().multiplicate(bb);
         // checks if equation is also right for the third vectorcomponent.
-        same = (f.getA().getV2() + x.getV1() * f.getU().getV2() == g.getA().getV2() + x.getV2() * g.getU().getV2());
+        if (fabs(f.getA().getV2() + x.getV1() * f.getU().getV2() - g.getA().getV2() + x.getV2() * g.getU().getV2()) < 0.0000000001) {
+            same = true;
+        } else {
+            same = false;
+        }
     } else {
         Matrix2x2 A = Matrix2x2(-f.getU().getV2(), g.getU().getV2(), -f.getU().getV3(), g.getU().getV3());
         Vector bb = f.getA().add(g.getA().mult(-1));
@@ -93,11 +102,15 @@ int Matlab::perpFootTwoLinesFastCalculation(Line f, Line g, Vector *result) {
         bb.setV2(v2);
         x = A.inverse().multiplicate(bb);
         // checks if equation is also right for the third vectorcomponent.
-        same = (f.getA().getV1() + x.getV1() * f.getU().getV1() == g.getA().getV1() + x.getV2() * g.getU().getV1());
+        if (fabs(f.getA().getV1() + x.getV1() * f.getU().getV1() - g.getA().getV1() + x.getV2() * g.getU().getV1()) < 0.0000000001) {
+            same = true;
+        } else {
+            same = false;
+        }
     }
 
-    // if same = 0, lines intersect
-    if (same != 0.0) {
+    // if same = true, lines intersect
+    if (same) {
         Vector intersectionpoint = f.getA().add(f.getU().mult(x.getV1()));
         result[0] = intersectionpoint;
         return 1;
@@ -136,7 +149,6 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
     if (f.getU().isLinearDependent(g.getU())) {
             return 0;
     }
-
 
     // aren't parallel, need to check, whether intersect. has to make sure, that A can be inverted.
     // A*x = bb, x = (r, s)
@@ -202,6 +214,7 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 }
 
 Vector Matlab::interpolateLines(Line *lines, int quantity) {
+
     // saving perpendicular foot points of all lines of array lines
     Vector *points = new Vector[2*quantity];
 	int pos = 0;
