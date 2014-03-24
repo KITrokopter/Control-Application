@@ -10,7 +10,6 @@
 #include "Position6DOF.hpp"
 #include "ros/ros.h"
 #include "../matlab/profiling.hpp"
-x
 #define MAX_NUMBER_QUADCOPTER_HIGH 10	// TODO equals MAX_NUMBER_QUADCOPTER
 #define MIN_TIME_TO_WAIT 500000000 	// in ns, only for rpy-values
 #define PREDICT_FUTURE_POSITION_TIME 200000000	// in ns
