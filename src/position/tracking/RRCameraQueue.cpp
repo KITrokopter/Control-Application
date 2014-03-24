@@ -31,11 +31,11 @@ std::vector<CameraData> RRCameraQueue::dequeue()
 	int index = rrIndex;
 	
 	do {
+		index = (index + 1) % camNos.size();
+		
 		if (queues[camNos[index]].size() > 0) {
 			break;
 		}
-		
-		index = (index + 1) % camNos.size();
 	} while (index != rrIndex);
 	
 	if (index == rrIndex) {
@@ -43,7 +43,6 @@ std::vector<CameraData> RRCameraQueue::dequeue()
 		return getInvalidCameraDataVector();
 	} else {
 		ROS_DEBUG("Found CameraData");
-		rrIndex = (index + 1) % camNos.size();
 		CameraData result = queues[camNos[index]].front();
 		queues[camNos[index]].pop();
 		size--;

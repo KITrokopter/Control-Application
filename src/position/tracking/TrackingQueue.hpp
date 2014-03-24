@@ -77,18 +77,17 @@ std::vector<CameraData> TrackingQueue<T>::dequeue()
 	
 	do {
 		ROS_DEBUG("TrackingQueue: Loop, index = %d", index);
+		index  = (index + 1) % ids.size();
+		
 		if (queues[ids[index]]->dataAvailable()) {
 			break;
 		}
-		
-		index  = (index + 1) % ids.size();
 	} while (index != rrIndex);
 	
 	if (index == rrIndex) {
 		return std::vector<CameraData>();
 	} else {
 		ROS_DEBUG("TrackingQueue: Found something");
-		rrIndex = (index + 1) % ids.size();
 		std::vector<CameraData> result = queues[ids[index]]->dequeue();
 		size -= result.size();
 		
