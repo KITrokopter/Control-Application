@@ -44,7 +44,7 @@ void Graph::drawMetadata()
 	std::stringstream ssZero;
 	ssZero << "0";
 	
-	cv::putText(image, ssMaxValue.str(), cv::Point(10, imageHeight - graphAreaHeight - graphAreaVerticalOffset - 30),
+	cv::putText(image, ssMaxValue.str(), cv::Point(10, imageHeight - graphAreaHeight - graphAreaVerticalOffset),
 				cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(255, 255, 255));
 	cv::putText(image, ssZero.str(), cv::Point(10, imageHeight - graphAreaVerticalOffset),
 				cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(255, 255, 255));
