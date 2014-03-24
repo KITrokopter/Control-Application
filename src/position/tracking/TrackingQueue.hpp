@@ -4,7 +4,6 @@
 #include <ros/console.h>
 
 #include "AbstractCameraQueue.hpp"
-#include "Graph.hpp"
 
 template <class T>
 class TrackingQueue {
@@ -24,21 +23,13 @@ private:
 	std::vector<int> ids;
 	int rrIndex;
 	size_t size;
-	
-	Graph graph;
 };
 
 template <class T>
-TrackingQueue<T>::TrackingQueue() : graph(10, "Queue sizes")
+TrackingQueue<T>::TrackingQueue()
 {
 	size = 0;
 	rrIndex = 0;
-	
-	std::map<int, cv::Scalar> colors;
-	colors[0] = cv::Scalar(0, 255, 0);
-	colors[1] = cv::Scalar(0, 255, 255);
-	colors[2] = cv::Scalar(255, 0, 255);
-	graph.setColors(colors);
 }
 
 template <class T>
@@ -108,14 +99,6 @@ std::vector<CameraData> TrackingQueue<T>::dequeue()
 template <class T>
 bool TrackingQueue<T>::dataAvailable()
 {
-	static int counter = 0;
-	
-	if (counter++ % 20 == 0) {
-		for (std::map<int, AbstractCameraQueue*>::iterator it = queues.begin(); it != queues.end(); it++) {
-			graph.nextPoint(it->second->getSize(), it->first);
-		}
-	}
-	
 	for (std::map<int, AbstractCameraQueue*>::iterator it = queues.begin(); it != queues.end(); it++) {
 		if (it->second->dataAvailable()) {
 			return true;
