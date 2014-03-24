@@ -40,6 +40,7 @@ std::vector<CameraData> RRCameraQueue::dequeue()
 	if (loopCount > camNos.size()) {
 		return std::vector<CameraData>();
 	} else {
+		rrIndex = index;
 		CameraData result = queues[camNos[index]].front();
 		queues[camNos[index]].pop();
 		size--;

@@ -88,6 +88,7 @@ std::vector<CameraData> TrackingQueue<T>::dequeue()
 	if (loopCount > ids.size()) {
 		return std::vector<CameraData>();
 	} else {
+		rrIndex = index;
 		std::vector<CameraData> result = queues[ids[index]]->dequeue();
 		size -= result.size();
 		
