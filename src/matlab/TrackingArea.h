@@ -41,6 +41,11 @@ private:
     double maxRange;
 
     /**
+     * number of cameras that track the tracking area
+     */
+    int numberCameras;
+
+    /**
      * increases tracking area as middle point center, values are the difference to the values of center point.
      * @param posChange +- x-values and y-values of a1 to a4
      * @param height center.V3() + height is z value of a1 to a4
