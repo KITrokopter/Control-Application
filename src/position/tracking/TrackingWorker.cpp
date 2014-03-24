@@ -32,11 +32,18 @@ void TrackingWorker::run()
 	ROS_INFO("Started tracking thread");
 	
 	bool receivedFirstPosition = false;
+	int emptyCount = 0;
 	
 	while (!stop) {
+		ROS_DEBUG("Dequeueing");
 		std::vector<CameraData> data = dequeue();
+		ROS_DEBUG("Dequeued");
 		
 		if (data.size() > 0) {
+			ROS_DEBUG("data is valid");
+			
+			emptyCount = 0;
+			
 			if (!receivedFirstPosition) {
 				receivedFirstPosition = true;
 				ROS_INFO("Found quadcopter %d", data[0].quadcopterId);
@@ -58,10 +65,15 @@ void TrackingWorker::run()
 			if (position.isValid()) {
 				receiver->updatePositions(positions, ids, updates);
 			}
-			
-			// ROS_DEBUG("Updating position of quadcopter %d took %.3f ms", data.quadcopterId, duration);
 		} else if (receivedFirstPosition) {
-			ROS_WARN("Position update buffer is empty!");
+			emptyCount++;
+			
+			if (emptyCount == 5) {
+				ROS_WARN("Position update buffer is empty!");
+				emptyCount = 0;
+			}
+			
+			usleep(0);
 		}
 	}
 	
