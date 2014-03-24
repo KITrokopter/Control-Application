@@ -24,6 +24,22 @@ private:
      */
     Vector center, low, up;
 
+
+    /**
+     * realCameraPos: real position of cameras
+     */
+    std::vector<Vector> realCameraPos;
+
+    /**
+     * @brief realCameraOrient: real orientation of cameras
+     */
+    std::vector<Vector> realCameraOrient;
+
+    /**
+     * maximal range of camera
+     */
+    double maxRange;
+
     /**
      * increases tracking area as middle point center, values are the difference to the values of center point.
      * @param posChange +- x-values and y-values of a1 to a4
