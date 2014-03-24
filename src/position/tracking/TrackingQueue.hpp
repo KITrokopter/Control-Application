@@ -100,6 +100,10 @@ template <class T>
 bool TrackingQueue<T>::dataAvailable()
 {
 	for (std::map<int, AbstractCameraQueue*>::iterator it = queues.begin(); it != queues.end(); it++) {
+		ROS_DEBUG("TrackingQueue<T>::dataAvailable(): id = %d,  size = %ld", it->first, it->second->getSize());
+	}
+	
+	for (std::map<int, AbstractCameraQueue*>::iterator it = queues.begin(); it != queues.end(); it++) {
 		if (it->second->dataAvailable()) {
 			return true;
 		}
