@@ -881,14 +881,14 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].push_front( newMovement );
 		long int current = getNanoTime();
 		//Increases thrust step by step to ensure slow inclining
-		/*if(current > this->time3 + 10000000)
+		if(current > this->time3 + 10000000)
 		{
 			usleep(85000);
 			this->thrustTest += 700;
 			this->time3 = getNanoTime();
-		}*/
+		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		/*if(this->thrustTest >= 50000 || current > this->time2 + 4000000000)
+		if(this->thrustTest >= 50000 || current > this->time2 + 400000000)
 		{
 			ROS_INFO("Emergency Shutdown Test");
 			this->shutdownMutex.lock();
@@ -897,7 +897,7 @@ void Controller::moveUp( int internId )
 			this->movementStatusMutex.lock();	
 			quadcopterMovementStatus[internId] = CALCULATE_LAND;
 			this->movementStatusMutex.unlock();
-		}*/
+		}
 			
 		/*ROS_INFO("Send Movement here for testing in moveup");
         	control_application::quadcopter_movement msg;
