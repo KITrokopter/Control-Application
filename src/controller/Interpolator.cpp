@@ -192,8 +192,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	ROS_INFO("interpolate 09 Got positionPast and positionNow.");
 
 	/* Calculate predicted actual position */
+	// TODO check if positions.back() isn't influenced
 	posAssumed = positions.back();
-	posAssumed = posAssumed.predictNextPosition( positionPast, PREDICT_FUTURE_POSITION_TIME );
+	posAssumed.predictNextPosition( positionPast, PREDICT_FUTURE_POSITION_TIME );
 	ROS_INFO("interpolate 10 calculated assumedPos");
 
 
