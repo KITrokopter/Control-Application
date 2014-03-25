@@ -4,6 +4,7 @@
 #include <time.h>
 #include <cmath>
 #include "../matlab/profiling.hpp"
+#include "../matlab/Vector.h"
 
 class Position6DOF {
 public:
@@ -16,6 +17,7 @@ public:
 	void setTimestamp(long int newTimestamp);
 	Position6DOF(double x, double y, double z, double xOrientation, double yOrientation, double zOrientation);
 	Position6DOF(double x, double y, double z);
+	Position6DOF(Vector vector);
 	Position6DOF(){};
 
 	double getAbsoluteDistance();

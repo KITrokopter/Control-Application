@@ -35,12 +35,12 @@
 
 #define THRUST_MIN 0
 #define THRUST_STAND_STILL 18001
-#define THRUST_START 35000
+#define THRUST_START 32000
 #define THRUST_DECLINE 200
 #define THRUST_MAX 40001
 #define THRUST_STEP 50
-#define ROLL_MAX 6
-#define PITCH_MAX 6
+#define ROLL_MAX 22
+#define PITCH_MAX 22
 #define YAWRATE_MAX 0
 #define INVALID -1
 #define LOW_BATTERY 3.0//In V
@@ -151,6 +151,7 @@ private:
 	bool receivedFormation;
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
 	bool buildFormationFinished;
+	bool receivedTrackingArea;
 	bool shutdownStarted;
 	long int lastFormationMovement;
 	long int lastCurrent[MAX_NUMBER_QUADCOPTER];

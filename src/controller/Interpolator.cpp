@@ -11,6 +11,7 @@ static bool closeToTarget( Position6DOF position1, Position6DOF position2, doubl
 Interpolator::Interpolator()
 {
 	this->stepSizeOfChange = 1;
+	this->aTimeSwitch = 0;
 	for( int i = 0; i < MAX_NUMBER_QUADCOPTER_HIGH; i++ )
 	{
 		this->status[i] = InterpolatorInfo();
@@ -33,7 +34,25 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 {
 	if( TEST_ROLL_PITCH )
 	{
-		return MovementQuadruple(THRUST_START, ROLL_MAX, 0, 0)
+		long int aTime = getNanoTime();
+		if( (aTime/5000000000)%2 == 0 )
+		{
+			if( aTimeSwitch==1 )
+			{
+				ROS_INFO("ROLL_MAX sent");
+			}
+			aTimeSwitch = 0;
+			return MovementQuadruple(THRUST_START, ROLL_MAX, 0, 0);
+		} 
+		else
+		{
+			if( aTimeSwitch==0 )
+			{
+				ROS_INFO("PITCH_MAX sent");
+			}
+			aTimeSwitch = 1;
+			return MovementQuadruple(THRUST_START, 0, PITCH_MAX, 0);
+		}
 	}
 	long int currentTime = getNanoTime();
 	MovementQuadruple newMovement = MovementQuadruple(THRUST_START, 0, 0, 0); // Nothing has been sent so far

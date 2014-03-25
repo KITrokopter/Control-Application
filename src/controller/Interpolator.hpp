@@ -30,7 +30,7 @@
 
 #define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
 
-#define TEST_ROLL_PITCH 1
+#define TEST_ROLL_PITCH 0
 
 /*
  * tuesday
@@ -63,6 +63,8 @@ private:
 	long int timeDiff1;
 	long int timeDiff2;
 	long int timeDiff3;
+
+	int aTimeSwitch;
 
 };
 

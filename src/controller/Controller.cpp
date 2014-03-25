@@ -56,6 +56,7 @@ Controller::Controller()
 	
 	this->formation = new Formation();
 	
+	this->receivedTrackingArea = false;
 	ROS_INFO("ROS stuff set up");
 	
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
@@ -240,6 +241,11 @@ void Controller::sendMovementAll()
 			//	ROS_INFO("Send thrust movement all %u", msg.thrust);
 			}
 		}
+		if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
+       		{	
+        	        ROS_INFO("send Roll %f and pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
+	        }
+
 		msg.roll = this->listFutureMovement[i].front().getRoll();
 		msg.pitch = this->listFutureMovement[i].front().getPitch();
 		msg.yaw = this->listFutureMovement[i].front().getYawrate();
@@ -322,8 +328,7 @@ void Controller::calculateMovement()
 					break;
 				case CALCULATE_START:	
 					//ROS_INFO("Start %i", i);
-					//moveUp( i ); just for testing
-					stabilize( i ); // just for testing
+					moveUp( i );
 					break;
 				case CALCULATE_STABILIZE:
 					if( i == 0)
@@ -570,7 +575,15 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->listTargetsMutex.lock();
 		this->receivedQCStMutex.lock();
 		this->listPositions.push_back(newEmptyListPosition);
-		this->listTargets.push_back(newEmptyListPosition);	      
+		this->listTargets.push_back(newEmptyListPosition);
+		if( this->receivedTrackingArea)
+		{
+			Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
+		}
+		else
+		{
+			ROS_ERROR("No tracked set");
+		}
 		this->receivedQuadStatus[i] = false; // received no quadcopter status information
 		this->receivedQCStMutex.unlock();
 		this->listTargetsMutex.unlock();
@@ -881,12 +894,12 @@ void Controller::moveUp( int internId )
 		//Increases thrust step by step to ensure slow inclining
 		if(current > this->time3 + 10000000)
 		{
-			usleep(85000);
+			usleep(850000);
 			this->thrustTest += 500;
 			this->time3 = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustTest >= 55000 || current > this->time2 + 4000000000)
+		if(this->thrustTest >= 55000 || current > this->time2 + 6000000000)
 		{
 			ROS_INFO("Emergency Shutdown Test");
 			this->shutdownMutex.lock();
@@ -924,10 +937,18 @@ void Controller::stabilize( int internId )
 	Position6DOF targetInternId = this->listTargets[internId].back();
 	this->listPositionsMutex.lock();
 	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
+	if((getNanoTime()/500000000)%2 == 1)
+	{	
+		ROS_INFO("sta1 Roll %f and pitch %f", newMovement.getRoll(), newMovement.getPitch());
+	}
 	this->listPositionsMutex.unlock();
 	this->listTargetsMutex.unlock();
 	this->listFutureMovement[internId].clear();
 	this->listFutureMovement[internId].push_front( newMovement );	   
+	if((getNanoTime()/500000000)%2 == 1)
+	{	
+		ROS_INFO("sta2 Roll %f and pitch %f", this->listFutureMovement[internId].front().getRoll(), this->listFutureMovement[internId].front().getPitch());
+	}
 }
 
 void Controller::hold( int internId )
