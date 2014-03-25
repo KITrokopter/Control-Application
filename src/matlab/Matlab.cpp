@@ -215,7 +215,7 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
     return 2;
 }
 
-Vector Matlab::interpolateLines(Line *lines, int quantity) {
+Vector Matlab::interpolateLines(Line *lines, int quantity, Vector oldPos, double interpolationFactor) {
 
     int sum = 0;
     for (int i = 1; i < quantity; i++) {
@@ -268,7 +268,11 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
         ROS_DEBUG("perp is [%f, %f, %f]", points[i].getV1(), points[i].getV2(), points[i].getV3());
         error += points[i].add(perp.mult(-1)).getLength();
     }
+
     error = error / pos;
+
+    // interpolating between last seen position and new calculated position
+    perp = interpolate(oldPos, perp, interpolationFactor);
 
     return perp;
 }
@@ -279,10 +283,7 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
     Vector newPos = perpFootOneLine(line, quadPos);
 
     // interpolating between last seen position and new calculated position
-    double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
-	double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
-    double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
-    Vector result(v1, v2, v3);
+    Vector result = interpolate(quadPos, newPos, interpolationFactor);
 
     error = newPos.add(result.mult(-1)).getLength();
 
@@ -290,10 +291,11 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
 }
 
 Vector Matlab::interpolate(Vector oldPos, Vector newPos, double interpolationFactor) {
-    double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
-    double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
-    double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
+    double v1 = newPos.getV1()*interpolationFactor + oldPos.getV1() * (1 - interpolationFactor);
+    double v2 = newPos.getV2()*interpolationFactor + oldPos.getV2() * (1 - interpolationFactor);
+    double v3 = newPos.getV3()*interpolationFactor + oldPos.getV3() * (1 - interpolationFactor);
     Vector result(v1, v2, v3);
+    return result;
 }
 
 Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {

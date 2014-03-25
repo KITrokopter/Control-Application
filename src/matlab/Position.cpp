@@ -335,7 +335,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
             Matlab *m = new Matlab(ep);
             long int startTime = getNanoTime();
-            Vector quadPosition = m->interpolateLines(quadPositions, numberCameras);
+            Vector quadPosition = m->interpolateLines(quadPositions, numberCameras, Vector(0, 0, 0), 1);
             long int endTime = getNanoTime();
             ROS_DEBUG("Calculation was %.3f long", (endTime - startTime) / 1e9);
 
@@ -367,6 +367,22 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
             Matlab *m = new Matlab(ep);
             Vector newPos;
+            double interpolationFactor;
+
+            if (interpolationDependent) {
+                if (distance > 200) {
+                    interpolationFactor = 0.7 ;
+                } else if (distance < 100) {
+                    interpolationFactor = 0.2;
+                } else {
+                    // diff is between 0 and 100
+                    double diff = distance - 100;
+                    // diff is between 0.2 and 0.7
+                    interpolationFactor = 0.2 + 0.5 * diff/100.0;
+                }
+            } else {
+                interpolationFactor = 0.5;
+            }
 
             if (cameraLines.size() > 1) {
                 Line* tracking = new Line[cameraLines.size()];
@@ -374,27 +390,12 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                     tracking[i] = Line(getPosition(cameraLines[i].camNo), direction[i]);
                     ROS_INFO("camera %d at position [%f, %f, %f] tracks in direction [%f, %f, %f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition((cameraLines[i].camNo)).getV2(), getPosition((cameraLines[i].camNo)).getV3(), direction[i].getV1(), direction[i].getV2(), direction[i].getV3());
                 }
-                newPos = m->interpolateLines(tracking, cameraLines.size());
+                newPos = m->interpolateLines(tracking, cameraLines.size(), oldPos[quadcopterId], interpolationFactor);
             } else {
                 Vector position = getPosition(cameraLines[0].camNo);
                 Line tracked = Line(position, direction[0]);
 
-                // calulating actual pos
-                if (interpolationDependent) {
-                    if (distance > 200) {
-                        newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.7);
-                    } else if (distance < 100) {
-                        newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.2);
-                    } else {
-                        // diff is between 0 and 100
-                        double diff = distance - 100;
-                        // diff is between 0.2 and 0.7
-                        diff = 0.2 + 0.5 * diff/100.0;
-                        newPos = m->interpolateLine(tracked, oldPos[quadcopterId], diff);
-                    }
-                } else {
-                    newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
-                }
+                newPos = m->interpolateLine(tracked, oldPos[quadcopterId], interpolationFactor);
             }
             this->error = m->getError();
             ROS_INFO("Error is %f", error);

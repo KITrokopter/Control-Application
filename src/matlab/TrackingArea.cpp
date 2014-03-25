@@ -405,7 +405,7 @@ void TrackingArea::setTrackingArea() {
         cameraLines[i] = Line();
         cameraLines[i] = Line(cameraPosition[i], cameraDirection[i]);
     }
-    Vector center = m->interpolateLines(cameraLines, numberCameras);
+    Vector center = m->interpolateLines(cameraLines, numberCameras, Vector(0, 0, 0), 1);
     ROS_DEBUG("center is [%.2f, %.2f, %.2f]", center.getV1(), center.getV2(), center.getV3());
     if (!(inCameraRange(center))) {
         ROS_ERROR("center isn't tracked, maximal range is too small!");

@@ -83,9 +83,11 @@ public:
      * linear interpolation of some lines
      * @param lines array of all lines that should be interpolated
      * @param quantity number of lines in the array lines
+     * @param oldPos is last seen position of quadcopter
+     * @param interpolationFactor is factor for interpolation
      * @return vector that is nearest to all lines
      */
-    Vector interpolateLines(Line *lines, int quantity);
+    Vector interpolateLines(Line *lines, int quantity, Vector oldPos, double interpolationFactor);
 
     /**
      * linear interpolation of a point and a line with a interpolationfactor
@@ -128,6 +130,15 @@ public:
      * @return average distance of perpendicular foot points to interpolated point
      */
     double getError();
+
+    /**
+     * interpolating
+     * @param oldPos old position
+     * @param newPos new position
+     * @param interpolationFactor
+     * @return interpolated new position
+     */
+    Vector interpolate(Vector oldPos, Vector newPos, double interpolationFactor);
 };
 
 #endif /* MATLAB_H_ */
