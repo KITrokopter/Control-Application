@@ -53,7 +53,7 @@ void TrackingWorker::run()
 			double currentTime = getNanoTime();
 			
 			for (std::vector<CameraData>::iterator it = data.begin(); it != data.end(); it++) {
-				double newLatency = currentTime - data.time;
+				double newLatency = currentTime - it->time;
 				
 				if (newLatency > latency) {
 					latency = newLatency;
