@@ -180,7 +180,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				this->movementStatusMutex.lock();
 				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 				{
-					ROS_INFO("Stabilizing now %i", id);
+					ROS_DEBUG("Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
 					this->time2 = getNanoTime();
 					/*this->shutdownMutex.lock();
@@ -243,7 +243,7 @@ void Controller::sendMovementAll()
 		}
 		if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
        		{	
-        	        ROS_INFO("send Roll %f and pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
+        	       // ROS_INFO("send Roll %f and pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
 	        }
 
 		msg.roll = this->listFutureMovement[i].front().getRoll();
@@ -939,7 +939,7 @@ void Controller::stabilize( int internId )
 	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
 	if((getNanoTime()/500000000)%2 == 1)
 	{	
-		ROS_INFO("sta1 Roll %f and pitch %f", newMovement.getRoll(), newMovement.getPitch());
+		//ROS_INFO("sta1 Roll %f and pitch %f", newMovement.getRoll(), newMovement.getPitch());
 	}
 	this->listPositionsMutex.unlock();
 	this->listTargetsMutex.unlock();
@@ -947,7 +947,7 @@ void Controller::stabilize( int internId )
 	this->listFutureMovement[internId].push_front( newMovement );	   
 	if((getNanoTime()/500000000)%2 == 1)
 	{	
-		ROS_INFO("sta2 Roll %f and pitch %f", this->listFutureMovement[internId].front().getRoll(), this->listFutureMovement[internId].front().getPitch());
+		//ROS_INFO("sta2 Roll %f and pitch %f", this->listFutureMovement[internId].front().getRoll(), this->listFutureMovement[internId].front().getPitch());
 	}
 }
 

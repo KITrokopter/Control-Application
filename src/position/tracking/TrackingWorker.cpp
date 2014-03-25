@@ -60,6 +60,9 @@ void TrackingWorker::run()
 				errorGraph.nextPoint(tracker.getDistance(), data[i].camNo);
 			}
 			
+			// Invert x axis for controller
+			position.setV1(-position.getV1());
+			
 			std::vector<Vector> positions;
 			std::vector<int> ids;
 			std::vector<int> updates;
