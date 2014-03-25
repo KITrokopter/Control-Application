@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include <cmath>
+#include "ros/ros.h"
 #include "../matlab/profiling.hpp"
 #include "../matlab/Vector.h"
 
@@ -23,7 +24,7 @@ public:
 	double getAbsoluteDistance();
 	double getAbsoluteDistance( Position6DOF otherPosition );
 	double getDistanceZ( Position6DOF otherPosition ); // positive if "this" is below "otherPosition"
-	Position6DOF predictNextPosition( Position6DOF olderPosition, long int timeInFuture );
+	void predictNextPosition( Position6DOF olderPosition, long int timeInFuture );
 
 private:
 	double position[3];

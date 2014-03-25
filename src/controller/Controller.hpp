@@ -37,15 +37,16 @@
 #define THRUST_STAND_STILL 18001
 #define THRUST_START 32000
 #define THRUST_DECLINE 200
-#define THRUST_MAX 40001
-#define THRUST_STEP 50
-#define ROLL_MAX 22
-#define PITCH_MAX 22
+#define THRUST_MAX 50001
+#define THRUST_STEP 200
+#define ROLL_MAX 6
+#define PITCH_MAX 6
 #define YAWRATE_MAX 0
 #define INVALID -1
 #define LOW_BATTERY 3.0//In V
-#define TIME_UPDATED_END 1*1000*1000 // in ns
-#define TIME_UPDATED_CRITICAL 200*1000 // in ns
+#define TIME_UPDATED_END 1*1000*1000	// in ns
+#define TIME_UPDATED_CRITICAL 200*1000	// in ns
+#define TIME_MIN_LOOP_CALC 30000 	// 30 ms for usleep
 
 /* For calculateMovement */
 #define CALCULATE_NONE 0 // Unused for formation
@@ -157,19 +158,19 @@ private:
 	long int lastCurrent[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
-	Mutex shutdownMutex;
-	Mutex landMutex;
+	//Mutex shutdownMutex;
+	//Mutex landMutex;
 	Mutex formationMovementMutex;
 	Mutex listPositionsMutex;
 	Mutex listTargetsMutex;
-	Mutex buildFormationMutex;
-	Mutex trackedArrayMutex;
-	Mutex receivedQCMutex;
-	Mutex receivedFormMutex;
-	Mutex receivedQCStMutex;
+	//Mutex buildFormationMutex;
+	//Mutex trackedArrayMutex;
+	//Mutex receivedQCMutex;
+	//Mutex receivedFormMutex;
+	//Mutex receivedQCStMutex;
 	Mutex lastFormationMovementMutex;
 	Mutex lastCurrentMutex;
-	Mutex movementStatusMutex;
+	//Mutex movementStatusMutex;
 
 	/* Threads */
 	pthread_t tCalculateMovement;

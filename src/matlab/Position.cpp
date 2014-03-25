@@ -390,6 +390,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             } else {
                 ROS_WARN("Couldn't calculate new position as angle between camera lines is too small");
             }
+
             return newPos;
         }
     }

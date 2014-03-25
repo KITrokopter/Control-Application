@@ -246,7 +246,8 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	}
 	
 	ROS_INFO("Calculating multi camera calibration. This could take up to 2 hours");
-	ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
+	//ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
+	ChessboardData data(7, 7, 57, 57);
 	
 	int camNumber = idDict.size();
 	bool ok = trackingWorker.calibrate(&data, camNumber);

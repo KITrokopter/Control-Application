@@ -16,9 +16,9 @@ Interpolator::Interpolator()
 	{
 		this->status[i] = InterpolatorInfo();
 	}
-	timeDiff1 = 1500000000;
-	timeDiff2 = 2500000000;
-	timeDiff3 = 3500000000;
+	timeDiff1 = 0;
+	timeDiff2 = 0;
+	timeDiff3 = 0;
 }
 
 MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> sentQuadruples)
@@ -32,7 +32,7 @@ MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> s
 
 MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, int id)
 {
-	if( TEST_ROLL_PITCH )
+	/*if( TEST_ROLL_PITCH )
 	{
 		long int aTime = getNanoTime();
 		if( (aTime/5000000000)%2 == 0 )
@@ -53,7 +53,8 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			aTimeSwitch = 1;
 			return MovementQuadruple(THRUST_START, 0, PITCH_MAX, 0);
 		}
-	}
+	}*/
+	//ROS_INFO("interpolate 01 calculateNextMQ");
 	long int currentTime = getNanoTime();
 	MovementQuadruple newMovement = MovementQuadruple(THRUST_START, 0, 0, 0); // Nothing has been sent so far
 
@@ -64,16 +65,19 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	newMovement.setTimestamp( currentTime );
 
 	checkState( id );
+	//ROS_INFO("interpolate 02 after checkState");
 	switch( this->status[id].getState() )
 	{
 		case UNSTARTED:
+			ROS_INFO("interpolate 03a unstarted");
 			ROS_INFO("Error in switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			newMovement.setThrust( THRUST_MIN );
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
 			//break;
 		case STARTED:
-			if( this->status[id].getStarted() > currentTime + timeDiff1 )
+			ROS_INFO("interpolate 03b started");
+			if( this->status[id].getStarted()+timeDiff1 < currentTime )
 			{
 				newMovement.setRollPitchYawrate( -ROLL_MAX, -PITCH_MAX, 0 );
 			}
@@ -84,6 +88,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			return newMovement;
 			//break;
 		case CALC:
+			ROS_INFO("interpolate 03c calc");
 			if( positions.size() > 2 )	// Enough data to calculate new rpy values (at least two values)
 			{
 				newMovement.setRollPitchYawrate( 0, 0, 0 );
@@ -91,17 +96,17 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 				int counter = 0;
 				for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 				{
-					pos.setTimestamp( (*it).getTimestamp() );
+					pos.setTimestamp( it->getTimestamp() );
 					if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
 					{
-						pos.setPosition( (*it).getPosition() );
+						pos.setPosition( it->getPosition() );
 						double diffX = pos.getPosition()[0] - target.getPosition()[0];
 						double diffY = pos.getPosition()[1] - target.getPosition()[1];
 						double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
 						diffX = diffX / absDistance;
 						diffY = diffY / absDistance;
-						this->status[id].setRotation( acos( diffY ) );	// FIXME check
-						this->status[id].setNegativeSign( negativeRotationalSign(this->status[id].getRotation(), pos, target ) );	// FIXME check
+						this->status[id].setRotation( 0 ); //acos( diffY ) );	// FIXME check
+						this->status[id].setNegativeSign( false ); //negativeRotationalSign(this->status[id].getRotation(), pos, target ) );	// FIXME check
 						this->status[id].setLastUpdated( currentTime );
 						break;
 					}
@@ -115,23 +120,27 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			}
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
-		default:
+		default:			
 			break;
 	}
-
+	//ROS_INFO("interpolate 04 after first switch");
+	
 	if( this->status[id].getState() != DONE )
 	{
 			ROS_INFO("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			return newMovement;
 	}
+	//ROS_INFO("interpolate 05 now in DONE at time %ld", currentTime);
 
 	/* Now in state "DONE" */
-	if( this->status[id].getStarted() <= currentTime + timeDiff3 )
+	if( (this->status[id].getStarted()+timeDiff3) >= currentTime )
 	{
+		ROS_INFO("interpolate 05b in if");
 		/* Wait some more before starting to stabilize */
 		newMovement.setRollPitchYawrate( 0, 0, 0 );
 		return newMovement;
 	}
+	//ROS_INFO("interpolate 06");
 	if( sentQuadruples.size() < 3 || positions.size() < 3 )
 	{
 		/* Might not get enough data from camera in a certain time.
@@ -139,13 +148,14 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		ROS_INFO("Not enough data in calculateNextMQ, some assumption is wrong..."); // FIXME error not info
 		return newMovement;
 	}
+	//ROS_INFO("interpolate 07");
 
 	/*
 	 * Calculate with given calibration data, actually
 	 * trying to "stabilize" now
 	 */
 
-	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
+	//ROS_INFO("interpolate 08 Enough data in calculateNextMQ, start calculation.");
 	/* Save latest Position and before-latest Position */
 	Position6DOF positionPast;
 	Position6DOF positionNow;	// positionPast is older than positionNow
@@ -154,9 +164,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	int counter = 0;
 	while( (it!=positions.begin()) && (counter<2) )
 	{
-		positionPast.setOrientation( (*it).getOrientation() );
-		positionPast.setPosition( (*it).getPosition() );
-		positionPast.setTimestamp( (*it).getTimestamp() );
+		positionPast.setOrientation( it->getOrientation() );
+		positionPast.setPosition( it->getPosition() );
+		positionPast.setTimestamp( it->getTimestamp() );
 		if( counter == 0 )
 		{
 			positionNow = positionPast;
@@ -170,21 +180,22 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		{
 			if( counter == 1 )
 			{
-				positionPast.setOrientation( (*it).getOrientation() );
-				positionPast.setPosition( (*it).getPosition() );
-				positionPast.setTimestamp( (*it).getTimestamp() );
+				positionPast.setOrientation( it->getOrientation() );
+				positionPast.setPosition( it->getPosition() );
+				positionPast.setTimestamp( it->getTimestamp() );
 				positionNow = positions.front();
 			}
 			--it;
 			counter++;
 		}
 	*/
-		ROS_INFO("Got positionPast and positionNow.");
+	//ROS_INFO("interpolate 09 Got positionPast and positionNow.");
 
 	/* Calculate predicted actual position */
+	// TODO check if positions.back() isn't influenced
 	posAssumed = positions.back();
-	posAssumed = posAssumed.predictNextPosition( positionPast, PREDICT_FUTURE_POSITION_TIME );
-	ROS_INFO("calculated assumedPos");
+	posAssumed.predictNextPosition( positionPast, PREDICT_FUTURE_POSITION_TIME );
+	ROS_INFO("interpolate 10 calculated assumedPos");
 
 
 	/* Calculate thrust value - always */
@@ -201,12 +212,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	double absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized);
 	newMovement.setThrust( newThrust );
-	ROS_INFO("calculated thrust with assumed position");
+	ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
 
 	/* Calculate new rpy-values every MIN_TIME_TO_WAIT nanoseconds */
 	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
-		ROS_INFO("Do not change rpy-values, movement of sent values need to be visible.");
+		ROS_INFO("interpolate 12 Do not change rpy-values, movement of sent values need to be visible.");
 		return newMovement;
 	}
 
@@ -219,9 +230,11 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		 * change > some threshold?
 		 */
 	}
+	//ROS_INFO("interpolate 12 rotational correction done");
 
 	/* Calculate correction (calibration data, predictedPosition, target) */
 	MovementQuadruple rpyMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
+	//ROS_INFO("interpolate 13 rpyMovement calculated");
 	this->status[id].setLastUpdated( currentTime );
 
 	return newMovement;
@@ -236,9 +249,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 //	/* Calculate values for declared arrays above for later usage. */
 //	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 //	{
-//		positionPast.setOrientation( (*it).getOrientation() );
-//		positionPast.setPosition( (*it).getPosition() );
-//		positionPast.setTimestamp( (*it).getTimestamp() );
+//		positionPast.setOrientation( it->getOrientation() );
+//		positionPast.setPosition( it->getPosition() );
+//		positionPast.setTimestamp( it->getTimestamp() );
 //		deltaTarget[counter] = positionPast.getAbsoluteDistance( target );
 //		if( counter > 0 )
 //		{
