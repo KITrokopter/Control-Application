@@ -30,6 +30,8 @@
 
 #define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
 
+#define TEST_ROLL_PITCH 1
+
 /*
  * tuesday
  * TODO hold
