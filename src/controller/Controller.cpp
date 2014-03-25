@@ -265,8 +265,11 @@ void Controller::calculateMovement()
 	{
 		end = false;
 	}
+	long int calculateMovementStarted = getNanoTime();
+	long int timerCalculateMovement;
 	while(!end)
 	{
+		calculateMovementStarted = timerCalculateMovement;
 		// Iterate over the total number of quadcopters as long as the land process isn't finished
 		//ROS_INFO("Calculate");
 		for(int i = 0; (i < amount) && (!end); i++)
@@ -334,6 +337,12 @@ void Controller::calculateMovement()
 			}
 			this->landFinished = end;
 			
+		}
+		timerCalculateMovement = getNanoTime();
+		while( timerCalculateMovement < TIME_MIN_LOOP_CALC + calculateMovementStarted )
+		{
+			usleep( 5000000 );	// 5ms
+			timerCalculateMovement = getNanoTime();
 		}
 	}	
 }
