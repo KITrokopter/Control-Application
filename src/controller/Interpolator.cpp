@@ -133,7 +133,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	ROS_INFO("interpolate 05 now in DONE");
 
 	/* Now in state "DONE" */
-	if( this->status[id].getStarted() <= currentTime + timeDiff3 )
+	if( this->status[id].getStarted() + timeDiff3 <= currentTime )
 	{
 		/* Wait some more before starting to stabilize */
 		newMovement.setRollPitchYawrate( 0, 0, 0 );
