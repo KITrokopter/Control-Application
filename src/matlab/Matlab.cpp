@@ -278,7 +278,6 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
     // caculate perpendicular foor point of line and quadPos
     Vector newPos = perpFootOneLine(line, quadPos);
 
-
     // interpolating between last seen position and new calculated position
     double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
 	double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
@@ -288,6 +287,13 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
     error = newPos.add(result.mult(-1)).getLength();
 
     return result;
+}
+
+Vector Matlab::interpolate(Vector oldPos, Vector newPos, double interpolationFactor) {
+    double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
+    double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
+    double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
+    Vector result(v1, v2, v3);
 }
 
 Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {
