@@ -376,7 +376,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 Line* tracking = new Line[cameraLines.size()];
                 for (int i = 0; i < cameraLines.size(); i++) {
                     tracking[i] = Line(getPosition(cameraLines[i].camNo), direction[i]);
-                    ROS_INFO("camera %d at position [%f, %f, %f] tracks in direction [%f, %f, %f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition((cameraLines[i].camNo)).getV2(), getPosition((cameraLines[i].camNo)).getV3(), direction[i].getV1(), direction[i].getV2(), direction[i].getV3());
+                    //ROS_INFO("camera %d at position [%f, %f, %f] tracks in direction [%f, %f, %f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition((cameraLines[i].camNo)).getV2(), getPosition((cameraLines[i].camNo)).getV3(), direction[i].getV1(), direction[i].getV2(), direction[i].getV3());
                 }
                 newPos = m->interpolateLines(tracking, cameraLines.size(), oldPos[quadcopterId], interpolationFactor);
 
