@@ -24,6 +24,11 @@ Vector::Vector(double v1, double v2, double v3) {
 	this->v1= v1;
 	this->v2 = v2;
 	this->v3 = v3;
+    this->valid = true;
+}
+
+Vector::Vector(bool valid) {
+    this->valid = valid;
 }
 
 double Vector::getV1() {
@@ -123,6 +128,10 @@ std::string Vector::toString() {
 
 bool Vector::isValid() {
 	return !(isnan(v1) || isnan(v2) || isnan(v3));
+}
+
+bool Vector::getValid() {
+    return this->valid;
 }
 
 bool Vector::isLinearDependent(Vector u) {

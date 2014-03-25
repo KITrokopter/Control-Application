@@ -186,14 +186,6 @@ public:
     bool calibrate(ChessboardData *chessboardData, int numberCameras);
 
     /**
-     * calculating angle between vector u and vector v.
-     * @param u first vector
-     * @param v second vector
-     * @return angle
-     */
-    double getAngle(Vector u, Vector v);
-
-    /**
      * setter.
      * @param numberCameras number of cameras
      */

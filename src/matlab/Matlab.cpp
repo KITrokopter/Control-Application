@@ -231,50 +231,57 @@ Vector Matlab::interpolateLines(Line *lines, int quantity, Vector oldPos, double
     // calculating perpendicular foot points/intersection points
 	for (int i = 0; i < quantity; i++) {
 		for (int j = i + 1; j < quantity; j++) {
+            // only interpolates if angle is bigger than pi/8
+            if (getAngle(lines[i].getU(), lines[j].getU()) > (M_PI/8.0)) {
+                intersects = perpFootTwoLinesFastCalculation(lines[i], lines[j], result);
 
-            intersects = perpFootTwoLinesFastCalculation(lines[i], lines[j], result);
-
-            if (intersects == 1) {
-                // lines interct
-                points[pos] = result[0];
-                pos++;
-            } else if (intersects == 2) {
-                // lines are skew
-                points[pos] = result[0];
-                pos++;
-                points[pos] = result[1];
-                pos++;
-			}
+                if (intersects == 1) {
+                    // lines interct
+                    points[pos] = result[0];
+                    pos++;
+                } else if (intersects == 2) {
+                    // lines are skew
+                    points[pos] = result[0];
+                    pos++;
+                    points[pos] = result[1];
+                    pos++;
+                }
+            }
 		}
     }
 
-    error = 0;
+    if (pos == 0) {
+        return Vector(false);
+    } else {
 
-    // calculating average of all points in array points
-    double v1 = 0;
-    double v2 = 0;
-    double v3 = 0;
-    for (int i = 0; i < pos; i++) {
-        v1 = v1 + points[i].getV1();
-        v2 = v2 + points[i].getV2();
-        v3 = v3 + points[i].getV3();
+        error = 0;
+
+        // calculating average of all points in array points
+        double v1 = 0;
+        double v2 = 0;
+        double v3 = 0;
+        for (int i = 0; i < pos; i++) {
+            v1 = v1 + points[i].getV1();
+            v2 = v2 + points[i].getV2();
+            v3 = v3 + points[i].getV3();
+        }
+        v1 = v1 / pos;
+        v2 = v2 / pos;
+        v3 = v3 / pos;
+
+        Vector perp = Vector(v1, v2, v3);
+        for (int i = 0; i < pos; i++) {
+            ROS_DEBUG("perp is [%f, %f, %f]", points[i].getV1(), points[i].getV2(), points[i].getV3());
+            error += points[i].add(perp.mult(-1)).getLength();
+        }
+
+        error = error / pos;
+
+        // interpolating between last seen position and new calculated position
+        perp = interpolate(oldPos, perp, interpolationFactor);
+
+        return perp;
     }
-	v1 = v1 / pos;
-	v2 = v2 / pos;
-    v3 = v3 / pos;
-
-    Vector perp = Vector(v1, v2, v3);
-    for (int i = 0; i < pos; i++) {
-        ROS_DEBUG("perp is [%f, %f, %f]", points[i].getV1(), points[i].getV2(), points[i].getV3());
-        error += points[i].add(perp.mult(-1)).getLength();
-    }
-
-    error = error / pos;
-
-    // interpolating between last seen position and new calculated position
-    perp = interpolate(oldPos, perp, interpolationFactor);
-
-    return perp;
 }
 
 Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
@@ -360,4 +367,16 @@ Line Matlab::getIntersectionLineFastCalculation(Line f, Vector directV1, Line g,
 
 double Matlab::getError() {
     return this->error;
+}
+
+double Matlab::getAngle(Vector u, Vector v) {
+    // cos(alpha)= u*v/(|u|*|v|)
+    double angle = u.scalarMult(v)/(u.getLength() * v.getLength());
+    angle = acos(angle);
+
+    // checks whether angle is between 0 and 90 degree
+    if (angle > M_PI/2) {
+        angle = -(angle - M_PI);
+    }
+    return angle;
 }
