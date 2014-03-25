@@ -54,6 +54,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			return MovementQuadruple(THRUST_START, 0, PITCH_MAX, 0);
 		}
 	}
+	ROS_INFO("interpolate 1 calculateNextMQ");
 	long int currentTime = getNanoTime();
 	MovementQuadruple newMovement = MovementQuadruple(THRUST_START, 0, 0, 0); // Nothing has been sent so far
 
@@ -64,15 +65,18 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	newMovement.setTimestamp( currentTime );
 
 	checkState( id );
+	ROS_INFO("interpolate 2 after checkState");
 	switch( this->status[id].getState() )
 	{
 		case UNSTARTED:
+			ROS_INFO("interpolate 3a unstarted");
 			ROS_INFO("Error in switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			newMovement.setThrust( THRUST_MIN );
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
 			//break;
 		case STARTED:
+			ROS_INFO("interpolate 3b started");
 			if( this->status[id].getStarted() > currentTime + timeDiff1 )
 			{
 				newMovement.setRollPitchYawrate( -ROLL_MAX, -PITCH_MAX, 0 );
@@ -84,6 +88,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			return newMovement;
 			//break;
 		case CALC:
+			ROS_INFO("interpolate 3c calc");
 			if( positions.size() > 2 )	// Enough data to calculate new rpy values (at least two values)
 			{
 				newMovement.setRollPitchYawrate( 0, 0, 0 );
@@ -115,15 +120,18 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			}
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
-		default:
+		default:			
+			ROS_INFO("interpolate 3d error");
 			break;
 	}
-
+	ROS_INFO("interpolate 4 after first switch");
+	
 	if( this->status[id].getState() != DONE )
 	{
 			ROS_INFO("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			return newMovement;
 	}
+	ROS_INFO("interpolate 5 now in DONE");
 
 	/* Now in state "DONE" */
 	if( this->status[id].getStarted() <= currentTime + timeDiff3 )
