@@ -13,8 +13,8 @@ void AbstractCameraQueue::enqueue(CameraData data)
 {
 	enqueueInternal(data);
 	
-	if (getSize() > 15) {
-		ROS_WARN("Camera queue running full. Quadcopter id: %d", data.quadcopterId);
+	if (getSize() > 25) {
+		ROS_WARN("Camera queue running full. Quadcopter id: %d. Entries: %ld", data.quadcopterId, getSize());
 	}
 }
 
