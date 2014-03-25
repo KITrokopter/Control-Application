@@ -794,18 +794,18 @@ void Controller::moveUp( int internId )
 	if( !moveUpSmart ) {		
 		MovementQuadruple newMovement = MovementQuadruple( this->thrustTest, 0, 0, 0 );
 		newMovement.setTimestamp( current );
-		ROS_DEBUG("Thrust is %u", this->thrustTest);
+		//ROS_DEBUG("Thrust is %u", this->thrustTest);
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
 		//Increases thrust step by step to ensure slow inclining
 		if(current > this->time3 + 10000000)
 		{
-			usleep(850000);
-			this->thrustTest += 500;
+			usleep(85000);
+			this->thrustTest += 1000;
 			this->time3 = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustTest >= 55000 || current > this->time2 + 8000000000)
+		if(this->thrustTest >= 55000 || current > this->time2 + 4000000000)
 		{
 			ROS_INFO("Emergency Shutdown Test");
 			this->shutdownStarted = true;
