@@ -140,7 +140,7 @@ void Controller::setTargetPosition()
 
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
 {
-		
+	ROS_DEBUG("UpdatePosition");		
 	//ROS_INFO("Update Position");
 	if(!receivedQuadcopters || !receivedFormation)
 	{
@@ -175,7 +175,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			trackedArrayMutex.unlock();
 			if( trackedLocal == false )
 			{
-				//ROS_INFO("track false");
+				ROS_INFO("tracked");
 				/* Quadcopter has not been tracked before */
 				this->movementStatusMutex.lock();
 				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
@@ -899,7 +899,7 @@ void Controller::moveUp( int internId )
 			this->time3 = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustTest >= 55000 || current > this->time2 + 6000000000)
+		if(this->thrustTest >= 55000 || current > this->time2 + 8000000000)
 		{
 			ROS_INFO("Emergency Shutdown Test");
 			this->shutdownMutex.lock();
