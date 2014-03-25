@@ -222,12 +222,16 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
 
 bool TrackingArea::inCameraRange(Vector x) {
     int tracked = 0;
-    for (int i = 0; i < numberCameras; i++) {
-        if (inTrackingArea(cameraPosition[i], cameraDirection[i], x)) {
-            tracked++;
+    if (inTrackingArea(cameraPosition[0], cameraDirection[0], x)) {
+        for (int i = 1; i < numberCameras; i++) {
+            if (inTrackingArea(cameraPosition[i], cameraDirection[i], x)) {
+                tracked++;
+            }
         }
+        return (tracked >= 1);
+    } else {
+        return false;
     }
-    return (tracked > 2);
 }
 
 void TrackingArea::increaseTrackingArea(double posChange, double height, double heightPos, double heightNeg) {
