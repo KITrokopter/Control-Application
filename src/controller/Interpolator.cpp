@@ -77,7 +77,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			//break;
 		case STARTED:
 			ROS_INFO("interpolate 03b started");
-			if( this->status[id].getStarted() > currentTime + timeDiff1 )
+			if( this->status[id].getStarted()+timeDiff1 < currentTime )
 			{
 				newMovement.setRollPitchYawrate( -ROLL_MAX, -PITCH_MAX, 0 );
 			}
@@ -130,11 +130,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			ROS_INFO("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			return newMovement;
 	}
-	ROS_INFO("interpolate 05 now in DONE");
+	ROS_INFO("interpolate 05 now in DONE at time $ld", currentTime);
 
 	/* Now in state "DONE" */
-	if( this->status[id].getStarted() + timeDiff3 <= currentTime )
+	if( (this->status[id].getStarted()+timeDiff3) <= currentTime )
 	{
+		ROS_INFO("interpolate 05b in if");
 		/* Wait some more before starting to stabilize */
 		newMovement.setRollPitchYawrate( 0, 0, 0 );
 		return newMovement;
