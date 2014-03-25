@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include <cmath>
+#include "ros/ros.h"
 #include "../matlab/profiling.hpp"
 #include "../matlab/Vector.h"
 
