@@ -76,9 +76,7 @@ void TrackingWorker::run()
 				emptyCount = 0;
 			}
 			
-			long int time = getNanoTime();
 			usleep(0);
-			ROS_DEBUG("Waited %.2f ms", (getNanoTime() - time) / 1.0e6);
 		}
 	}
 	
