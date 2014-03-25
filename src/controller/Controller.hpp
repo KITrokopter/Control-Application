@@ -157,19 +157,19 @@ private:
 	long int lastCurrent[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
-	Mutex shutdownMutex;
-	Mutex landMutex;
+	//Mutex shutdownMutex;
+	//Mutex landMutex;
 	Mutex formationMovementMutex;
 	Mutex listPositionsMutex;
 	Mutex listTargetsMutex;
-	Mutex buildFormationMutex;
-	Mutex trackedArrayMutex;
-	Mutex receivedQCMutex;
-	Mutex receivedFormMutex;
-	Mutex receivedQCStMutex;
+	//Mutex buildFormationMutex;
+	//Mutex trackedArrayMutex;
+	//Mutex receivedQCMutex;
+	//Mutex receivedFormMutex;
+	//Mutex receivedQCStMutex;
 	Mutex lastFormationMovementMutex;
 	Mutex lastCurrentMutex;
-	Mutex movementStatusMutex;
+	//Mutex movementStatusMutex;
 
 	/* Threads */
 	pthread_t tCalculateMovement;

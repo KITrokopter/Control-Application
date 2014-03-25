@@ -96,10 +96,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 				int counter = 0;
 				for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 				{
-					pos.setTimestamp( (*it).getTimestamp() );
+					pos.setTimestamp( it->getTimestamp() );
 					if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
 					{
-						pos.setPosition( (*it).getPosition() );
+						pos.setPosition( it->getPosition() );
 						double diffX = pos.getPosition()[0] - target.getPosition()[0];
 						double diffY = pos.getPosition()[1] - target.getPosition()[1];
 						double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
@@ -162,9 +162,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	int counter = 0;
 	while( (it!=positions.begin()) && (counter<2) )
 	{
-		positionPast.setOrientation( (*it).getOrientation() );
-		positionPast.setPosition( (*it).getPosition() );
-		positionPast.setTimestamp( (*it).getTimestamp() );
+		positionPast.setOrientation( it->getOrientation() );
+		positionPast.setPosition( it->getPosition() );
+		positionPast.setTimestamp( it->getTimestamp() );
 		if( counter == 0 )
 		{
 			positionNow = positionPast;
@@ -178,9 +178,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		{
 			if( counter == 1 )
 			{
-				positionPast.setOrientation( (*it).getOrientation() );
-				positionPast.setPosition( (*it).getPosition() );
-				positionPast.setTimestamp( (*it).getTimestamp() );
+				positionPast.setOrientation( it->getOrientation() );
+				positionPast.setPosition( it->getPosition() );
+				positionPast.setTimestamp( it->getTimestamp() );
 				positionNow = positions.front();
 			}
 			--it;
@@ -244,9 +244,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 //	/* Calculate values for declared arrays above for later usage. */
 //	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 //	{
-//		positionPast.setOrientation( (*it).getOrientation() );
-//		positionPast.setPosition( (*it).getPosition() );
-//		positionPast.setTimestamp( (*it).getTimestamp() );
+//		positionPast.setOrientation( it->getOrientation() );
+//		positionPast.setPosition( it->getPosition() );
+//		positionPast.setTimestamp( it->getTimestamp() );
 //		deltaTarget[counter] = positionPast.getAbsoluteDistance( target );
 //		if( counter > 0 )
 //		{
