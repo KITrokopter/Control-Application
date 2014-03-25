@@ -4,11 +4,12 @@
 
 #include "../../matlab/profiling.hpp"
 
-SynchronousCameraQueue::SynchronousCameraQueue(long int arrivalDelay, long int maxDelay, long maxGroupInterval)
+SynchronousCameraQueue::SynchronousCameraQueue(long int arrivalDelay, long int maxDelay, long maxGroupInterval, bool ensureCam0)
 {
 	this->maxDelay = maxDelay;
 	this->arrivalDelay = arrivalDelay;
 	this->maxGroupInterval = maxGroupInterval;
+	this->ensureCam0 = ensureCam0;
 	lastArrivalTime = 0;
 	minimumPictureTime = 0;
 	
@@ -48,12 +49,12 @@ bool SynchronousCameraQueue::dataAvailable()
 void SynchronousCameraQueue::enqueueInternal(CameraData data)
 {
 	// Make it impossible to insert data for a time earlier than the last dequeue() result
-	/*if (data.time <= minimumPictureTime) {
+	if (data.time <= minimumPictureTime) {
 		ROS_DEBUG("Dropped data from cam %d, copter %d because it was too old (time: %ld)", data.camNo, data.quadcopterId, data.time);
 		return;
-	} else {*/
+	} else {
 		ROS_DEBUG("Inserting data from cam %d, copter %d (time: %ld)", data.camNo, data.quadcopterId, data.time);
-	/*}*/
+	}
 	
 	Bucket b;
 	b.data = data;
@@ -115,7 +116,7 @@ std::vector<CameraData> SynchronousCameraQueue::dequeue()
 
 SynchronousCameraQueue::Group SynchronousCameraQueue::searchGroup(std::list<Bucket>::iterator it, long int currentTime, std::list<Bucket>::iterator begin, std::list<Bucket>::iterator end)
 {
-	Group result(it, currentTime, arrivalDelay, maxDelay, maxGroupInterval, camNos.size());
+	Group result(it, currentTime, arrivalDelay, maxDelay, maxGroupInterval, camNos.size(), ensureCam0);
 	
 	std::set<int> usedCamNos;
 	usedCamNos.insert(it->data.camNo);

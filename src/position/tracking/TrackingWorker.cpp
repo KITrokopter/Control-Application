@@ -60,17 +60,18 @@ void TrackingWorker::run()
 				errorGraph.nextPoint(tracker.getDistance(), data[i].camNo);
 			}
 			
-			// Invert x axis for controller
-			position.setV1(-position.getV1());
-			
-			std::vector<Vector> positions;
-			std::vector<int> ids;
-			std::vector<int> updates;
-			positions.push_back(position);
-			ids.push_back(data[0].quadcopterId);
-			updates.push_back(1);
 			
 			if (position.isValid()) {
+				// Invert x axis for controller
+				position.setV1(-position.getV1());
+				
+				std::vector<Vector> positions;
+				std::vector<int> ids;
+				std::vector<int> updates;
+				positions.push_back(position);
+				ids.push_back(data[0].quadcopterId);
+				updates.push_back(1);
+				
 				receiver->updatePositions(positions, ids, updates);
 			}
 		} else if (receivedFirstPosition) {

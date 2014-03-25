@@ -34,7 +34,7 @@ string testGrouping()
 {
 	setNanoTime(0);
 	
-	SynchronousCameraQueue q(10, 20, 10);
+	SynchronousCameraQueue q(10, 20, 10, false);
 	
 	insertData(&q, 0, 2);
 	insertData(&q, 1, 1);
@@ -98,7 +98,7 @@ string testDataAvailable()
 {
 	setNanoTime(0);
 	
-	SynchronousCameraQueue q(10, 20, 10);
+	SynchronousCameraQueue q(10, 20, 10, false);
 	
 	CameraData data;
 	data.valid = true;
@@ -148,7 +148,7 @@ string testDequeue()
 {
 	setNanoTime(0);
 	
-	SynchronousCameraQueue q(10, 20, 10);
+	SynchronousCameraQueue q(10, 20, 10, false);
 	
 	CameraData data;
 	data.valid = true;
@@ -183,7 +183,7 @@ string testEnqueue()
 {
 	setNanoTime(0);
 	
-	SynchronousCameraQueue q(10, 20, 10);
+	SynchronousCameraQueue q(10, 20, 10, false);
 	
 	CameraData data;
 	data.valid = true;

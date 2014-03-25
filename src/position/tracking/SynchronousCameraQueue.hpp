@@ -7,7 +7,7 @@
 
 class SynchronousCameraQueue : public AbstractCameraQueue {
 public:
-	SynchronousCameraQueue(long int arrivalDelay, long int maxDelay, long int maxGroupInterval);
+	SynchronousCameraQueue(long int arrivalDelay, long int maxDelay, long int maxGroupInterval, bool ensureCam0);
 	
 	// Implementations of AbstractCameraQueue
 	size_t getSize();
@@ -33,7 +33,7 @@ private:
 	class Group {
 	public:
 		Group();
-		Group(std::list<Bucket>::iterator it, long int currentTime, long int arrivalDelay, long int maxDelay, long int maxGroupInterval, long int cameraCount);
+		Group(std::list<Bucket>::iterator it, long int currentTime, long int arrivalDelay, long int maxDelay, long int maxGroupInterval, long int cameraCount, bool ensureCam0);
 		
 		void calculateValue();
 		void add(std::list<Bucket>::iterator it);
@@ -57,6 +57,7 @@ private:
 		long int maxDelay;
 		long int maxGroupInterval;
 		long int cameraCount;
+		bool ensureCam0;
 		std::list<Bucket>::iterator youngest;
 		std::list<Bucket>::iterator oldest;
 		std::vector<CameraData> data;
@@ -69,6 +70,7 @@ private:
 	long int maxDelay;
 	long int arrivalDelay;
 	long int maxGroupInterval;
+	bool ensureCam0;
 	
 	/// Make arrival time unique
 	long int lastArrivalTime;

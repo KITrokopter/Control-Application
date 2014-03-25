@@ -5,6 +5,7 @@
 SynchronousCameraQueue::Group::Group()
 {
 	canBeValid = false;
+	ensureCam0 = false;
 	currentTime = 0;
 	arrivalDelay = 0;
 	maxDelay = 0;
@@ -14,13 +15,14 @@ SynchronousCameraQueue::Group::Group()
 	maxTime = 0;
 }
 
-SynchronousCameraQueue::Group::Group(std::list<Bucket>::iterator it, long int currentTime, long int arrivalDelay, long int maxDelay, long int maxGroupInterval, long int cameraCount)
+SynchronousCameraQueue::Group::Group(std::list<Bucket>::iterator it, long int currentTime, long int arrivalDelay, long int maxDelay, long int maxGroupInterval, long int cameraCount, bool ensureCam0)
 {
 	this->currentTime = currentTime;
 	this->arrivalDelay = arrivalDelay;
 	this->maxDelay = maxDelay;
 	this->maxGroupInterval = maxGroupInterval;
 	this->cameraCount = cameraCount;
+	this->ensureCam0 = ensureCam0;
 	youngest = it;
 	oldest = it;
 	data.push_back(it->data);
@@ -71,7 +73,15 @@ void SynchronousCameraQueue::Group::add(std::list<Bucket>::iterator it)
 
 bool SynchronousCameraQueue::Group::isValid()
 {
-	return canBeValid && data.size() >= 2 && (hasWaiting() || data.size() == cameraCount);
+	// Check if cam 0 is in the list
+	bool cam0Found = false;
+	for (std::vector<CameraData>::iterator it = data.begin(); it != data.end(); it++) {
+		if (it->camNo == 0) {
+			cam0Found = true;
+		}
+	}
+	
+	return canBeValid && data.size() >= 2 && (hasWaiting() || data.size() == cameraCount) && (cam0Found || !ensureCam0);
 }
 
 long int SynchronousCameraQueue::Group::getMinTime()
