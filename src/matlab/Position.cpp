@@ -397,6 +397,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                     newPos = m->interpolateLine(tracked, oldPos[quadcopterId], 0.5);
                 }
             }
+            this->error = m->getError();
 
             // calculates distance between last seen position and new calculated position
             distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
@@ -517,4 +518,8 @@ cv::Mat Position::getIntrinsicsMatrix(int cameraId) {
 Matrix Position::getRotationMatrix(int cameraId) {
     Matrix rotation = rotationMatrix.multiplicate(camRotMat[cameraId]);
     return rotation;
+}
+
+double Position::getError() {
+    return this->error;
 }

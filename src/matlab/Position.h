@@ -44,6 +44,11 @@ private:
     double distance;
 
     /**
+     * average distance of new interpolated point to perpendicular foot points
+     */
+    double error;
+
+    /**
      * TrackingArea of cameras
      */
     TrackingArea tracking;
@@ -248,6 +253,12 @@ public:
      * @return rotation matrix , that transforms camera co-system of camera with cameraId in real co-system
      */
     Matrix getRotationMatrix(int cameraId);
+
+    /**
+     * getter.
+     * @return average distance of perpendicular foot points to new interpolated point
+     */
+    double getError();
 
 };
 

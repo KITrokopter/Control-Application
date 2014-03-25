@@ -18,6 +18,12 @@ private:
      * Engine of matlab.
      */
     Engine *ep;
+
+    /**
+     * error is average distance of perpendicular foot points to interpolated point
+     */
+    double error;
+
 public:
 
     /**
@@ -88,7 +94,7 @@ public:
      * @param interpolationFactor
      * @return linear interpolation of line and quadPos
      */
-	Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor);
+    Vector interpolateLine(Line line, Vector quadPos, double interpolationFactor);
 
     /**
      * Warning: Only working, if line g and E1 or line g.getA() + r * (directV2-g.getA()) intersects!!
@@ -116,6 +122,12 @@ public:
      * @return intersection line of E1 and E2
      */
     Line getIntersectionLineFastCalculation(Line f, Vector directV1, Line g, Vector directV2);
+
+    /**
+     * error distance
+     * @return average distance of perpendicular foot points to interpolated point
+     */
+    double getError();
 };
 
 #endif /* MATLAB_H_ */

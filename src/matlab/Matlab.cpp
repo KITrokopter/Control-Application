@@ -24,10 +24,12 @@ Matlab::Matlab() {
     } else {
         this->ep = ep;
     }
+    error = 0;
 }
 
 Matlab::Matlab (Engine *ep) {
     this->ep = ep;
+    error = 0;
 }
 
 void Matlab::destroyMatlab() {
@@ -254,7 +256,13 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 	v2 = v2 / pos;
     v3 = v3 / pos;
 
-    return Vector(v1, v2, v3);
+    Vector perp = Vector(v1, v2, v3);
+    for (int i = 0; i < pos; i++) {
+        error += points[pos].add(perp.mult(-1)).getLength();
+    }
+    error = error / pos;
+
+    return perp;
 }
 
 Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
@@ -262,11 +270,14 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
     // caculate perpendicular foor point of line and quadPos
     Vector newPos = perpFootOneLine(line, quadPos);
 
+
     // interpolating between last seen position and new calculated position
     double v1 = newPos.getV1()*interpolationFactor + quadPos.getV1() * (1 - interpolationFactor);
 	double v2 = newPos.getV2()*interpolationFactor + quadPos.getV2() * (1 - interpolationFactor);
     double v3 = newPos.getV3()*interpolationFactor + quadPos.getV3() * (1 - interpolationFactor);
     Vector result(v1, v2, v3);
+
+    error = newPos.add(result.mult(-1)).getLength();
 
     return result;
 }
@@ -329,4 +340,8 @@ Line Matlab::getIntersectionLineFastCalculation(Line f, Vector directV1, Line g,
     // intersection line is line through both points
     Line intersectionLine = Line(intersection1, (intersection2.add(intersection1.mult(-1))));
     return intersectionLine;
+}
+
+double Matlab::getError() {
+    return this->error;
 }
