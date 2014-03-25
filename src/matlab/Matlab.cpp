@@ -271,7 +271,6 @@ Vector Matlab::interpolateLines(Line *lines, int quantity, Vector oldPos, double
 
         Vector perp = Vector(v1, v2, v3);
         for (int i = 0; i < pos; i++) {
-            ROS_DEBUG("perp is [%f, %f, %f]", points[i].getV1(), points[i].getV2(), points[i].getV3());
             error += points[i].add(perp.mult(-1)).getLength();
         }
 
