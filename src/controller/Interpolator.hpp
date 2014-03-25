@@ -64,6 +64,8 @@ private:
 	long int timeDiff2;
 	long int timeDiff3;
 
+	int aTimeSwitch;
+
 };
 
 #endif // INTERPOLATOR_HPP

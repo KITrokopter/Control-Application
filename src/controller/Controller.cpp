@@ -924,7 +924,6 @@ void Controller::stabilize( int internId )
 	Position6DOF targetInternId = this->listTargets[internId].back();
 	this->listPositionsMutex.lock();
 	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
-	ROS_INFO("CalculateNextMq done");
 	this->listPositionsMutex.unlock();
 	this->listTargetsMutex.unlock();
 	this->listFutureMovement[internId].clear();
