@@ -49,7 +49,7 @@ void SynchronousCameraQueue::enqueueInternal(CameraData data)
 {
 	// Make it impossible to insert data for a time earlier than the last dequeue() result
 	if (data.time <= minimumPictureTime) {
-		ROS_DEBUG("Dropped data from cam %d, copter %d because it was too old", data.camNo, data.quadcopterId);
+		ROS_DEBUG("Dropped data from cam %d, copter %d because it was too old (time: %ld)", data.camNo, data.quadcopterId, data.time);
 		return;
 	} else {
 		ROS_DEBUG("Inserting data from cam %d, copter %d", data.camNo, data.quadcopterId);
