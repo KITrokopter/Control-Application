@@ -18,7 +18,7 @@ Interpolator::Interpolator()
 	}
 	timeDiff1 = 1500000000;
 	timeDiff2 = 2500000000;
-	timeDiff3 = 3500000000;
+	timeDiff3 = 2600000000;
 }
 
 MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> sentQuadruples)

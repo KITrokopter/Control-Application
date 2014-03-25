@@ -37,7 +37,7 @@
 #define THRUST_STAND_STILL 18001
 #define THRUST_START 32000
 #define THRUST_DECLINE 200
-#define THRUST_MAX 40001
+#define THRUST_MAX 50001
 #define THRUST_STEP 50
 #define ROLL_MAX 6
 #define PITCH_MAX 6
@@ -46,7 +46,7 @@
 #define LOW_BATTERY 3.0//In V
 #define TIME_UPDATED_END 1*1000*1000	// in ns
 #define TIME_UPDATED_CRITICAL 200*1000	// in ns
-#define TIME_MIN_LOOP_CALC 50000000 	// 50 ms
+#define TIME_MIN_LOOP_CALC 5000000 	// 5 ms
 
 /* For calculateMovement */
 #define CALCULATE_NONE 0 // Unused for formation
