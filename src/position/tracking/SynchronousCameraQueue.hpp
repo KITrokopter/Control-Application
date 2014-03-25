@@ -64,6 +64,7 @@ private:
 	
 	Group searchGroup(std::list<Bucket>::iterator it, long int currentTime, std::list<Bucket>::iterator begin, std::list<Bucket>::iterator end);
 	void cutOffQueue(std::list<Bucket>::iterator it);
+	void printQueue();
 	
 	long int maxDelay;
 	long int arrivalDelay;
