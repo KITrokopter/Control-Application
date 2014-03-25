@@ -13,7 +13,7 @@ SynchronousCameraQueue::SynchronousCameraQueue(long int arrivalDelay, long int m
 	lastArrivalTime = 0;
 	minimumPictureTime = 0;
 	
-	ROS_INFO("SynchronousCameraQueue(): arrivalDelay = %.2fms, maxDelay = %.2fms, maxGroupInterval = %.2fms", arrivalDelay / 1e6, maxDelay / 1e6, maxGroupInterval / 1e6);
+	ROS_INFO("SynchronousCameraQueue(): arrivalDelay = %.2fms, maxDelay = %.2fms, maxGroupInterval = %.2fms, ensureCam0 = %s", arrivalDelay / 1e6, maxDelay / 1e6, maxGroupInterval / 1e6, ensureCam0 ? "true" : "false");
 }
 
 size_t SynchronousCameraQueue::getSize()
@@ -53,7 +53,7 @@ void SynchronousCameraQueue::enqueueInternal(CameraData data)
 		ROS_DEBUG("Dropped data from cam %d, copter %d because it was too old (time: %ld)", data.camNo, data.quadcopterId, data.time);
 		return;
 	} else {
-		ROS_DEBUG("Inserting data from cam %d, copter %d (time: %ld)", data.camNo, data.quadcopterId, data.time);
+		// ROS_DEBUG("Inserting data from cam %d, copter %d (time: %ld)", data.camNo, data.quadcopterId, data.time);
 	}
 	
 	Bucket b;
@@ -87,7 +87,7 @@ std::vector<CameraData> SynchronousCameraQueue::dequeue()
 	}
 	
 	if (result.isValid()) {
-		printQueue();
+		//printQueue();
 		cutOffQueue(result.getYoungest());
 		
 		if (result.getData().size() < camNos.size()) {
@@ -103,7 +103,7 @@ std::vector<CameraData> SynchronousCameraQueue::dequeue()
 				
 				// element is overdue and nothing else was found, so return group, even if it's invalid.
 				result = searchGroup(it, currentTime, queue.begin(), --queue.end());
-				printQueue();
+				//printQueue();
 				cutOffQueue(result.getYoungest());
 				
 				return result.getData();
