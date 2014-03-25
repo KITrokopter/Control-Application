@@ -236,10 +236,10 @@ bool TrackingArea::inCameraRange(Vector x) {
 
 void TrackingArea::increaseTrackingArea(double posChange, double height, double heightPos, double heightNeg) {
     Vector center = getCenter();
-    setA1(Vector(center.getV1() - posChange, center.getV2() - posChange, center.getV3() + height));
-    setA2(Vector(center.getV1() - posChange, center.getV2() + posChange, center.getV3() + height));
-    setA3(Vector(center.getV1() + posChange, center.getV2() + posChange, center.getV3() + height));
-    setA4(Vector(center.getV1() + posChange, center.getV2() - posChange, center.getV3() + height));
+    setA1(Vector(center.getV1() + posChange, center.getV2(), center.getV3() + height));
+    setA2(Vector(center.getV1(), center.getV2() - posChange, center.getV3() + height));
+    setA3(Vector(center.getV1() - posChange, center.getV2(), center.getV3() + height));
+    setA4(Vector(center.getV1(), center.getV2() + posChange, center.getV3() + height));
     setUp(Vector(center.getV1(), center.getV2(), center.getV3() + heightPos));
     setLow(Vector(center.getV1(), center.getV2(), center.getV3() - heightNeg));
 }
