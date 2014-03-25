@@ -72,7 +72,7 @@ void TrackingWorker::run()
 		} else if (receivedFirstPosition) {
 			emptyCount++;
 			
-			if (emptyCount == 5) {
+			if (emptyCount == 50) {
 				ROS_WARN("Position update buffer is empty!");
 				emptyCount = 0;
 			}
