@@ -303,18 +303,18 @@ unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest,
 	
 	if( abs(zDistanceLatest) < DISTANCE_CLOSE_TO_TARGET ) 
 	{
-		ROS_ERROR("Thrust is zero");
+		//ROS_ERROR("Thrust is zero");
 		return newThrust;		
 	} else
 	{
 		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst)) 
 		{  
-			ROS_ERROR("Thrust increase");
+			//ROS_ERROR("Thrust increase");
 			newThrust += THRUST_STEP;	
 		}
 		if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst)) 
 		{  
-			ROS_ERROR("Thrust decrease");
+			//ROS_ERROR("Thrust decrease");
 			newThrust -= THRUST_STEP;	
 		}
 		return newThrust;	

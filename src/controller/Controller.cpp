@@ -645,7 +645,7 @@ bool Controller::checkInput(int internId)
 		//ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//std::string message2 = std::string("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		std::string message2 = "No new quadcopter position data has been received";
-		//emergencyRoutine(message2);
+		emergencyRoutine(message2);
 		//ROS_INFO("tracked false");
 		tracked[internId] = false;
 		return false;
@@ -805,8 +805,16 @@ void Controller::moveUp( int internId )
 			this->time3 = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustTest >= 55000 || current > this->time2 + 4000000000)
+		if(this->thrustTest >= 50000 || current > this->time2 + 8000000000)
 		{
+			if(this->thrustTest >= 50000)
+			{
+				ROS_DEBUG("Thrust too high");
+			}
+			if(current > this->time2 + 8000000000)
+			{
+				ROS_DEBUG("Time over");
+			}
 			ROS_INFO("Emergency Shutdown Test");
 			this->shutdownStarted = true;
 			quadcopterMovementStatus[internId] = CALCULATE_LAND;
