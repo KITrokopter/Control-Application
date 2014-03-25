@@ -52,7 +52,7 @@ void SynchronousCameraQueue::enqueueInternal(CameraData data)
 		ROS_DEBUG("Dropped data from cam %d, copter %d because it was too old (time: %ld)", data.camNo, data.quadcopterId, data.time);
 		return;
 	} else {
-		ROS_DEBUG("Inserting data from cam %d, copter %d", data.camNo, data.quadcopterId);
+		ROS_DEBUG("Inserting data from cam %d, copter %d (time: %ld)", data.camNo, data.quadcopterId, data.time);
 	}
 	
 	Bucket b;
