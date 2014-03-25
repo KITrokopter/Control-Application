@@ -373,7 +373,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             if (cameraLines.size() > 1) {
                 Line* tracking = new Line[cameraLines.size()];
                 for (int i = 0; i < cameraLines.size(); i++) {
-                    tracking[i] = Line(getPosition(cameraLines[i].camNo), cameraLines[i].cameraVector);
+                    tracking[i] = Line(getPosition(cameraLines[i].camNo), direction[i]);
                 }
                 newPos = m->interpolateLines(tracking, cameraLines.size());
             } else {
