@@ -76,6 +76,7 @@ void Controller::initialize()
 void Controller::setTrackingArea(TrackingArea area)
 {
 	this->trackingArea = area;
+	this->receivedTrackingArea = true;
 }
 
 /*
