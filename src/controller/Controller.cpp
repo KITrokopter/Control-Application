@@ -240,6 +240,11 @@ void Controller::sendMovementAll()
 			//	ROS_INFO("Send thrust movement all %u", msg.thrust);
 			}
 		}
+		if((getNanoTime()/500000000)%2 == 1)
+       		{	
+        	        ROS_INFO("send Roll %f and pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
+	        }
+
 		msg.roll = this->listFutureMovement[i].front().getRoll();
 		msg.pitch = this->listFutureMovement[i].front().getPitch();
 		msg.yaw = this->listFutureMovement[i].front().getYawrate();
@@ -924,10 +929,18 @@ void Controller::stabilize( int internId )
 	Position6DOF targetInternId = this->listTargets[internId].back();
 	this->listPositionsMutex.lock();
 	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
+	if((getNanoTime()/500000000)%2 == 1)
+	{	
+		ROS_INFO("sta1 Roll %f and pitch %f", newMovement.getRoll(), newMovement.getPitch());
+	}
 	this->listPositionsMutex.unlock();
 	this->listTargetsMutex.unlock();
 	this->listFutureMovement[internId].clear();
 	this->listFutureMovement[internId].push_front( newMovement );	   
+	if((getNanoTime()/500000000)%2 == 1)
+	{	
+		ROS_INFO("sta2 Roll %f and pitch %f", this->listFutureMovement[internId].front().getRoll(), this->listFutureMovement[internId].front().getPitch());
+	}
 }
 
 void Controller::hold( int internId )
