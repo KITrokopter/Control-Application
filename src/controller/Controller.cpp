@@ -328,8 +328,7 @@ void Controller::calculateMovement()
 					break;
 				case CALCULATE_START:	
 					//ROS_INFO("Start %i", i);
-					//moveUp( i ); just for testing
-					stabilize( i ); // just for testing
+					moveUp( i );
 					break;
 				case CALCULATE_STABILIZE:
 					if( i == 0)
@@ -437,7 +436,7 @@ void Controller::buildFormation()
 		unsigned int quadStatus = this->quadcopterMovementStatus[i];
 		this->movementStatusMutex.unlock();
 		//As long as the quadcopter isn't tracked, incline
-		/*while(quadStatus == CALCULATE_START)
+		while(quadStatus == CALCULATE_START)
 		{
         		this->movementStatusMutex.lock();
 	        	quadStatus = this->quadcopterMovementStatus[i];
@@ -453,7 +452,7 @@ void Controller::buildFormation()
 				ROS_INFO("Shutdown in BuildFormation");
 				return;
 			}
-		}*/
+		}
 		ROS_INFO("Tracked");
 		//If this is the first tracked quadcopter set it as a reference point for all the others
 		if( i == 0)
@@ -895,7 +894,7 @@ void Controller::moveUp( int internId )
 		//Increases thrust step by step to ensure slow inclining
 		if(current > this->time3 + 10000000)
 		{
-			usleep(85000);
+			usleep(850000);
 			this->thrustTest += 500;
 			this->time3 = getNanoTime();
 		}
