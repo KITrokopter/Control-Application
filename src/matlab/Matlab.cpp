@@ -265,7 +265,7 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 
     Vector perp = Vector(v1, v2, v3);
     for (int i = 0; i < pos; i++) {
-        error += points[pos].add(perp.mult(-1)).getLength();
+        error += points[i].add(perp.mult(-1)).getLength();
     }
     error = error / pos;
 
