@@ -342,7 +342,7 @@ void Controller::calculateMovement()
 		timerCalculateMovement = getNanoTime();
 		while( timerCalculateMovement < TIME_MIN_LOOP_CALC + calculateMovementStarted )
 		{
-			usleep( 5000000 );	// 5ms
+			usleep( 5000 );	// 5ms
 			timerCalculateMovement = getNanoTime();
 		}
 	}	

@@ -130,7 +130,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			ROS_INFO("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			return newMovement;
 	}
-	ROS_INFO("interpolate 05 now in DONE at time $ld", currentTime);
+	ROS_INFO("interpolate 05 now in DONE at time %ld", currentTime);
 
 	/* Now in state "DONE" */
 	if( (this->status[id].getStarted()+timeDiff3) <= currentTime )
