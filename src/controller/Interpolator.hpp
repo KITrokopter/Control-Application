@@ -31,17 +31,19 @@
 #define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
 
 /*
+ * tuesday
+ * TODO hold
+ * TODO Coordinatesystem
+ * TODO roll/pitch-test QC
+ * TODO flight of circles, rotation, ...
+ * 
+ * 
  * TODO test of speed, either optimize or save data-to-sent in advance
  * 
  * TODO list future movement - fix
  * TODO use of timestamps
  * TODO ROS_INFO, ROS_WARN, ROS_ERROR, ROS_DEBUG - correct use
- * TODO flight of circles, rotation, ...
- * 
  * TODO convertMovement (Controller)
- *
- * TODO hold
- * 
  */
 
 class Interpolator {
