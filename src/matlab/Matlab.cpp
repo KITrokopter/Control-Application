@@ -217,8 +217,13 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector **result) {
 
 Vector Matlab::interpolateLines(Line *lines, int quantity) {
 
+    int sum = 0;
+    for (int i = 1; i < quantity; i++) {
+        sum += i;
+    }
+
     // saving perpendicular foot points of all lines of array lines
-    Vector *points = new Vector[2*quantity];
+    Vector *points = new Vector[2 * sum];
 	int pos = 0;
     int intersects;
     Vector result[2];

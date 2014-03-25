@@ -308,7 +308,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
     if (valid != numberCameras) {
         // default value, when not all cameras tracked it yet
-        ROS_DEBUG("Not all cameras did track quadcopter %d yet.\n", quadcopterId);
+        ROS_DEBUG("Not all cameras did track quadcopter %d yet.", quadcopterId);
         Vector nan = Vector(NAN, NAN, NAN);
         return nan;
     } else {

@@ -39,6 +39,8 @@ public:
 	void setX( double newX );
 	void setY( double newY );
 	void setRotation( double newRotation );
+	bool isNegativeSign();
+	void setNegativeSign(bool negativeSign);
 
 protected:
 
@@ -54,10 +56,11 @@ private:
 	short state;
 	long int started;
 	
-	long int lastUpdated;	// in latest state
+	long int lastUpdated;	// used in latest state "DONE", before only "started" is relevant
 	double x;		// 0-x-roll, 1-y-pitch
 	double y;
-	double rotation;	// in rad
+	double rotation;	// in rad; compared to "North" (pitch=1), counterclockwise
+	bool negativeSign;
 
 };
 

@@ -43,25 +43,29 @@ void tracking(Matlab *m) {
     Vector c1 = Vector(0, 0, 0);
     Vector c2 = Vector(0, 100, 0);
     Vector c3 = Vector(100, 100, 0);
-    Vector d1 = Vector(100, 100, 120);
-    Vector d2 = Vector(100, -100, 110);
-    Vector d3 = Vector(-100, -100, 120);
+    Vector c4 = Vector(100, 0, 0);
+    Vector d1 = Vector(100, 100, 100);
+    Vector d2 = Vector(100, -100, 100);
+    Vector d3 = Vector(-100, -100, 100);
+    Vector d4 = Vector(-100, 100, 100);
     std::vector<Vector> cameraPosition;
     cameraPosition.push_back(c1);
     cameraPosition.push_back(c2);
     cameraPosition.push_back(c3);
+    cameraPosition.push_back(c4);
     std::vector<Vector> cameraDirection;
     cameraDirection.push_back(d1);
     cameraDirection.push_back(d2);
     cameraDirection.push_back(d3);
-    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 3, 100, m->getEngine());
+    cameraDirection.push_back(d4);
+    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 100, m->getEngine());
     t->printTrackingArea();
-    Vector test = Vector(5, 5, 3);
+    /*Vector test = Vector(5, 5, 3);
     if (t->contains(test)) {
         printf("in tracking area\n");
     } else {
         printf("Fail\n");
-    }
+    }*/
 }
 
 void perp(Matlab *m) {
@@ -108,7 +112,9 @@ int main(int argc, char** argv) {
     if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
         ros::console::notifyLoggerLevelsChanged();
     }
-    trackingArea();
+    Matlab *m = new Matlab;
+    tracking(m);
+    m->destroyMatlab();
     /*Vector a1 = *(new Vector(0.000000, -0.000000, 0.000000));
     Vector u1 = * (new Vector(0.315551, -0.962110, -0.234050));
     Vector a2 = * (new Vector(730.285416, -753.080314, 0.000243));
