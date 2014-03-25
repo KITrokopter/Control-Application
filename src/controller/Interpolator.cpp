@@ -16,9 +16,9 @@ Interpolator::Interpolator()
 	{
 		this->status[i] = InterpolatorInfo();
 	}
-	timeDiff1 = 1500000000;
-	timeDiff2 = 2500000000;
-	timeDiff3 = 2600000000;
+	timeDiff1 = 0;
+	timeDiff2 = 0;
+	timeDiff3 = 0;
 }
 
 MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> sentQuadruples)
@@ -105,8 +105,8 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 						double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
 						diffX = diffX / absDistance;
 						diffY = diffY / absDistance;
-						this->status[id].setRotation( acos( diffY ) );	// FIXME check
-						this->status[id].setNegativeSign( negativeRotationalSign(this->status[id].getRotation(), pos, target ) );	// FIXME check
+						this->status[id].setRotation( 0 ); //acos( diffY ) );	// FIXME check
+						this->status[id].setNegativeSign( false ); //negativeRotationalSign(this->status[id].getRotation(), pos, target ) );	// FIXME check
 						this->status[id].setLastUpdated( currentTime );
 						break;
 					}
