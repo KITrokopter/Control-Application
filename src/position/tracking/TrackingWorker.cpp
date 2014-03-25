@@ -38,6 +38,11 @@ void TrackingWorker::run()
 	
 	while (!stop) {
 		std::vector<CameraData> data = dequeue();
+
+		ROS_DEBUG("Result data from queue");
+		for (std::vector<CameraData>::iterator it = data.begin(); it != data.end(); it++) {
+			ROS_DEBUG("cam %d, copter %d: data.time = %ld, camVector = [%.2f, %.2f, %.2f]", it->camNo, it->quadcopterId, it->time, it->cameraVector.getV1(), it->cameraVector.getV2(), it->cameraVector.getV3());
+		}
 		
 		if (data.size() > 0) {
 			emptyCount = 0;
