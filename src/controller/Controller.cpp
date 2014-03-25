@@ -129,7 +129,7 @@ void Controller::setTargetPosition()
 
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
 {
-	ROS_DEBUG("UpdatePosition");		
+	//ROS_DEBUG("UpdatePosition");		
 	//ROS_INFO("Update Position");
 	if(!receivedQuadcopters || !receivedFormation)
 	{
@@ -162,7 +162,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			bool trackedLocal = this->tracked[id];
 			if( trackedLocal == false )
 			{
-				ROS_INFO("tracked");
+				//ROS_INFO("tracked");
 				/* Quadcopter has not been tracked before */
 				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 				{
