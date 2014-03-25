@@ -33,7 +33,15 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 {
 	if( TEST_ROLL_PITCH )
 	{
-		return MovementQuadruple(THRUST_START, ROLL_MAX, 0, 0)
+		long int aTime = getNanoTime();
+		if( (aTime/5000000000)%2 == 0 )
+		{
+			return MovementQuadruple(THRUST_START, ROLL_MAX, 0, 0)
+		} 
+		else
+		{
+			return MovementQuadruple(THRUST_START, 0, PITCH_MAX, 0)
+		}
 	}
 	long int currentTime = getNanoTime();
 	MovementQuadruple newMovement = MovementQuadruple(THRUST_START, 0, 0, 0); // Nothing has been sent so far
