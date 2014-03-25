@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 	  usleep(100);
 	}
 	ROS_INFO("Wait");
-	usleep(10000000);
+	usleep(1000000000);
 	ROS_INFO("Long Update");
 	for(int i = 0; i < 100; i++)
         {

@@ -430,7 +430,7 @@ void Controller::buildFormation()
 		unsigned int quadStatus = this->quadcopterMovementStatus[i];
 		this->movementStatusMutex.unlock();
 		//As long as the quadcopter isn't tracked, incline
-		while(quadStatus == CALCULATE_START)
+		/*while(quadStatus == CALCULATE_START)
 		{
         		this->movementStatusMutex.lock();
 	        	quadStatus = this->quadcopterMovementStatus[i];
@@ -446,7 +446,7 @@ void Controller::buildFormation()
 				ROS_INFO("Shutdown in BuildFormation");
 				return;
 			}
-		}
+		}*/
 		ROS_INFO("Tracked");
 		//If this is the first tracked quadcopter set it as a reference point for all the others
 		if( i == 0)
