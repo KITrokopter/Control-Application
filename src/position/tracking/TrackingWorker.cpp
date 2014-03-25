@@ -7,7 +7,7 @@
 
 #include "../../matlab/profiling.hpp"
 
-TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(200, "Difference")
+TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(1000, "Difference")
 {
 	assert(receiver != 0);
 	
@@ -59,6 +59,9 @@ void TrackingWorker::run()
 			for (size_t i = 0; i < data.size(); i++) {
 				errorGraph.nextPoint(tracker.getDistance(), data[i].camNo);
 			}
+			
+			// Invert x axis for controller
+			position.setV1(-position.getV1());
 			
 			std::vector<Vector> positions;
 			std::vector<int> ids;
