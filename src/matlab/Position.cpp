@@ -326,8 +326,6 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 return Vector(NAN, NAN, NAN);
             }
 
-            ROS_DEBUG("First calculation of position with camera information:");
-
             // building lines from camera position to quadcopter position
             Line *quadPositions = new Line[numberCameras];
             for (int i = 0; i < numberCameras; i++) {
