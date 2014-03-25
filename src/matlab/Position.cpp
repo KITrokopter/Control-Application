@@ -153,18 +153,6 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     return ok;
 }
 
-double Position::getAngle(Vector u, Vector v) {
-    // cos(alpha)= u*v/(|u|*|v|)
-    double angle = u.scalarMult(v)/(u.getLength() * v.getLength());
-    angle = acos(angle);
-
-    // checks whether angle is between 0 and 90 degree
-    if (angle > M_PI/2) {
-        angle = -(angle - M_PI);
-    }
-    return angle;
-}
-
 void Position::angleTry(int sign) {
     // Plain of the cameras E = a + r * u + s * (c - a)
     // as a is always the origin, E intersects the xy-plain in the origin => translation vector is not neccesary
@@ -200,7 +188,7 @@ void Position::angleTry(int sign) {
     }
 
     n.putVariable("n", ep);
-    double angle = getAngle(Vector(0, 0, 1), b.cross(c));
+    double angle = m->getAngle(Vector(0, 0, 1), b.cross(c));
     double dataAngle[1] = {sign * angle};
     mxArray *ang = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(ang), (void *)dataAngle, sizeof(dataAngle));
@@ -391,25 +379,30 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                     ROS_INFO("camera %d at position [%f, %f, %f] tracks in direction [%f, %f, %f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition((cameraLines[i].camNo)).getV2(), getPosition((cameraLines[i].camNo)).getV3(), direction[i].getV1(), direction[i].getV2(), direction[i].getV3());
                 }
                 newPos = m->interpolateLines(tracking, cameraLines.size(), oldPos[quadcopterId], interpolationFactor);
+
             } else {
                 Vector position = getPosition(cameraLines[0].camNo);
                 Line tracked = Line(position, direction[0]);
 
                 newPos = m->interpolateLine(tracked, oldPos[quadcopterId], interpolationFactor);
             }
-            this->error = m->getError();
-            ROS_INFO("Error is %f", error);
+            if (newPos.getValid()) {
+                this->error = m->getError();
+                ROS_INFO("Error is %f", error);
 
-            // calculates distance between last seen position and new calculated position
-            distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
+                // calculates distance between last seen position and new calculated position
+                distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
 
-            // saving new Pos
-            ROS_DEBUG("New position of quadcopter %d is [%f, %f, %f]", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3());
-            oldPos[quadcopterId] = newPos;
-            if (tracking.inCameraRange(newPos)) {
-                ROS_DEBUG("In tracking area");
+                // saving new Pos
+                ROS_DEBUG("New position of quadcopter %d is [%f, %f, %f]", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3());
+                oldPos[quadcopterId] = newPos;
+                if (tracking.inCameraRange(newPos)) {
+                    ROS_DEBUG("In tracking area");
+                } else {
+                    ROS_DEBUG("Not in tracking area");
+                }
             } else {
-                ROS_DEBUG("Not in tracking area");
+                ROS_ERROR("Couldn't calculate new position as angle between camera lines is too small");
             }
             return newPos;
         }

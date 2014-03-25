@@ -19,6 +19,8 @@ private:
      * x-, y- and z-value of vector
      */
     double v1, v2, v3;
+
+    bool valid;
 public:
     /**
      * empty constructor.
@@ -32,6 +34,12 @@ public:
      * @param v3 is z-value
      */
 	Vector(double v1, double v2, double v3);
+
+    /**
+     * constructor.
+     * @param valid whether vector is valid or not.
+     */
+    Vector(bool valid);
 
     /**
      * getter.
@@ -142,6 +150,12 @@ public:
 	 * @return True if the vector contains no NaN values.
 	 */
 	bool isValid();
+
+    /**
+     * getter.
+     * @return whether vector is valid or not.
+     */
+    bool getValid();
 };
 
 #endif /* VECTOR_H_ */
