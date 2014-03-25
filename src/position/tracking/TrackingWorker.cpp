@@ -7,7 +7,7 @@
 
 #include "../../matlab/profiling.hpp"
 
-TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(200, "Difference")
+TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(1000, "Difference")
 {
 	assert(receiver != 0);
 	
