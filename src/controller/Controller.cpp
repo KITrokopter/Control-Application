@@ -240,7 +240,7 @@ void Controller::sendMovementAll()
 			//	ROS_INFO("Send thrust movement all %u", msg.thrust);
 			}
 		}
-		if((getNanoTime()/500000000)%2 == 1)
+		if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
        		{	
         	        ROS_INFO("send Roll %f and pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
 	        }
