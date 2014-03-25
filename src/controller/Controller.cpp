@@ -839,10 +839,10 @@ void Controller::stabilize( int internId )
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
 	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
-	if((getNanoTime()/500000000)%2 == 1)
+	/*if((getNanoTime()/500000000)%2 == 1)
 	{	
 		//ROS_INFO("sta1 Roll %f and pitch %f", newMovement.getRoll(), newMovement.getPitch());
-	}
+	}*/
 	this->listTargetsMutex.unlock();
 	this->listPositionsMutex.unlock();
 	this->listFutureMovement[internId].clear();
