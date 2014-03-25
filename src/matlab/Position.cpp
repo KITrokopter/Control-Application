@@ -373,7 +373,8 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             if (cameraLines.size() > 1) {
                 Line* tracking = new Line[cameraLines.size()];
                 for (int i = 0; i < cameraLines.size(); i++) {
-                    tracking[i] = Line(getPosition(cameraLines[i].camNo), cameraLines[i].cameraVector);
+                    tracking[i] = Line(getPosition(cameraLines[i].camNo), direction[i]);
+                    ROS_INFO("camera %d at position [%f, %f, %f] tracks in direction [%f, %f, %f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition((cameraLines[i].camNo)).getV2(), getPosition((cameraLines[i].camNo)).getV3(), direction[i].getV1(), direction[i].getV2(), direction[i].getV3());
                 }
                 newPos = m->interpolateLines(tracking, cameraLines.size());
             } else {
@@ -398,6 +399,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 }
             }
             this->error = m->getError();
+            ROS_INFO("Error is %f", error);
 
             // calculates distance between last seen position and new calculated position
             distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();

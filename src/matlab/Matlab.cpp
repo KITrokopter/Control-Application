@@ -248,6 +248,8 @@ Vector Matlab::interpolateLines(Line *lines, int quantity) {
 		}
     }
 
+    error = 0;
+
     // calculating average of all points in array points
     double v1 = 0;
     double v2 = 0;
