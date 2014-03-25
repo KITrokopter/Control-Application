@@ -54,7 +54,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			return MovementQuadruple(THRUST_START, 0, PITCH_MAX, 0);
 		}
 	}
-	ROS_INFO("interpolate 1 calculateNextMQ");
+	//ROS_INFO("interpolate 01 calculateNextMQ");
 	long int currentTime = getNanoTime();
 	MovementQuadruple newMovement = MovementQuadruple(THRUST_START, 0, 0, 0); // Nothing has been sent so far
 
@@ -65,18 +65,18 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	newMovement.setTimestamp( currentTime );
 
 	checkState( id );
-	ROS_INFO("interpolate 2 after checkState");
+	//ROS_INFO("interpolate 02 after checkState");
 	switch( this->status[id].getState() )
 	{
 		case UNSTARTED:
-			ROS_INFO("interpolate 3a unstarted");
+			ROS_INFO("interpolate 03a unstarted");
 			ROS_INFO("Error in switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			newMovement.setThrust( THRUST_MIN );
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
 			//break;
 		case STARTED:
-			ROS_INFO("interpolate 3b started");
+			ROS_INFO("interpolate 03b started");
 			if( this->status[id].getStarted() > currentTime + timeDiff1 )
 			{
 				newMovement.setRollPitchYawrate( -ROLL_MAX, -PITCH_MAX, 0 );
@@ -88,7 +88,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			return newMovement;
 			//break;
 		case CALC:
-			ROS_INFO("interpolate 3c calc");
+			ROS_INFO("interpolate 03c calc");
 			if( positions.size() > 2 )	// Enough data to calculate new rpy values (at least two values)
 			{
 				newMovement.setRollPitchYawrate( 0, 0, 0 );
@@ -121,17 +121,16 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
 		default:			
-			ROS_INFO("interpolate 3d error");
 			break;
 	}
-	ROS_INFO("interpolate 4 after first switch");
+	//ROS_INFO("interpolate 04 after first switch");
 	
 	if( this->status[id].getState() != DONE )
 	{
 			ROS_INFO("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			return newMovement;
 	}
-	ROS_INFO("interpolate 5 now in DONE");
+	ROS_INFO("interpolate 05 now in DONE");
 
 	/* Now in state "DONE" */
 	if( this->status[id].getStarted() <= currentTime + timeDiff3 )
@@ -140,6 +139,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		newMovement.setRollPitchYawrate( 0, 0, 0 );
 		return newMovement;
 	}
+	ROS_INFO("interpolate 06");
 	if( sentQuadruples.size() < 3 || positions.size() < 3 )
 	{
 		/* Might not get enough data from camera in a certain time.
@@ -147,13 +147,14 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		ROS_INFO("Not enough data in calculateNextMQ, some assumption is wrong..."); // FIXME error not info
 		return newMovement;
 	}
+	ROS_INFO("interpolate 07");
 
 	/*
 	 * Calculate with given calibration data, actually
 	 * trying to "stabilize" now
 	 */
 
-	ROS_INFO("Enough data in calculateNextMQ, start calculation.");
+	ROS_INFO("interpolate 08 Enough data in calculateNextMQ, start calculation.");
 	/* Save latest Position and before-latest Position */
 	Position6DOF positionPast;
 	Position6DOF positionNow;	// positionPast is older than positionNow
@@ -187,12 +188,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			counter++;
 		}
 	*/
-		ROS_INFO("Got positionPast and positionNow.");
+	ROS_INFO("interpolate 09 Got positionPast and positionNow.");
 
 	/* Calculate predicted actual position */
 	posAssumed = positions.back();
 	posAssumed = posAssumed.predictNextPosition( positionPast, PREDICT_FUTURE_POSITION_TIME );
-	ROS_INFO("calculated assumedPos");
+	ROS_INFO("interpolate 10 calculated assumedPos");
 
 
 	/* Calculate thrust value - always */
@@ -209,12 +210,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	double absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized);
 	newMovement.setThrust( newThrust );
-	ROS_INFO("calculated thrust with assumed position");
+	ROS_INFO("interpolate 11 calculated thrust with assumed position");
 
 	/* Calculate new rpy-values every MIN_TIME_TO_WAIT nanoseconds */
 	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
-		ROS_INFO("Do not change rpy-values, movement of sent values need to be visible.");
+		ROS_INFO("interpolate 12 Do not change rpy-values, movement of sent values need to be visible.");
 		return newMovement;
 	}
 

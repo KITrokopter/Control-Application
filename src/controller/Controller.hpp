@@ -44,8 +44,9 @@
 #define YAWRATE_MAX 0
 #define INVALID -1
 #define LOW_BATTERY 3.0//In V
-#define TIME_UPDATED_END 1*1000*1000 // in ns
-#define TIME_UPDATED_CRITICAL 200*1000 // in ns
+#define TIME_UPDATED_END 1*1000*1000	// in ns
+#define TIME_UPDATED_CRITICAL 200*1000	// in ns
+#define TIME_MIN_LOOP_CALC 150000000 	// 150 ms
 
 /* For calculateMovement */
 #define CALCULATE_NONE 0 // Unused for formation
