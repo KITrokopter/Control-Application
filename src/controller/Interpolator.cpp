@@ -31,6 +31,10 @@ MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> s
 
 MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, int id)
 {
+	if( TEST_ROLL_PITCH )
+	{
+		return MovementQuadruple(THRUST_START, ROLL_MAX, 0, 0)
+	}
 	long int currentTime = getNanoTime();
 	MovementQuadruple newMovement = MovementQuadruple(THRUST_START, 0, 0, 0); // Nothing has been sent so far
 
