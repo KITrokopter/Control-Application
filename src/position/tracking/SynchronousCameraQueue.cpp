@@ -11,6 +11,8 @@ SynchronousCameraQueue::SynchronousCameraQueue(long int arrivalDelay, long int m
 	this->maxGroupInterval = maxGroupInterval;
 	lastArrivalTime = 0;
 	minimumPictureTime = 0;
+	
+	ROS_INFO("SynchronousCameraQueue(): arrivalDelay = %.2fms, maxDelay = %.2fms, maxGroupInterval = %.2fms", arrivalDelay / 1e6, maxDelay / 1e6, maxGroupInterval / 1e6);
 }
 
 size_t SynchronousCameraQueue::getSize()
@@ -84,7 +86,9 @@ std::vector<CameraData> SynchronousCameraQueue::dequeue()
 		cutOffQueue(result.getYoungest());
 		
 		if (result.getData().size() < camNos.size()) {
-			ROS_WARN("Quadcopter %d is only seen by %ld cameras", result.getData()[0].quadcopterId, result.getData().size());
+			ROS_WARN("Quadcopter %d is only seen by %ld cameras, but there are %ld entries in the queue", result.getData()[0].quadcopterId, result.getData().size(), queue.size());
+			
+			printQueue();
 		}
 		
 		return result.getData();
@@ -184,4 +188,13 @@ void SynchronousCameraQueue::cutOffQueue(std::list<Bucket>::iterator it)
 	std::list<Bucket> toDelete;
 	toDelete.splice(toDelete.begin(), queue, queue.begin(), it);
 	queue.pop_front();
+}
+
+void SynchronousCameraQueue::printQueue()
+{
+	ROS_DEBUG("Printing list");
+	
+	for (std::list<Bucket>::iterator it = queue.begin(); it != queue.end(); it++) {
+		ROS_DEBUG("Cam %d, Copter %d: arrival %ld, snaptime %ld", it->data.camNo, it->data.quadcopterId, it->arrivalTime, it->data.time);
+	}
 }
