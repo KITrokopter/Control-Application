@@ -101,6 +101,7 @@ std::vector<CameraData> SynchronousCameraQueue::dequeue()
 				// element is overdue and nothing else was found, so return group, even if it's invalid.
 				result = searchGroup(it, currentTime, queue.begin(), --queue.end());
 				cutOffQueue(result.getYoungest());
+				printQueue();
 				
 				return result.getData();
 			}
