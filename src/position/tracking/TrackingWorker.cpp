@@ -73,8 +73,8 @@ void TrackingWorker::run()
 				emptyCount = 0;
 			}
 			
-			// Produce a context switch, since there are no good results anyways and to prevent busy waiting
-			usleep(0);
+			boost::mutex::scoped_lock lock(queueMutex);
+			queueEmpty.wait(lock);
 		}
 	}
 	
@@ -104,7 +104,7 @@ void TrackingWorker::enqueue(CameraData data)
 	
 	queue.enqueue(data);
 	
-	queueEmpty.notify_one();
+	queueEmpty.notify_all();
 }
 
 std::vector<CameraData> TrackingWorker::dequeue()
