@@ -86,12 +86,11 @@ std::vector<CameraData> SynchronousCameraQueue::dequeue()
 	}
 	
 	if (result.isValid()) {
+		printQueue();
 		cutOffQueue(result.getYoungest());
 		
 		if (result.getData().size() < camNos.size()) {
 			ROS_WARN("Quadcopter %d is only seen by %ld cameras, but there are %ld entries in the queue", result.getData()[0].quadcopterId, result.getData().size(), queue.size());
-			
-			printQueue();
 		}
 		
 		return result.getData();
@@ -103,8 +102,8 @@ std::vector<CameraData> SynchronousCameraQueue::dequeue()
 				
 				// element is overdue and nothing else was found, so return group, even if it's invalid.
 				result = searchGroup(it, currentTime, queue.begin(), --queue.end());
-				cutOffQueue(result.getYoungest());
 				printQueue();
+				cutOffQueue(result.getYoungest());
 				
 				return result.getData();
 			}
