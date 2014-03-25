@@ -305,12 +305,12 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             int tooOld = 0;
             for (int i = 0; i < numberCameras; i++) {
                 if (imageAge[i] > 5) {
-                    ROS_DEBUG("Information of camera %d is too old.", i);
+                    //ROS_DEBUG("Information of camera %d is too old.", i);
                     tooOld++;
                 }
             }
             if (2 > numberCameras - tooOld) {
-                ROS_DEBUG("Information can't be used, as too much cameras can't track it anymore");
+                //ROS_DEBUG("Information can't be used, as too much cameras can't track it anymore");
                 return Vector(NAN, NAN, NAN);
             }
 
@@ -325,7 +325,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             Vector quadPosition = m->interpolateLines(quadPositions, numberCameras, Vector(0, 0, 0), 1);
 
             oldPos[quadcopterId] = quadPosition;
-            ROS_INFO("First seen position of quadcopter %d is [%f, %f, %f], %s", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3(), tracking.inCameraRange(quadPosition)? "in tracking area" : "NOT in tracking area");
+            //ROS_INFO("First seen position of quadcopter %d is [%f, %f, %f], %s", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3(), tracking.inCameraRange(quadPosition)? "in tracking area" : "NOT in tracking area");
 
             // as distance of 150 has interpolation factor 0.5
             distance = 150;
@@ -385,10 +385,10 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
 
                 // saving new Pos
-                ROS_INFO("New position of quadcopter %d is [%f, %f, %f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), tracking.inCameraRange(newPos)? "in tracking area" : "NOT in tracking area");
+                //ROS_INFO("New position of quadcopter %d is [%f, %f, %f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), tracking.inCameraRange(newPos)? "in tracking area" : "NOT in tracking area");
                 oldPos[quadcopterId] = newPos;
             } else {
-                ROS_WARN("Couldn't calculate new position as angle between camera lines is too small");
+                //ROS_WARN("Couldn't calculate new position as angle between camera lines is too small");
             }
 
             return newPos;
