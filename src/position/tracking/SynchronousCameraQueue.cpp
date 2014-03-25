@@ -119,7 +119,7 @@ SynchronousCameraQueue::Group SynchronousCameraQueue::searchGroup(std::list<Buck
 	Group result(it, currentTime, arrivalDelay, maxDelay, maxGroupInterval, camNos.size());
 	
 	std::set<int> usedCamNos;
-	camNos.insert(it->data.camNo);
+	usedCamNos.insert(it->data.camNo);
 	
 	// The current rand of the search area
 	std::list<Bucket>::iterator left = it;
