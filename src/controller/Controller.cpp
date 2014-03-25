@@ -645,7 +645,7 @@ bool Controller::checkInput(int internId)
 		//ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//std::string message2 = std::string("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		std::string message2 = "No new quadcopter position data has been received";
-		//emergencyRoutine(message2);
+		emergencyRoutine(message2);
 		//ROS_INFO("tracked false");
 		tracked[internId] = false;
 		return false;
