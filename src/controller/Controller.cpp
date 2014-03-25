@@ -210,7 +210,7 @@ void Controller::sendMovementAll()
 			this->listFutureMovement[i].pop_back();
 		}
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
-		this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX_START, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
 		if(msg.thrust > 4000)
 		{
@@ -642,6 +642,7 @@ bool Controller::checkInput(int internId)
 	long int lastCur = this->lastCurrent[internId];
 	if(currentTime - lastCur > TIME_UPDATED_END && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
+		ROS_DEBUG("Time difference %ld", currentTime - lastCur);
 		//ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//std::string message2 = std::string("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		std::string message2 = "No new quadcopter position data has been received";
@@ -801,11 +802,11 @@ void Controller::moveUp( int internId )
 		if(current > this->time3 + 10000000)
 		{
 			usleep(85000);
-			this->thrustTest += 1000;
+			this->thrustTest += 700;
 			this->time3 = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustTest >= 50000 || current > this->time2 + 8000000000)
+		if(this->thrustTest >= THRUST_MAX_START || current > this->time2 + 8000000000)
 		{
 			if(this->thrustTest >= 50000)
 			{
