@@ -39,8 +39,8 @@
 #define THRUST_DECLINE 200
 #define THRUST_MAX 40001
 #define THRUST_STEP 50
-#define ROLL_MAX 22
-#define PITCH_MAX 22
+#define ROLL_MAX 6
+#define PITCH_MAX 6
 #define YAWRATE_MAX 0
 #define INVALID -1
 #define LOW_BATTERY 3.0//In V
