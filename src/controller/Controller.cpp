@@ -56,6 +56,7 @@ Controller::Controller()
 	
 	this->formation = new Formation();
 	
+	this->receivedTrackingArea = false;
 	ROS_INFO("ROS stuff set up");
 	
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
@@ -575,7 +576,15 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->listTargetsMutex.lock();
 		this->receivedQCStMutex.lock();
 		this->listPositions.push_back(newEmptyListPosition);
-		this->listTargets.push_back(newEmptyListPosition);	      
+		this->listTargets.push_back(newEmptyListPosition);
+		if( this->receivedTrackingArea)
+		{
+			Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
+		}
+		else
+		{
+			ROS_ERROR("No tracked set");
+		}
 		this->receivedQuadStatus[i] = false; // received no quadcopter status information
 		this->receivedQCStMutex.unlock();
 		this->listTargetsMutex.unlock();

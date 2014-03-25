@@ -151,6 +151,7 @@ private:
 	bool receivedFormation;
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
 	bool buildFormationFinished;
+	bool receivedTrackingArea;
 	bool shutdownStarted;
 	long int lastFormationMovement;
 	long int lastCurrent[MAX_NUMBER_QUADCOPTER];
