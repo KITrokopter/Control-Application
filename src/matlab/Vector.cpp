@@ -127,7 +127,7 @@ std::string Vector::toString() {
 }
 
 bool Vector::isValid() {
-	return !(isnan(v1) || isnan(v2) || isnan(v3));
+	return !(isnan(v1) || isnan(v2) || isnan(v3)) && valid;
 }
 
 bool Vector::getValid() {

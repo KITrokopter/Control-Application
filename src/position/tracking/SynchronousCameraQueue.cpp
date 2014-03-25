@@ -99,7 +99,7 @@ std::vector<CameraData> SynchronousCameraQueue::dequeue()
 		// Search for element which is older than maxDelay
 		for (std::list<Bucket>::iterator it = queue.begin(); it != queue.end(); it++) {
 			if (currentTime - it->arrivalTime > maxDelay) {
-				ROS_WARN("Strange things are happening! The only thing to return is old and lonely.");
+				ROS_WARN("Strange things are happening! The only thing to return is old and lonely (and probably invalid, but better than nothing so we return it anyways).");
 				
 				// element is overdue and nothing else was found, so return group, even if it's invalid.
 				result = searchGroup(it, currentTime, queue.begin(), --queue.end());
