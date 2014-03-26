@@ -101,10 +101,13 @@ double Position6DOF::getDistanceZ( Position6DOF otherPosition )
 void Position6DOF::predictNextPosition( Position6DOF olderPosition, long int timeInFuture )
 {
 	long int timediff = this->timestamp - olderPosition.getTimestamp();
-	if( this->timestamp == olderPosition.getTimestamp() )
-	{
-		this->timestamp = this->timestamp + timeInFuture;
-	}
+	if(timediff == 0)
+        {
+                ROS_ERROR("this->timestamp %i and olderPos %i", this->timestamp, olderPosition.getTimestamp());
+        }
+
+	this->timestamp = this->timestamp + timeInFuture;
+
 	double xDiff = this->position[0] - olderPosition.getPosition()[0];
 	double yDiff = this->position[1] - olderPosition.getPosition()[1];
 	double zDiff = this->position[2] - olderPosition.getPosition()[2];
