@@ -105,8 +105,15 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 						double diffX = pos.getPosition()[0] - target.getPosition()[0];
 						double diffY = pos.getPosition()[1] - target.getPosition()[1];
 						double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
-						diffX = diffX / absDistance;
-						diffY = diffY / absDistance;
+						if( absDistance == 0)
+						{
+							ROS_ERROR("absDistance is zero");
+						}
+						else
+						{
+							diffX = diffX / absDistance;
+							diffY = diffY / absDistance;
+						}
 						this->status[id].setRotation( 0 ); //acos( diffY ) );	// FIXME check
 						this->status[id].setNegativeSign( false ); //negativeRotationalSign(this->status[id].getRotation(), pos, target ) );	// FIXME check
 						this->status[id].setLastUpdated( currentTime );
@@ -203,7 +210,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	float zDiffPast = positionPast.getDistanceZ( target );	// unnecessary if prediction works
 	float zDiffNow = positionNow.getDistanceZ( target );
 	float zDiffAssumed = posAssumed.getDistanceZ( target );
-	ROS_INFO("zDiffAssumed unchanged: %f", zDiffAssumed);
 	// unnecessary if prediction works, leave for testing
 /*	double timediffPastNow = positionNow.getTimestamp() - positionPast.getTimestamp();
 	double timediffNormalized = (double) timediffPastNow / 1000000000;	// should be in seconds
@@ -211,8 +217,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffPast, zDiffNow, absDistancePastNow, timediffNormalized);*/
 	double timediffNowAssumed = posAssumed.getTimestamp() - positionNow.getTimestamp();
 	double timediffNormalized = (double) timediffNowAssumed / ((double) 1000000000);	// should be in seconds
-	float absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );	
-	ROS_INFO("zDiffNow %f, zDiffAssumed %f, absDistNowAssumed %f, tNorm %ld", zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized);
+	float absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized);
 	newMovement.setThrust( newThrust );
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
