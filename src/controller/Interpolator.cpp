@@ -166,21 +166,25 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	//ROS_INFO("interpolate 08 Enough data in calculateNextMQ, start calculation.");
 	/* Save latest Position and before-latest Position */
 	Position6DOF positionPast;
-	Position6DOF positionNow;	// positionPast is older than positionNow
+	Position6DOF positionNow = positions.back();	// positionPast is older than positionNow
 	Position6DOF posAssumed;
 	std::list<Position6DOF>::iterator it = positions.end();
 	int counter = 0;
 	while( (it!=positions.begin()) && (counter<2) )
 	{
-		positionPast.setOrientation( it->getOrientation() );
-		positionPast.setPosition( it->getPosition() );
-		positionPast.setTimestamp( it->getTimestamp() );
-		if( counter == 0 )
+		if( counter == 1 )
+		{
+			positionPast.setOrientation( it->getOrientation() );
+			positionPast.setPosition( it->getPosition() );
+			positionPast.setTimestamp( it->getTimestamp() );
+			positionNow = positions.back();
+		}
+		/*if( counter == 0 )
 		{
 			positionNow.setOrientation( positionPast.getOrientation() );
 			positionNow.setPosition( positionPast.getPosition() );
 			positionNow.setTimestamp( positionPast.getTimestamp() );
-		}
+		}*/
 		--it;
 		counter++;
 	}
@@ -193,7 +197,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 				positionPast.setOrientation( it->getOrientation() );
 				positionPast.setPosition( it->getPosition() );
 				positionPast.setTimestamp( it->getTimestamp() );
-				positionNow = positions.front();
+				positionNow = positions.back();
 			}
 			--it;
 			counter++;
@@ -352,15 +356,15 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 		return newThrustDiff;
 	} else
 	{
-		ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
+		//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
 		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst && zSpeed<0)) 
 		{  
-			ROS_ERROR(" Thrustdiff increase");
+			//ROS_ERROR(" Thrustdiff increase");
 			newThrustDiff += THRUST_STEP;
 		}
 		if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst && zSpeed>0)) 
 		{  
-			ROS_ERROR(" Thrustdiff decrease");
+			//ROS_ERROR(" Thrustdiff decrease");
 			newThrustDiff -= THRUST_STEP;
 		}
 		return newThrustDiff;
