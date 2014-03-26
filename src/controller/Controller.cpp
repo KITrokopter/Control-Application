@@ -141,6 +141,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	/* Save position vectors */	
 	int i = 0;
 	int id = 0;
+	long int current = getNanoTime();
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
@@ -150,11 +151,10 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		{
 			continue;	
 		}
-		this->lastCurrentMutex.lock();
-		this->lastCurrent[id] = getNanoTime();
+		current = getNanoTime();
+		this->lastCurrent[id] = current;
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
-		newPosition.setTimestamp(this->lastCurrent[id]);
-		this->lastCurrentMutex.unlock();
+		newPosition.setTimestamp( current );
 		
 		if( it->getV1() != INVALID ) 
 		{	

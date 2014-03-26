@@ -172,12 +172,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	int counter = 0;
 	while( (it!=positions.begin()) && (counter<2) )
 	{
+		--it;
 		if( counter == 1 )
 		{
 			positionPast.setOrientation( it->getOrientation() );
 			positionPast.setPosition( it->getPosition() );
 			positionPast.setTimestamp( it->getTimestamp() );
-			positionNow = positions.back();
 		}
 		/*if( counter == 0 )
 		{
@@ -185,7 +185,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			positionNow.setPosition( positionPast.getPosition() );
 			positionNow.setTimestamp( positionPast.getTimestamp() );
 		}*/
-		--it;
 		counter++;
 	}
 		// FIXME the following is an alternative to the previous while-construct. Both untested.
