@@ -139,7 +139,6 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		return;
 	}
 	/* Save position vectors */	
-	std::vector<Position6DOF> newListItem;
 	int i = 0;
 	int id = 0;
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
@@ -156,7 +155,6 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp(this->lastCurrent[id]);
 		this->lastCurrentMutex.unlock();
-		newListItem.push_back( newPosition );
 		
 		if( it->getV1() != INVALID ) 
 		{	
