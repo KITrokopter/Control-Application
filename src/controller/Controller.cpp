@@ -210,7 +210,7 @@ void Controller::sendMovementAll()
 			this->listFutureMovement[i].pop_back();
 		}
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
-		this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX_START, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
 		if(msg.thrust > 4000)
 		{
@@ -642,10 +642,11 @@ bool Controller::checkInput(int internId)
 	long int lastCur = this->lastCurrent[internId];
 	if(currentTime - lastCur > TIME_UPDATED_END && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
+		ROS_DEBUG("Time difference %ld", currentTime - lastCur);
 		//ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//std::string message2 = std::string("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		std::string message2 = "No new quadcopter position data has been received";
-		//emergencyRoutine(message2);
+		emergencyRoutine(message2);
 		//ROS_INFO("tracked false");
 		tracked[internId] = false;
 		return false;
@@ -794,19 +795,27 @@ void Controller::moveUp( int internId )
 	if( !moveUpSmart ) {		
 		MovementQuadruple newMovement = MovementQuadruple( this->thrustTest, 0, 0, 0 );
 		newMovement.setTimestamp( current );
-		ROS_DEBUG("Thrust is %u", this->thrustTest);
+		//ROS_DEBUG("Thrust is %u", this->thrustTest);
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
 		//Increases thrust step by step to ensure slow inclining
 		if(current > this->time3 + 10000000)
 		{
-			usleep(850000);
-			this->thrustTest += 500;
+			usleep(85000);
+			this->thrustTest += 700;
 			this->time3 = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustTest >= 55000 || current > this->time2 + 8000000000)
+		if(this->thrustTest >= THRUST_MAX_START || current > this->time2 + 8000000000)
 		{
+			if(this->thrustTest >= 50000)
+			{
+				ROS_DEBUG("Thrust too high");
+			}
+			if(current > this->time2 + 8000000000)
+			{
+				ROS_DEBUG("Time over");
+			}
 			ROS_INFO("Emergency Shutdown Test");
 			this->shutdownStarted = true;
 			quadcopterMovementStatus[internId] = CALCULATE_LAND;
@@ -884,7 +893,7 @@ void Controller::land( int internId, int * nrLand )
 		//Shutdown crazyflie after having left the tracking area.
 		//MovementQuadruple newMovement = MovementQuadruple( THRUST_DECLINE, 0, 0, 0 ); FIXME 
 		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
-		newMovement.setThrust( THRUST_MIN );
+		newMovement.setThrust( THRUST_SHUTDOWN );
 		newMovement.setTimestamp(currentTime);
 		this->listFutureMovement[internId].push_front( newMovement );
 		this->quadcopterMovementStatus[internId] = CALCULATE_NONE;

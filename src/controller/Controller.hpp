@@ -33,18 +33,20 @@
 #include <vector>
 //Ros messages/services
 
-#define THRUST_MIN 0
+#define THRUST_MAX_START 50000
+#define THRUST_MIN 30000
+#define THRUST_SHUTDOWN 0
 #define THRUST_STAND_STILL 18001
-#define THRUST_START 32000
+#define THRUST_START 30000
 #define THRUST_DECLINE 200
-#define THRUST_MAX 50001
+#define THRUST_MAX 40001
 #define THRUST_STEP 200
 #define ROLL_MAX 6
 #define PITCH_MAX 6
 #define YAWRATE_MAX 0
 #define INVALID -1
 #define LOW_BATTERY 3.0//In V
-#define TIME_UPDATED_END 1*1000*1000	// in ns
+#define TIME_UPDATED_END 500*1000*1000	// in ns
 #define TIME_UPDATED_CRITICAL 200*1000	// in ns
 #define TIME_MIN_LOOP_CALC 30000 	// 30 ms for usleep
 

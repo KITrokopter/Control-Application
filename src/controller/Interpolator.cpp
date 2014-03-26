@@ -88,7 +88,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			return newMovement;
 			//break;
 		case CALC:
-			ROS_INFO("interpolate 03c calc");
+			//ROS_INFO("interpolate 03c calc");
 			if( positions.size() > 2 )	// Enough data to calculate new rpy values (at least two values)
 			{
 				newMovement.setRollPitchYawrate( 0, 0, 0 );
@@ -195,7 +195,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	// TODO check if positions.back() isn't influenced
 	posAssumed = positions.back();
 	posAssumed.predictNextPosition( positionPast, PREDICT_FUTURE_POSITION_TIME );
-	ROS_INFO("interpolate 10 calculated assumedPos");
+	//ROS_INFO("interpolate 10 calculated assumedPos");
 
 
 	/* Calculate thrust value - always */
@@ -212,12 +212,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	double absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized);
 	newMovement.setThrust( newThrust );
-	ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
+	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
 
 	/* Calculate new rpy-values every MIN_TIME_TO_WAIT nanoseconds */
 	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
-		ROS_INFO("interpolate 12 Do not change rpy-values, movement of sent values need to be visible.");
+		//ROS_INFO("interpolate 12 Do not change rpy-values, movement of sent values need to be visible.");
 		return newMovement;
 	}
 
@@ -303,15 +303,18 @@ unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest,
 	
 	if( abs(zDistanceLatest) < DISTANCE_CLOSE_TO_TARGET ) 
 	{
+		ROS_ERROR("Thrust is zero");
 		return newThrust;		
 	} else
 	{
 		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst)) 
 		{  
+			ROS_ERROR("Thrust increase");
 			newThrust += THRUST_STEP;	
 		}
 		if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst)) 
 		{  
+			ROS_ERROR("Thrust decrease");
 			newThrust -= THRUST_STEP;	
 		}
 		return newThrust;	
