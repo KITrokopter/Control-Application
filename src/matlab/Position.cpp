@@ -368,7 +368,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 Line* tracking = new Line[cameraLines.size()];
                 for (int i = 0; i < cameraLines.size(); i++) {
                     tracking[i] = Line(getPosition(cameraLines[i].camNo), direction[i]);
-                    //ROS_INFO("camera %d at position [%f, %f, %f] tracks in direction [%f, %f, %f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition((cameraLines[i].camNo)).getV2(), getPosition((cameraLines[i].camNo)).getV3(), direction[i].getV1(), direction[i].getV2(), direction[i].getV3());
+                    //ROS_INFO("camera %d at position [%.2f, %.2f, %.2f] tracks in direction [%.2f, %.2f, %.2f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition((cameraLines[i].camNo)).getV2(), getPosition((cameraLines[i].camNo)).getV3(), direction[i].getV1(), direction[i].getV2(), direction[i].getV3());
                 }
                 newPos = m->interpolateLines(tracking, cameraLines.size(), oldPos[quadcopterId], interpolationFactor);
 
@@ -380,12 +380,13 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             }
             if (newPos.getValid()) {
                 this->error = m->getError();
+                ROS_DEBUG("error is %.2f", error);
 
                 // calculates distance between last seen position and new calculated position
                 distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
 
                 // saving new Pos
-                ROS_INFO("New position of quadcopter %d is [%f, %f, %f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), tracking.inCameraRange(newPos)? "in tracking area" : "NOT in tracking area");
+                ROS_INFO("New position of quadcopter %d is [%f.2, %.2f, %.2f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), tracking.inCameraRange(newPos)? "in tracking area" : "NOT in tracking area");
                 oldPos[quadcopterId] = newPos;
             } else {
                 //ROS_WARN("Couldn't calculate new position as angle between camera lines is too small");
