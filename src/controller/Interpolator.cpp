@@ -2,7 +2,7 @@
 //#include "InterpolatorInfo.hpp"
 #include "Controller.hpp"
 
-unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized );
+unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceFirstLatest, double timediffNormalized );
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest );
 bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF target );
 MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target );
@@ -200,17 +200,17 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 
 
 	/* Calculate thrust value - always */
-	double zDiffPast = positionPast.getDistanceZ( target );	// unnecessary if prediction works
-	double zDiffNow = positionNow.getDistanceZ( target );
-	double zDiffAssumed = posAssumed.getDistanceZ( target );
+	float zDiffPast = positionPast.getDistanceZ( target );	// unnecessary if prediction works
+	float zDiffNow = positionNow.getDistanceZ( target );
+	float zDiffAssumed = posAssumed.getDistanceZ( target );
 	// unnecessary if prediction works, leave for testing
 /*	double timediffPastNow = positionNow.getTimestamp() - positionPast.getTimestamp();
 	double timediffNormalized = (double) timediffPastNow / 1000000000;	// should be in seconds
 	double absDistancePastNow = positionPast.getAbsoluteDistance( positionNow );
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffPast, zDiffNow, absDistancePastNow, timediffNormalized);*/
 	double timediffNowAssumed = posAssumed.getTimestamp() - positionNow.getTimestamp();
-	double timediffNormalized = (double) timediffNowAssumed / 1000000000;	// should be in seconds
-	double absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
+	double timediffNormalized = (double) timediffNowAssumed / ((double) 1000000000);	// should be in seconds
+	float absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized);
 	newMovement.setThrust( newThrust );
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
@@ -311,14 +311,14 @@ MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sent
 }
 
 
-unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized )
+unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceFirstLatest, double timediffNormalized )
 {
 	unsigned int newThrustDiff = 0;
-	double distanceFactor = 0.5; // higher if further from target, between [0, 1]	//TODO
-	double threshold = 0;	// higher if timediff is higher and 	//TODO
+	float distanceFactor = 0.5; // higher if further from target, between [0, 1]	//TODO
+	float threshold = 0;	// higher if timediff is higher and 	//TODO
 
 	/* Height-difference calculated as z-speed in mm/s. Positive if inclining. */
-	double zSpeed = (zDistanceFirst-zDistanceLatest) * timediffNormalized;	// in mm/s
+	float zSpeed = (zDistanceFirst-zDistanceLatest) * timediffNormalized;	// in mm/s
 	
 	/* 
 	 * Do not change thrust if
@@ -341,7 +341,7 @@ unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest,
 		return newThrustDiff;
 	} else
 	{
-		ROS_ERROR("zSpeed: %d, zDistF: %d, zDistL: %d", zSpeed, zDistanceFirst, zDistanceLatest);
+		ROS_ERROR("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
 		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst && zSpeed<0)) 
 		{  
 			ROS_ERROR(" Thrustdiff increase");
