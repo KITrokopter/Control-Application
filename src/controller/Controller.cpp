@@ -3,6 +3,7 @@
 void* startThreadCalculateMovement(void* something);
 void* startThreadBuildFormation(void* something);
 void* startThreadShutdown(void* something);
+void* startThreadRotation(void* something);
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
 
 Controller::Controller()
@@ -26,6 +27,7 @@ Controller::Controller()
 	this->BuildForm_srv  = this->n.advertiseService("BuildFormation", &Controller::startBuildFormation, this);
 	this->Shutdown_srv = this->n.advertiseService("Shutdown", &Controller::shutdown, this);
 	this->QuadID_srv = this->n.advertiseService("SetQuadcopters", &Controller::setQuadcopters, this);
+	this->Rotation_srv = this->n.advertiseService("Rotation", &Controller::rotateFormation, this);
 
 	//Publisher
 	//Publisher of Message to API
@@ -504,6 +506,20 @@ void Controller::buildFormation()
 	this->buildFormationFinished = true;
 }
 
+/*Service to rotate formation*/
+bool Controller::rotateFormation(control_application::Rotation::Request  &req, control_application::Rotation::Response &res)
+{
+	pthread_create(&tRotation, NULL, startThreadRotation, this);
+	ROS_INFO("Thread tRotation set up");
+	return true;
+}
+
+void Controller::rotate()
+{
+	
+	
+}
+
 /*
  * Sets global variable which indicates that the build formation process is started
  */
@@ -810,7 +826,7 @@ void Controller::moveUp( int internId )
 		if(current > this->time3 + 10000000 && this->thrustTest + 500 < THRUST_MAX_START)
 		{
 			usleep(85000);
-			this->thrustTest += 500;
+			this->thrustTest += 700;
 			this->time3 = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
@@ -985,5 +1001,11 @@ void* startThreadShutdown(void* something)
 {
 	Controller *someOther = (Controller *) something;
 	someOther->shutdownFormation();
+}
+
+void* startThreadRotation(void* something)
+{
+	Controller *someOther = (Controller *) something;
+	someOther->rotate();
 }
 

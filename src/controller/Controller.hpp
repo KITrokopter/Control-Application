@@ -16,6 +16,7 @@
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
+#include "control_application/Rotation.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "../position/IPositionReceiver.hpp"
 #include "../matlab/profiling.hpp"
@@ -89,6 +90,10 @@ public:
 	void sendMovementAll();
 	void calculateMovement();
 	void buildFormation();
+	
+	/*Service to rotate formation*/
+	bool rotateFormation(control_application::Rotation::Request  &req, control_application::Rotation::Response &res);
+	void rotate();
 	
 	/* Formation */
 	bool startBuildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res);
@@ -184,6 +189,7 @@ private:
 	pthread_t tCalculateMovement;
 	pthread_t tBuildFormation;
 	pthread_t tShutdownFormation;
+	pthread_t tRotation;
 
 	/**
   	* NodeHandle is the main access point to communications with the ROS system.
@@ -215,6 +221,8 @@ private:
 	ros::ServiceServer Shutdown_srv;
 	//Service for setting the quadcopter ids
 	ros::ServiceServer QuadID_srv;
+	//Service for rotating
+	ros::ServiceServer Rotation_srv;
 
 	/* Clients */
 	ros::ServiceClient Announce_client;
