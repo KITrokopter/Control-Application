@@ -49,6 +49,7 @@
 #define TIME_UPDATED_END 500*1000*1000	// in ns
 #define TIME_UPDATED_CRITICAL 200*1000	// in ns
 #define TIME_MIN_LOOP_CALC 3000 	// 3 ms for usleep
+#define TIME_MIN_CALC 30000000	// 30ms for loop
 
 /* For calculateMovement */
 #define CALCULATE_NONE 0 // Unused for formation
