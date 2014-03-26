@@ -342,6 +342,7 @@ void Controller::calculateMovement()
 		timerCalculateMovement = getNanoTime();
 		while( timerCalculateMovement < TIME_MIN_LOOP_CALC + calculateMovementStarted )
 		{
+			ROS_DEBUG("Sleeping");
 			usleep( TIME_MIN_LOOP_CALC );
 			timerCalculateMovement = getNanoTime();
 		}

@@ -48,7 +48,7 @@
 #define LOW_BATTERY 3.0//In V
 #define TIME_UPDATED_END 500*1000*1000	// in ns
 #define TIME_UPDATED_CRITICAL 200*1000	// in ns
-#define TIME_MIN_LOOP_CALC 30000 	// 30 ms for usleep
+#define TIME_MIN_LOOP_CALC 3000 	// 3 ms for usleep
 
 /* For calculateMovement */
 #define CALCULATE_NONE 0 // Unused for formation
