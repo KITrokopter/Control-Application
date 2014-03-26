@@ -251,7 +251,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	/* Calculate correction (calibration data, predictedPosition, target) */
 	MovementQuadruple rpyMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
 	newMovement.setRollPitchYawrate( rpyMovement );
-	//ROS_INFO("interpolate 13 rpyMovement calculated");
+	ROS_INFO("interpolate 13 rpyMovement calculated");
 	this->status[id].setLastUpdated( currentTime );
 
 	return newMovement;
@@ -436,6 +436,8 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
 	double newRoll = v1 * ROLL_MAX;
 	double newPitch = v2 * PITCH_MAX;
 	double newYawrate = 0;
+	ROS_ERROR("factor of rotation: %f, roll %f, pitch %f", factor, newRoll, newPitch);
+	
 	if( closeToTarget( pos, target, RANGE_STABLE ) )
 	{
 		double newRoll = newRoll / 2;
