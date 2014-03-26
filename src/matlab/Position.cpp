@@ -189,6 +189,7 @@ void Position::angleTry(int sign) {
 
     n.putVariable("n", ep);
     double angle = m->getAngle(Vector(0, 0, 1), b.cross(c));
+    ROS_DEBUG("Angle would be %f", angle);
     double dataAngle[1] = {sign * angle};
     mxArray *ang = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(ang), (void *)dataAngle, sizeof(dataAngle));
@@ -376,15 +377,13 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             if (cameraLines.size() > 1) {
                 Line* tracking = new Line[cameraLines.size()];
                 for (int i = 0; i < cameraLines.size(); i++) {
-                    tracking[i] = Line(getPosition(cameraLines[i].camNo), direction[i]);
-                    ROS_INFO("camera %d at position [%.2f, %.2f, %.2f] tracks in direction [%.2f, %.2f, %.2f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition((cameraLines[i].camNo)).getV2(), getPosition((cameraLines[i].camNo)).getV3(), direction[i].getV1(), direction[i].getV2(), direction[i].getV3());
-                    ROS_INFO("rodata of camera %d was direction [%.2f, %.2f, %.2f]", cameraLines[i].camNo, cameraLines[i].cameraVector.getV1(), cameraLines[i].cameraVector.getV2(), cameraLines[i].cameraVector.getV3());
+                    tracking[i] = Line(getPosition(cameraLines[i].camNo), quadPos[quadcopterId][(cameraLines[i].camNo)]);
                 }
                 newPos = m->interpolateLines(tracking, cameraLines.size(), oldPos[quadcopterId], interpolationFactor);
 
             } else {
                 Vector position = getPosition(cameraLines[0].camNo);
-                Line tracked = Line(position, direction[0]);
+                Line tracked = Line(position, quadPos[quadcopterId][0]);
 
                 newPos = m->interpolateLine(tracked, oldPos[quadcopterId], interpolationFactor);
             }
@@ -399,7 +398,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 ROS_INFO("New position of quadcopter %d is [%f.2, %.2f, %.2f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), tracking.inCameraRange(newPos)? "in tracking area" : "NOT in tracking area");
                 oldPos[quadcopterId] = newPos;
             } else {
-                //ROS_WARN("Couldn't calculate new position as angle between camera lines is too small");
+                ROS_WARN("Couldn't calculate new position as angle between camera lines is too small");
             }
 
             return newPos;
@@ -433,7 +432,10 @@ void Position::calculateOrientation(int cameraId) {
             mxArray *r = engGetVariable(ep, "R");
             camRotMat[cameraId] = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
             // camRotMat * [0, 0, 1]
+            //engEvalString(ep, "test = rodrigues(R)");
+            //Vector test = engGetVariable(ep, "test");
             camCoordCameraOrient[cameraId] = (Vector(0, 0, 1)).aftermult(camRotMat[cameraId]);
+            //ROS_DEBUG("%f, %f, %f should be %f, %f, %f", test.getV1(), test.getV2(), test.getV3(), camCoordCameraOrient[cameraId].getV1(),  camCoordCameraOrient[cameraId].getV2(), camCoordCameraOrient[cameraId].getV3());
         } else {
             // camera 0 is at the origin and looks down the positive z axis
             camRotMat[0] = Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
