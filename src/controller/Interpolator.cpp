@@ -306,7 +306,8 @@ MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sent
 	{
 		return MovementQuadruple( 0, 0, 0, 0 );
 	}
-	return newMovement;
+//	return newMovement;
+	return MovementQuadruple( 0, 0, 0, 0 );
 }
 
 
