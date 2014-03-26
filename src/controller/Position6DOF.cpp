@@ -103,7 +103,7 @@ void Position6DOF::predictNextPosition( Position6DOF olderPosition, long int tim
 	long int timediff = this->timestamp - olderPosition.getTimestamp();
 	if(timediff == 0)
         {
-                ROS_ERROR("this->timestamp %i and olderPos %i", this->timestamp, olderPosition.getTimestamp());
+                ROS_ERROR("this->timestamp %ld and olderPos %ld", this->timestamp, olderPosition.getTimestamp());
         }
 
 	this->timestamp = this->timestamp + timeInFuture;

@@ -218,11 +218,12 @@ void Controller::sendMovementAll()
 			this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		}
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
-		if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
+		/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
 		{
 			ROS_INFO("send Roll %f, pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
 			ROS_INFO("send thrust %i", this->listFutureMovement[i].front().getThrust());
 		}
+		*/
 
 		msg.roll = this->listFutureMovement[i].front().getRoll();
 		msg.pitch = this->listFutureMovement[i].front().getPitch();
