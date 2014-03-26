@@ -288,7 +288,7 @@ MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sent
 		this->status[id].setShutdownStarted( current );
 	}
 
-	MovementQuadruple newMovement;
+	//MovementQuadruple newMovement =;
 	if( this->status[id].getState() == HOLD )
 	{
 		if( current > this->status[id].getShutdownStarted() )
@@ -301,7 +301,8 @@ MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sent
 	{
 		return MovementQuadruple( 0, 0, 0, 0 );
 	}
-	return newMovement;
+//	return newMovement;
+	return MovementQuadruple( 0, 0, 0, 0 );
 }
 
 

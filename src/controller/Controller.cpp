@@ -204,13 +204,12 @@ void Controller::sendMovementAll()
 	std::vector< MovementQuadruple > newListElement;
 	for(int i = 0; i < listFutureMovement.size(); i++)
 	{
-		unsigned int quadStatus= this->quadcopterMovementStatus[i];
 		while( this->listFutureMovement[i].size() > 1 )
 		{
 			this->listFutureMovement[i].pop_back();
 		}
+		unsigned int quadStatus= this->quadcopterMovementStatus[i];
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
-		unsigned int quadStatus = this->quadcopterMovementStatus[i];
 		if(quadStatus == CALCULATE_START) 
 		{
 			this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX_START, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
