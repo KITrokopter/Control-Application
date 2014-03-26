@@ -107,7 +107,8 @@ void Position6DOF::predictNextPosition( Position6DOF olderPosition, long int tim
 	} 
 	else
 	{
-		ROS_DEBUG("this->timestamp %ld and olderPos %ld", this->timestamp, olderPosition.getTimestamp());
+		double timediffNorm = ((double) timediff) / ((double) 1000000000);
+		ROS_DEBUG("timediffNorm: %f", this->timestamp olderPosition.getTimestamp());
 	}
 
 	this->timestamp = this->timestamp + timeInFuture;
