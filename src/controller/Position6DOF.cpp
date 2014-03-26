@@ -9,6 +9,7 @@ Position6DOF::Position6DOF(double x, double y, double z,  double xOrientation,  
 	this->orientation[0] = (xOrientation);
 	this->orientation[1] = (yOrientation);
 	this->orientation[2] = (zOrientation);
+	this->timestamp = getNanoTime();
 }
 
 Position6DOF::Position6DOF(double x, double y, double z)
@@ -19,6 +20,7 @@ Position6DOF::Position6DOF(double x, double y, double z)
 	this->orientation[0] = 0;
 	this->orientation[1] = 0;
 	this->orientation[2] = 0;
+	this->timestamp = getNanoTime();
 }
 
 Position6DOF::Position6DOF(Vector vector)
@@ -26,6 +28,7 @@ Position6DOF::Position6DOF(Vector vector)
 	this->position[0] = vector.getV1();
 	this->position[1] = vector.getV2();
 	this->position[2] = vector.getV3();
+	this->timestamp = getNanoTime();
 }
 
 double* Position6DOF::getPosition()
