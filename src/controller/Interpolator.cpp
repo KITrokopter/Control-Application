@@ -177,7 +177,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		positionPast.setTimestamp( it->getTimestamp() );
 		if( counter == 0 )
 		{
-			positionNow = positionPast;
+			positionNow.setOrientation( positionPast.getOrientation() );
+			positionNow.setPosition( positionPast.getPosition() );
+			positionNow.setTimestamp( positionPast.getTimestamp() );
 		}
 		--it;
 		counter++;
