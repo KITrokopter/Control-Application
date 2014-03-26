@@ -232,7 +232,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	/* Calculate new rpy-values every MIN_TIME_TO_WAIT nanoseconds */
 	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
-		//ROS_INFO("interpolate 12 Do not change rpy-values, movement of sent values need to be visible.");
+		ROS_INFO("interpolate 12 Do not change rpy-values, movement of sent values need to be visible.");
 		return newMovement;
 	}
 
@@ -246,12 +246,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		 * change > some threshold?
 		 */
 	}
-	//ROS_INFO("interpolate 12 rotational correction done");
+	//ROS_INFO("interpolate 12b rotational correction done");
 
 	/* Calculate correction (calibration data, predictedPosition, target) */
 	MovementQuadruple rpyMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
 	newMovement.setRollPitchYawrate( rpyMovement );
-	ROS_INFO("interpolate 13 rpyMovement calculated");
+	//ROS_INFO("interpolate 13 rpyMovement calculated");
 	this->status[id].setLastUpdated( currentTime );
 
 	return newMovement;
