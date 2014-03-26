@@ -21,10 +21,10 @@
 #define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
 #define REACHING_HEIGHT_DIFF 0.6 // Factor 0 <= x <= 1
 
-#define SPEED_MIN_INCLINING 10 	// in mm/s
-#define SPEED_MAX_INCLINING 100 	// in mm/s
-#define SPEED_MIN_DECLINING -10 	// in mm/s
-#define SPEED_MAX_DECLINING -100 	// in mm/s
+#define SPEED_MIN_INCLINING 20 	// in mm/s
+#define SPEED_MAX_INCLINING 500 	// in mm/s
+#define SPEED_MIN_DECLINING -20 	// in mm/s
+#define SPEED_MAX_DECLINING -500 	// in mm/s
 #define SPEED_MIN_PLANE 80		// in mm/s
 #define SPEED_MAX_PLANE 300		// in mm/s
 

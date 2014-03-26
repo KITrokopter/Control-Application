@@ -33,7 +33,7 @@
 #include <vector>
 //Ros messages/services
 
-#define THRUST_MAX_START 45000
+#define THRUST_MAX_START 48000
 #define THRUST_MIN 28000
 #define THRUST_SHUTDOWN 0
 #define THRUST_STAND_STILL 28001

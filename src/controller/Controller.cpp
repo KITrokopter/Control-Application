@@ -807,16 +807,16 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
 		//Increases thrust step by step to ensure slow inclining
-		if(current > this->time3 + 10000000)
+		if(current > this->time3 + 10000000 && this->thrustTest + 500 < THRUST_MAX_START)
 		{
 			usleep(85000);
-			this->thrustTest += 700;
+			this->thrustTest += 500;
 			this->time3 = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
 		if(this->thrustTest >= THRUST_MAX_START || current > this->time2 + 8000000000)
 		{
-			if(this->thrustTest >= 50000)
+			if(this->thrustTest >= THRUST_MAX_START)
 			{
 				ROS_DEBUG("Thrust too high");
 			}
