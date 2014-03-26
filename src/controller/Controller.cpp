@@ -221,7 +221,7 @@ void Controller::sendMovementAll()
 		if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
 		{
 			ROS_INFO("send Roll %f, pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
-			ROS_INFO("send thrust %f", this->listFutureMovement[i].front().getThrust());
+			ROS_INFO("send thrust %i", this->listFutureMovement[i].front().getThrust());
 		}
 
 		msg.roll = this->listFutureMovement[i].front().getRoll();
@@ -505,6 +505,7 @@ bool Controller::rotateFormation(control_application::Rotation::Request  &req, c
 
 void Controller::rotate()
 {
+	/*
 	int amount = quadcopterMovementStatus.size();
 	long int current = getNanoTime();
 	bool inShutdown = this->shutdownStarted;
@@ -527,6 +528,7 @@ void Controller::rotate()
 	{
 
 	}
+	*/
 }
 
 /*
