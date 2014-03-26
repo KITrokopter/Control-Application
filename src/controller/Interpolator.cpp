@@ -125,7 +125,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		default:			
 			break;
 	}
-	//ROS_INFO("interpolate 04 after first switch");
 	
 	if( this->status[id].getState() < DONE )
 	{
@@ -147,7 +146,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	{
 		/* Might not get enough data from camera in a certain time.
 		 * Depends probably on how fast the QC will leave the tracking area again. */
-		ROS_INFO("Not enough data in calculateNextMQ, some assumption is wrong..."); // FIXME error not info
+		ROS_ERROR("Not enough data in calculateNextMQ, some assumption is wrong..."); // FIXME error not info
 		return newMovement;
 	}
 	//ROS_INFO("interpolate 07");
@@ -228,6 +227,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	if( ROTATIONAL_CORRECTION )
 	{
 		/*
+		 * TODO
 		 * sent |roll|+|pitch| = change
 		 * change > some threshold?
 		 */
@@ -236,6 +236,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 
 	/* Calculate correction (calibration data, predictedPosition, target) */
 	MovementQuadruple rpyMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
+	newMovement.setRollPitchYawrate( rpyMovement );
 	//ROS_INFO("interpolate 13 rpyMovement calculated");
 	this->status[id].setLastUpdated( currentTime );
 
@@ -330,7 +331,7 @@ unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest,
 	
 	if( abs(zDistanceLatest) < DISTANCE_CLOSE_TO_TARGET ) 
 	{
-		ROS_ERROR("Thrust is zero"); // @Carina why error? It is calculateThrustDIFF.
+		ROS_ERROR("Thrustdiff is zero");
 		return newThrustDiff;
 	} else
 	{

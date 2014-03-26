@@ -210,7 +210,15 @@ void Controller::sendMovementAll()
 			this->listFutureMovement[i].pop_back();
 		}
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
-		this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX_START, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		unsigned int quadStatus = this->quadcopterMovementStatus[i];
+		if(quadStatus == CALCULATE_START) 
+		{
+			this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX_START, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		}
+		else
+		{
+			this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		}
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
 		if(msg.thrust > 4000)
 		{
