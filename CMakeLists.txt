@@ -52,19 +52,20 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  quadcopter_movement.msg
   CurrentPosition.msg
+  quadcopter_movement.msg
 )
 
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
+  BuildFormation.srv
+  CalculateCalibration.srv
+  Rotation.srv
+  SetQuadcopters.srv
+  Shutdown.srv
   StartCalibration.srv
   TakeCalibrationPicture.srv
-  CalculateCalibration.srv
-  BuildFormation.srv
-  Shutdown.srv
-  SetQuadcopters.srv
 )
 
 ## Generate actions in the 'action' folder
