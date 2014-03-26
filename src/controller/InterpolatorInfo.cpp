@@ -12,16 +12,6 @@ InterpolatorInfo::InterpolatorInfo()
 }
 
 /* Getter and Setter */
-long int InterpolatorInfo::getStarted()
-{
-    return this->started;
-}
-
-void InterpolatorInfo::setStarted( long int newStarted )
-{
-    this->started = newStarted;
-}
-
 short InterpolatorInfo::getState()
 {
     return this->state;
@@ -32,15 +22,36 @@ void InterpolatorInfo::setState( short newState )
     this->state = newState;
 }
 
+
+long int InterpolatorInfo::getStarted()
+{
+    return this->timeStarted;
+}
+
+void InterpolatorInfo::setStarted( long int newStarted )
+{
+    this->timeStarted = newStarted;
+}
+
 long int InterpolatorInfo::getLastUpdated()
 {
     
-    return this->lastUpdated;
+    return this->timeLastUpdated;
 }
 
 void InterpolatorInfo::setLastUpdated( long int newLastUpdated )
 {
-    this->lastUpdated = newLastUpdated;
+    this->timeLastUpdated = newLastUpdated;
+}
+
+long int InterpolatorInfo::getShutdownStarted()
+{
+    return this->timeShutdownStarted;
+}
+
+void InterpolatorInfo::setShutdownStarted( long int newShutdownStarted )
+{
+	this->timeShutdownStarted = newShutdownStarted;
 }
 
 double InterpolatorInfo::getX()

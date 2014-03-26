@@ -10,6 +10,8 @@
 #define STARTED 1
 #define CALC 2
 #define DONE 3
+#define HOLD 4
+#define SHUTDOWN 5
 
 /*
  * TODO 3D-view
@@ -27,12 +29,16 @@ public:
 	InterpolatorInfo();
 
 	/* Getter and Setter */
-	long int getStarted();
-	void setStarted( long int newStarted );
 	short getState();
 	void setState( short newState );
+
+	long int getStarted();
+	void setStarted( long int newStarted );
 	long int getLastUpdated();
 	void setLastUpdated( long int newLastUpdated );
+	long int getShutdownStarted();
+	void setShutdownStarted( long int newShutdownStarted );
+
 	double getX();
 	double getY();
 	double getRotation();
@@ -52,11 +58,15 @@ private:
 	 * 1 started, sent values for roll/pitch
 	 * 2 roll/pitch has been sent, calculate x/y values
 	 * 3 calibration done, now do only small adjustments
+	 * 4 hold (before shutdown), "smart" shutdown
+	 * 5 shutdown (turn off)
 	 */
 	short state;
-	long int started;
+
+	long int timeStarted;
+	long int timeLastUpdated;	// used in latest state "DONE", before only "started" is relevant
+	long int timeShutdownStarted;
 	
-	long int lastUpdated;	// used in latest state "DONE", before only "started" is relevant
 	double x;		// 0-x-roll, 1-y-pitch
 	double y;
 	double rotation;	// in rad; compared to "North" (pitch=1), counterclockwise

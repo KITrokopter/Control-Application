@@ -21,13 +21,15 @@ Interpolator::Interpolator()
 	timeDiff3 = 0;
 }
 
+/*
 MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> sentQuadruples)
 {
+	// TODO
 	long int currentTime = getNanoTime();
-	MovementQuadruple newMovement = sentQuadruples.back();	
-	
+	MovementQuadruple newMovement = sentQuadruples.back();
 	return newMovement;
 }
+*/
 
 
 MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, int id)
@@ -125,9 +127,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	}
 	//ROS_INFO("interpolate 04 after first switch");
 	
-	if( this->status[id].getState() != DONE )
+	if( this->status[id].getState() < DONE )
 	{
-			ROS_INFO("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
+			ROS_ERROR("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			return newMovement;
 	}
 	//ROS_INFO("interpolate 05 now in DONE at time %ld", currentTime);
@@ -274,8 +276,33 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 //		}
 //		counter++;
 //	}
-
 }
+
+MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id)
+{
+	long int current = getNanoTime();
+	if( this->status[id].getState() < HOLD )
+	{
+		this->status[id].setState( HOLD );
+		this->status[id].setShutdownStarted( current );
+	}
+
+	MovementQuadruple newMovement;
+	if( this->status[id].getState() == HOLD )
+	{
+		if( current > this->status[id].getShutdownStarted() )
+		{
+			this->status[id].setState( SHUTDOWN );
+			return MovementQuadruple( 0, 0, 0, 0 );
+		}
+	}
+	if( this->status[id].getState() == SHUTDOWN )
+	{
+		return MovementQuadruple( 0, 0, 0, 0 );
+	}
+	return newMovement;
+}
+
 
 unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized )
 {
