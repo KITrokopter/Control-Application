@@ -345,7 +345,7 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 	
 	if( abs(zDistanceLatest) < DISTANCE_CLOSE_TO_TARGET ) 
 	{
-		ROS_ERROR("Thrustdiff is zero");
+		//ROS_ERROR("Thrustdiff is zero");
 		return newThrustDiff;
 	} else
 	{

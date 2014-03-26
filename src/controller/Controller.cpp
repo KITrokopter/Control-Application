@@ -810,7 +810,7 @@ void Controller::moveUp( int internId )
 		if(current > this->time3 + 10000000 && this->thrustTest + 500 < THRUST_MAX_START)
 		{
 			usleep(85000);
-			this->thrustTest += 500;
+			this->thrustTest += 700;
 			this->time3 = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
