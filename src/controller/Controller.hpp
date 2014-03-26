@@ -51,6 +51,7 @@
 #define TIME_UPDATED_CRITICAL 200*1000	// in ns
 #define TIME_MIN_LOOP_CALC 3000 	// 3 ms for usleep
 #define TIME_MIN_CALC 30000000	// 30ms for loop
+#define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
 
 /* For calculateMovement */
 #define CALCULATE_NONE 0 // Unused for formation
@@ -167,6 +168,8 @@ private:
 	bool buildFormationFinished;
 	bool receivedTrackingArea;
 	bool shutdownStarted;
+	bool rotationFinished;
+	long int rotationStarted;
 	long int lastFormationMovement;
 	long int lastCurrent[MAX_NUMBER_QUADCOPTER];
 	

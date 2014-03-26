@@ -516,8 +516,11 @@ bool Controller::rotateFormation(control_application::Rotation::Request  &req, c
 
 void Controller::rotate()
 {
-	
-	
+	unsigned int quadStatus = this->quadcopterMovementStatus[i];
+	while((quadStatus==CALCULATE_STABILIZE) && (TIME_ROTATE_CIRCLE<
+	{
+
+	}
 }
 
 /*
@@ -1006,6 +1009,8 @@ void* startThreadShutdown(void* something)
 void* startThreadRotation(void* something)
 {
 	Controller *someOther = (Controller *) something;
+	this->rotationFinished = false;
+	this->rotationStarted = getNanoTime();
 	someOther->rotate();
 }
 
