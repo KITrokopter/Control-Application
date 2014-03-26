@@ -325,7 +325,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             Vector quadPosition = m->interpolateLines(quadPositions, numberCameras, Vector(0, 0, 0), 1);
 
             oldPos[quadcopterId] = quadPosition;
-            //ROS_INFO("First seen position of quadcopter %d is [%f, %f, %f], %s", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3(), tracking.inCameraRange(quadPosition)? "in tracking area" : "NOT in tracking area");
+            ROS_INFO("First seen position of quadcopter %d is [%f, %f, %f], %s", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3(), tracking.inCameraRange(quadPosition)? "in tracking area" : "NOT in tracking area");
 
             // as distance of 150 has interpolation factor 0.5
             distance = 150;
@@ -385,7 +385,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
 
                 // saving new Pos
-                //ROS_INFO("New position of quadcopter %d is [%f, %f, %f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), tracking.inCameraRange(newPos)? "in tracking area" : "NOT in tracking area");
+                ROS_INFO("New position of quadcopter %d is [%f, %f, %f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), tracking.inCameraRange(newPos)? "in tracking area" : "NOT in tracking area");
                 oldPos[quadcopterId] = newPos;
             } else {
                 //ROS_WARN("Couldn't calculate new position as angle between camera lines is too small");
