@@ -219,6 +219,8 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	double timediffNowAssumed = posAssumed.getTimestamp() - positionNow.getTimestamp();
 	double timediffNormalized = (double) timediffNowAssumed / ((double) 1000000000);	// should be in seconds
 	float absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
+	ROS_INFO("zDiffNow: %f, zDiffAssumed: %f", zDiffNow, zDiffAssumed);
+	ROS_INFO("timediffNormalized: %f", timediffNormalized);
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized);
 	newMovement.setThrust( newThrust );
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
@@ -349,7 +351,7 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 		return newThrustDiff;
 	} else
 	{
-		ROS_ERROR("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
+		ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
 		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst && zSpeed<0)) 
 		{  
 			ROS_ERROR(" Thrustdiff increase");
