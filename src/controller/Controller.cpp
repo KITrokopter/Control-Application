@@ -222,8 +222,9 @@ void Controller::sendMovementAll()
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
 		if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
 		{
-			ROS_INFO("send Roll %f and pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
-	        }
+			ROS_INFO("send Roll %f, pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
+			ROS_INFO("send thrust %f", this->listFutureMovement[i].front().getThrust());
+		}
 
 		msg.roll = this->listFutureMovement[i].front().getRoll();
 		msg.pitch = this->listFutureMovement[i].front().getPitch();
@@ -506,8 +507,25 @@ bool Controller::rotateFormation(control_application::Rotation::Request  &req, c
 
 void Controller::rotate()
 {
+	int amount = quadcopterMovementStatus.size();
+	long int current = getNanoTime();
+	bool inShutdown = this->shutdownStarted;
+	while( (TIME_ROTATE_CIRCLE > current - this->rotationStarted) && !inShutdown )
+	{
+		if( inShutdown )
+		{
+			return;
+		}
+		for( int i = 0; i < amount; i++ )
+		{
+		
+		}
+		current = getNanoTime();
+		inShutdown = this->shutdownStarted;
+	}
+	
 	unsigned int quadStatus = this->quadcopterMovementStatus[i];
-	while((quadStatus==CALCULATE_STABILIZE) && (TIME_ROTATE_CIRCLE<
+	while((quadStatus==CALCULATE_STABILIZE) && 
 	{
 
 	}
@@ -999,8 +1017,6 @@ void* startThreadShutdown(void* something)
 void* startThreadRotation(void* something)
 {
 	Controller *someOther = (Controller *) something;
-	this->rotationFinished = false;
-	this->rotationStarted = getNanoTime();
 	someOther->rotate();
 }
 
