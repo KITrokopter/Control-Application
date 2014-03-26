@@ -211,7 +211,6 @@ void Controller::sendMovementAll()
 			this->listFutureMovement[i].pop_back();
 		}
 		unsigned int quadStatus= this->quadcopterMovementStatus[i];
-		msg.thrust = this->listFutureMovement[i].front().getThrust();
 		if(quadStatus == CALCULATE_START) 
 		{
 			this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX_START, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
@@ -221,18 +220,9 @@ void Controller::sendMovementAll()
 			this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		}
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
-		if(msg.thrust > 4000)
-		{
-			//ROS_INFO("Trust of %i is %u",i, msg.thrust);
-		
-			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_START)
-			{
-			//	ROS_INFO("Send thrust movement all %u", msg.thrust);
-			}
-		}
 		if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
-       		{	
-        	       // ROS_INFO("send Roll %f and pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
+		{
+			ROS_INFO("send Roll %f and pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
 	        }
 
 		msg.roll = this->listFutureMovement[i].front().getRoll();
