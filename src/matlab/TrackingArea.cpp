@@ -270,7 +270,7 @@ double TrackingArea::binarySearch(double leftBorder, double rightBorder, double 
             increaseTrackingArea(middle, height, heightPos, heightNeg);
         }
 
-        ROS_DEBUG("binary search, side size: %.2f", 2 * middle);
+        //ROS_DEBUG("binary search, side size: %.2f", 2 * middle);
         break;
     }
     case 1: {
@@ -293,7 +293,7 @@ double TrackingArea::binarySearch(double leftBorder, double rightBorder, double 
             ROS_DEBUG("%.2f binary search, side size: %.2f", height, 2 * middle);
         }
 
-        ROS_DEBUG("%.2f binary search, side size: %.2f", height, 2 * middle);
+        //ROS_DEBUG("%.2f binary search, side size: %.2f", height, 2 * middle);
         break;
     }
     case 2: {
@@ -316,7 +316,7 @@ double TrackingArea::binarySearch(double leftBorder, double rightBorder, double 
             ROS_DEBUG("upper binary search: %.2f", middle);
         }
 
-        ROS_DEBUG("upper binary search: %.2f", middle);
+        //ROS_DEBUG("upper binary search: %.2f", middle);
         break;
     }
     case 3: {
@@ -339,11 +339,11 @@ double TrackingArea::binarySearch(double leftBorder, double rightBorder, double 
             ROS_DEBUG("lower binary search: %.2f", middle);
         }
 
-        ROS_DEBUG("lower binary search: %.2f", middle);
+        //ROS_DEBUG("lower binary search: %.2f", middle);
         break;
     }
     default:  {
-        printf("Wrong value in binary search.");
+        ROS_ERROR("Wrong value in binary search.");
         return NAN;
     }
     }
@@ -362,7 +362,7 @@ double TrackingArea::increaseSearch(double posChange, double height, double heig
         while (inCameraRange(a1) && inCameraRange(a2) && inCameraRange(a3) && inCameraRange(a4)) {
             diff *= 2;
             increaseTrackingArea(posChange + diff, height, heightPos, heightNeg);
-            ROS_DEBUG("increasing side size : %.2f", 2 * (posChange + diff));
+            //ROS_DEBUG("increasing side size : %.2f", 2 * (posChange + diff));
         }
         break;
     }
@@ -370,7 +370,7 @@ double TrackingArea::increaseSearch(double posChange, double height, double heig
         while (inCameraRange(a1) && inCameraRange(a2) && inCameraRange(a3) && inCameraRange(a4)) {
             diff *= 2;
             increaseTrackingArea(posChange, height + diff, heightPos, heightNeg);
-            ROS_DEBUG("increasing height: %.2f", (height + diff));
+            //ROS_DEBUG("increasing height: %.2f", (height + diff));
         }
         break;
     }
@@ -378,7 +378,7 @@ double TrackingArea::increaseSearch(double posChange, double height, double heig
         while (inCameraRange(up)) {
             diff *= 2;
             increaseTrackingArea(posChange, height, heightPos + diff, heightNeg);
-            ROS_DEBUG("increasing heightPos: %.2f", diff + heightPos);
+            //ROS_DEBUG("increasing heightPos: %.2f", diff + heightPos);
         }
         break;
     }
@@ -386,12 +386,12 @@ double TrackingArea::increaseSearch(double posChange, double height, double heig
         while (inCameraRange(low)) {
             diff *= 2;
             increaseTrackingArea(posChange, height, heightPos, heightNeg + diff);
-            ROS_DEBUG("increasing heightNeg: %.2f", diff + heightNeg);
+            //ROS_DEBUG("increasing heightNeg: %.2f", diff + heightNeg);
         }
         break;
     }
     default: {
-        printf("wrong value in increasingSearch");
+        ROS_ERROR("Wrong value in increasingSearch");
         return NAN;
     }
     }
@@ -412,14 +412,7 @@ void TrackingArea::setTrackingArea() {
     Vector center = m->interpolateLines(cameraLines, numberCameras, Vector(0, 0, 0), 1);
     ROS_DEBUG("center is [%.2f, %.2f, %.2f]", center.getV1(), center.getV2(), center.getV3());
     if (!(inCameraRange(center))) {
-        ROS_ERROR("center isn't tracked, maximal range is too small!");
-        ROS_DEBUG("Maximal range is %f", maxRange);
-        ROS_DEBUG("camera 0: [%f, %f, %f] + r * [%f, %f, %f]", cameraPosition[0].getV1(), cameraPosition[0].getV2(), cameraPosition[0].getV3(), cameraDirection[0].getV1(), cameraDirection[0].getV2(), cameraDirection[0].getV3());
-        ROS_DEBUG("camera 0: [%f, %f, %f] + r * [%f, %f, %f]", cameraPosition[1].getV1(), cameraPosition[1].getV2(), cameraPosition[1].getV3(), cameraDirection[1].getV1(), cameraDirection[1].getV2(), cameraDirection[1].getV3());
-        ROS_DEBUG("camera 0: [%f, %f, %f] + r * [%f, %f, %f]", cameraPosition[2].getV1(), cameraPosition[2].getV2(), cameraPosition[2].getV3(), cameraDirection[2].getV1(), cameraDirection[2].getV2(), cameraDirection[2].getV3());
-        ROS_DEBUG("Distance of camera 0 to center is %f", center.add(cameraPosition[0].mult(-1)).getLength());
-        ROS_DEBUG("Distance of camera 1 to center is %f", center.add(cameraPosition[1].mult(-1)).getLength());
-        ROS_DEBUG("Distance of camera 2 to center is %f", center.add(cameraPosition[2].mult(-1)).getLength());
+        ROS_ERROR("center isn't tracked, maximal range %f is too small!", maxRange);
     } else {
 
         setCenter(center);
@@ -486,7 +479,7 @@ void TrackingArea::setTrackingArea() {
                     rightBorderHeight = middleHeight;
                 }
                 middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
-                ROS_DEBUG("lower %.2f, maximal quadrat size is %.2f", middleHeight, 2 * (oldSize));
+                //ROS_DEBUG("lower %.2f, maximal quadrat size is %.2f", middleHeight, 2 * (oldSize));
             }
             ROS_DEBUG("Found optimal middlepoint, between %.2f and %.2f with size %.2f", rightBorderHeight,leftBorderHeight, 2 * oldSize);
         }
@@ -529,7 +522,7 @@ void TrackingArea::setTrackingArea() {
                     rightBorderHeight = middleHeight;
                 }
                 middleHeight = leftBorderHeight + (rightBorderHeight - leftBorderHeight)/2;
-                ROS_DEBUG("upper %.2f, maximal quadrat size is %.2f", middleHeight, 2 * (oldSize));
+                //ROS_DEBUG("upper %.2f, maximal quadrat size is %.2f", middleHeight, 2 * (oldSize));
             }
             ROS_DEBUG("Found optimal middlepoint, between %.2f and %.2f with size %.2f", leftBorderHeight, rightBorderHeight, 2* oldSize);
         }
