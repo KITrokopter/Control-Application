@@ -42,21 +42,7 @@ void Position::initialize() {
     this->transformed = false;
     this->interpolationDependent = true;
     distance = 0;
-    Vector nan = Vector(NAN, NAN, NAN);
     Matrix nanMatrix = Matrix(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
-
-    // if quadcopter maximal amount is higher than 50, you should change the range of i
-    for (int i = 0; i < 50; i++) {
-        std::vector<Vector> h(20, nan);
-        quadPos.push_back(h);
-        oldPos.push_back(nan);
-        camCoordCameraPos.push_back(nan);
-        camCoordCameraOrient.push_back(nan);
-        camRotMat.push_back(nanMatrix);
-        realCameraPos.push_back(nan);
-        realCameraOrient.push_back(nan);
-        imageAge.push_back(0);
-    }
 
     rotationMatrix = nanMatrix;
     if (interpolationDependent) {
@@ -112,7 +98,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     bool calculated = calibratedYet(numberCameras);
 
     if (calculated == false) {
-        ROS_DEBUG("Calibrating with amcc toolbox\n");
+        ROS_DEBUG("Calibrating with amcc toolbox");
         AmccCalibration *calib = new AmccCalibration(ep);
         calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
     }
@@ -122,10 +108,34 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
 
     // saves all position and orientation vectors in matlab
     if (ok) {
+
+        Vector invalid = Vector(false);
+        Matrix invalidMatrix = Matrix(false);
+        std::vector<Vector> h(numberCameras, invalid);
+
+        // if quadcopter maximal amount is higher than 50, you should change the range of i
+        for (int i = 0; i < 50; i++) {
+            quadPos.push_back(h);
+            oldPos.push_back(invalid);
+        }
+
+        for (int i = 0; i < numberCameras; i++) {
+            camCoordCameraPos.push_back(invalid);
+            camCoordCameraOrient.push_back(invalid);
+            camRotMat.push_back(invalidMatrix);
+            realCameraPos.push_back(invalid);
+            realCameraOrient.push_back(invalid);
+            imageAge.push_back(0);
+        }
+
         // calculates from the back as for camera 0 the rotationmatrix isn't calculated yet
         for (int i = (numberCameras - 1); i >= 0; i--) {
             calculatePosition(i);
             calculateOrientation(i);
+            if (!realCameraPos[i].isValid() || !realCameraOrient[i].isValid()) {
+                ROS_ERROR("Amcc toolbox calculation didn't work!");
+                exit(1);
+            }
         }
 
         Vector v0 = realCameraPos[0];
@@ -299,7 +309,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
     // controlling whether all cameras already tracked the quadcopter once
     int valid = 0;
     for (int i = 0; i < numberCameras; i++) {
-        if (quadPos[quadcopterId][i].isValid()) {
+        if (quadPos[quadcopterId][i].getValid()) {
             valid++;
         }
     }
@@ -310,7 +320,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
         Vector nan = Vector(NAN, NAN, NAN);
         return nan;
     } else {
-        if (!(oldPos[quadcopterId].isValid())) {
+        if (!(oldPos[quadcopterId].getValid())) {
             // not calculated before, first time calculating
             int tooOld = 0;
             for (int i = 0; i < numberCameras; i++) {

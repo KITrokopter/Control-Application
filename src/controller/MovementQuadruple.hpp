@@ -23,6 +23,8 @@ class MovementQuadruple
 
 		bool checkQuadruple( int maxThrust, float maxRoll, float maxPitch, float maxYawrate );
 
+		void invertRollPitchYawrate( float factorThrust, float factorRPY );
+		
 	private:
 		unsigned int thrust;
 		float roll, pitch, yawrate;

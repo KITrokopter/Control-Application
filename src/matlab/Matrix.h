@@ -24,11 +24,22 @@ private:
      * @return
      */
     double determinant2x2(double a, double b, double c, double d);
+
+    /**
+     * whether Matrix is valid or not
+     */
+    bool valid;
 public:
     /**
      * empty constructor.
      */
     Matrix();
+
+    /**
+     * constructor.
+     * @param valid whether Matrix is valid or not
+     */
+    Matrix(bool valid);
 
     /**
      * constructor.
@@ -121,6 +132,12 @@ public:
      * @return inverse
      */
     Matrix inverse();
+
+    /**
+     * getter.
+     * @return whether Matrix is valid or not
+     */
+    bool getValid();
 
 };
 
