@@ -60,6 +60,9 @@
 
 #define CALCULATE_STABILIZE_STEP 500	// time in ms after next value should be calculated
 
+#define HOLD_SKIP 1
+#define HOLD_LENGTH 1000	// time in ms to stay in function before "shutdown"
+
 #define RANGE_STABLE 10 // Distance of two points to be considered "equal" in mm
 #define RANGE_STABLE_Z 6 // Difference of two height-Values to be considered "equal" in mm
 

@@ -864,9 +864,13 @@ void Controller::stabilize( int internId )
 
 void Controller::hold( int internId )
 {
-	/* TODO */
 	ROS_INFO("%i now land", internId);
-	quadcopterMovementStatus[internId] = CALCULATE_LAND;	
+	if( HOLD_SKIP )
+	{
+		quadcopterMovementStatus[internId] = CALCULATE_LAND;
+		return;
+	}
+
 }
 
 void Controller::land( int internId, int * nrLand )

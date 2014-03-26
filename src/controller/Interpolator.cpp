@@ -279,7 +279,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 
 unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized )
 {
-	unsigned int newThrust = 0;
+	unsigned int newThrustDiff = 0;
 	double distanceFactor = 0.5; // higher if further from target, between [0, 1]	//TODO
 	double threshold = 0;	// higher if timediff is higher and 	//TODO
 
@@ -303,21 +303,21 @@ unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest,
 	
 	if( abs(zDistanceLatest) < DISTANCE_CLOSE_TO_TARGET ) 
 	{
-		ROS_ERROR("Thrust is zero");
-		return newThrust;		
+		ROS_ERROR("Thrust is zero"); // @Carina why error? It is calculateThrustDIFF.
+		return newThrustDiff;
 	} else
 	{
 		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst)) 
 		{  
 			ROS_ERROR("Thrust increase");
-			newThrust += THRUST_STEP;	
+			newThrustDiff += THRUST_STEP;
 		}
 		if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst)) 
 		{  
 			ROS_ERROR("Thrust decrease");
-			newThrust -= THRUST_STEP;	
+			newThrustDiff -= THRUST_STEP;
 		}
-		return newThrust;	
+		return newThrustDiff;
 	}
 }
 
