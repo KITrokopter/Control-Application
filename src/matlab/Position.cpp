@@ -299,7 +299,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
     // controlling whether all cameras already tracked the quadcopter once
     int valid = 0;
     for (int i = 0; i < numberCameras; i++) {
-        if (quadPos[quadcopterId][i].isValid()) {
+        if (quadPos[quadcopterId][i].getValid()) {
             valid++;
         }
     }
@@ -310,7 +310,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
         Vector nan = Vector(NAN, NAN, NAN);
         return nan;
     } else {
-        if (!(oldPos[quadcopterId].isValid())) {
+        if (!(oldPos[quadcopterId].getValid())) {
             // not calculated before, first time calculating
             int tooOld = 0;
             for (int i = 0; i < numberCameras; i++) {
