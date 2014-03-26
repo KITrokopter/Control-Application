@@ -101,7 +101,17 @@ void Position6DOF::predictNextPosition( Position6DOF olderPosition, long int tim
 	double xDiff = this->position[0] - olderPosition.getPosition()[0];
 	double yDiff = this->position[1] - olderPosition.getPosition()[1];
 	double zDiff = this->position[2] - olderPosition.getPosition()[2];
-	double rate = (double) timeInFuture / timediff;
+	double rate;
+	if(timediff == 0)
+	{
+		ROS_ERROR("Timediff is zero");
+		rate = 0;
+	}
+	else
+	{
+		rate = ((double) timeInFuture) /((double) timediff);
+		ROS_INFO("rate %f", rate);
+	}
 	double xNew = this->position[0] + xDiff*rate;
 	double yNew = this->position[1] + yDiff*rate;
 	double zNew = this->position[2] + zDiff*rate;
