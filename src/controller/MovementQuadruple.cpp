@@ -86,6 +86,14 @@ bool MovementQuadruple::checkQuadruple( int maxThrust, float maxRoll, float maxP
 	return below;
 }
 
+void MovementQuadruple::invertRollPitchYawrate( float factorThrust, float factorRPY ) 
+{
+	this->thrust = this->thrust * factorThrust;
+	this->roll = (-this->roll) * factorRPY;
+	this->pitch = (-this->pitch) * factorRPY;
+	this->yawrate = (-this->yawrate) * factorRPY;
+}
+
 long int MovementQuadruple::getTimestamp()
 {
 	return this->timestamp;

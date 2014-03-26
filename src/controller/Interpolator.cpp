@@ -21,13 +21,15 @@ Interpolator::Interpolator()
 	timeDiff3 = 0;
 }
 
+/*
 MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> sentQuadruples)
 {
+	// TODO
 	long int currentTime = getNanoTime();
-	MovementQuadruple newMovement = sentQuadruples.back();	
-	
+	MovementQuadruple newMovement = sentQuadruples.back();
 	return newMovement;
 }
+*/
 
 
 MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, int id)
@@ -123,11 +125,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		default:			
 			break;
 	}
-	//ROS_INFO("interpolate 04 after first switch");
 	
-	if( this->status[id].getState() != DONE )
+	if( this->status[id].getState() < DONE )
 	{
-			ROS_INFO("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
+			ROS_ERROR("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
 			return newMovement;
 	}
 	//ROS_INFO("interpolate 05 now in DONE at time %ld", currentTime);
@@ -145,7 +146,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	{
 		/* Might not get enough data from camera in a certain time.
 		 * Depends probably on how fast the QC will leave the tracking area again. */
-		ROS_INFO("Not enough data in calculateNextMQ, some assumption is wrong..."); // FIXME error not info
+		ROS_ERROR("Not enough data in calculateNextMQ, some assumption is wrong..."); // FIXME error not info
 		return newMovement;
 	}
 	//ROS_INFO("interpolate 07");
@@ -226,6 +227,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	if( ROTATIONAL_CORRECTION )
 	{
 		/*
+		 * TODO
 		 * sent |roll|+|pitch| = change
 		 * change > some threshold?
 		 */
@@ -234,6 +236,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 
 	/* Calculate correction (calibration data, predictedPosition, target) */
 	MovementQuadruple rpyMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
+	newMovement.setRollPitchYawrate( rpyMovement );
 	//ROS_INFO("interpolate 13 rpyMovement calculated");
 	this->status[id].setLastUpdated( currentTime );
 
@@ -274,12 +277,43 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 //		}
 //		counter++;
 //	}
-
 }
+
+MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id)
+{
+	long int current = getNanoTime();
+	if( this->status[id].getState() < HOLD )
+	{
+		this->status[id].setState( HOLD );
+		this->status[id].setShutdownStarted( current );
+	}
+
+	MovementQuadruple newMovement = sentQuadruples.back();
+	if( this->status[id].getState() == HOLD )
+	{
+		if( current > this->status[id].getShutdownStarted() )
+		{
+			this->status[id].setState( SHUTDOWN );
+			return MovementQuadruple( 0, 0, 0, 0 );
+		}
+		/* 
+		 * Now calculate values:
+		 * mirrored at getShutdownStarted-timestamp and negated sentQuadruples 
+		 */
+		newMovement.invertRollPitchYawrate( HOLD_FACTOR_THRUST, HOLD_FACTOR_RPY );
+	}
+	if( this->status[id].getState() == SHUTDOWN )
+	{
+		return MovementQuadruple( 0, 0, 0, 0 );
+	}
+//	return newMovement;
+	return MovementQuadruple( 0, 0, 0, 0 );
+}
+
 
 unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest, double absDistanceFirstLatest, double timediffNormalized )
 {
-	unsigned int newThrust = 0;
+	unsigned int newThrustDiff = 0;
 	double distanceFactor = 0.5; // higher if further from target, between [0, 1]	//TODO
 	double threshold = 0;	// higher if timediff is higher and 	//TODO
 
@@ -303,21 +337,21 @@ unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest,
 	
 	if( abs(zDistanceLatest) < DISTANCE_CLOSE_TO_TARGET ) 
 	{
-		ROS_ERROR("Thrust is zero");
-		return newThrust;		
+		ROS_ERROR("Thrustdiff is zero");
+		return newThrustDiff;
 	} else
 	{
 		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst)) 
 		{  
 			ROS_ERROR("Thrust increase");
-			newThrust += THRUST_STEP;	
+			newThrustDiff += THRUST_STEP;
 		}
 		if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst)) 
 		{  
 			ROS_ERROR("Thrust decrease");
-			newThrust -= THRUST_STEP;	
+			newThrustDiff -= THRUST_STEP;
 		}
-		return newThrust;	
+		return newThrustDiff;
 	}
 }
 

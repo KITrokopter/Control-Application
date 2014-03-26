@@ -33,16 +33,16 @@
 #include <vector>
 //Ros messages/services
 
-#define THRUST_MAX_START 50000
-#define THRUST_MIN 30000
+#define THRUST_MAX_START 45000
+#define THRUST_MIN 28000
 #define THRUST_SHUTDOWN 0
-#define THRUST_STAND_STILL 18001
+#define THRUST_STAND_STILL 28001
 #define THRUST_START 30000
 #define THRUST_DECLINE 200
 #define THRUST_MAX 40001
 #define THRUST_STEP 200
-#define ROLL_MAX 6
-#define PITCH_MAX 6
+#define ROLL_MAX 8
+#define PITCH_MAX 8
 #define YAWRATE_MAX 0
 #define INVALID -1
 #define LOW_BATTERY 3.0//In V
@@ -59,6 +59,11 @@
 #define CALCULATE_LAND 5 //Shutdown quadcopter
 
 #define CALCULATE_STABILIZE_STEP 500	// time in ms after next value should be calculated
+
+#define HOLD_SKIP 1
+#define HOLD_LENGTH 1000	// time in ms to stay in function before "shutdown"
+#define HOLD_FACTOR_THRUST 0.7
+#define HOLD_FACTOR_RPY 0.5
 
 #define RANGE_STABLE 10 // Distance of two points to be considered "equal" in mm
 #define RANGE_STABLE_Z 6 // Difference of two height-Values to be considered "equal" in mm

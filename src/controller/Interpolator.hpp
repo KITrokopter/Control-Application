@@ -21,10 +21,10 @@
 #define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
 #define REACHING_HEIGHT_DIFF 0.6 // Factor 0 <= x <= 1
 
-#define SPEED_MIN_INCLINING 150 	// in mm/s
-#define SPEED_MAX_INCLINING 500 	// in mm/s
-#define SPEED_MIN_DECLINING -150 	// in mm/s
-#define SPEED_MAX_DECLINING -500 	// in mm/s
+#define SPEED_MIN_INCLINING 10 	// in mm/s
+#define SPEED_MAX_INCLINING 100 	// in mm/s
+#define SPEED_MIN_DECLINING -10 	// in mm/s
+#define SPEED_MAX_DECLINING -100 	// in mm/s
 #define SPEED_MIN_PLANE 80		// in mm/s
 #define SPEED_MAX_PLANE 300		// in mm/s
 
@@ -51,8 +51,9 @@
 class Interpolator {
 public:
 	Interpolator();
-	MovementQuadruple calibrate(int id, std::list<MovementQuadruple> sentQuadruples);
+	//MovementQuadruple calibrate(int id, std::list<MovementQuadruple> sentQuadruples);
 	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, int id);
+	MovementQuadruple calculateHold(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id);
 
 protected:
 	void checkState( int id );

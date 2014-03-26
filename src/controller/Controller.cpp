@@ -204,13 +204,20 @@ void Controller::sendMovementAll()
 	std::vector< MovementQuadruple > newListElement;
 	for(int i = 0; i < listFutureMovement.size(); i++)
 	{
-		unsigned int quadStatus= this->quadcopterMovementStatus[i];
 		while( this->listFutureMovement[i].size() > 1 )
 		{
 			this->listFutureMovement[i].pop_back();
 		}
+		unsigned int quadStatus= this->quadcopterMovementStatus[i];
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
-		this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX_START, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		if(quadStatus == CALCULATE_START) 
+		{
+			this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX_START, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		}
+		else
+		{
+			this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		}
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
 		if(msg.thrust > 4000)
 		{
@@ -865,9 +872,13 @@ void Controller::stabilize( int internId )
 
 void Controller::hold( int internId )
 {
-	/* TODO */
 	ROS_INFO("%i now land", internId);
-	quadcopterMovementStatus[internId] = CALCULATE_LAND;	
+	if( HOLD_SKIP )
+	{
+		quadcopterMovementStatus[internId] = CALCULATE_LAND;
+		return;
+	}
+
 }
 
 void Controller::land( int internId, int * nrLand )
