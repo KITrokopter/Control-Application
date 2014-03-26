@@ -49,6 +49,19 @@ void TrackingWorker::run()
 			
 			// ROS_DEBUG("Got info from camera %d: [%.2f, %.2f, %.2f]", data[0].camNo, data[0].cameraVector.getV1(), data[0].cameraVector.getV2(), data[0].cameraVector.getV3());
 			
+			double latency = 0;
+			double currentTime = getNanoTime();
+			
+			for (std::vector<CameraData>::iterator it = data.begin(); it != data.end(); it++) {
+				double newLatency = currentTime - it->time;
+				
+				if (newLatency > latency) {
+					latency = newLatency;
+				}
+			}
+			
+			ROS_DEBUG("Latency is %.3fms", latency / 1e6);
+			
 			Vector position = tracker.updatePosition(data);
 			
 			for (size_t i = 0; i < data.size(); i++) {
@@ -74,7 +87,7 @@ void TrackingWorker::run()
 			
 			if (emptyCount == 50) {
 				// TODO uncomment
-				// ROS_WARN("Position update buffer is empty!");
+				ROS_WARN("Position update buffer is empty!");
 				emptyCount = 0;
 			}
 			
@@ -140,6 +153,11 @@ bool TrackingWorker::calibrate(ChessboardData *chessboard, int camNo)
 Vector TrackingWorker::getCameraPosition(int camNo)
 {
 	return tracker.getPosition(camNo);
+}
+
+Matrix TrackingWorker::getRotationMatrix(int camNo)
+{
+	return tracker.getRotationMatrix(camNo);
 }
 
 cv::Mat TrackingWorker::getIntrinsicsMatrix(int camNo)

@@ -8,6 +8,7 @@
 
 #include "../IPositionReceiver.hpp"
 #include "../../matlab/Vector.h"
+#include "../../matlab/Matrix.h"
 #include "../../matlab/Position.h"
 #include "../../controller/Mutex.hpp"
 
@@ -46,6 +47,7 @@ public:
 	
 	bool calibrate(ChessboardData *chessboard, int camNo);
 	Vector getCameraPosition(int camNo);
+	Matrix getRotationMatrix(int camNo);
 	cv::Mat getIntrinsicsMatrix(int camNo);
 	cv::Mat getDistortionCoefficients(int camNo);
 	void updateTrackingArea();

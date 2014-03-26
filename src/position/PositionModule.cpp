@@ -264,6 +264,19 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		res.cameraXPositions.push_back(position.getV1());
 		res.cameraYPositions.push_back(position.getV2());
 		res.cameraZPositions.push_back(position.getV3());
+		
+		Matrix rotationMatrix = trackingWorker.getRotationMatrix(i);
+		
+		res.cameraRotationMatrices.push_back(rotationMatrix.getM11());
+		res.cameraRotationMatrices.push_back(rotationMatrix.getM12());
+		res.cameraRotationMatrices.push_back(rotationMatrix.getM13());
+		res.cameraRotationMatrices.push_back(rotationMatrix.getM21());
+		res.cameraRotationMatrices.push_back(rotationMatrix.getM22());
+		res.cameraRotationMatrices.push_back(rotationMatrix.getM23());
+		res.cameraRotationMatrices.push_back(rotationMatrix.getM31());
+		res.cameraRotationMatrices.push_back(rotationMatrix.getM32());
+		res.cameraRotationMatrices.push_back(rotationMatrix.getM33());
+		
 		res.IDs.push_back(idDict.getBackward(i));
 		
 		// Send calibration data to cameras
