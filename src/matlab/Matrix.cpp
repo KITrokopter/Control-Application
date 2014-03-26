@@ -18,6 +18,11 @@ Matrix::Matrix() {
     this->m31 = 0;
     this->m32 = 0;
     this->m33 = 0;
+    valid = true;
+}
+
+Matrix::Matrix(bool valid) {
+    valid = valid;
 }
 
 Matrix::Matrix(double m11, double m12, double m13, double m21, double m22, double m23, double m31, double m32, double m33) {
@@ -30,6 +35,11 @@ Matrix::Matrix(double m11, double m12, double m13, double m21, double m22, doubl
     this->m31 = m31;
     this->m32 = m32;
     this->m33 = m33;
+    valid = true;
+}
+
+bool Matrix::getValid() {
+    return this->valid;
 }
 
 double Matrix::getM11() {

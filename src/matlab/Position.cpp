@@ -110,7 +110,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     if (ok) {
 
         Vector invalid = Vector(false);
-        Matrix nanMatrix = Matrix(NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN, NAN);
+        Matrix invalidMatrix = Matrix(false);
         std::vector<Vector> h(numberCameras, invalid);
 
         // if quadcopter maximal amount is higher than 50, you should change the range of i
@@ -122,7 +122,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         for (int i = 0; i < numberCameras; i++) {
             camCoordCameraPos.push_back(invalid);
             camCoordCameraOrient.push_back(invalid);
-            camRotMat.push_back(nanMatrix);
+            camRotMat.push_back(invalidMatrix);
             realCameraPos.push_back(invalid);
             realCameraOrient.push_back(invalid);
             imageAge.push_back(0);
@@ -299,7 +299,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
     // controlling whether all cameras already tracked the quadcopter once
     int valid = 0;
     for (int i = 0; i < numberCameras; i++) {
-        if (quadPos[quadcopterId][i].isValid()) {
+        if (quadPos[quadcopterId][i].getValid()) {
             valid++;
         }
     }
@@ -310,7 +310,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
         Vector nan = Vector(NAN, NAN, NAN);
         return nan;
     } else {
-        if (!(oldPos[quadcopterId].isValid())) {
+        if (!(oldPos[quadcopterId].getValid())) {
             // not calculated before, first time calculating
             int tooOld = 0;
             for (int i = 0; i < numberCameras; i++) {
