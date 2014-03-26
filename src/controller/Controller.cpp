@@ -507,14 +507,14 @@ void Controller::buildFormation()
 }
 
 /*Service to rotate formation*/
-bool rotateFormation(control_application::Rotation::Request  &req, control_application::Rotation::Response &res)
+bool Controller::rotateFormation(control_application::Rotation::Request  &req, control_application::Rotation::Response &res)
 {
 	pthread_create(&tRotation, NULL, startThreadRotation, this);
 	ROS_INFO("Thread tRotation set up");
 	return true;
 }
 
-void rotate()
+void Controller::rotate()
 {
 	
 	
