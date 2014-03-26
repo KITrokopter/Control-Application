@@ -54,7 +54,7 @@ void TrackingQueue<T>::enqueue(CameraData data)
 	if (queues.count(data.quadcopterId) == 0) {
 		queues[data.quadcopterId] = new T(3L * 1000 * 1000 * 1000 / 30,
 										  5L * 1000 * 1000 * 1000 / 30,
-										  1L * 1000 * 1000 * 1000 / 30,
+										  2L * 1000 * 1000 * 1000 / 30,
 										  true);
 		ids.push_back(data.quadcopterId);
 	}
