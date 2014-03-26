@@ -88,7 +88,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			return newMovement;
 			//break;
 		case CALC:
-			ROS_INFO("interpolate 03c calc");
+			//ROS_INFO("interpolate 03c calc");
 			if( positions.size() > 2 )	// Enough data to calculate new rpy values (at least two values)
 			{
 				newMovement.setRollPitchYawrate( 0, 0, 0 );
