@@ -263,13 +263,13 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
     int quadcopterId = cameraLines[0].quadcopterId;
 
-    if (cameraLines.size() == 2) {
+   /* if (cameraLines.size() == 2) {
         ROS_DEBUG("Camera %d, %d see quadcopter", cameraLines[0].camNo, cameraLines[1].camNo);
     } else if (cameraLines.size() == 3) {
         ROS_DEBUG("Camera %d, %d, %d see quadcopter", cameraLines[0].camNo, cameraLines[1].camNo, cameraLines[2].camNo);
     } else if (cameraLines.size() == 1) {
         ROS_DEBUG("Camera %d sees quadcopter", cameraLines[0].camNo);
-    }
+    }*/
 
 
     for(int i = 1; i < cameraLines.size(); i++) {
@@ -356,7 +356,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             int tooOld = 0;
             for (int i = 0; i < numberCameras; i++) {
                 if (imageAge[i] > 10) {
-                    ROS_DEBUG("Information of camera %d is too old.", i);
+                    //ROS_DEBUG("Information of camera %d is too old.", i);
                     tooOld++;
                 }
             }
