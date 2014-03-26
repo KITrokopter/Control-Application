@@ -71,16 +71,34 @@ bool MovementQuadruple::checkQuadruple( int maxThrust, float maxRoll, float maxP
 		this->roll = maxRoll;
 		below = false;
 	}
+	if( this->roll < -maxRoll )
+	{
+		ROS_INFO("Roll to low, resetting.");
+		this->roll = -maxRoll;
+		below = false;
+	}
 	if( this->pitch > maxPitch )
 	{
 		ROS_INFO("Pitch to high, resetting.");
 		this->pitch = maxPitch;
 		below = false;
 	}
+	if( this->pitch < -maxPitch )
+	{
+		ROS_INFO("Pitch to low, resetting.");
+		this->pitch = -maxPitch;
+		below = false;
+	}
 	if( this->yawrate > maxYawrate )
 	{
 		ROS_INFO("Yawrate to high, resetting.");
 		this->yawrate = maxYawrate;
+		below = false;
+	}
+	if( this->yawrate < -maxYawrate )
+	{
+		ROS_INFO("Yawrate to low, resetting.");
+		this->yawrate = -maxYawrate;
 		below = false;
 	}
 	return below;

@@ -416,20 +416,27 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
 	double m21 = sin( rotation );
 	double m22 = cos( rotation );
 	double *current = pos.getPosition();
-    double v1 = m11 * current[0] + m12 * current[1];
-    double v2 = m21 * current[0] + m22 * current[1];
-    double factor = sqrt(v1*v1 + v2*v2);
-    v1 = v1 / factor;
-    v2 = v2 / factor;
-    double newRoll = v1 * ROLL_MAX;
-    double newPitch = v2 * PITCH_MAX;
-    double newYawrate = 0;
-    if( closeToTarget( pos, target, RANGE_STABLE ) )
-    {
-        double newRoll = newRoll / 2;
-        double newPitch = newPitch / 2;
-    }
-    return MovementQuadruple( 0, newRoll, newPitch, newYawrate );
+	double v1 = m11 * current[0] + m12 * current[1];
+	double v2 = m21 * current[0] + m22 * current[1];
+	double factor = sqrt(v1*v1 + v2*v2);
+	if(factor == 0 )
+	{
+		ROS_ERROR("Factor is zero");
+	}
+	else
+	{
+		v1 = v1 / factor;
+		v2 = v2 / factor;
+	}
+	double newRoll = v1 * ROLL_MAX;
+	double newPitch = v2 * PITCH_MAX;
+	double newYawrate = 0;
+	if( closeToTarget( pos, target, RANGE_STABLE ) )
+	{
+		double newRoll = newRoll / 2;
+		double newPitch = newPitch / 2;
+	}
+	return MovementQuadruple( 0, newRoll, newPitch, newYawrate );
 }
 
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest ) 
