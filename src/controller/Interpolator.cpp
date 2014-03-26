@@ -288,7 +288,7 @@ MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sent
 		this->status[id].setShutdownStarted( current );
 	}
 
-	MovementQuadruple newMovement;
+	MovementQuadruple newMovement = sentQuadruples.back();
 	if( this->status[id].getState() == HOLD )
 	{
 		if( current > this->status[id].getShutdownStarted() )
@@ -296,6 +296,11 @@ MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sent
 			this->status[id].setState( SHUTDOWN );
 			return MovementQuadruple( 0, 0, 0, 0 );
 		}
+		/* 
+		 * Now calculate values:
+		 * mirrored at getShutdownStarted-timestamp and negated sentQuadruples 
+		 */
+		newMovement.invertRollPitchYawrate( HOLD_FACTOR_THRUST, HOLD_FACTOR_RPY );
 	}
 	if( this->status[id].getState() == SHUTDOWN )
 	{
