@@ -341,7 +341,7 @@ unsigned int calculateThrustDiff( double zDistanceFirst, double zDistanceLatest,
 		return newThrustDiff;
 	} else
 	{
-		ROS_ERROR("Thrustdiff:");
+		ROS_ERROR("zSpeed: %d, zDistF: %d, zDistL: %d", zSpeed, zDistanceFirst, zDistanceLatest);
 		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst && zSpeed<0)) 
 		{  
 			ROS_ERROR(" Thrustdiff increase");
