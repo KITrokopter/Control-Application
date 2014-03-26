@@ -252,6 +252,15 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
     int quadcopterId = cameraLines[0].quadcopterId;
 
+    if (cameraLines.size() == 2) {
+        ROS_DEBUG("Camera %d, %d see quadcopter", cameraLines[0].camNo, cameraLines[1].camNo);
+    } else if (cameraLines.size() == 3) {
+        ROS_DEBUG("Camera %d, %d, %d see quadcopter", cameraLines[0].camNo, cameraLines[1].camNo, cameraLines[2].camNo);
+    } else if (cameraLines.size() == 1) {
+        ROS_DEBUG("Camera %d sees quadcopter", cameraLines[0].camNo);
+    }
+
+
     for(int i = 1; i < cameraLines.size(); i++) {
         if (cameraLines[i].quadcopterId != quadcopterId) {
             ROS_ERROR("scheduler passes datas of different quadcopter ids.");
@@ -368,7 +377,8 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 Line* tracking = new Line[cameraLines.size()];
                 for (int i = 0; i < cameraLines.size(); i++) {
                     tracking[i] = Line(getPosition(cameraLines[i].camNo), direction[i]);
-                    //ROS_INFO("camera %d at position [%.2f, %.2f, %.2f] tracks in direction [%.2f, %.2f, %.2f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition((cameraLines[i].camNo)).getV2(), getPosition((cameraLines[i].camNo)).getV3(), direction[i].getV1(), direction[i].getV2(), direction[i].getV3());
+                    ROS_INFO("camera %d at position [%.2f, %.2f, %.2f] tracks in direction [%.2f, %.2f, %.2f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition((cameraLines[i].camNo)).getV2(), getPosition((cameraLines[i].camNo)).getV3(), direction[i].getV1(), direction[i].getV2(), direction[i].getV3());
+                    ROS_INFO("rodata of camera %d was direction [%.2f, %.2f, %.2f]", cameraLines[i].camNo, cameraLines[i].cameraVector.getV1(), cameraLines[i].cameraVector.getV2(), cameraLines[i].cameraVector.getV3());
                 }
                 newPos = m->interpolateLines(tracking, cameraLines.size(), oldPos[quadcopterId], interpolationFactor);
 
