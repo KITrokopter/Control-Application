@@ -71,7 +71,7 @@ void TrackingWorker::run()
 			
 			if (position.isValid()) {
 				// Invert x axis for controller
-				position.setV1(-position.getV1());
+				// position.setV1(-position.getV1());
 				
 				std::vector<Vector> positions;
 				std::vector<int> ids;
@@ -153,6 +153,11 @@ bool TrackingWorker::calibrate(ChessboardData *chessboard, int camNo)
 Vector TrackingWorker::getCameraPosition(int camNo)
 {
 	return tracker.getPosition(camNo);
+}
+
+Matrix TrackingWorker::getRotationMatrix(int camNo)
+{
+	return tracker.getRotationMatrix(camNo);
 }
 
 cv::Mat TrackingWorker::getIntrinsicsMatrix(int camNo)
