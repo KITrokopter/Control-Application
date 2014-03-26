@@ -230,12 +230,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
 
 	/* Calculate new rpy-values every MIN_TIME_TO_WAIT nanoseconds */
-	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
+/*	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
 		ROS_INFO("interpolate 12 Do not change rpy-values, movement of sent values need to be visible.");
 		return newMovement;
 	}
-
+*/
 
 	 /* Calculate new calibration (due to yaw-movement, if |roll|,|pitch| were high enough) */
 	if( ROTATIONAL_CORRECTION )

@@ -108,9 +108,8 @@ void Position6DOF::predictNextPosition( Position6DOF olderPosition, long int tim
 	else
 	{
 		double timediffNorm = ((double) timediff) / ((double) 1000000000);
-		ROS_DEBUG("timediffNorm: %f", this->timestamp olderPosition.getTimestamp());
+		ROS_DEBUG("timediffNorm: %f", timediffNorm);
 	}
-
 	this->timestamp = this->timestamp + timeInFuture;
 
 	double xDiff = this->position[0] - olderPosition.getPosition()[0];
@@ -119,7 +118,7 @@ void Position6DOF::predictNextPosition( Position6DOF olderPosition, long int tim
 	double rate = 0;
 	if( timediff != 0 )
 	{
-		rate = ((double) timeInFuture) - ((double) timediff) / 1000000000;
+		rate = (((double) timeInFuture) - ((double) timediff)) / 1000000000;
 		ROS_INFO("rate %f", rate);
 	}
 	

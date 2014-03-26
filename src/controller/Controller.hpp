@@ -34,13 +34,13 @@
 #include <vector>
 //Ros messages/services
 
-#define THRUST_MAX_START 48000
+#define THRUST_MAX_START 52000
 #define THRUST_MIN 28000
 #define THRUST_SHUTDOWN 0
 #define THRUST_STAND_STILL 28001
-#define THRUST_START 32000
+#define THRUST_START 35000
 #define THRUST_DECLINE 200
-#define THRUST_MAX 40001
+#define THRUST_MAX 48001
 #define THRUST_STEP 200
 #define ROLL_MAX 8.0
 #define PITCH_MAX 8.0
