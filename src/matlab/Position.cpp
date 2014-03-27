@@ -261,6 +261,8 @@ void Position::loadValues(int cameraId) {
 
 Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
+    ROS_DEBUG("Tracking of some cameras");
+
     int quadcopterId = cameraLines[0].quadcopterId;
 
    /* if (cameraLines.size() == 2) {
