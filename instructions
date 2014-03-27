@@ -1,0 +1,33 @@
+roscore
+catkin_make api_application_node && rosrun api_application api_application_node
+
+camera_application auf allen 3 Rechnern starten, Reihenfolge notieren:
+catkin_make camera_application_node && rosrun camera_application camera_application_node
+Direkt wieder abbrechen, falls nicht die Meldung "Receives images. Camera seems to be working now." oder so kommt
+
+catkin_make position_module && rosrun control_application position_module
+
+in ros_ws/src/control_application/test/test-messages:
+./start_calibration
+(camera 0: 5 Bilder, camera 1: 5 Bilder, camera 2: 5 Bilder, cameras 0,1: 2x5 Bilder, cameras 0,2: 2x5 Bilder) 
+./take_calibration_pictures (Im position module überprüfen, ob 1/2 cameras Bilder gespeichert haben
+./calculate_calibration (für amcc toolbox Berechnung, in /tmp/calibrationImages/log wird matlab output aktualisiert, in /tmp/calibrationResult/ wird output gespeichert, stereo_calibration_0_1 und stereo_calibration_0_2 ist wichtig)
+
+Wenn Fehlermeldung bei amcc toolbox Berechnung kommt, nochmal neu kalibrieren (start_calibration, take_calibration_picture...)
+
+Achtung: ./start_calibration NUR ausführen, wenn ihr neue Bilder aufnehmen wollt. Dadurch werden Ergebnisse gelöscht
+
+in ros_ws/src/camera_application/test/test-messages:
+./activate_picture_sending
+
+Id's von cameras rausfinden (aus API) und für jede camera 
+./initialize_camera_id_n_color_green.sh cameraId
+
+(einmalig zum Zeitsynchronisierung)
+Auf server mit camera 0: sudo service ntp start
+sudo ntpdate -p 8 ip-adresse (von camera 0)
+
+in ros_ws/src/control_application/test/test-messages: (zum Tracking starten)
+./system_start.sh
+
+
