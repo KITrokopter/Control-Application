@@ -350,7 +350,7 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 	 * 	negative distance to target is increasing
 	 * 	(speed is too high)
 	 */
-	unsigned int cyclesPerSecond = ((double) 1000000000) / ((double) TIME_MIN_CALC);
+	unsigned int cyclesPerSecond = ftimeOffsetChangeThrust((double) 1000000000) / ((double) TIME_MIN_CALC);
 	unsigned int thrustStep = THRUST_STEP * distanceFactor * (1/cyclesPerSecond);
 	ROS_ERROR("thrustStep %i", thrustStep);
 	
