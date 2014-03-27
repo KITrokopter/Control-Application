@@ -35,13 +35,9 @@
 #include <vector>
 //Ros messages/services
 
-#define THRUST_MAX_START 52000
-#define THRUST_MIN 28000
-#define THRUST_SHUTDOWN 0
-#define THRUST_STAND_STILL 28001
-#define THRUST_START 35000
-#define THRUST_DECLINE 20000
-#define THRUST_MAX 48001
+#define THRUST_GLOBAL_MAX 60000
+#define THRUST_GLOBAL_MIN 10001
+#define THRUST_OFF 0
 #define THRUST_STEP 200
 #define ROLL_MAX 8.0
 #define PITCH_MAX 8.0
@@ -159,6 +155,7 @@ private:
 	unsigned int thrust_stab[MAX_NUMBER_QUADCOPTER];
 	float battery_status[MAX_NUMBER_QUADCOPTER];
 	std::list<std::vector<float> > formationMovement;
+	QuadcopterThrust thrust_info[MAX_NUMBER_QUADCOPTER];
 
 	/* Control variables */
 	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters

@@ -813,16 +813,24 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	//ROS_INFO("I heard Quadcopter Status. topicNr: %i", topicNr);
 	//Intern mapping
 	int localQuadcopterId = this->getLocalId(topicNr);
-	this->battery_status[quaId] = msg->battery_status;
-	this->roll_stab[quaId] = msg->stabilizer_roll;
-	this->pitch_stab[quaId] = msg->stabilizer_pitch;
-	this->yaw_stab[quaId] = msg->stabilizer_yaw;
-	this->thrust_stab[quaId] = msg->stabilizer_thrust;
+	this->battery_status[localQuadcopterId] = msg->battery_status;
+	this->roll_stab[localQuadcopterId] = msg->stabilizer_roll;
+	this->pitch_stab[localQuadcopterId] = msg->stabilizer_pitch;
+	this->yaw_stab[localQuadcopterId] = msg->stabilizer_yaw;
+	this->thrust_stab[localQuadcopterId] = msg->stabilizer_thrust;
 	long int currentTime = getNanoTime();
 	if(quaId == 0 && currentTime > this->offsetOutput + 2000000000)
 	{
 		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
 		this->offsetOutput= currentTime;
+	}
+	if( !thrust_info[localQuadcopterId].initDone() )
+	{
+		/* 
+		 * Set spedific thrustvalues for each quadcopter once. 
+		 * Only if battery-value is useful.
+		 */
+		thrust_info[localQuadcopterId].checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
 }
@@ -984,7 +992,7 @@ void Controller::land( int internId, int * nrLand )
 		//Shutdown crazyflie after having left the tracking area.
 		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp, 0, 0, 0 ); 
 		//MovementQuadruple newMovement = this->listFutureMovement[internId].front();
-		//newMovement.setThrust( THRUST_SHUTDOWN );
+		//newMovement.setThrust( THRUST_OFF );
 		newMovement.setTimestamp(currentTime);
 		this->listFutureMovement[internId].push_front( newMovement );
 		if( this->thrustHelp - 500 <= 0)
