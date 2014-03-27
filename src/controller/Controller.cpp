@@ -62,9 +62,9 @@ Controller::Controller()
 		this->thrustHelp = thrust_info[i].getStart();
 	}
 	ROS_INFO("Constructing done");
-	this->offsetOutput= getNanoTime();
-	this->durationMoveup = getNanoTime();
-	this->offsetChangeThrust = getNanoTime();
+	this->timeOffsetOutput= getNanoTime();
+	this->timeDurationMoveup = getNanoTime();
+	this->timeOffsetChangeThrust = getNanoTime();
 }
 
 void Controller::initialize()
@@ -172,7 +172,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				{
 					ROS_DEBUG("Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
-					this->durationMoveup = getNanoTime();
+					this->timeDurationMoveup = getNanoTime();
 					/*this->shutdownStarted = true;*/
 
 				}
@@ -392,7 +392,7 @@ void Controller::buildFormation()
 		else
 		{
 			this->quadcopterMovementStatus[i] = CALCULATE_START;
-			this->durationMoveup = getNanoTime();
+			this->timeDurationMoveup = getNanoTime();
 		}
 		//Calculate Target Position of current qc using formation positions and the formation distance
 		double pos[3];
@@ -882,10 +882,10 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	this->yaw_stab[localQuadcopterId] = msg->stabilizer_yaw;
 	this->thrust_stab[localQuadcopterId] = msg->stabilizer_thrust;
 	long int currentTime = getNanoTime();
-	if(localQuadcopterId == 0 && currentTime > this->offsetOutput + 2000000000)
+	if(localQuadcopterId == 0 && currentTime > this->timeOffsetOutput + 2000000000)
 	{
 		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
-		this->offsetOutput= currentTime;
+		this->timeOffsetOutput= currentTime;
 	}
 	if( !thrust_info[localQuadcopterId].initDone() )
 	{
@@ -945,20 +945,20 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
 		//Increases thrust step by step to ensure slow inclining
-		if(currentTime > this->offsetChangeThrust + 10000000 && this->thrustHelp + 500 < this->thrust_info[internId].getStartMax())
+		if(currentTime > this->timeOffsetChangeThrust + 10000000 && this->thrustHelp + 500 < this->thrust_info[internId].getStartMax())
 		{
 			usleep(85000);
 			this->thrustHelp += 700;
-			this->offsetChangeThrust = getNanoTime();
+			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustHelp >= thrust_info[internId].getStartMax() || currentTime > this->durationMoveup + 8000000000)
+		if(this->thrustHelp >= thrust_info[internId].getStartMax() || currentTime > this->timeDurationMoveup + 8000000000)
 		{
 			if(this->thrustHelp >= thrust_info[internId].getStartMax())
 			{
 				ROS_DEBUG("Thrust too high");
 			}
-			if(currentTime > this->durationMoveup + 8000000000)
+			if(currentTime > this->timeDurationMoveup + 8000000000)
 			{
 				ROS_DEBUG("Time over");
 			}
@@ -1036,21 +1036,21 @@ void Controller::land( int internId, int * nrLand )
 		newMovement.setThrust( thrust_info[internId].getMin() );
 		newMovement.setTimestamp( currentTime );
 		this->listFutureMovement[internId].push_front( newMovement );		
-		this->offsetChangeThrust = getNanoTime();
+		this->timeOffsetChangeThrust = getNanoTime();
 	}
 	else
 	{
 		if(this->thrustHelp > thrust_info[internId].getMin())	// FIXME
 		{
 			this->thrustHelp = thrust_info[internId].getMin();	// FIXME
-			this->offsetChangeThrust = getNanoTime();
+			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		ROS_INFO("min");
-		if(currentTime > this->offsetChangeThrust + 1000000 && this->thrustHelp - 500 > 0)
+		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp - 500 > 0)
 		{
 			//usleep(85000);
 			this->thrustHelp -= 500;
-			this->offsetChangeThrust = getNanoTime();
+			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		//Shutdown crazyflie after having left the tracking area.
 		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp, 0, 0, 0 ); 
