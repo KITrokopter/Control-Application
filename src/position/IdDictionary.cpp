@@ -105,12 +105,12 @@ int IdDictionary::getBackward(int n)
 	if (!translated) {
 		ROS_ERROR("getBackward: Ids not translated!");
 	}
-	
+
 	{
 		boost::mutex::scoped_lock lock(mutex);
 		
-		if (backward.count(n)) {
-			int result = backward[n];
+        if (backward.count(n)) {
+            int result = backward[n];
 			return result;
 		} else {
 			ROS_ERROR("getBackward: Unknown id %d", n);
