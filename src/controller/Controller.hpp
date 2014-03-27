@@ -23,6 +23,7 @@
 #include "../matlab/profiling.hpp"
 #include "../matlab/Vector.h"
 #include "../matlab/TrackingArea.h"
+#include "../matlab/Matrix2x2.h"
 #include <boost/bind.hpp>
 #include <cmath>
 #include <list>
@@ -33,7 +34,6 @@
 #include <string>
 #include <unistd.h>
 #include <vector>
-#include "Matrix2x2.h"
 //Ros messages/services
 
 #define THRUST_GLOBAL_MAX 60000
@@ -109,6 +109,7 @@ public:
 	int getLocalId(int globalId);
 	bool checkInput(int internId);
 	void emergencyRoutine(std::string message);	
+	int searchNeighbor( double * target, bool * ids);
     
 protected:
 	//Callbacks for Ros subscriber

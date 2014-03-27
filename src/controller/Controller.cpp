@@ -5,7 +5,6 @@ void* startThreadBuildFormation(void* something);
 void* startThreadShutdown(void* something);
 void* startThreadRotation(void* something);
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
-static int searchNeighbor( Position6DOF target, bool * ids);
 
 Controller::Controller()
 {
@@ -521,7 +520,7 @@ void Controller::rotate()
 	long int currentTime = getNanoTime();
 	Vector vector = this->trackingArea.getCenterOfTrackingArea();
 	Position6DOF center = Position6DOF(vector);
-	float rotationAngle = 2*PI / amount;
+	float rotationAngle = 2*M_PI / amount;
 	bool qcChosen[amount];
 	for( int i = 0; i < amount; i++)
 	{
@@ -535,7 +534,7 @@ void Controller::rotate()
 		this->listTargetsMutex.lock();
 		this->listTargets[i].clear();
 		Position6DOF newPosition;
-		double * targetK = center.getPostion();
+		double * targetK = center.getPosition();
 		if( i == 0 )
 		{
 			targetK[0] += DISTANCE_ROTATE_TO_CENTER;		
@@ -544,7 +543,7 @@ void Controller::rotate()
 			{
 				ROS_DEBUG("No neighbor found");
 			}
-			qcChosen[searchNeighbor(targetK)] = true;
+			qcChosen[qcPositionMap[0]] = true;
 			newPosition.setPosition(targetK);
 			this->listTargets[0].push_back(newPosition);
 		}
@@ -561,7 +560,7 @@ void Controller::rotate()
 			{
 				ROS_DEBUG("No neighbor found");
 			}
-			qcChosen[searchNeighbor(targetK)] = true;
+			qcChosen[qcPositionMap[i]] = true;
 			newPosition.setPosition(targetK);
 			this->listTargets[i].push_back(newPosition);
 		}
@@ -946,14 +945,14 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
 		//Increases thrust step by step to ensure slow inclining
-		if(currentTime > this->offsetChangeThrust + 10000000 && this->thrustHelp + 500 < THRUST_MAX_START)
+		if(currentTime > this->offsetChangeThrust + 10000000 && this->thrustHelp + 500 < this->thrust_info[internId].getStartMax())
 		{
 			usleep(85000);
 			this->thrustHelp += 700;
 			this->offsetChangeThrust = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustHelp >= thrust_info[internId].getStartMax() || current > this->durationMoveup + 8000000000)
+		if(this->thrustHelp >= thrust_info[internId].getStartMax() || currentTime > this->durationMoveup + 8000000000)
 		{
 			if(this->thrustHelp >= thrust_info[internId].getStartMax())
 			{
@@ -1123,11 +1122,10 @@ static bool closeToTarget( Position6DOF position1, Position6DOF position2, doubl
 	return false;
 }
 
-static int searchNeighbor( Position6DOF target, bool * ids)
+int Controller::searchNeighbor( double * target, bool * ids)
 {
 	float distance = -1;
 	int neighborId = -1;
-	double * targetPos = target.getPosition();
 	for(int i = 0; i < this->formation->getAmount(); i++)
 	{
 		if(ids[i])
@@ -1138,9 +1136,9 @@ static int searchNeighbor( Position6DOF target, bool * ids)
 		Position6DOF currentPosition = this->listPositions[i].back();
 		this->listPositionsMutex.unlock();
 		double * currentPos = currentPosition.getPosition();
-		float dX = abs(currentPos[0] - targetPos[0]); 
-		float dY = abs(currentPos[1] - targetPos[1]);
-		float dZ = abs(currentPos[2] - targetPos[2]);
+		float dX = abs(currentPos[0] - target[0]); 
+		float dY = abs(currentPos[1] - target[1]);
+		float dZ = abs(currentPos[2] - target[2]);
 		float distanceHelp = sqrt(dX*dX + dY*dY + dZ*dZ);
 		if( (distance == -1) || (distance > distanceHelp) )
 		{
