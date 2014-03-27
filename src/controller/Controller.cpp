@@ -5,6 +5,7 @@ void* startThreadBuildFormation(void* something);
 void* startThreadShutdown(void* something);
 void* startThreadRotation(void* something);
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
+static int searchNeighbor( Position6DOF target, bool * ids);
 
 Controller::Controller()
 {
@@ -144,7 +145,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	/* Save position vectors */	
 	int i = 0;
 	int id = 0;
-	long int current = getNanoTime();
+	long int currentTime = getNanoTime();
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
@@ -154,10 +155,10 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		{
 			continue;	
 		}
-		current = getNanoTime();
-		this->timeLastCurrent[id] = current;
+		currentTime = getNanoTime();
+		this->timeLastCurrent[id] = currentTime;
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
-		newPosition.setTimestamp( current );
+		newPosition.setTimestamp( currentTime );
 		
 		if( it->getV1() != INVALID ) 
 		{	
@@ -509,34 +510,97 @@ bool Controller::rotateFormation(control_application::Rotation::Request  &req, c
 	}
 	pthread_create(&tRotation, NULL, startThreadRotation, this);
 	ROS_INFO("Thread tRotation set up");
+	this->timeRotationStarted = getNanoTime();
 	this->rotationInProcess = true;
 	return true;
 }
 
 void Controller::rotate()
 {
-	/*
-	int amount = quadcopterMovementStatus.size();
-	long int current = getNanoTime();
-	while( (TIME_ROTATE_CIRCLE > current - this->timeRotationStarted) && !inShutdown )
+	int amount = this->formation->getAmount();
+	long int currentTime = getNanoTime();
+	Vector vector = this->trackingArea.getCenterOfTrackingArea();
+	Position6DOF center = Position6DOF(vector);
+	float rotationAngle = 2*PI / amount;
+	bool qcChosen[amount];
+	for( int i = 0; i < amount; i++)
+	{
+		qcChosen[i] = false;
+	}
+	// mapping betwenn quadcopter id and rotation position id. qcPositionMap[rotation id] = qc id. 
+	int qcPositionMap[amount];
+	Matrix2x2 rotationMatrix;
+	for(int i = 0; i < amount; i++)
+	{
+		this->listTargetsMutex.lock();
+		this->listTargets[i].clear();
+		Position6DOF newPosition;
+		double * targetK = center.getPostion();
+		if( i == 0 )
+		{
+			targetK[0] += DISTANCE_ROTATE_TO_CENTER;		
+			qcPositionMap[0] = searchNeighbor(targetK, qcChosen);
+			if(searchNeighbor(targetK, qcChosen) == -1)
+			{
+				ROS_DEBUG("No neighbor found");
+			}
+			qcChosen[searchNeighbor(targetK)] = true;
+			newPosition.setPosition(targetK);
+			this->listTargets[0].push_back(newPosition);
+		}
+		else
+		{	
+			Vector vectorK = Vector(DISTANCE_ROTATE_TO_CENTER, 0, 0);
+			rotationMatrix = Matrix2x2(cos(i * rotationAngle), -sin(i * rotationAngle), sin(i * rotationAngle), cos(i * rotationAngle));
+			vectorK = rotationMatrix.multiplicate(vectorK);
+			targetK[0] += vectorK.getV1();
+			targetK[1] += vectorK.getV2();
+			targetK[2] += vectorK.getV3();
+			qcPositionMap[i] = searchNeighbor(targetK, qcChosen);
+			if(searchNeighbor(targetK, qcChosen) == -1)
+			{
+				ROS_DEBUG("No neighbor found");
+			}
+			qcChosen[searchNeighbor(targetK)] = true;
+			newPosition.setPosition(targetK);
+			this->listTargets[i].push_back(newPosition);
+		}
+		
+		this->listTargetsMutex.lock();
+	}
+	while( TIME_ROTATE_CIRCLE > (currentTime - this->timeRotationStarted))
 	{
 		if( this->shutdownStarted )
 		{
 			return;
 		}
+		Position6DOF previousTarget;
+		Position6DOF nextTarget;
 		for( int i = 0; i < amount; i++ )
 		{
-		
+			int idCurrent = qcPositionMap[i];
+			int idNext = qcPositionMap[i + 1];
+			this->listTargetsMutex.lock();
+			if(i == 0)
+			{				
+				previousTarget = this->listTargets[idNext].back();
+			}
+			if(i == amount - 1)
+			{
+				this->listTargets[idCurrent].push_back(previousTarget);
+			}
+			else
+			{
+				 nextTarget = this->listTargets[idNext].back();
+				 this->listTargets[idCurrent].push_back(nextTarget);
+			}
+			this->listTargetsMutex.unlock();
+				
+			
 		}
-		current = getNanoTime();
+		currentTime = getNanoTime();
 	}
 	
-	unsigned int quadStatus = this->quadcopterMovementStatus[i];
-	while((quadStatus==CALCULATE_STABILIZE) && 
-	{
-
-	}
-	*/
 	this->rotationInProcess = false;
 }
 
@@ -865,29 +929,29 @@ void Controller::dontMove( int internId)
 void Controller::moveUp( int internId )
 {
 	bool moveUpSmart = false;
-	long int current = getNanoTime();
+	long int currentTime = getNanoTime();
 	
 	if( !moveUpSmart ) {		
 		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp, 0, 0, 0 );
-		newMovement.setTimestamp( current );
+		newMovement.setTimestamp( currentTime );
 		//ROS_DEBUG("Thrust is %u", this->thrustHelp);
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
 		//Increases thrust step by step to ensure slow inclining
-		if(current > this->offsetChangeThrust + 10000000 && this->thrustHelp + 500 < THRUST_MAX_START)
+		if(currentTime > this->offsetChangeThrust + 10000000 && this->thrustHelp + 500 < THRUST_MAX_START)
 		{
 			usleep(85000);
 			this->thrustHelp += 700;
 			this->offsetChangeThrust = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustHelp >= THRUST_MAX_START || current > this->durationMoveup + 8000000000)
+		if(this->thrustHelp >= THRUST_MAX_START || currentTime > this->durationMoveup + 8000000000)
 		{
 			if(this->thrustHelp >= THRUST_MAX_START)
 			{
 				ROS_DEBUG("Thrust too high");
 			}
-			if(current > this->durationMoveup + 8000000000)
+			if(currentTime > this->durationMoveup + 8000000000)
 			{
 				ROS_DEBUG("Time over");
 			}
@@ -1049,6 +1113,34 @@ static bool closeToTarget( Position6DOF position1, Position6DOF position2, doubl
 		return true;
 	}
 	return false;
+}
+
+static int searchNeighbor( Position6DOF target, bool * ids)
+{
+	float distance = -1;
+	int neighborId = -1;
+	double * targetPos = target.getPosition();
+	for(int i = 0; i < this->formation->getAmount(); i++)
+	{
+		if(ids[i])
+		{
+			continue;
+		}
+		this->listPositionsMutex.lock();
+		Position6DOF currentPosition = this->listPositions[i].back();
+		this->listPositionsMutex.unlock();
+		double * currentPos = currentPosition.getPosition();
+		float dX = abs(currentPos[0] - targetPos[0]); 
+		float dY = abs(currentPos[1] - targetPos[1]);
+		float dZ = abs(currentPos[2] - targetPos[2]);
+		float distanceHelp = sqrt(dX*dX + dY*dY + dZ*dZ);
+		if( (distance == -1) || (distance > distanceHelp) )
+		{
+			neighborId = i;
+			distance = distanceHelp;
+		}
+	}
+	return neighborId;
 }
 
 void* startThreadCalculateMovement(void* something)
