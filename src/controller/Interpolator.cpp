@@ -356,7 +356,7 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 	double thrustStepA = ((double) THRUST_STEP) * ((double) distanceFactor) * sqrt(1/cyclesPerSecond);
 	unsigned int thrustStep = thrustStepA;
 	ROS_ERROR("absDistanceFirstLatest %f, distanceFactor %f", absDistanceFirstLatest, distanceFactor);
-	ROS_ERROR("thrustStepA %f, thrustStep %i" thrustStepA, thrustStep);
+	ROS_ERROR("thrustStepA %f, thrustStep %i", thrustStepA, thrustStep);
 	//ROS_ERROR("cycles %f, thrustStepA %f, thrustStep %i", cyclesPerSecond, thrustStepA, thrustStep);
 	
 	//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);

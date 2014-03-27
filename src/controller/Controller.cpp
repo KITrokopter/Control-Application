@@ -321,7 +321,7 @@ void Controller::calculateMovement()
 				case CALCULATE_LAND:
 					if(numberOfLanded > 1 && i == 0)
 					{
-						 ROS_INFO("Landed: %i", numberOfLanded);
+						 ROS_INFO("Landed in Calc: %i", numberOfLanded);
 					}
 					land( i, &numberOfLanded );
 					break;
