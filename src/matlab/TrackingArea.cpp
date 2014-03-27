@@ -177,14 +177,14 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
     Vector v = cameraDirection.cross(u);
 
     // describing plane by line f and direction vector v
-    Line *f = new Line(cameraDirection, u);
+    Line f = Line(cameraPosition.add(cameraDirection.mult(maxRange)), u);
 
     // describing floor plane by a and b and cameraPosition
-    Vector *a = new Vector(cameraDirection.getV1(), cameraDirection.getV2(), 0);
-    Vector *b = new Vector(cameraDirection.getV1(), cameraDirection.getV2() + 0.1, 0);
-    Line *g = new Line(cameraPosition, *a);
+    Vector a = Vector(cameraDirection.getV1(), cameraDirection.getV2(), 0);
+    Vector b = Vector(cameraDirection.getV1(), cameraDirection.getV2() + 0.1, 0);
+    Line g = Line(cameraPosition, a);
 
-    Line horizontal = m->getIntersectionLineFastCalculation(*f, v, *g, *b);
+    Line horizontal = m->getIntersectionLineFastCalculation(f, v, *g, b);
 
     v = cameraDirection.cross(horizontal.getU());
 
