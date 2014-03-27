@@ -39,7 +39,7 @@
 #define THRUST_SHUTDOWN 0
 #define THRUST_STAND_STILL 28001
 #define THRUST_START 35000
-#define THRUST_DECLINE 200
+#define THRUST_DECLINE 20000
 #define THRUST_MAX 48001
 #define THRUST_STEP 200
 #define ROLL_MAX 8.0
@@ -138,10 +138,10 @@ private:
 	std::vector<unsigned long int > quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int > quadcopterMovementStatus;
-	long int time;
-	long int time2;
-	long int time3;
-	unsigned int thrustTest;	
+	long int offsetOutput;
+	long int durationMoveup;
+	long int offsetChangeThrust;
+	unsigned int thrustHelp;	
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;
@@ -168,10 +168,10 @@ private:
 	bool buildFormationFinished;
 	bool receivedTrackingArea;
 	bool shutdownStarted;
-	bool rotationFinished;
-	long int rotationStarted;
-	long int lastFormationMovement;
-	long int lastCurrent[MAX_NUMBER_QUADCOPTER];
+	bool rotationInProcess;
+	long int timeRotationStarted;
+	long int timeLastFormationMovement;
+	long int timeLastCurrent[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
 	//Mutex shutdownMutex;
