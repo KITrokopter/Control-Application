@@ -29,8 +29,8 @@
 #define SPEED_MIN_PLANE 80		// in mm/s
 #define SPEED_MAX_PLANE 300		// in mm/s
 
-#define DISTANCE_CLOSE 0 	// in mm
-#define DISTANCE_HIGH 100
+#define DISTANCE_CLOSE 2 	// in mm
+#define DISTANCE_HIGH 80
 
 #define TEST_ROLL_PITCH 0
 
