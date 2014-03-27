@@ -6,6 +6,7 @@
 #include "MovementQuadruple.hpp"
 #include "Mutex.hpp"
 #include "Position6DOF.hpp"
+#include "QuadcopterThrust.hpp"
 #include "ros/ros.h"
 #include "api_application/MoveFormation.h"
 #include "api_application/SetFormation.h"
