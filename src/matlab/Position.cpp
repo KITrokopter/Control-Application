@@ -521,6 +521,7 @@ cv::Mat Position::getIntrinsicsMatrix(int cameraId) {
 
 Matrix Position::getRotationMatrix(int cameraId) {
     Matrix rotation = rotationMatrix.multiplicate(camRotMat[cameraId]);
+    ROS_DEBUG("Matrix %d: [%f, %f, %f    %f, %f, %f    %f, %f, %f]", cameraId, rotation.getM11(), rotation.getM12(), rotation.getM13(), rotation.getM21(), rotation.getM22(), rotation.getM23(), rotation.getM31(), rotation.getM32(), rotation.getM33());
     return rotation;
 }
 
