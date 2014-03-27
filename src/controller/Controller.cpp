@@ -435,9 +435,9 @@ void Controller::buildFormation()
 			ROS_INFO("First set");
 			Position6DOF firstElement;
 			firstElement.setPosition(first);
-			this->listTargetsMutex.lock();
+			/*this->listTargetsMutex.lock(); FIXME
 			this->listTargets[0].push_back(firstElement);
-			this->listTargetsMutex.unlock();
+			this->listTargetsMutex.unlock();*/
 		}
 		else
 		{
@@ -448,9 +448,9 @@ void Controller::buildFormation()
 			target[2] += first[2];
 			Position6DOF targetElement;
 			targetElement.setPosition(target);
-			this->listTargetsMutex.lock();
+			/*this->listTargetsMutex.lock(); FIXME
 			this->listTargets[i].push_back(targetElement);
-			this->listTargetsMutex.unlock();
+			this->listTargetsMutex.unlock();*/
 			//If Shutdown has been called, abort.
 			shutdown = this->shutdownStarted;
 			if(shutdown)
@@ -478,9 +478,9 @@ void Controller::buildFormation()
 		pointer[2] += distance;
 		Position6DOF element;
 		element.setPosition(pointer);
-		this->listTargetsMutex.lock();
+		/*this->listTargetsMutex.lock(); FIXME
 		this->listTargets[i].push_back(element);
-		this->listTargetsMutex.unlock();
+		this->listTargetsMutex.unlock();*/
 		//If Shutdown has been called, abort.
 		shutdown = this->shutdownStarted;
 		if(shutdown)
@@ -649,6 +649,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		if( this->receivedTrackingArea)
 		{
 			Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
+			this->listTargets[i].push_back(defaultTarget);
 		}
 		else
 		{
@@ -1057,7 +1058,7 @@ void Controller::land( int internId, int * nrLand )
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		ROS_INFO("min");
-		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp - 500 > 0)
+		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp - 700 > 0)
 		{
 			//usleep(85000);
 			this->thrustHelp -= 700;
@@ -1069,7 +1070,7 @@ void Controller::land( int internId, int * nrLand )
 		//newMovement.setThrust( THRUST_OFF );
 		newMovement.setTimestamp(currentTime);
 		this->listFutureMovement[internId].push_front( newMovement );
-		if( this->thrustHelp - 500 <= 0)
+		if( this->thrustHelp - 700 <= 0)
 		{
 			this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
 			(*nrLand)++;

@@ -13,8 +13,8 @@
 #include "../matlab/profiling.hpp"
 #define MAX_NUMBER_QUADCOPTER_HIGH 10
 #define MIN_TIME_TO_WAIT 500000000 	// in ns, only for rpy-values
-#define PREDICT_FUTURE_POSITION_TIME 200000000	// in ns
-#define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
+#define PREDICT_FUTURE_POSITION_TIME 150000000	// in ns
+//#define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
 
 #define ROTATIONAL_CORRECTION 0	// 0-no correction; 1-always take new value; linear in between wouldn't work
 //#define POSITIONED_NORTH_AT_START 0	// 0 or 1, used as bool, North means pitch+ -> y+
