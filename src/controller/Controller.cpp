@@ -61,10 +61,10 @@ Controller::Controller()
 		tracked[i] = false;
 	}
 	ROS_INFO("Constructing done");
-	this->time = getNanoTime();
-	this->time2 = getNanoTime();
-	this->time3 = getNanoTime();
-	this->thrustTest = THRUST_START;
+	this->offsetOutput= getNanoTime();
+	this->durationMoveup = getNanoTime();
+	this->offsetChangeThrust = getNanoTime();
+	this->thrustHelp = THRUST_START;
 }
 
 void Controller::initialize()
@@ -172,7 +172,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				{
 					ROS_DEBUG("Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
-					this->time2 = getNanoTime();
+					this->durationMoveup = getNanoTime();
 					/*this->shutdownStarted = true;*/
 
 				}
@@ -392,7 +392,7 @@ void Controller::buildFormation()
 		else
 		{
 			this->quadcopterMovementStatus[i] = CALCULATE_START;
-			this->time2 = getNanoTime();
+			this->durationMoveup = getNanoTime();
 		}
 		//Calculate Target Position of current qc using formation positions and the formation distance
 		double pos[3];
@@ -819,10 +819,10 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	this->yaw_stab[quaId] = msg->stabilizer_yaw;
 	this->thrust_stab[quaId] = msg->stabilizer_thrust;
 	long int currentTime = getNanoTime();
-	if(quaId == 0 && currentTime > this->time + 2000000000)
+	if(quaId == 0 && currentTime > this->offsetOutput + 2000000000)
 	{
 		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
-		this->time = currentTime;
+		this->offsetOutput= currentTime;
 	}
 	this->receivedQuadStatus[quaId] = true;
 }
@@ -868,26 +868,26 @@ void Controller::moveUp( int internId )
 	long int current = getNanoTime();
 	
 	if( !moveUpSmart ) {		
-		MovementQuadruple newMovement = MovementQuadruple( this->thrustTest, 0, 0, 0 );
+		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp, 0, 0, 0 );
 		newMovement.setTimestamp( current );
-		//ROS_DEBUG("Thrust is %u", this->thrustTest);
+		//ROS_DEBUG("Thrust is %u", this->thrustHelp);
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
 		//Increases thrust step by step to ensure slow inclining
-		if(current > this->time3 + 10000000 && this->thrustTest + 500 < THRUST_MAX_START)
+		if(current > this->offsetChangeThrust + 10000000 && this->thrustHelp + 500 < THRUST_MAX_START)
 		{
 			usleep(85000);
-			this->thrustTest += 700;
-			this->time3 = getNanoTime();
+			this->thrustHelp += 700;
+			this->offsetChangeThrust = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustTest >= THRUST_MAX_START || current > this->time2 + 8000000000)
+		if(this->thrustHelp >= THRUST_MAX_START || current > this->durationMoveup + 8000000000)
 		{
-			if(this->thrustTest >= THRUST_MAX_START)
+			if(this->thrustHelp >= THRUST_MAX_START)
 			{
 				ROS_DEBUG("Thrust too high");
 			}
-			if(current > this->time2 + 8000000000)
+			if(current > this->durationMoveup + 8000000000)
 			{
 				ROS_DEBUG("Time over");
 			}
@@ -965,29 +965,29 @@ void Controller::land( int internId, int * nrLand )
 		newMovement.setThrust( THRUST_DECLINE );
 		newMovement.setTimestamp( currentTime );
 		this->listFutureMovement[internId].push_front( newMovement );		
-		this->time3 = getNanoTime();
+		this->offsetChangeThrust = getNanoTime();
 	}
 	else
 	{
-		if(this->thrustTest > THRUST_DECLINE)
+		if(this->thrustHelp > THRUST_DECLINE)
 		{
-			this->thrustTest = THRUST_DECLINE;
-			this->time3 = getNanoTime();
+			this->thrustHelp = THRUST_DECLINE;
+			this->offsetChangeThrust = getNanoTime();
 		}
 		ROS_INFO("min");
-		if(currentTime > this->time3 + 1000000 && this->thrustTest - 500 > 0)
+		if(currentTime > this->offsetChangeThrust + 1000000 && this->thrustHelp - 500 > 0)
 		{
 			//usleep(85000);
-			this->thrustTest -= 500;
-			this->time3 = getNanoTime();
+			this->thrustHelp -= 500;
+			this->offsetChangeThrust = getNanoTime();
 		}
 		//Shutdown crazyflie after having left the tracking area.
-		MovementQuadruple newMovement = MovementQuadruple( this->thrustTest, 0, 0, 0 ); 
+		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp, 0, 0, 0 ); 
 		//MovementQuadruple newMovement = this->listFutureMovement[internId].front();
 		//newMovement.setThrust( THRUST_SHUTDOWN );
 		newMovement.setTimestamp(currentTime);
 		this->listFutureMovement[internId].push_front( newMovement );
-		if( this->thrustTest - 500 <= 0)
+		if( this->thrustHelp - 500 <= 0)
 		{
 			this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
 			(*nrLand)++;
