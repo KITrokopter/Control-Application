@@ -59,12 +59,12 @@ Controller::Controller()
 	{
 		//Initialize tracked (no quadcopter is tracked at the beginning)
 		tracked[i] = false;
+		this->thrustHelp = thrust_info[i].getStartMax();
 	}
 	ROS_INFO("Constructing done");
 	this->offsetOutput= getNanoTime();
 	this->durationMoveup = getNanoTime();
 	this->offsetChangeThrust = getNanoTime();
-	this->thrustHelp = thrust_info[i].getStartMax();
 }
 
 void Controller::initialize()
@@ -819,7 +819,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	this->yaw_stab[localQuadcopterId] = msg->stabilizer_yaw;
 	this->thrust_stab[localQuadcopterId] = msg->stabilizer_thrust;
 	long int currentTime = getNanoTime();
-	if(quaId == 0 && currentTime > this->offsetOutput + 2000000000)
+	if(localQuadcopterId == 0 && currentTime > this->offsetOutput + 2000000000)
 	{
 		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
 		this->offsetOutput= currentTime;
@@ -930,7 +930,7 @@ void Controller::stabilize( int internId )
 	this->listPositionsMutex.lock();
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
-	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, internId);
+	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, thrust_info[internId], internId);
 	/*if((getNanoTime()/500000000)%2 == 1)
 	{	
 		//ROS_INFO("sta1 Roll %f and pitch %f", newMovement.getRoll(), newMovement.getPitch());
