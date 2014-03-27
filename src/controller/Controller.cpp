@@ -812,7 +812,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 {
 	//ROS_INFO("I heard Quadcopter Status. topicNr: %i", topicNr);
 	//Intern mapping
-	int quaId = this->getLocalId(topicNr);
+	int localQuadcopterId = this->getLocalId(topicNr);
 	this->battery_status[quaId] = msg->battery_status;
 	this->roll_stab[quaId] = msg->stabilizer_roll;
 	this->pitch_stab[quaId] = msg->stabilizer_pitch;
@@ -824,7 +824,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
 		this->offsetOutput= currentTime;
 	}
-	this->receivedQuadStatus[quaId] = true;
+	this->receivedQuadStatus[localQuadcopterId] = true;
 }
 
 /*
