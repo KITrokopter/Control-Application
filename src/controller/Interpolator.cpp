@@ -67,12 +67,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	newMovement.setTimestamp( currentTime );
 
 	checkState( id );
-	//ROS_INFO("interpolate 02 after checkState");
 	switch( this->status[id].getState() )
 	{
 		case UNSTARTED:
-			ROS_INFO("interpolate 03a unstarted");
-			ROS_INFO("Error in switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
+			ROS_ERROR("Error in switch - calculateNextMQ.");
 			newMovement.setThrust( THRUST_MIN );
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
@@ -135,7 +133,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	
 	if( this->status[id].getState() < DONE )
 	{
-			ROS_ERROR("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
+			ROS_ERROR("Error in second switch - calculateNextMQ.");
 			return newMovement;
 	}
 	//ROS_INFO("interpolate 05 now in DONE at time %ld", currentTime);
@@ -168,16 +166,15 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	Position6DOF positionPast;
 	Position6DOF positionNow = positions.back();	// positionPast is older than positionNow
 	Position6DOF posAssumed;
-	std::list<Position6DOF>::iterator it = positions.end();
+	std::list<Position6DOF>::reverse_iterator rit;
 	int counter = 0;
-	while( (it!=positions.begin()) && (counter<2) )
+	for( rit=positions.rbegin(); (rit!=positions.rend()) && (counter<2); ++rit )
 	{
-		--it;
 		if( counter == 1 )
 		{
-			positionPast.setOrientation( it->getOrientation() );
-			positionPast.setPosition( it->getPosition() );
-			positionPast.setTimestamp( it->getTimestamp() );
+			positionPast.setOrientation( rit->getOrientation() );
+			positionPast.setPosition( rit->getPosition() );
+			positionPast.setTimestamp( rit->getTimestamp() );
 		}
 		/*if( counter == 0 )
 		{
