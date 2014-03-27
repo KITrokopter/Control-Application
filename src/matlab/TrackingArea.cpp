@@ -184,7 +184,7 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
     Vector b = Vector(cameraDirection.getV1(), cameraDirection.getV2() + 0.1, 0);
     Line g = Line(cameraPosition, a);
 
-    Line horizontal = m->getIntersectionLineFastCalculation(f, v, *g, b);
+    Line horizontal = m->getIntersectionLineFastCalculation(f, v, g, b);
 
     v = cameraDirection.cross(horizontal.getU());
 
