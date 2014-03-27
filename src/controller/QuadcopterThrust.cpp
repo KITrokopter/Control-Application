@@ -3,15 +3,32 @@
 
 QuadcopterThrust::QuadcopterThrust
 {
-	min = 28000;
-	max = 40000;
-	start = 28000;
-	startMax = 42000;
+	this->min = 28000;
+	this->max = 40000;
+	this->start = 28000;
+	this->startMax = 42000;
 }
 
 void setThrust( double battery )
 {
-
+	if( battery > 4 )
+	{
+		return;
+	}
+	else if( battery > 3 )
+	{
+		this->min += ((unsigned int) ((battery-4) * QUADCOPTER_THRUST_RANGE));
+		this->max += ((unsigned int) ((battery-4) * QUADCOPTER_THRUST_RANGE));
+		this->start += ((unsigned int) ((battery-4) * QUADCOPTER_THRUST_RANGE));
+		this->startMax += ((unsigned int) ((battery-4) * QUADCOPTER_THRUST_RANGE));
+	}
+	else 
+	{
+		this->min += QUADCOPTER_THRUST_RANGE;
+		this->max += QUADCOPTER_THRUST_RANGE;
+		this->start += QUADCOPTER_THRUST_RANGE;
+		this->startMax += QUADCOPTER_THRUST_RANGE;
+	}
 }
 
 void QuadcopterThrust::setMin( unsigned int min )
