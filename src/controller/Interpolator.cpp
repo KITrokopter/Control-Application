@@ -351,10 +351,10 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 	 * 	negative distance to target is increasing
 	 * 	(speed is too high)
 	 */
-	unsigned int cyclesPerSecond = ((double) 1000000000) / ((double) TIME_MIN_CALC);
-	double thrustStepA = THRUST_STEP * distanceFactor * (1/cyclesPerSecond);
+	double cyclesPerSecond = ((double) 1000000000) / ((double) TIME_MIN_CALC);
+	double thrustStepA = ((double) THRUST_STEP) * ((double) distanceFactor) * (1/cyclesPerSecond);
 	unsigned int thrustStep = thrustStepA;
-	ROS_ERROR("cycles %i, thrustStepA %f, thrustStep %i", cyclesPerSecond, thrustStepA, thrustStep);
+	ROS_ERROR("cycles %f, thrustStepA %f, thrustStep %i", cyclesPerSecond, thrustStepA, thrustStep);
 	
 	//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
 	if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst && zSpeed<0)) 
@@ -437,7 +437,7 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
 	double newRoll = v1 * ROLL_MAX;
 	double newPitch = v2 * PITCH_MAX;
 	double newYawrate = 0;
-	ROS_ERROR("factor of rotation: %f, roll %f, pitch %f", factor, newRoll, newPitch);
+	ROS_ERROR("roll %f, pitch %f", newRoll, newPitch);
 	
 	if( closeToTarget( pos, target, RANGE_STABLE ) )
 	{
@@ -535,13 +535,13 @@ static bool closeToTarget( Position6DOF position1, Position6DOF position2, doubl
 float calculateDistanceFactor( float distance )
 {
 	distance = abs( distance );
-	if( distance < DISTANCE_CLOSE )
+	if( distance < ((float) DISTANCE_CLOSE) )
 	{
 		return 0;
 	}
-	else if( distance < DISTANCE_HIGH )
+	else if( distance < ((float) DISTANCE_HIGH) )
 	{
-		return (distance / (DISTANCE_HIGH-DISTANCE_CLOSE));
+		return (distance / (((float) DISTANCE_HIGH)-((float) DISTANCE_CLOSE)));
 	} 
 	else
 	{
