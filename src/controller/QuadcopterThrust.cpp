@@ -1,6 +1,6 @@
 #include "QuadcopterThrust.hpp"
 
-QuadcopterThrust::QuadcopterThrust
+QuadcopterThrust::QuadcopterThrust()
 {
 	this->min = 28000;
 	this->max = 40000;
@@ -15,7 +15,7 @@ bool QuadcopterThrust::checkAndSetBatteryValue( float battery )
 	{
 		return false;
 	} 
-	else if( batter < BATTERY_LOW )
+	else if( battery < BATTERY_LOW )
 	{
 		return false;
 	}
@@ -26,13 +26,13 @@ bool QuadcopterThrust::checkAndSetBatteryValue( float battery )
 
 unsigned int QuadcopterThrust::checkAndFix( unsigned int thrust )
 {
-	if( thrust > this->smax )
+	if( thrust > this->max )
 	{
-		return this->smax;
+		return this->max;
 	}
-	else if( thrust < this->smin )
+	else if( thrust < this->min )
 	{
-		return this->smin;
+		return this->min;
 	}
 	else return thrust;
 }

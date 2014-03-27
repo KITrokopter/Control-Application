@@ -57,7 +57,7 @@ protected:
 	void checkState( int id );
 
 private:
-	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER_HIGH];
+	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER];
 	double stepSizeOfChange; 	// depends on the distance of position to target	
 	long int timeDiff1;
 	long int timeDiff2;

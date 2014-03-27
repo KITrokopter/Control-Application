@@ -214,11 +214,11 @@ void Controller::sendMovementAll()
 		unsigned int quadStatus= this->quadcopterMovementStatus[i];
 		if(quadStatus == CALCULATE_START) 
 		{
-			this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX_START, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+			this->listFutureMovement[i].front().checkQuadruple( thrust_info[i].getStartMax, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		}
 		else
 		{
-			this->listFutureMovement[i].front().checkQuadruple( THRUST_MAX, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+			this->listFutureMovement[i].front().checkQuadruple( thrust_info[i].getMax, ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		}
 		msg.thrust = this->listFutureMovement[i].front().getThrust();
 		/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
@@ -882,16 +882,16 @@ void Controller::moveUp( int internId )
 		this->listFutureMovement[internId].clear();
 		this->listFutureMovement[internId].push_front( newMovement );
 		//Increases thrust step by step to ensure slow inclining
-		if(current > this->offsetChangeThrust + 10000000 && this->thrustHelp + 500 < THRUST_MAX_START)
+		if(current > this->offsetChangeThrust + 10000000 && this->thrustHelp + 500 < thrust_info[internId].getStartMax)
 		{
 			usleep(85000);
 			this->thrustHelp += 700;
 			this->offsetChangeThrust = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustHelp >= THRUST_MAX_START || current > this->durationMoveup + 8000000000)
+		if(this->thrustHelp >= thrust_info[internId].getStartMax || current > this->durationMoveup + 8000000000)
 		{
-			if(this->thrustHelp >= THRUST_MAX_START)
+			if(this->thrustHelp >= thrust_info[internId].getStartMax)
 			{
 				ROS_DEBUG("Thrust too high");
 			}
@@ -910,7 +910,7 @@ void Controller::moveUp( int internId )
 			int diff = 80;
 			long int timeDiff = 400000000;
 			long int currentTime = getNanoTime();
-			MovementQuadruple newMovement = MovementQuadruple( THRUST_START, 0, 0, 0, currentTime );
+			MovementQuadruple newMovement = MovementQuadruple( thrust_info[internId].getStartMax, 0, 0, 0, currentTime );
 			this->listFutureMovement[internId].push_back( newMovement );
 		
 			newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
@@ -968,18 +968,18 @@ void Controller::land( int internId, int * nrLand )
 		{
 			this->listFutureMovement[internId].pop_back();
 		}*/
-		//MovementQuadruple newMovement = MovementQuadruple( THRUST_DECLINE, 0, 0, 0 ); FIXME 
+		//MovementQuadruple newMovement = MovementQuadruple( thrust_info[internId].getMin(), 0, 0, 0 ); FIXME 
 		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
-		newMovement.setThrust( THRUST_DECLINE );
+		newMovement.setThrust( thrust_info[internId].getMin() );
 		newMovement.setTimestamp( currentTime );
 		this->listFutureMovement[internId].push_front( newMovement );		
 		this->offsetChangeThrust = getNanoTime();
 	}
 	else
 	{
-		if(this->thrustHelp > THRUST_DECLINE)
+		if(this->thrustHelp > thrust_info[internId].getMin())	// FIXME
 		{
-			this->thrustHelp = THRUST_DECLINE;
+			this->thrustHelp = thrust_info[internId].getMin();	// FIXME
 			this->offsetChangeThrust = getNanoTime();
 		}
 		ROS_INFO("min");
