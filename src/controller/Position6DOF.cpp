@@ -119,7 +119,7 @@ void Position6DOF::predictNextPosition( Position6DOF olderPosition, long int tim
 	if( timediff != 0 )
 	{
 		rate = (((double) timeInFuture) - ((double) timediff)) / 1000000000;
-		ROS_INFO("rate %f", rate);
+		//ROS_INFO("rate %f", rate);
 	}
 	
 	double xNew = this->position[0] + xDiff*rate;
