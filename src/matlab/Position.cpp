@@ -418,6 +418,8 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                     }
                     if (newPos.add(realCameraPos[2].mult(-1)).getLength() > 2300) {
                         ROS_INFO("New position of quadcopter %d is [%.2f, %.2f, %.2f], %s too far of camera 2", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "NOT in tracking area");
+                    } else {
+                        ROS_INFO("New position of quadcopter %d is [%.2f, %.2f, %.2f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "NOT in tracking area");
                     }
                 }
                 oldPos[quadcopterId] = newPos;
