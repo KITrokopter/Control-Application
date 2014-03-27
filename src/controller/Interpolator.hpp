@@ -60,7 +60,7 @@ private:
 	long int timeDiff1;
 	long int timeDiff2;
 	long int timeDiff3;
-
+	long int aTimeSwitch;
 };
 
 #endif // INTERPOLATOR_HPP

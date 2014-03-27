@@ -16,9 +16,9 @@ Interpolator::Interpolator()
 	{
 		this->status[i] = InterpolatorInfo();
 	}
-	timeDiff1 = 0;
-	timeDiff2 = 0;
-	timeDiff3 = 0;
+ 	this->timeDiff1 = 0;
+	this->timeDiff2 = 0;
+	this->timeDiff3 = 0;
 }
 
 /*

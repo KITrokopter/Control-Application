@@ -565,9 +565,9 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		ROS_ERROR("Quadcopters already set. No resetting allowed");
 		return false;
 	}
-	if(this->receivedFormation && (req.amount < this->formation.getAmount()))
+	if(this->receivedFormation && (req.amount < this->formation->getAmount()))
 	{
-		ROS_ERROR("You have too less quadcopters to create the formation. Please set more Quadcopters or restart the system.")
+		ROS_ERROR("You have too less quadcopters to create the formation. Please set more Quadcopters or restart the system.");
 		return false;
 	}
 	ROS_INFO("iService setQuadcopters has been called amount %i", req.amount);
@@ -783,7 +783,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 	}
 	if(this->receivedQuadcopters && (this->quadcopterMovementStatus.size() < msg->amount))
 	{
-		ROS_ERROR("Your formation has to many quadcopters set. Please set a different Formation or restart the system")
+		ROS_ERROR("Your formation has to many quadcopters set. Please set a different Formation or restart the system");
 		return;
 	}
 	ROS_INFO("I heard Formation. amount: %i", msg->amount);
