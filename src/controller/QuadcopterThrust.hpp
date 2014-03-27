@@ -3,6 +3,7 @@
 
 #include <sys/time.h>
 #include <map>
+#include "ros/ros.h"
 
 #define QUADCOPTER_THRUST_RANGE 10000 
 #define BATTERY_MAX 8

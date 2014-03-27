@@ -59,7 +59,7 @@ Controller::Controller()
 	{
 		//Initialize tracked (no quadcopter is tracked at the beginning)
 		tracked[i] = false;
-		this->thrustHelp = thrust_info[i].getStartMax();
+		this->thrustHelp = thrust_info[i].getStart();
 	}
 	ROS_INFO("Constructing done");
 	this->offsetOutput= getNanoTime();
