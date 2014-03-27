@@ -11,7 +11,7 @@
 #include "QuadcopterThrust.hpp"
 #include "ros/ros.h"
 #include "../matlab/profiling.hpp"
-//#define MAX_NUMBER_QUADCOPTER_HIGH 10
+#define MAX_NUMBER_QUADCOPTER_HIGH 10
 #define MIN_TIME_TO_WAIT 500000000 	// in ns, only for rpy-values
 #define PREDICT_FUTURE_POSITION_TIME 200000000	// in ns
 #define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
@@ -57,7 +57,7 @@ protected:
 	void checkState( int id );
 
 private:
-	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER];
+	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER_HIGH];
 	double stepSizeOfChange; 	// depends on the distance of position to target	
 	long int timeDiff1;
 	long int timeDiff2;

@@ -33,6 +33,7 @@
 #include <string>
 #include <unistd.h>
 #include <vector>
+#include "Matrix2x2.h"
 //Ros messages/services
 
 #define THRUST_GLOBAL_MAX 60000
@@ -49,6 +50,7 @@
 #define TIME_MIN_LOOP_CALC 3000 	// 3 ms for usleep
 #define TIME_MIN_CALC 30000000	// 30ms for loop
 #define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
+#define DISTANCE_ROTATE_TO_CENTER 100
 
 /* For calculateMovement */
 #define CALCULATE_NONE 0 // Unused for formation

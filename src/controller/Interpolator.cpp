@@ -223,7 +223,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	float absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
 	ROS_INFO("zDiffNow: %f, zDiffAssumed: %f", zDiffNow, zDiffAssumed);
 	ROS_INFO("timediffNormalized: %f", timediffNormalized);
-	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized);
+	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized, thrustInfo);
 	newMovement.setThrust( newThrust );
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
 
@@ -327,7 +327,7 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 {
 	unsigned int newThrustDiff = 0;
 	float distanceFactor = calculateDistanceFactor( absDistanceFirstLatest );
-	if( (distanceFactor<0 || (distanceFactor>1) )
+	if( distanceFactor<0 || (distanceFactor>1) )
 	{
 		ROS_ERROR("wrong distanceFactor %f", distanceFactor);
 	}
