@@ -16,9 +16,9 @@ Interpolator::Interpolator()
 	{
 		this->status[i] = InterpolatorInfo();
 	}
-	timeDiff1 = 0;
-	timeDiff2 = 0;
-	timeDiff3 = 0;
+ 	this->timeDiff1 = 0;
+	this->timeDiff2 = 0;
+	this->timeDiff3 = 0;
 }
 
 /*
@@ -67,12 +67,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	newMovement.setTimestamp( currentTime );
 
 	checkState( id );
-	//ROS_INFO("interpolate 02 after checkState");
 	switch( this->status[id].getState() )
 	{
 		case UNSTARTED:
-			ROS_INFO("interpolate 03a unstarted");
-			ROS_INFO("Error in switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
+			ROS_ERROR("Error in switch - calculateNextMQ.");
 			newMovement.setThrust( THRUST_MIN );
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
@@ -135,7 +133,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	
 	if( this->status[id].getState() < DONE )
 	{
-			ROS_ERROR("Error in second switch - calculateNextMQ.");	// FIXME ROS_ERROR ?
+			ROS_ERROR("Error in second switch - calculateNextMQ.");
 			return newMovement;
 	}
 	//ROS_INFO("interpolate 05 now in DONE at time %ld", currentTime);
@@ -166,20 +164,24 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	//ROS_INFO("interpolate 08 Enough data in calculateNextMQ, start calculation.");
 	/* Save latest Position and before-latest Position */
 	Position6DOF positionPast;
-	Position6DOF positionNow;	// positionPast is older than positionNow
+	Position6DOF positionNow = positions.back();	// positionPast is older than positionNow
 	Position6DOF posAssumed;
-	std::list<Position6DOF>::iterator it = positions.end();
+	std::list<Position6DOF>::reverse_iterator rit;
 	int counter = 0;
-	while( (it!=positions.begin()) && (counter<2) )
+	for( rit=positions.rbegin(); (rit!=positions.rend()) && (counter<2); ++rit )
 	{
-		positionPast.setOrientation( it->getOrientation() );
-		positionPast.setPosition( it->getPosition() );
-		positionPast.setTimestamp( it->getTimestamp() );
-		if( counter == 0 )
+		if( counter == 1 )
 		{
-			positionNow = positionPast;
+			positionPast.setOrientation( rit->getOrientation() );
+			positionPast.setPosition( rit->getPosition() );
+			positionPast.setTimestamp( rit->getTimestamp() );
 		}
-		--it;
+		/*if( counter == 0 )
+		{
+			positionNow.setOrientation( positionPast.getOrientation() );
+			positionNow.setPosition( positionPast.getPosition() );
+			positionNow.setTimestamp( positionPast.getTimestamp() );
+		}*/
 		counter++;
 	}
 		// FIXME the following is an alternative to the previous while-construct. Both untested.
@@ -191,7 +193,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 				positionPast.setOrientation( it->getOrientation() );
 				positionPast.setPosition( it->getPosition() );
 				positionPast.setTimestamp( it->getTimestamp() );
-				positionNow = positions.front();
+				positionNow = positions.back();
 			}
 			--it;
 			counter++;
@@ -225,12 +227,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
 
 	/* Calculate new rpy-values every MIN_TIME_TO_WAIT nanoseconds */
-	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
+/*	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
-		//ROS_INFO("interpolate 12 Do not change rpy-values, movement of sent values need to be visible.");
+		ROS_INFO("interpolate 12 Do not change rpy-values, movement of sent values need to be visible.");
 		return newMovement;
 	}
-
+*/
 
 	 /* Calculate new calibration (due to yaw-movement, if |roll|,|pitch| were high enough) */
 	if( ROTATIONAL_CORRECTION )
@@ -241,7 +243,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		 * change > some threshold?
 		 */
 	}
-	//ROS_INFO("interpolate 12 rotational correction done");
+	//ROS_INFO("interpolate 12b rotational correction done");
 
 	/* Calculate correction (calibration data, predictedPosition, target) */
 	MovementQuadruple rpyMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
@@ -350,15 +352,15 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 		return newThrustDiff;
 	} else
 	{
-		ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
+		//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
 		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst && zSpeed<0)) 
 		{  
-			ROS_ERROR(" Thrustdiff increase");
+			//ROS_ERROR(" Thrustdiff increase");
 			newThrustDiff += THRUST_STEP;
 		}
 		if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst && zSpeed>0)) 
 		{  
-			ROS_ERROR(" Thrustdiff decrease");
+			//ROS_ERROR(" Thrustdiff decrease");
 			newThrustDiff -= THRUST_STEP;
 		}
 		return newThrustDiff;
@@ -431,6 +433,8 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
 	double newRoll = v1 * ROLL_MAX;
 	double newPitch = v2 * PITCH_MAX;
 	double newYawrate = 0;
+	ROS_ERROR("factor of rotation: %f, roll %f, pitch %f", factor, newRoll, newPitch);
+	
 	if( closeToTarget( pos, target, RANGE_STABLE ) )
 	{
 		double newRoll = newRoll / 2;
