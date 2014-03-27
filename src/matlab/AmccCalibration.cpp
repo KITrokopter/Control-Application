@@ -78,6 +78,8 @@ void AmccCalibration::multiCameraCalibration(int numberCameras, double squareLen
     // The index of the cameras to calibrate. In this example we are calibrating four cameras with sequential naming.
     // camera_vec = [0 1; 0 2; 0 3]';
     engEvalString(ep, "camera_vec = [zeros(1,(nc - 1), 'single'); (1:(cast(nc - 1, 'single')))]");
+   // engEvalString(ep, "camera_control_vec = [0, nc]");
+   // engEvalString(ep, "camera_vec = [camera_vec,  vec]");
 
     // The index of the cameras to be rotated (1 for rotating 180 degrees)
     engEvalString(ep, "rotcam = zeros(2, (nc - 1), 'single');");

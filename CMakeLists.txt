@@ -150,6 +150,7 @@ if(EXISTS ${MATLAB_PATH})
   src/controller/MovementQuadruple.cpp
   src/controller/Interpolator.cpp
   src/controller/InterpolatorInfo.cpp
+  src/controller/QuadcopterThrust.cpp
 )
 
 add_dependencies(control_application_node
@@ -196,6 +197,7 @@ add_executable(control_application_test_calibration_node
   src/controller/MovementQuadruple.cpp
   src/controller/Interpolator.cpp
   src/controller/InterpolatorInfo.cpp
+  src/controller/QuadcopterThrust.cpp
 )
 
 add_dependencies(control_application_test_calibration_node
@@ -233,6 +235,7 @@ add_executable(profile_control
   src/controller/Mutex.cpp
   src/controller/Interpolator.cpp
   src/controller/InterpolatorInfo.cpp
+  src/controller/QuadcopterThrust.cpp
   src/matlab/Matlab.cpp 
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp

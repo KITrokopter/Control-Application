@@ -8,9 +8,10 @@
 #include "InterpolatorInfo.hpp"
 #include "MovementQuadruple.hpp"
 #include "Position6DOF.hpp"
+#include "QuadcopterThrust.hpp"
 #include "ros/ros.h"
 #include "../matlab/profiling.hpp"
-#define MAX_NUMBER_QUADCOPTER_HIGH 10	// TODO equals MAX_NUMBER_QUADCOPTER
+//#define MAX_NUMBER_QUADCOPTER_HIGH 10
 #define MIN_TIME_TO_WAIT 500000000 	// in ns, only for rpy-values
 #define PREDICT_FUTURE_POSITION_TIME 200000000	// in ns
 #define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
@@ -28,7 +29,8 @@
 #define SPEED_MIN_PLANE 80		// in mm/s
 #define SPEED_MAX_PLANE 300		// in mm/s
 
-#define DISTANCE_CLOSE_TO_TARGET 50 	// in mm
+#define DISTANCE_CLOSE 10 	// in mm
+#define DISTANCE_HIGH 100
 
 #define TEST_ROLL_PITCH 0
 
@@ -48,14 +50,14 @@ class Interpolator {
 public:
 	Interpolator();
 	//MovementQuadruple calibrate(int id, std::list<MovementQuadruple> sentQuadruples);
-	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, int id);
-	MovementQuadruple calculateHold(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id);
+	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, QuadcopterThrust thrustInfo, int id);
+	MovementQuadruple calculateHold(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, QuadcopterThrust thrustInfo, int id);
 
 protected:
 	void checkState( int id );
 
 private:
-	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER_HIGH];
+	InterpolatorInfo status[MAX_NUMBER_QUADCOPTER];
 	double stepSizeOfChange; 	// depends on the distance of position to target	
 	long int timeDiff1;
 	long int timeDiff2;
