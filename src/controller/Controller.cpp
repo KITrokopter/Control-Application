@@ -692,6 +692,11 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
  */
 bool Controller::shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res)
 {
+	if(this->shutdownStarted)
+	{
+		ROS_ERROR("Shutdown already started");
+		return false;
+	}
 	ROS_INFO("Service shutdown has been called");
 	pthread_create(&tShutdownFormation, NULL, &startThreadShutdown, this);
 	ROS_INFO("Thread tShutdownFormation set up");
