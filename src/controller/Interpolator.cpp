@@ -221,7 +221,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	double timediffNowAssumed = posAssumed.getTimestamp() - positionNow.getTimestamp();
 	double timediffNormalized = ((double) timediffNowAssumed) / ((double) 1000000000);	// should be in seconds
 	float absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
-	ROS_INFO("zDiffNow: %f, zDiffAssumed: %f", zDiffNow, zDiffAssumed);
+	ROS_INFO("zDiffAssumed-zDiffNow: %f", zDiffAssumed-zDiffNow);
 	//ROS_INFO("timediffNormalized: %f", timediffNormalized);
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized, thrustInfo);
 	newThrust = thrustInfo.checkAndFix( newThrust );
@@ -356,17 +356,18 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 	double thrustStepA = ((double) THRUST_STEP) * ((double) distanceFactor) * sqrt(1/cyclesPerSecond);
 	unsigned int thrustStep = thrustStepA;
 	ROS_ERROR("absDistanceFirstLatest %f, distanceFactor %f", absDistanceFirstLatest, distanceFactor);
-	ROS_ERROR("cycles %f, thrustStepA %f, thrustStep %i", cyclesPerSecond, thrustStepA, thrustStep);
+	ROS_ERROR("thrustStepA %f, thrustStep %i" thrustStepA, thrustStep);
+	//ROS_ERROR("cycles %f, thrustStepA %f, thrustStep %i", cyclesPerSecond, thrustStepA, thrustStep);
 	
 	//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
 	if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst && zSpeed<0)) 
 	{  
-		//ROS_ERROR(" Thrustdiff increase");
+		ROS_ERROR(" Thrustdiff increase");
 		newThrustDiff += thrustStep;
 	}
 	if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst && zSpeed>0)) 
 	{  
-		//ROS_ERROR(" Thrustdiff decrease");
+		ROS_ERROR(" Thrustdiff decrease");
 		newThrustDiff -= thrustStep;
 	}
 	
