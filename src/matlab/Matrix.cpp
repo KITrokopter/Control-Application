@@ -92,6 +92,7 @@ Matrix Matrix::multiplicate(Matrix A) {
     double r31 = m31 * A.getM11() + m32 * A.getM21() + m33 * A.getM31();
     double r32 = m31 * A.getM12() + m32 * A.getM22() + m33 * A.getM32();
     double r33 = m31 * A.getM13() + m32 * A.getM23() + m33 * A.getM33();
+    return Matrix(r11, r12, r13, r21, r22, r23, r31, r32, r33);
 }
 
 double Matrix::determinant() {
