@@ -50,6 +50,9 @@ Controller::Controller()
 	this->formation = new Formation();
 	
 	this->receivedTrackingArea = false;
+	
+	this->rotationInProcess = false;
+	
 	ROS_INFO("ROS stuff set up");
 	
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
@@ -152,7 +155,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			continue;	
 		}
 		current = getNanoTime();
-		this->lastCurrent[id] = current;
+		this->timeLastCurrent[id] = current;
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp( current );
 		
@@ -499,8 +502,14 @@ void Controller::buildFormation()
 /*Service to rotate formation*/
 bool Controller::rotateFormation(control_application::Rotation::Request  &req, control_application::Rotation::Response &res)
 {
+	if(this->rotationInProcess)
+	{
+		ROS_ERROR("Rotation is already in process. Please wait to start a new rotation");
+		return false;
+	}
 	pthread_create(&tRotation, NULL, startThreadRotation, this);
 	ROS_INFO("Thread tRotation set up");
+	this->rotationInProcess = true;
 	return true;
 }
 
@@ -509,10 +518,9 @@ void Controller::rotate()
 	/*
 	int amount = quadcopterMovementStatus.size();
 	long int current = getNanoTime();
-	bool inShutdown = this->shutdownStarted;
-	while( (TIME_ROTATE_CIRCLE > current - this->rotationStarted) && !inShutdown )
+	while( (TIME_ROTATE_CIRCLE > current - this->timeRotationStarted) && !inShutdown )
 	{
-		if( inShutdown )
+		if( this->shutdownStarted )
 		{
 			return;
 		}
@@ -521,7 +529,6 @@ void Controller::rotate()
 		
 		}
 		current = getNanoTime();
-		inShutdown = this->shutdownStarted;
 	}
 	
 	unsigned int quadStatus = this->quadcopterMovementStatus[i];
@@ -530,6 +537,7 @@ void Controller::rotate()
 
 	}
 	*/
+	this->rotationInProcess = false;
 }
 
 /*
@@ -537,6 +545,11 @@ void Controller::rotate()
  */
 bool Controller::startBuildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res)
 {
+	if(this->buildFormationFinished)
+	{
+		ROS_ERROR("Formation was already build. No rebuildling allowed.");
+		return false;
+	}
 	pthread_create(&tBuildFormation, NULL, startThreadBuildFormation, this);
 	ROS_INFO("Thread tBuildFormation set up");
 	return true;
@@ -547,6 +560,16 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
  */
 bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res)
 {
+	if(this->receivedQuadcopters)
+	{
+		ROS_ERROR("Quadcopters already set. No resetting allowed");
+		return false;
+	}
+	if(this->receivedFormation && (req.amount < this->formation.getAmount()))
+	{
+		ROS_ERROR("You have too less quadcopters to create the formation. Please set more Quadcopters or restart the system.")
+		return false;
+	}
 	ROS_INFO("iService setQuadcopters has been called amount %i", req.amount);
 	unsigned long int i;
 	for( i = 0; i < req.amount; i++)
@@ -590,7 +613,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 		this->Movement_pub[i] = this->n.advertise<control_application::quadcopter_movement>(topicNameMov.str().c_str(), 1000);
 	}
-	receivedQuadcopters = true;
+	this->receivedQuadcopters = true;
 	
 	pthread_create(&tCalculateMovement, NULL, startThreadCalculateMovement, this);
 	ROS_INFO("Thread tCalculateMovement set up");
@@ -666,7 +689,7 @@ bool Controller::checkInput(int internId)
 		//emergencyRoutine(message);
 	}
 	long int currentTime = getNanoTime();
-	long int lastForm = this->lastFormationMovement;
+	long int lastForm = this->timeLastFormationMovement;
 	if(currentTime - lastForm > TIME_UPDATED_END && quadStatus == CALCULATE_MOVE)
 	{
 		//std::string message = std::string("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
@@ -675,7 +698,7 @@ bool Controller::checkInput(int internId)
 		//emergencyRoutine(message);
 		return false;
 	}
-	long int lastCur = this->lastCurrent[internId];
+	long int lastCur = this->timeLastCurrent[internId];
 	if(currentTime - lastCur > TIME_UPDATED_END && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
 		ROS_DEBUG("Time difference %ld", currentTime - lastCur);
@@ -726,6 +749,11 @@ void Controller::emergencyRoutine(std::string message)
 */
 void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
 {
+	if(this->rotationInProcess)
+	{
+		ROS_ERROR("Rotation in Process. Moving the formation is not allowed. Please wait for the rotation to be finished.");
+		return;
+	}
 	ROS_INFO("I heard Movement. xMovement: %f", msg->xMovement);
 	std::vector<float> movement;
 	movement.push_back( msg->xMovement );
@@ -734,7 +762,8 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 	this->formationMovementMutex.lock();
 	this->formationMovement.push_back(movement);
 	this->formationMovementMutex.unlock();	
-	this->lastFormationMovement = getNanoTime();
+	this->timeLastFormationMovement = getNanoTime();
+	
 	//calculate and set a new target position each time there is new data
 	if(this->buildFormationFinished)
 	{
@@ -747,6 +776,16 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 */
 void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
 {
+	if(this->receivedFormation)
+	{
+		ROS_ERROR("Formation was already set. No resetting allowed");
+		return;
+	}
+	if(this->receivedQuadcopters && (this->quadcopterMovementStatus.size() < msg->amount))
+	{
+		ROS_ERROR("Your formation has to many quadcopters set. Please set a different Formation or restart the system")
+		return;
+	}
 	ROS_INFO("I heard Formation. amount: %i", msg->amount);
 	this->formation->setDistance(msg->distance);
 	this->formation->setAmount(msg->amount);
@@ -761,7 +800,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		formPos[i].setPosition(pos);
 	}
 	this->formation->setPosition(formPos);
-	receivedFormation = true;
+	this->receivedFormation = true;
 	ROS_INFO("Set Formation done");
 	return;
 }
@@ -926,19 +965,34 @@ void Controller::land( int internId, int * nrLand )
 		newMovement.setThrust( THRUST_DECLINE );
 		newMovement.setTimestamp( currentTime );
 		this->listFutureMovement[internId].push_front( newMovement );		
+		this->time3 = getNanoTime();
 	}
 	else
 	{
+		if(this->thrustTest > THRUST_DECLINE)
+		{
+			this->thrustTest = THRUST_DECLINE;
+			this->time3 = getNanoTime();
+		}
 		ROS_INFO("min");
+		if(currentTime > this->time3 + 1000000 && this->thrustTest - 500 > 0)
+		{
+			//usleep(85000);
+			this->thrustTest -= 500;
+			this->time3 = getNanoTime();
+		}
 		//Shutdown crazyflie after having left the tracking area.
-		//MovementQuadruple newMovement = MovementQuadruple( THRUST_DECLINE, 0, 0, 0 ); FIXME 
-		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
-		newMovement.setThrust( THRUST_SHUTDOWN );
+		MovementQuadruple newMovement = MovementQuadruple( this->thrustTest, 0, 0, 0 ); 
+		//MovementQuadruple newMovement = this->listFutureMovement[internId].front();
+		//newMovement.setThrust( THRUST_SHUTDOWN );
 		newMovement.setTimestamp(currentTime);
 		this->listFutureMovement[internId].push_front( newMovement );
-		this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
-		(*nrLand)++;
-		ROS_INFO("Landed: %i", *nrLand);
+		if( this->thrustTest - 500 <= 0)
+		{
+			this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
+			(*nrLand)++;
+			ROS_INFO("Landed: %i", *nrLand);
+		}
 	}
 }
 

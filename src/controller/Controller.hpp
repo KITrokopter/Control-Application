@@ -39,7 +39,7 @@
 #define THRUST_SHUTDOWN 0
 #define THRUST_STAND_STILL 28001
 #define THRUST_START 35000
-#define THRUST_DECLINE 200
+#define THRUST_DECLINE 20000
 #define THRUST_MAX 48001
 #define THRUST_STEP 200
 #define ROLL_MAX 8.0
@@ -168,10 +168,10 @@ private:
 	bool buildFormationFinished;
 	bool receivedTrackingArea;
 	bool shutdownStarted;
-	bool rotationFinished;
-	long int rotationStarted;
-	long int lastFormationMovement;
-	long int lastCurrent[MAX_NUMBER_QUADCOPTER];
+	bool rotationInProcess;
+	long int timeRotationStarted;
+	long int timeLastFormationMovement;
+	long int timeLastCurrent[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
 	//Mutex shutdownMutex;
