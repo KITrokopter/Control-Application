@@ -227,7 +227,7 @@ bool TrackingArea::inCameraRange(Vector x) {
             if (inTrackingArea(cameraPosition[i], cameraDirection[i], x)) {
                 tracked++;
             } else {
-                ROS_DEBUG("camera %f", i);
+                ROS_DEBUG("camera %d", i);
             }
         }
         return (tracked >= 1);
