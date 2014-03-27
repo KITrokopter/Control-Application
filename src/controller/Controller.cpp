@@ -709,6 +709,12 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
  */
 void Controller::shutdownFormation()
 {
+	if(this->shutdownStarted)
+        {
+                ROS_ERROR("Shutdown already started");
+                return;
+        }
+
 	ROS_INFO("ShutdownFormation started");	
 	this->shutdownStarted = true; /* Start shutdown process */
 	int formationAmount = this->formation->getAmount();
@@ -1054,7 +1060,7 @@ void Controller::land( int internId, int * nrLand )
 		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp - 500 > 0)
 		{
 			//usleep(85000);
-			this->thrustHelp -= 500;
+			this->thrustHelp -= 700;
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		//Shutdown crazyflie after having left the tracking area.
