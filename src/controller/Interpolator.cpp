@@ -2,17 +2,18 @@
 //#include "InterpolatorInfo.hpp"
 #include "Controller.hpp"
 
-unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceFirstLatest, double timediffNormalized );
+unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceFirstLatest, double timediffNormalized, QuadcopterThrust thrustInfo );
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest );
 bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF target );
 MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target );
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
+float calculateDistanceFactor( float distance );
 
 Interpolator::Interpolator()
 {
 	this->stepSizeOfChange = 1;
 	this->aTimeSwitch = 0;
-	for( int i = 0; i < MAX_NUMBER_QUADCOPTER_HIGH; i++ )
+	for( int i = 0; i < MAX_NUMBER_QUADCOPTER; i++ )
 	{
 		this->status[i] = InterpolatorInfo();
 	}
@@ -32,7 +33,7 @@ MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> s
 */
 
 
-MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, int id)
+MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, QuadcopterThrust thrustInfo, int id)
 {
 	/*if( TEST_ROLL_PITCH )
 	{
@@ -44,7 +45,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 				ROS_INFO("ROLL_MAX sent");
 			}
 			aTimeSwitch = 0;
-			return MovementQuadruple(THRUST_START, ROLL_MAX, 0, 0);
+			return MovementQuadruple(thrustInfo.getStart(), ROLL_MAX, 0, 0);
 		} 
 		else
 		{
@@ -53,12 +54,12 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 				ROS_INFO("PITCH_MAX sent");
 			}
 			aTimeSwitch = 1;
-			return MovementQuadruple(THRUST_START, 0, PITCH_MAX, 0);
+			return MovementQuadruple(thrustInfo.getStart(), 0, PITCH_MAX, 0);
 		}
 	}*/
 	//ROS_INFO("interpolate 01 calculateNextMQ");
 	long int currentTime = getNanoTime();
-	MovementQuadruple newMovement = MovementQuadruple(THRUST_START, 0, 0, 0); // Nothing has been sent so far
+	MovementQuadruple newMovement = MovementQuadruple(thrustInfo.getStart(), 0, 0, 0); // Nothing has been sent so far
 
 	if( sentQuadruples.size() > 0 )
 	{
@@ -71,7 +72,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	{
 		case UNSTARTED:
 			ROS_ERROR("Error in switch - calculateNextMQ.");
-			newMovement.setThrust( THRUST_MIN );
+			newMovement.setThrust( THRUST_OFF );
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
 			//break;
@@ -290,7 +291,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 //	}
 }
 
-MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, int id)
+MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, QuadcopterThrust thrustInfo, int id)
 {
 	long int current = getNanoTime();
 	if( this->status[id].getState() < HOLD )
@@ -322,10 +323,14 @@ MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sent
 }
 
 
-unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceFirstLatest, double timediffNormalized )
+unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceFirstLatest, double timediffNormalized, QuadcopterThrust thrustInfo )
 {
 	unsigned int newThrustDiff = 0;
-	float distanceFactor = 0.5; // higher if further from target, between [0, 1]	//TODO
+	float distanceFactor = calculateDistanceFactor( absDistanceFirstLatest );
+	if( (distanceFactor<0 || (distanceFactor>1) )
+	{
+		ROS_ERROR("wrong distanceFactor %f", distanceFactor);
+	}
 	float threshold = 0;	// higher if timediff is higher and 	//TODO
 
 	/* Height-difference calculated as z-speed in mm/s. Positive if inclining. */
@@ -345,26 +350,23 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 	 * 	negative distance to target is increasing
 	 * 	(speed is too high)
 	 */
+	unsigned int cyclesPerSecond = ((double) TIME_ROTATE_CIRCLE) / ((double) 1000000000);
+	unsigned int thrustStep = THRUST_STEP * distanceFactor * (1/cyclesPerSecond);
+	ROS_ERROR("thrustStep %i", thrustStep);
 	
-	if( abs(zDistanceLatest) < DISTANCE_CLOSE_TO_TARGET ) 
-	{
-		//ROS_ERROR("Thrustdiff is zero");
-		return newThrustDiff;
-	} else
-	{
-		//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
-		if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst && zSpeed<0)) 
-		{  
-			//ROS_ERROR(" Thrustdiff increase");
-			newThrustDiff += THRUST_STEP;
-		}
-		if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst && zSpeed>0)) 
-		{  
-			//ROS_ERROR(" Thrustdiff decrease");
-			newThrustDiff -= THRUST_STEP;
-		}
-		return newThrustDiff;
+	//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
+	if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst && zSpeed<0)) 
+	{  
+		//ROS_ERROR(" Thrustdiff increase");
+		newThrustDiff += thrustStep;
 	}
+	if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst && zSpeed>0)) 
+	{  
+		//ROS_ERROR(" Thrustdiff decrease");
+		newThrustDiff -= thrustStep;
+	}
+	
+	return newThrustDiff;
 }
 
 void Interpolator::checkState( int id )
@@ -526,5 +528,22 @@ static bool closeToTarget( Position6DOF position1, Position6DOF position2, doubl
 		return true;
 	}
 	return false;
+}
+
+float calculateDistanceFactor( float distance )
+{
+	distance = abs( distance );
+	if( distance < DISTANCE_CLOSE )
+	{
+		return 0;
+	}
+	else if( distance < DISTANCE_HIGH )
+	{
+		return (distance / (DISTANCE_HIGH-DISTANCE_CLOSE));
+	} 
+	else
+	{
+		return 1;
+	}
 }
 

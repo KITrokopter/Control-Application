@@ -1,15 +1,43 @@
 #include "QuadcopterThrust.hpp"
-#include "Controller.hpp"
 
-QuadcopterThrust::QuadcopterThrust
+QuadcopterThrust::QuadcopterThrust()
 {
 	this->min = 28000;
 	this->max = 40000;
 	this->start = 28000;
 	this->startMax = 42000;
+	this->setThrustCalled = false;
 }
 
-void setThrust( double battery )
+bool QuadcopterThrust::checkAndSetBatteryValue( float battery )
+{
+	if( battery > BATTERY_MAX )
+	{
+		return false;
+	} 
+	else if( battery < BATTERY_LOW )
+	{
+		return false;
+	}
+	setThrust( battery );
+	this->setThrustCalled = true;
+	return true;
+}
+
+unsigned int QuadcopterThrust::checkAndFix( unsigned int thrust )
+{
+	if( thrust > this->max )
+	{
+		return this->max;
+	}
+	else if( thrust < this->min )
+	{
+		return this->min;
+	}
+	else return thrust;
+}
+
+void QuadcopterThrust::setThrust( float battery )
 {
 	if( battery > 4 )
 	{
@@ -29,6 +57,11 @@ void setThrust( double battery )
 		this->start += QUADCOPTER_THRUST_RANGE;
 		this->startMax += QUADCOPTER_THRUST_RANGE;
 	}
+}
+
+bool QuadcopterThrust::initDone()
+{
+	return this->setThrustCalled;
 }
 
 void QuadcopterThrust::setMin( unsigned int min )
