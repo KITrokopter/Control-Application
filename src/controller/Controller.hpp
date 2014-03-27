@@ -141,7 +141,7 @@ private:
 	long int timeOffsetOutput;
 	long int timeDurationMoveup;
 	long int timeOffsetChangeThrust;
-	unsigned int thrustHelp;	
+	int thrustHelp;	
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;

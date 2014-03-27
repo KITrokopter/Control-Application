@@ -293,7 +293,7 @@ void Controller::calculateMovement()
 			switch( quadStatus )
 			{
 				case CALCULATE_NONE:
-					if(numberOfLanded > 1)
+					if(numberOfLanded >= 1)
 					{
 						 ROS_INFO("None: %i", i);
 					}
