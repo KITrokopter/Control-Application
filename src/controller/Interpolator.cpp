@@ -356,16 +356,17 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 	ROS_ERROR("thrustStep %i", thrustStep);
 	//ROS_ERROR("cycles %f, thrustStepA %f, thrustStep %i", cyclesPerSecond, thrustStepA, thrustStep);	
 	//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
-	if((zDistanceLatest>0 && zSpeed<0) || (zDistanceLatest>0 && zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zDistanceLatest<0 && zSpeed<0 && zSpeed<SPEED_MAX_DECLINING))
-	{
-		ROS_ERROR(" Thrustdiff increase");
-		newThrustDiff += thrustStep;
-	}
 	if((zSpeed<SPEED_MAX_DECLINING))
 	{
 		ROS_ERROR(" Thrustdiff increase");
+		newThrustDiff += 3*thrustStep;
+	}
+	else if((zDistanceLatest>0 && zSpeed<0) || (zDistanceLatest>0 && zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zDistanceLatest<0 && zSpeed<0 && zSpeed<SPEED_MAX_DECLINING))
+	{
+		ROS_ERROR(" Thrustdiff increase");
 		newThrustDiff += thrustStep;
 	}
+	
 	if((zDistanceLatest<0 && zSpeed>0) || (zDistanceLatest<0 && zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zSpeed>0 && zSpeed>SPEED_MAX_INCLINING))
 	{
 		ROS_ERROR(" Thrustdiff decrease");
