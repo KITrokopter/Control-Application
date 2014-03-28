@@ -78,7 +78,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			return newMovement;
 			//break;
 		case STARTED:
-			ROS_INFO("interpolate 03b started");
+			//ROS_INFO("interpolate 03b started");
 			if( this->status[id].getStarted()+timeDiff1 < currentTime )
 			{
 				newMovement.setRollPitchYawrate( -ROLL_MAX, -PITCH_MAX, 0 );
@@ -153,7 +153,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	{
 		/* Might not get enough data from camera in a certain time.
 		 * Depends probably on how fast the QC will leave the tracking area again. */
-		ROS_ERROR("Not enough data in calculateNextMQ, some assumption is wrong..."); // FIXME error not info
+		ROS_ERROR("Not enough data in calculateNextMQ, some assumption is wrong...");
 		return newMovement;
 	}
 	//ROS_INFO("interpolate 07");
@@ -247,6 +247,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		 * sent |roll|+|pitch| = change
 		 * change > some threshold?
 		 */
+		
 	}
 	//ROS_INFO("interpolate 12b rotational correction done");
 

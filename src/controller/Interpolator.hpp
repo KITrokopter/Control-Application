@@ -17,7 +17,6 @@
 //#define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
 
 #define ROTATIONAL_CORRECTION 0	// 0-no correction; 1-always take new value; linear in between wouldn't work
-//#define POSITIONED_NORTH_AT_START 0	// 0 or 1, used as bool, North means pitch+ -> y+
 
 #define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
 #define REACHING_HEIGHT_DIFF 0.6 // Factor 0 <= x <= 1
@@ -26,8 +25,6 @@
 #define SPEED_MAX_INCLINING 15 	// in mm/s
 #define SPEED_MIN_DECLINING 0 	// in mm/s
 #define SPEED_MAX_DECLINING -8 	// in mm/s
-#define SPEED_MIN_PLANE 80		// in mm/s
-#define SPEED_MAX_PLANE 300		// in mm/s
 
 #define DISTANCE_CLOSE 10	// in mm
 #define DISTANCE_HIGH 1000
@@ -37,13 +34,8 @@
 #define TEST_ROLL_PITCH 0
 
 /*
- * thursday
- * TODO hold
- * TODO Coordinatesystem test
- * TODO roll/pitch-test QC
  * TODO flight of circles, rotation, ...
  * 
- * TODO list future movement - fix
  * TODO use of timestamps
  * TODO ROS_INFO, ROS_WARN, ROS_ERROR, ROS_DEBUG - correct use
  */
