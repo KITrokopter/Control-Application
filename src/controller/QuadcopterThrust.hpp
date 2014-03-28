@@ -5,7 +5,7 @@
 #include <map>
 #include "ros/ros.h"
 
-#define QUADCOPTER_THRUST_RANGE 10000 
+#define QUADCOPTER_THRUST_RANGE 13000
 #define BATTERY_MAX 8
 #define BATTERY_LOW 1
 
@@ -25,6 +25,8 @@ class QuadcopterThrust
 		unsigned int getStartMax();
 		void setStart( unsigned int start );
 		unsigned int getStart();
+		void setDecline( unsigned int decline );
+		unsigned int getDecline();
 
 	protected:		
 		void setThrust( float battery );
@@ -38,6 +40,7 @@ class QuadcopterThrust
 		unsigned int max;
 		unsigned int startMax;
 		unsigned int start;
+		unsigned int decline;
 
 		bool setThrustCalled;
 };

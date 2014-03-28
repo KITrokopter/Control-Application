@@ -23,6 +23,7 @@ public:
 
 	double getAbsoluteDistance();
 	double getAbsoluteDistance( Position6DOF otherPosition );
+	double getAbsoluteDistanceXY( Position6DOF otherPosition );
 	double getDistanceZ( Position6DOF otherPosition ); // positive if "this" is below "otherPosition"
 	void predictNextPosition( Position6DOF olderPosition, long int timeInFuture );
 
