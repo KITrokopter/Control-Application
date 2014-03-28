@@ -6,6 +6,10 @@ void* startThreadShutdown(void* something);
 void* startThreadRotation(void* something);
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
 
+/*
+ * Constructor of Controller.
+ * Sets all control variable on false, sets up all the Ros functions, and initializes helper variables.
+ */
 Controller::Controller()
 {
 	/**
@@ -67,6 +71,10 @@ Controller::Controller()
 	this->timeOffsetChangeThrust = getNanoTime();
 }
 
+/*
+ * Initialization after the system has been started globally.
+ * Controller announces itself to API to get a global ID.
+ */
 void Controller::initialize()
 {
 	api_application::Announce srv;
@@ -78,6 +86,10 @@ void Controller::initialize()
 	ROS_INFO("Initialize done");
 }
 
+/*
+ * Setter for the Tracking Area.
+ * Executed by matlab modul.
+ */
 void Controller::setTrackingArea(TrackingArea area)
 {
 	this->trackingArea = area;
@@ -119,11 +131,11 @@ void Controller::setTargetPosition()
 			emergencyRoutine(message);
 			return;
 		}*/ 
-		//Commented because of testing
 		newTarget.setPosition(targetNew);
 		newTarget.setTimestamp(currentTime);
 		this->listTargetsMutex.lock();
 		this->listTargets[i].push_back(newTarget);
+		//Trim list of Targets to 30 elements
 		while( this->listTargets[i].size() > 30 )
 		{
 			// Remove oldest elements
@@ -133,6 +145,11 @@ void Controller::setTargetPosition()
 	}	
 }
 
+/*
+ * Updating the current Position of the crazyflies.
+ * Calles by the position modul with new/current position data.
+ * Number of new positions can vary accordingly to the newly calculated positions.
+ */
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
 {
 	//ROS_DEBUG("UpdatePosition");		
@@ -159,6 +176,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
 		newPosition.setTimestamp( currentTime );
 		
+		//Check if new positions are valid.
 		if( it->getV1() != INVALID ) 
 		{	
 			//ROS_INFO("Valid");
@@ -167,7 +185,8 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			if( trackedLocal == false )
 			{
 				//ROS_INFO("tracked");
-				/* Quadcopter has not been tracked before */
+				/* Quadcopter has not been tracked before, therefore set tracked to true
+				 and switch to Stabilize-Status when the qc was in starting process */
 				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
 				{
 					ROS_DEBUG("Stabilizing now %i", id);
@@ -183,6 +202,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		} 
 		//ROS_INFO("Push back");
 		this->listPositionsMutex.lock(); 
+		//Trim Position list to 30 elements.
 		while( this->listPositions[id].size() > 30 )
 		{
 			//ROS_INFO("erasing");
@@ -195,7 +215,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 }
 
 /*
- * Creates a Ros message for the movement of each quadcopter and sends this 
+ * Creates all the Ros messages for the movement of each quadcopter and sends this 
  * to the quadcopter modul
  */
 void Controller::sendMovementAll()
@@ -212,6 +232,7 @@ void Controller::sendMovementAll()
 			this->listFutureMovement[i].pop_back();
 		}
 		unsigned int quadStatus= this->quadcopterMovementStatus[i];
+		//Check if the qc movement values are in the allowed range.
 		if(quadStatus == CALCULATE_START) 
 		{
 			this->listFutureMovement[i].front().checkQuadruple( thrust_info[i].getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
@@ -233,7 +254,7 @@ void Controller::sendMovementAll()
 		msg.yaw = this->listFutureMovement[i].front().getYawrate();
 		this->Movement_pub[i].publish(msg);		
 		//this->listFutureMovement[i].front().setTimestamp( currentTime );
-		
+		//Trim list of sent movement data to a defined value
 		while( this->listSentQuadruples[i].size() > MAX_SAVED_SENT_QUADRUPLES )
 		{
 			// Remove oldest elements
@@ -246,8 +267,12 @@ void Controller::sendMovementAll()
 }
 	
 /*
- * Calculates the movement vector of each quadcopter non stop and sends the vector first to convertMovement to set the yaw, pitch, roll and thrust
- * values. Then sends the movement to the quadcopter. Routine runs till shutdown formaiton is called.
+ * Controlls the behaviour of the quadcopters. Each quadcopter has a status according to which different functions are
+ * called to set/calculate the movement data considering different situations of the quadcopters.
+ * If the quadcopter is out of tracking area or has a low battery status, checkInput will detect the problem and
+ * react respectivly.
+ * After calculating the movement data considering the quadcopter status the data is sent to the quadcopter. 
+ * Routine runs till shutdown formaiton is called.
  */	
 void Controller::calculateMovement()
 {
@@ -285,10 +310,12 @@ void Controller::calculateMovement()
 				//ROS_INFO("land or hold");
 				if( enoughData)
 				{
+					//Check if quadcopter is in tracked and/or the battery status is sufficiently high.
 					checkInput(i);
 				}
 			}
 			
+			//Calculate movement data accordingly to the quadcopter status/state.
 			quadStatus= this->quadcopterMovementStatus[i];
 			switch( quadStatus )
 			{
@@ -341,6 +368,7 @@ void Controller::calculateMovement()
 			this->landFinished = end;
 			
 		}
+		//Make sure the calculation of the movement data is restricted to a certain rate.
 		timerCalculateMovement = getNanoTime();
 		while( timerCalculateMovement < TIME_MIN_CALC + calculateMovementStarted )
 		{
@@ -499,9 +527,12 @@ void Controller::buildFormation()
 	this->buildFormationFinished = true;
 }
 
-/*Service to rotate formation*/
+/* 
+ * Service to rotate formation
+ */
 bool Controller::rotateFormation(control_application::Rotation::Request  &req, control_application::Rotation::Response &res)
 {
+	//If a rotation is already running, return false and don't start a new one.
 	if(this->rotationInProcess)
 	{
 		ROS_ERROR("Rotation is already in process. Please wait to start a new rotation");
@@ -514,13 +545,18 @@ bool Controller::rotateFormation(control_application::Rotation::Request  &req, c
 	return true;
 }
 
+/*
+ * Rotation of the formation around the center of the tracking Area or a certain point.
+ */
 void Controller::rotate()
 {
 	int amount = this->formation->getAmount();
 	long int currentTime = getNanoTime();
+	//center of the tracking area around which we want to rotate
 	Vector vector = this->trackingArea.getCenterOfTrackingArea();
 	Position6DOF center = Position6DOF(vector);
 	float rotationAngle = 2*M_PI / amount;
+	//Array which indicates which qc is already chosen for the rotation.
 	bool qcChosen[amount];
 	for( int i = 0; i < amount; i++)
 	{
@@ -531,10 +567,12 @@ void Controller::rotate()
 	Matrix2x2 rotationMatrix;
 	for(int i = 0; i < amount; i++)
 	{
+		//Clear all previous Targets
 		this->listTargetsMutex.lock();
 		this->listTargets[i].clear();
 		Position6DOF newPosition;
 		double * targetK = center.getPosition();
+		//Calculate starting Positions for Rotation and the choose nearest qc for that position
 		if( i == 0 )
 		{
 			targetK[0] += DISTANCE_ROTATE_TO_CENTER;		
@@ -549,6 +587,7 @@ void Controller::rotate()
 		}
 		else
 		{	
+			//Rotate first point moved to z=0 level around origin, then move back up
 			Vector vectorK = Vector(DISTANCE_ROTATE_TO_CENTER, 0, 0);
 			rotationMatrix = Matrix2x2(cos(i * rotationAngle), -sin(i * rotationAngle), sin(i * rotationAngle), cos(i * rotationAngle));
 			vectorK = rotationMatrix.multiplicate(vectorK);
@@ -567,6 +606,7 @@ void Controller::rotate()
 		
 		this->listTargetsMutex.lock();
 	}
+	//Start rotating. Set target for each qc to the previous target of the qc next to the qc
 	while( TIME_ROTATE_CIRCLE > (currentTime - this->timeRotationStarted))
 	{
 		if( this->shutdownStarted )
@@ -580,6 +620,7 @@ void Controller::rotate()
 			int idCurrent = qcPositionMap[i];
 			int idNext = qcPositionMap[i + 1];
 			this->listTargetsMutex.lock();
+			//Save first target because it gets overwritten
 			if(i == 0)
 			{				
 				previousTarget = this->listTargets[idNext].back();
@@ -599,15 +640,16 @@ void Controller::rotate()
 		}
 		currentTime = getNanoTime();
 	}
-	
+	//Rotation finished
 	this->rotationInProcess = false;
 }
 
 /*
- * Sets global variable which indicates that the build formation process is started
+ * Service to start build formation process
  */
 bool Controller::startBuildFormation(control_application::BuildFormation::Request  &req, control_application::BuildFormation::Response &res)
 {
+	//If buildformation was already build, a new build request is ignored. 
 	if(this->buildFormationFinished)
 	{
 		ROS_ERROR("Formation was already build. No rebuildling allowed.");
@@ -619,21 +661,23 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
 }
 
 /*
- * Service to set Quadcopter IDs
+ * Service to set Quadcopter IDs. Also initialize dynamic arrays according to the given amount of qc
  */
 bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res)
 {
+	//If setQuadcopters was already executed, a new setting request is ignored.
 	if(this->receivedQuadcopters)
 	{
 		ROS_ERROR("Quadcopters already set. No resetting allowed");
 		return false;
 	}
+	//If there are too less qcs to build the given formation, ignore request.
 	if(this->receivedFormation && (req.amount < this->formation->getAmount()))
 	{
 		ROS_ERROR("You have too less quadcopters to create the formation. Please set more Quadcopters or restart the system.");
 		return false;
 	}
-	ROS_INFO("iService setQuadcopters has been called amount %i", req.amount);
+	ROS_INFO("Service setQuadcopters has been called amount %i", req.amount);
 	unsigned long int i;
 	for( i = 0; i < req.amount; i++)
 	{
