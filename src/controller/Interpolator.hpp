@@ -13,8 +13,8 @@
 #include "../matlab/profiling.hpp"
 #define MAX_NUMBER_QUADCOPTER_HIGH 10
 #define MIN_TIME_TO_WAIT 500000000 	// in ns, only for rpy-values
-#define PREDICT_FUTURE_POSITION_TIME 200000000	// in ns
-#define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
+#define PREDICT_FUTURE_POSITION_TIME 150000000	// in ns
+//#define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
 
 #define ROTATIONAL_CORRECTION 0	// 0-no correction; 1-always take new value; linear in between wouldn't work
 //#define POSITIONED_NORTH_AT_START 0	// 0 or 1, used as bool, North means pitch+ -> y+
@@ -22,15 +22,15 @@
 #define REACHING_TARGET_DIFF 0.6 // Factor 0 <= x <= 1
 #define REACHING_HEIGHT_DIFF 0.6 // Factor 0 <= x <= 1
 
-#define SPEED_MIN_INCLINING 0 	// in mm/s
-#define SPEED_MAX_INCLINING 8000 	// in mm/s
-#define SPEED_MIN_DECLINING -0 	// in mm/s
-#define SPEED_MAX_DECLINING -8000 	// in mm/s
+#define SPEED_MIN_INCLINING 10 	// in mm/s
+#define SPEED_MAX_INCLINING 200 	// in mm/s
+#define SPEED_MIN_DECLINING -10 	// in mm/s
+#define SPEED_MAX_DECLINING -200 	// in mm/s
 #define SPEED_MIN_PLANE 80		// in mm/s
 #define SPEED_MAX_PLANE 300		// in mm/s
 
-#define DISTANCE_CLOSE 10 	// in mm
-#define DISTANCE_HIGH 100
+#define DISTANCE_CLOSE 10	// in mm
+#define DISTANCE_HIGH 2000
 
 #define TEST_ROLL_PITCH 0
 

@@ -86,7 +86,7 @@ double Position6DOF::getAbsoluteDistance( Position6DOF otherPosition )
 	double distanceOfOne;
 	for( int i = 0; i < 3; i++ )
 	{
-		distanceOfOne = position[i] - otherPosition.getPosition()[i];
+		distanceOfOne = abs( position[i] - otherPosition.getPosition()[i]);
 		distanceOfOne *= distanceOfOne;
 		sum += distanceOfOne;
 	}
@@ -108,7 +108,7 @@ void Position6DOF::predictNextPosition( Position6DOF olderPosition, long int tim
 	else
 	{
 		double timediffNorm = ((double) timediff) / ((double) 1000000000);
-		ROS_DEBUG("timediffNorm: %f", timediffNorm);
+		//ROS_DEBUG("timediffNorm: %f", timediffNorm);
 	}
 	this->timestamp = this->timestamp + timeInFuture;
 
@@ -119,7 +119,7 @@ void Position6DOF::predictNextPosition( Position6DOF olderPosition, long int tim
 	if( timediff != 0 )
 	{
 		rate = (((double) timeInFuture) - ((double) timediff)) / 1000000000;
-		ROS_INFO("rate %f", rate);
+		//ROS_INFO("rate %f", rate);
 	}
 	
 	double xNew = this->position[0] + xDiff*rate;

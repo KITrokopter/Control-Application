@@ -61,7 +61,7 @@ bool MovementQuadruple::checkQuadruple( int maxThrust, float maxRoll, float maxP
 	bool below = true;
 	if( this->thrust > maxThrust )
 	{
-		//ROS_INFO("Thrust to high, resetting.");
+		ROS_INFO("Thrust to high, resetting.");
 		this->thrust = maxThrust;
 		below = false;
 	}

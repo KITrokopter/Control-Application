@@ -39,9 +39,9 @@
 #define THRUST_GLOBAL_MAX 60000
 #define THRUST_GLOBAL_MIN 10001
 #define THRUST_OFF 0
-#define THRUST_STEP 3500
-#define ROLL_MAX 8.0
-#define PITCH_MAX 8.0
+#define THRUST_STEP 5000
+#define ROLL_MAX 15.0
+#define PITCH_MAX 15.0
 #define YAWRATE_MAX 0.0
 #define INVALID -1
 #define LOW_BATTERY 3.0//In V
@@ -138,10 +138,10 @@ private:
 	std::vector<unsigned long int > quadcopters;
 	/* For calculateMovement, using local id from mapping before. */
 	std::vector<unsigned int > quadcopterMovementStatus;
-	long int offsetOutput;
-	long int durationMoveup;
-	long int offsetChangeThrust;
-	unsigned int thrustHelp;	
+	long int timeOffsetOutput;
+	long int timeDurationMoveup;
+	long int timeOffsetChangeThrust;
+	int thrustHelp;	
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;
