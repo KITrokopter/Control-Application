@@ -2,7 +2,7 @@
 //#include "InterpolatorInfo.hpp"
 #include "Controller.hpp"
 
-unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceFirstLatest, double timediffNormalized, QuadcopterThrust thrustInfo );
+unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceLatestTarget, double timediffNormalized, QuadcopterThrust thrustInfo );
 float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest );
 bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF target );
 MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target );
@@ -221,9 +221,10 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	double timediffNowAssumed = posAssumed.getTimestamp() - positionNow.getTimestamp();
 	double timediffNormalized = ((double) timediffNowAssumed) / ((double) 1000000000);	// should be in seconds
 	float absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
+	float absDistanceNowTarget = positionNow.getAbsoluteDistance( target );
 	ROS_INFO("zDiffAssumed-zDiffNow: %f", zDiffAssumed-zDiffNow);
 	//ROS_INFO("timediffNormalized: %f", timediffNormalized);
-	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowAssumed, timediffNormalized, thrustInfo);
+	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowTarget, timediffNormalized, thrustInfo);
 	newThrust = thrustInfo.checkAndFix( newThrust );
 	newMovement.setThrust( newThrust );
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
@@ -324,38 +325,31 @@ MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sent
 }
 
 
-unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceFirstLatest, double timediffNormalized, QuadcopterThrust thrustInfo )
+unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceLatestTarget, double timediffNormalized, QuadcopterThrust thrustInfo )
 {
 	unsigned int newThrustDiff = 0;
-	float distanceFactor = calculateDistanceFactor( absDistanceFirstLatest );
-	
-	if( distanceFactor<0 || (distanceFactor>1) )
-	{
-		ROS_ERROR("wrong distanceFactor %f", distanceFactor);
-	}
-	float threshold = 0;	// higher if timediff is higher and 	//TODO
+	float distanceFactor = calculateDistanceFactor( absDistanceLatestTarget );	
 
 	/* Height-difference calculated as z-speed in mm/s. Positive if inclining. */
-	float zSpeed = (zDistanceFirst-zDistanceLatest) * timediffNormalized;	// in mm/s
+	float zSpeed = (zDistanceFirst-zDistanceLatest) / timediffNormalized;	// in mm/s
+	ROS_INFO("zSpeed %f", zSpeed);
 	
 	/* 
 	 * Do not change thrust if
-	 * 	is inclining and "close" to target
-	 * 	is declining and "close" to target
+	 * 
 	 * Increase thrust if
-	 * 	inclining too slow
-	 * 	declining too fast
-	 * 	positive distance to target is increasing
+	 * 	below target, zSpeed negative
+	 * 	below target, zSpeed positive and too slow
+	 * 	above target, zSpeed negative and too high
 	 * Decrease thrust if
-	 * 	inclining too fast
-	 * 	declining too slow
-	 * 	negative distance to target is increasing
-	 * 	(speed is too high)
+	 * 	above target, zSpeed positive
+	 * 	above target, zSpeed negative and too slow
+	 * 	below target, zSpeed positive and too high
 	 */
 	double cyclesPerSecond = ((double) 1000000000) / ((double) TIME_MIN_CALC);
 	double thrustStepA = ((double) THRUST_STEP) * ((double) distanceFactor) * sqrt(1/cyclesPerSecond);
 	unsigned int thrustStep = thrustStepA;
-	ROS_ERROR("absDistanceFirstLatest %f, distanceFactor %f", absDistanceFirstLatest, distanceFactor);
+	ROS_ERROR("absDistanceLatestTarget %f, distanceFactor %f", absDistanceLatestTarget, distanceFactor);
 	ROS_ERROR("thrustStepA %f, thrustStep %i", thrustStepA, thrustStep);
 	//ROS_ERROR("cycles %f, thrustStepA %f, thrustStep %i", cyclesPerSecond, thrustStepA, thrustStep);
 	
