@@ -5,7 +5,7 @@
 #include <map>
 #include "ros/ros.h"
 
-#define QUADCOPTER_THRUST_RANGE 12000
+#define QUADCOPTER_THRUST_RANGE 13000
 #define BATTERY_MAX 8
 #define BATTERY_LOW 1
 

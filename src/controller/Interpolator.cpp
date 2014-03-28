@@ -227,7 +227,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	unsigned int oldThrust = newMovement.getThrust();
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowTarget, timediffNormalized, thrustInfo);
 	newThrust = thrustInfo.checkAndFix( newThrust );
-	ROS_INFO("zDiffAssumed-zDiffNow: %f, old thrust %i, new thrust %i", zDiffAssumed-zDiffNow, oldThrust, newThrust);
+	//ROS_INFO("zDiffAssumed-zDiffNow: %f, old thrust %i, new thrust %i", zDiffAssumed-zDiffNow, oldThrust, newThrust);
 	newMovement.setThrust( newThrust );
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
 
@@ -351,8 +351,9 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 	double cyclesPerSecond = ((double) 1000000000) / ((double) TIME_MIN_CALC);
 	double thrustStepA = ((double) THRUST_STEP) * ((double) distanceFactor) * sqrt(1/cyclesPerSecond);
 	unsigned int thrustStep = thrustStepA;
-	ROS_ERROR("absDistanceLatestTarget %f, distanceFactor %f", absDistanceLatestTarget, distanceFactor);
-	ROS_ERROR("thrustStepA %f, thrustStep %i", thrustStepA, thrustStep);
+	//ROS_ERROR("absDistanceLatestTarget %f, distanceFactor %f", absDistanceLatestTarget, distanceFactor);
+	//ROS_ERROR("thrustStepA %f, thrustStep %i", thrustStepA, thrustStep);
+	ROS_ERROR("thrustStep %i", thrustStep);
 	//ROS_ERROR("cycles %f, thrustStepA %f, thrustStep %i", cyclesPerSecond, thrustStepA, thrustStep);	
 	//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
 	if((zDistanceLatest>0 && zSpeed<0) || (zDistanceLatest>0 && zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zDistanceLatest<0 && zSpeed<0 && zSpeed<SPEED_MAX_DECLINING))
@@ -449,10 +450,10 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
 	}
 	double distanceXY = pos.getAbsoluteDistanceXY( target );
 	double factorDistance = calculateDistanceFactorRPY( distanceXY );
-	double newRoll = v1 * ROLL_MAX;
-	double newPitch = v2 * PITCH_MAX;
+	double newRoll = v1 * ROLL_MAX * factorDistance;
+	double newPitch = v2 * PITCH_MAX * factorDistance;
 	double newYawrate = 0;
-	ROS_ERROR("roll %f, pitch %f", newRoll, newPitch);
+	ROS_ERROR("roll %f, pitch %f, distXY %f, facDist %f", newRoll, newPitch, distanceXY, factorDistance);
 	
 	if( closeToTarget( pos, target, RANGE_STABLE ) )
 	{

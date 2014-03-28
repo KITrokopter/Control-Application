@@ -965,7 +965,7 @@ void Controller::moveUp( int internId )
 		if(currentTime > this->timeOffsetChangeThrust + 10000000 && this->thrustHelp + 200 < this->thrust_info[internId].getStartMax())
 		{
 			usleep(85000);
-			this->thrustHelp += 200;
+			this->thrustHelp += 400;
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
