@@ -650,10 +650,14 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		{
 			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
 			Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
+			ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
+			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
 		}
 		else
 		{
+			Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
+			this->listTargets[i].push_back(defaultTarget);
 			ROS_ERROR("No target set");
 		}
 		this->receivedQuadStatus[i] = false; // received no quadcopter status information
@@ -1006,7 +1010,7 @@ void Controller::stabilize( int internId )
 	this->listPositionsMutex.lock();
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
-	ROS_DEBUG("Target z value set: %f", targetInternId.getPosition()[3]);
+	ROS_DEBUG("Target z value set: %f", targetInternId.getPosition()[2]);
 	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, thrust_info[internId], internId);
 	/*if((getNanoTime()/500000000)%2 == 1)
 	{	
