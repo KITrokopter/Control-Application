@@ -71,7 +71,7 @@ void TrackingWorker::run()
 			
 			if (position.isValid()) {
 				// Invert x axis for controller
-				position.setV1(-position.getV1());
+				// position.setV1(-position.getV1());
 				
 				std::vector<Vector> positions;
 				std::vector<int> ids;
