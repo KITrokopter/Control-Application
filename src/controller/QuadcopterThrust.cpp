@@ -2,10 +2,11 @@
 
 QuadcopterThrust::QuadcopterThrust()
 {
-	this->min = 34000;
+	this->min = 35000;
 	this->max = 44000;
 	this->start = 35000;
 	this->startMax = 44000;
+	this->decline = 25000;
 	this->setThrustCalled = false;
 }
 
@@ -105,4 +106,14 @@ void QuadcopterThrust::setStart( unsigned int start )
 unsigned int QuadcopterThrust::getStart()
 {
 	return start;
+}
+
+void QuadcopterThrust::setDecline( unsigned int decline )
+{
+	this->decline = decline;
+}
+
+unsigned int QuadcopterThrust::getDecline()
+{
+	return decline;
 }

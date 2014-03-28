@@ -1051,16 +1051,16 @@ void Controller::land( int internId, int * nrLand )
 		}*/
 		//MovementQuadruple newMovement = MovementQuadruple( thrust_info[internId].getMin(), 0, 0, 0 ); FIXME 
 		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
-		newMovement.setThrust( thrust_info[internId].getMin() );
+		newMovement.setThrust( thrust_info[internId].getDecline() );
 		newMovement.setTimestamp( currentTime );
 		this->listFutureMovement[internId].push_front( newMovement );		
 		this->timeOffsetChangeThrust = getNanoTime();
 	}
 	else
 	{
-		if(this->thrustHelp > thrust_info[internId].getMin())	// FIXME
+		if(this->thrustHelp > thrust_info[internId].getDecline())	// FIXME
 		{
-			this->thrustHelp = thrust_info[internId].getMin();	// FIXME
+			this->thrustHelp = thrust_info[internId].getDecline();	// FIXME
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		ROS_INFO("min");
