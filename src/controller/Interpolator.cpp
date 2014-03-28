@@ -556,7 +556,7 @@ float calculateDistanceFactor( float distance )
 	}
 	else if( distance < ((float) DISTANCE_HIGH) )
 	{
-		return (distance / (((float) DISTANCE_HIGH)-((float) DISTANCE_CLOSE)));
+		return sqrt(distance / (((float) DISTANCE_HIGH)-((float) DISTANCE_CLOSE)));
 	} 
 	else
 	{
@@ -573,7 +573,7 @@ float calculateDistanceFactorRPY( float distance )
 	}
 	else if( distance < ((float) DISTANCE_HIGH_RPY) )
 	{
-		return (distance / (((float) DISTANCE_HIGH_RPY)-((float) DISTANCE_CLOSE_RPY)));
+		return sqrt(distance / (((float) DISTANCE_HIGH_RPY)-((float) DISTANCE_CLOSE_RPY)));
 	} 
 	else
 	{
