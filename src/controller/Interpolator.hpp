@@ -31,6 +31,8 @@
 
 #define DISTANCE_CLOSE 10	// in mm
 #define DISTANCE_HIGH 1000
+#define DISTANCE_CLOSE_RPY 2	// in mm
+#define DISTANCE_HIGH_RPY 100
 
 #define TEST_ROLL_PITCH 0
 
