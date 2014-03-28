@@ -186,7 +186,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		}*/
 		counter++;
 	}
-		// FIXME the following is an alternative to the previous while-construct. Both untested.
+		// FIXME the following is an alternative to the previous while-construct.
 	/*
 		while( (it!=positions.begin()) && (counter<2) )
 		{
@@ -359,7 +359,7 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 	//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
 	if((zSpeed<SPEED_MAX_DECLINING))
 	{
-		ROS_ERROR(" Thrustdiff increase");
+		ROS_ERROR(" Thrustdiff increase 1");
 		newThrustDiff += 3*thrustStep;
 	}
 	else if((zDistanceLatest>0 && zSpeed<0) || (zDistanceLatest>0 && zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zDistanceLatest<0 && zSpeed<0 && zSpeed<SPEED_MAX_DECLINING))
@@ -555,7 +555,7 @@ float calculateDistanceFactor( float distance )
 	distance = abs( distance );
 	if( distance < ((float) DISTANCE_CLOSE) )
 	{
-		return 0;
+		return 0.0;
 	}
 	else if( distance < ((float) DISTANCE_HIGH) )
 	{
@@ -563,7 +563,7 @@ float calculateDistanceFactor( float distance )
 	} 
 	else
 	{
-		return 1;
+		return 1.0;
 	}
 }
 
@@ -572,7 +572,7 @@ float calculateDistanceFactorRPY( float distance )
 	distance = abs( distance );
 	if( distance < ((float) DISTANCE_CLOSE_RPY) )
 	{
-		return 0;
+		return 0.0;
 	}
 	else if( distance < ((float) DISTANCE_HIGH_RPY) )
 	{
@@ -580,7 +580,7 @@ float calculateDistanceFactorRPY( float distance )
 	} 
 	else
 	{
-		return 1;
+		return 1.0;
 	}
 }
 
