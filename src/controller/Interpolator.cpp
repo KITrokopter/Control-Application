@@ -8,6 +8,7 @@ bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF tar
 MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target );
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
 float calculateDistanceFactor( float distance );
+float calculateDistanceFactorRPY( float distance );
 
 Interpolator::Interpolator()
 {
@@ -222,10 +223,11 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	double timediffNormalized = ((double) timediffNowAssumed) / ((double) 1000000000);	// should be in seconds
 	float absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
 	float absDistanceNowTarget = positionNow.getAbsoluteDistance( target );
-	ROS_INFO("zDiffAssumed-zDiffNow: %f", zDiffAssumed-zDiffNow);
 	//ROS_INFO("timediffNormalized: %f", timediffNormalized);
+	unsigned int oldThrust = newMovement.getThrust();
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowTarget, timediffNormalized, thrustInfo);
 	newThrust = thrustInfo.checkAndFix( newThrust );
+	ROS_INFO("zDiffAssumed-zDiffNow: %f, old thrust %i, new thrust %i", zDiffAssumed-zDiffNow, oldThrust, newThrust);
 	newMovement.setThrust( newThrust );
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
 
@@ -358,6 +360,11 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 		ROS_ERROR(" Thrustdiff increase");
 		newThrustDiff += thrustStep;
 	}
+	if((zSpeed<SPEED_MAX_DECLINING))
+	{
+		ROS_ERROR(" Thrustdiff increase");
+		newThrustDiff += thrustStep;
+	}
 	if((zDistanceLatest<0 && zSpeed>0) || (zDistanceLatest<0 && zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zSpeed>0 && zSpeed>SPEED_MAX_INCLINING))
 	{
 		ROS_ERROR(" Thrustdiff decrease");
@@ -440,6 +447,8 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
 		v1 = v1 / factor;
 		v2 = v2 / factor;
 	}
+	double distanceXY = pos.getAbsoluteDistanceXY( target );
+	double factorDistance = calculateDistanceFactorRPY( distanceXY );
 	double newRoll = v1 * ROLL_MAX;
 	double newPitch = v2 * PITCH_MAX;
 	double newYawrate = 0;
@@ -547,7 +556,24 @@ float calculateDistanceFactor( float distance )
 	}
 	else if( distance < ((float) DISTANCE_HIGH) )
 	{
-		return (distance / (((float) DISTANCE_HIGH)-((float) DISTANCE_CLOSE)));
+		return sqrt(distance / (((float) DISTANCE_HIGH)-((float) DISTANCE_CLOSE)));
+	} 
+	else
+	{
+		return 1;
+	}
+}
+
+float calculateDistanceFactorRPY( float distance )
+{
+	distance = abs( distance );
+	if( distance < ((float) DISTANCE_CLOSE_RPY) )
+	{
+		return 0;
+	}
+	else if( distance < ((float) DISTANCE_HIGH_RPY) )
+	{
+		return sqrt(distance / (((float) DISTANCE_HIGH_RPY)-((float) DISTANCE_CLOSE_RPY)));
 	} 
 	else
 	{

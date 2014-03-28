@@ -25,6 +25,8 @@ class QuadcopterThrust
 		unsigned int getStartMax();
 		void setStart( unsigned int start );
 		unsigned int getStart();
+		void setDecline( unsigned int decline );
+		unsigned int getDecline();
 
 	protected:		
 		void setThrust( float battery );
@@ -38,6 +40,7 @@ class QuadcopterThrust
 		unsigned int max;
 		unsigned int startMax;
 		unsigned int start;
+		unsigned int decline;
 
 		bool setThrustCalled;
 };

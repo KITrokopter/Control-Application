@@ -39,7 +39,7 @@ void TrackingWorker::run()
 	while (!stop) {
 		std::vector<CameraData> data = dequeue();
 		
-		if (data.size() > 0) {
+		if (data.size() > 1) {
 			emptyCount = 0;
 			
 			if (!receivedFirstPosition) {

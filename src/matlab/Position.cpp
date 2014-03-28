@@ -145,9 +145,9 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         Vector v2 = realCameraPos[2];
         Vector d2 = realCameraOrient[2];
 
-        ROS_DEBUG("Position camera 0: [%.2f, %.2f, %.2f] is directed in [%.2f, %.2f, %.2f]", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
-        ROS_DEBUG("Position camera 1: [%.2f, %.2f, %.2f] is directed in [%.2f, %.2f, %.2f]", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
-        ROS_DEBUG("Position camera 2: [%.2f, %.2f, %.2f] is directed in [%.2f, %.2f, %.2f]", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
+        ROS_DEBUG("Position camera 0: [%.2f, %.2f, %.2f] is directed in [%.3f, %.3f, %.3f]", v0.getV1(), v0.getV2(), v0.getV3(), d0.getV1(), d0.getV2(), d0.getV3());
+        ROS_DEBUG("Position camera 1: [%.2f, %.2f, %.2f] is directed in [%.3f, %.3f, %.3f]", v1.getV1(), v1.getV2(), v1.getV3(), d1.getV1(), d1.getV2(), d1.getV3());
+        ROS_DEBUG("Position camera 2: [%.2f, %.2f, %.2f] is directed in [%.3f, %.3f, %.3f]", v2.getV1(), v2.getV2(), v2.getV3(), d2.getV1(), d2.getV2(), d2.getV3());
 
         ROS_DEBUG("Distance between camera 0 and 1 is %.2f", v0.add(v1.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 0 and 2 is %.2f", v0.add(v2.mult(-1)).getLength());
@@ -199,7 +199,6 @@ void Position::angleTry(int sign) {
 
     n.putVariable("n", ep);
     double angle = m->getAngle(Vector(0, 0, 1), b.cross(c));
-    ROS_DEBUG("Angle would be %f", angle);
     double dataAngle[1] = {sign * angle};
     mxArray *ang = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(ang), (void *)dataAngle, sizeof(dataAngle));
@@ -263,13 +262,13 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
     int quadcopterId = cameraLines[0].quadcopterId;
 
-   /* if (cameraLines.size() == 2) {
-        ROS_DEBUG("Camera %d, %d see quadcopter", cameraLines[0].camNo, cameraLines[1].camNo);
+    if (cameraLines.size() == 2) {
+        ROS_DEBUG("POSITION_MODULE: Camera %d, %d see quadcopter", cameraLines[0].camNo, cameraLines[1].camNo);
     } else if (cameraLines.size() == 3) {
-        ROS_DEBUG("Camera %d, %d, %d see quadcopter", cameraLines[0].camNo, cameraLines[1].camNo, cameraLines[2].camNo);
+        ROS_DEBUG("POSITION_MODULE: Camera %d, %d, %d see quadcopter", cameraLines[0].camNo, cameraLines[1].camNo, cameraLines[2].camNo);
     } else if (cameraLines.size() == 1) {
-        ROS_DEBUG("Camera %d sees quadcopter", cameraLines[0].camNo);
-    }*/
+        ROS_DEBUG("POSITION_MODULE: Camera %d sees quadcopter", cameraLines[0].camNo);
+    }
 
 
     for(int i = 1; i < cameraLines.size(); i++) {
@@ -316,7 +315,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
     if (valid != numberCameras) {
         // default value, when not all cameras tracked it yet
-        ROS_DEBUG("Not all cameras did track quadcopter %d yet.", quadcopterId);
+        //ROS_DEBUG("Not all cameras did track quadcopter %d yet.", quadcopterId);
         Vector nan = Vector(NAN, NAN, NAN);
         return nan;
     } else {
@@ -345,7 +344,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             Vector quadPosition = m->interpolateLines(quadPositions, numberCameras, Vector(0, 0, 0), 1);
 
             oldPos[quadcopterId] = quadPosition;
-            ROS_INFO("First seen position of quadcopter %d is [%f, %f, %f], %s", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3(), tracking.inCameraRange(quadPosition)? "in tracking area" : "NOT in tracking area");
+            ROS_INFO("POSITION_MODULE: First seen position of quadcopter %d is [%.2f, %.2f, %.2f], %s", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3(), tracking.inCameraRange(quadPosition)? "in tracking area" : "NOT in tracking area");
 
             // as distance of 150 has interpolation factor 0.5
             distance = 150;
@@ -362,7 +361,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             }
 
             if (2 > numberCameras - tooOld) {
-                ROS_WARN("Only camera %d still tracks quadcopter %d.", cameraLines[0].camNo, cameraLines[0].quadcopterId);
+                ROS_WARN("POSITION_MODULE: Only camera %d still tracks quadcopter %d.", cameraLines[0].camNo, cameraLines[0].quadcopterId);
             }
 
             Matlab *m = new Matlab(ep);
@@ -400,26 +399,27 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             }
             if (newPos.getValid()) {
                 this->error = m->getError();
-                ROS_DEBUG("error is %.2f", error);
 
                 // calculates distance between last seen position and new calculated position
                 distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();
 
+                ROS_DEBUG("POSITION_MODULE: error is %.2f, distance is %.2f", error, distance);
+
                 // saving new Pos
                 bool trackingArea = tracking.inCameraRange(newPos);
                 if (trackingArea) {
-                    ROS_INFO("New position of quadcopter %d is [%.2f, %.2f, %.2f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "in tracking area");
+                    ROS_INFO("POSITION_MODULE: New position of quadcopter %d is [%.2f, %.2f, %.2f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "in tracking area");
                 } else {
                     if (newPos.add(realCameraPos[0].mult(-1)).getLength() > 2300) {
-                        ROS_INFO("New position of quadcopter %d is [%.2f, %.2f, %.2f], %s too far of camera 0", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "NOT in tracking area");
+                        ROS_INFO("POSITION_MODULE: New position of quadcopter %d is [%.2f, %.2f, %.2f], %s too far of camera 0", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "NOT in tracking area");
                     }
                     if (newPos.add(realCameraPos[1].mult(-1)).getLength() > 2300) {
-                        ROS_INFO("New position of quadcopter %d is [%.2f, %.2f, %.2f], %s too far of camera 1", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "NOT in tracking area");
+                        ROS_INFO("POSITION_MODULE: New position of quadcopter %d is [%.2f, %.2f, %.2f], %s too far of camera 1", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "NOT in tracking area");
                     }
                     if (newPos.add(realCameraPos[2].mult(-1)).getLength() > 2300) {
-                        ROS_INFO("New position of quadcopter %d is [%.2f, %.2f, %.2f], %s too far of camera 2", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "NOT in tracking area");
+                        ROS_INFO("POSITION_MODULE: New position of quadcopter %d is [%.2f, %.2f, %.2f], %s too far of camera 2", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "NOT in tracking area");
                     } else {
-                        ROS_INFO("New position of quadcopter %d is [%.2f, %.2f, %.2f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "NOT in tracking area");
+                        ROS_INFO("POSITION_MODULE: New position of quadcopter %d is [%.2f, %.2f, %.2f], %s", quadcopterId, newPos.getV1(), newPos.getV2(), newPos.getV3(), "NOT in tracking area");
                     }
                 }
                 oldPos[quadcopterId] = newPos;

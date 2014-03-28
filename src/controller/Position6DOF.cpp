@@ -86,11 +86,20 @@ double Position6DOF::getAbsoluteDistance( Position6DOF otherPosition )
 	double distanceOfOne;
 	for( int i = 0; i < 3; i++ )
 	{
-		distanceOfOne = position[i] - otherPosition.getPosition()[i];
+		distanceOfOne = abs( position[i] - otherPosition.getPosition()[i]);
 		distanceOfOne *= distanceOfOne;
 		sum += distanceOfOne;
 	}
 	return sqrt( sum );
+}
+
+double Position6DOF::getAbsoluteDistanceXY( Position6DOF otherPosition )
+{
+	double x = otherPosition.getPosition()[0] - this->position[0];
+	x = x * x;
+	double y = otherPosition.getPosition()[1] - this->position[1];
+	y = y * y;
+	return sqrt(x+y);
 }
 
 double Position6DOF::getDistanceZ( Position6DOF otherPosition )

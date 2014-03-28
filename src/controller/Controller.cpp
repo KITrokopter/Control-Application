@@ -692,12 +692,17 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->listTargets.push_back(newEmptyListPosition);
 		if( this->receivedTrackingArea)
 		{
-			Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
+			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
+			Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
+			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
+			//ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
 		}
 		else
 		{
-			ROS_ERROR("No tracked set");
+			Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
+			this->listTargets[i].push_back(defaultTarget);
+			ROS_ERROR("No target set");
 		}
 		this->receivedQuadStatus[i] = false; // received no quadcopter status information
 		this->listTargetsMutex.unlock();
@@ -1004,7 +1009,7 @@ void Controller::moveUp( int internId )
 		if(currentTime > this->timeOffsetChangeThrust + 10000000 && this->thrustHelp + 500 < this->thrust_info[internId].getStartMax())
 		{
 			usleep(85000);
-			this->thrustHelp += 700;
+			this->thrustHelp += 500;
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		//Protection mechanism for qc (either a too high thrust value or start process took too long)
@@ -1049,6 +1054,7 @@ void Controller::stabilize( int internId )
 	this->listPositionsMutex.lock();
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
+	//ROS_DEBUG("Target z value set: %f", targetInternId.getPosition()[2]);
 	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, thrust_info[internId], internId);
 	/*if((getNanoTime()/500000000)%2 == 1)
 	{	
@@ -1089,16 +1095,16 @@ void Controller::land( int internId, int * nrLand )
 		}*/
 		//MovementQuadruple newMovement = MovementQuadruple( thrust_info[internId].getMin(), 0, 0, 0 ); FIXME 
 		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
-		newMovement.setThrust( thrust_info[internId].getMin() );
+		newMovement.setThrust( thrust_info[internId].getDecline() );
 		newMovement.setTimestamp( currentTime );
 		this->listFutureMovement[internId].push_front( newMovement );		
 		this->timeOffsetChangeThrust = getNanoTime();
 	}
 	else
 	{
-		if(this->thrustHelp > thrust_info[internId].getMin())	// FIXME
+		if(this->thrustHelp > thrust_info[internId].getDecline())	// FIXME
 		{
-			this->thrustHelp = thrust_info[internId].getMin();	// FIXME
+			this->thrustHelp = thrust_info[internId].getDecline();	// FIXME
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		ROS_INFO("min");
