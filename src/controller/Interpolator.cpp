@@ -225,7 +225,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	ROS_INFO("zDiffAssumed-zDiffNow: %f", zDiffAssumed-zDiffNow);
 	//ROS_INFO("timediffNormalized: %f", timediffNormalized);
 	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowTarget, timediffNormalized, thrustInfo);
+	ROS_INFO("thrust %i", newThrust);
 	newThrust = thrustInfo.checkAndFix( newThrust );
+	ROS_INFO("thrust after check %i", newThrust);
 	newMovement.setThrust( newThrust );
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
 
