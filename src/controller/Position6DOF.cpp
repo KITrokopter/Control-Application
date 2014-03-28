@@ -93,6 +93,15 @@ double Position6DOF::getAbsoluteDistance( Position6DOF otherPosition )
 	return sqrt( sum );
 }
 
+double Position6DOF::getAbsoluteDistanceXY( Position6DOF otherPosition )
+{
+	double x = otherPosition.getPosition()[0] - this->position[0];
+	x = x * x;
+	double y = otherPosition.getPosition()[1] - this->position[1];
+	y = y * y;
+	return sqrt(x+y);
+}
+
 double Position6DOF::getDistanceZ( Position6DOF otherPosition )
 {
 	return (otherPosition.getPosition()[2] - this->position[2]);

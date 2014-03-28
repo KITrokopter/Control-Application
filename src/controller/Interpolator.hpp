@@ -24,13 +24,15 @@
 
 #define SPEED_MIN_INCLINING 2 	// in mm/s
 #define SPEED_MAX_INCLINING 20 	// in mm/s
-#define SPEED_MIN_DECLINING -1 	// in mm/s
-#define SPEED_MAX_DECLINING -20 	// in mm/s
+#define SPEED_MIN_DECLINING 0 	// in mm/s
+#define SPEED_MAX_DECLINING -8 	// in mm/s
 #define SPEED_MIN_PLANE 80		// in mm/s
 #define SPEED_MAX_PLANE 300		// in mm/s
 
 #define DISTANCE_CLOSE 10	// in mm
 #define DISTANCE_HIGH 1000
+#define DISTANCE_CLOSE_RPY 2	// in mm
+#define DISTANCE_HIGH_RPY 200
 
 #define TEST_ROLL_PITCH 0
 
