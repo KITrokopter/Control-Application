@@ -86,7 +86,7 @@ double Position6DOF::getAbsoluteDistance( Position6DOF otherPosition )
 	double distanceOfOne;
 	for( int i = 0; i < 3; i++ )
 	{
-		distanceOfOne = position[i] - otherPosition.getPosition()[i];
+		distanceOfOne = abs( position[i] - otherPosition.getPosition()[i]);
 		distanceOfOne *= distanceOfOne;
 		sum += distanceOfOne;
 	}
