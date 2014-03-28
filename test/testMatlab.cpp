@@ -39,7 +39,7 @@ bool calibrate(Matlab *m) {
     return true;
 }
 
-void tracking(Matlab *m) {
+void tracking() {
     Vector c1 = Vector(0, 0, 0);
     Vector c2 = Vector(0, 100, 0);
     Vector c3 = Vector(100, 100, 0);
@@ -58,7 +58,7 @@ void tracking(Matlab *m) {
     cameraDirection.push_back(d2);
     cameraDirection.push_back(d3);
     cameraDirection.push_back(d4);
-    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 100, m->getEngine());
+    TrackingArea *t = new TrackingArea(cameraPosition, cameraDirection, 4, 100);
     t->printTrackingArea();
     /*Vector test = Vector(5, 5, 3);
     if (t->contains(test)) {
@@ -70,7 +70,7 @@ void tracking(Matlab *m) {
 
 void perp(Matlab *m) {
 
-    //Lotfußpunkt f: (-7,5,3) Lotfußpunkt g: (-1, 1, 5)
+    /*//Lotfußpunkt f: (-7,5,3) Lotfußpunkt g: (-1, 1, 5)
     Vector* a = new Vector(-7, 2, -3);
     Vector* u = new Vector(0, 1, 2);
     Vector* b = new Vector(-3, -3, 3);
@@ -98,7 +98,7 @@ void perp(Matlab *m) {
                 printf("Lotfußpunkt von g ist [%f, %f, %f]\n", result[1]->getV1(), result[1]->getV2(), result[1]->getV3());
             }
         }
-    }
+    }*/
 }
 
 void trackingArea() {
@@ -112,9 +112,6 @@ int main(int argc, char** argv) {
     if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
         ros::console::notifyLoggerLevelsChanged();
     }
-    Matlab *m = new Matlab;
-    tracking(m);
-    m->destroyMatlab();
     /*Vector a1 = *(new Vector(0.000000, -0.000000, 0.000000));
     Vector u1 = * (new Vector(0.315551, -0.962110, -0.234050));
     Vector a2 = * (new Vector(730.285416, -753.080314, 0.000243));

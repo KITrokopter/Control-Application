@@ -19,12 +19,11 @@
 
 using namespace std;
 
-TrackingArea::TrackingArea(vector<Vector> cameraPosition, vector<Vector> cameraDirection, int numberCameras, double maxRange, Engine *ep) {
+TrackingArea::TrackingArea(vector<Vector> cameraPosition, vector<Vector> cameraDirection, int numberCameras, double maxRange) {
     this->maxRange = maxRange;
     this->cameraPosition = cameraPosition;
     this->cameraDirection = cameraDirection;
     this->numberCameras = numberCameras;
-    this->ep = ep;
     setTrackingArea();
 }
 
@@ -112,7 +111,6 @@ Vector TrackingArea::getPerpPointPlane(Vector a, Vector u, Vector v, Vector x) {
 
 
 /*
-    Vector* calculateCenter(Engine *ep);
  *  checks whether a point x is in the TrackingArea or not
 */
 bool TrackingArea::contains(Vector x) {
@@ -169,7 +167,7 @@ bool TrackingArea::contains(Vector x) {
 }
 
 bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection, Vector x) {
-    Matlab *m = new Matlab(ep);
+    Matlab *m = new Matlab();
     // center point of the floor of the pyramid
     Vector n = cameraPosition.add(cameraDirection.mult(maxRange/cameraDirection.getLength()));
     // finding direction vectors of the plane of the floor of the camera range pyramid.
@@ -184,7 +182,7 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
     Vector b = Vector(cameraDirection.getV1(), cameraDirection.getV2() + 0.1, 0);
     Line g = Line(cameraPosition, a);
 
-    Line horizontal = m->getIntersectionLineFastCalculation(f, v, g, b);
+    Line horizontal = m->getIntersectionLine(f, v, g, b);
 
     v = cameraDirection.cross(horizontal.getU());
 
@@ -403,7 +401,7 @@ double TrackingArea::increaseSearch(double posChange, double height, double heig
 }
 
 void TrackingArea::setTrackingArea() {
-    Matlab *m = new Matlab(ep);
+    Matlab *m = new Matlab();
     Line *cameraLines = new Line[numberCameras];
     for (int i = 0; i < numberCameras; i++) {
         cameraLines[i] = Line();

@@ -106,7 +106,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     // checking whether calibration did work (trying to load all output files)
     bool ok = calibratedYet(numberCameras);
 
-    // saves all position and orientation vectors in matlab
+    // saves all position and orientation vectors
     if (ok) {
 
         Vector invalid = Vector(false);
@@ -166,7 +166,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
 void Position::angleTry(int sign) {
     // Plain of the cameras E = a + r * u + s * (c - a)
     // as a is always the origin, E intersects the xy-plain in the origin => translation vector is not neccesary
-    Matlab *m = new Matlab(ep);
+    Matlab *m = new Matlab();
 
     // a, b, c are the positions of camera 0, 1, 2 in camera coordinate system 0 (might not be calculated yet)
     Vector a = Vector(0, 0, 0);
@@ -340,7 +340,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 quadPositions[i] = Line(camPos, quadPos[quadcopterId][i]);
             }
 
-            Matlab *m = new Matlab(ep);
+            Matlab *m = new Matlab();
             Vector quadPosition = m->interpolateLines(quadPositions, numberCameras, Vector(0, 0, 0), 1);
 
             oldPos[quadcopterId] = quadPosition;
@@ -364,7 +364,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 ROS_WARN("POSITION_MODULE: Only camera %d still tracks quadcopter %d.", cameraLines[0].camNo, cameraLines[0].quadcopterId);
             }
 
-            Matlab *m = new Matlab(ep);
+            Matlab *m = new Matlab();
             Vector newPos;
             double interpolationFactor;
 
@@ -472,7 +472,7 @@ void Position::calculateOrientation(int cameraId) {
 }
 
 void Position::setTrackingArea(double maxRange) {
-    this->tracking = TrackingArea(realCameraPos, realCameraOrient, numberCameras, maxRange, ep);
+    this->tracking = TrackingArea(realCameraPos, realCameraOrient, numberCameras, maxRange);
 }
 
 TrackingArea Position::getTrackingArea() {

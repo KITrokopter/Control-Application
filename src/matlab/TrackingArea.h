@@ -46,11 +46,6 @@ private:
     int numberCameras;
 
     /**
-     * engine pointer
-     */
-    Engine *ep;
-
-    /**
      * increases tracking area as middle point center, values are the difference to the values of center point.
      * @param posChange +- x-values and y-values of a1 to a4
      * @param height center.V3() + height is z value of a1 to a4
@@ -108,9 +103,8 @@ public:
      * @param cameraDirection vector that contains camera directions of cameras
      * @param numberCameras number of cameras
      * @param maxRange maximal range of cameras
-     * @param ep Engine of Matlab
      */
-    TrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector>  cameraDirection, int numberCameras, double maxRange, Engine *ep);
+    TrackingArea(std::vector<Vector> cameraPosition, std::vector<Vector>  cameraDirection, int numberCameras, double maxRange);
 
     /**
      * constructor.
