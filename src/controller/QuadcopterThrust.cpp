@@ -2,9 +2,9 @@
 
 QuadcopterThrust::QuadcopterThrust()
 {
-	this->min = 38000;
+	this->min = 36000;
 	this->max = 44000;
-	this->start = 42000;
+	this->start = 40000;
 	this->startMax = 45000;
 	this->decline = 25000;
 	this->setThrustCalled = false;
