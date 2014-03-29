@@ -52,10 +52,9 @@ template <class T>
 void TrackingQueue<T>::enqueue(CameraData data)
 {
 	if (queues.count(data.quadcopterId) == 0) {
-		queues[data.quadcopterId] = new T(/*5L * 1000 * 1000 * 1000 / 30,
+		queues[data.quadcopterId] = new T(5L * 1000 * 1000 * 1000 / 30,
 										  8L * 1000 * 1000 * 1000 / 30,
-										  2L * 1000 * 1000 * 1000 / 30,*/
-										  1000000000, 1000000000, 1000000000, // TODO: Change this back !!!!!!
+										  2L * 1000 * 1000 * 1000 / 30,
 										  true);
 		ids.push_back(data.quadcopterId);
 	}
