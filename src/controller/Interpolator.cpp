@@ -553,13 +553,18 @@ static bool closeToTarget( Position6DOF position1, Position6DOF position2, doubl
 float calculateDistanceFactor( float distance )
 {
 	distance = abs( distance );
-	if( distance < ((float) DISTANCE_CLOSE) )
+	if( distance <= ((float) DISTANCE_CLOSE) )
 	{
 		return 0.0;
 	}
 	else if( distance < ((float) DISTANCE_HIGH) )
 	{
-		return sqrt(distance / (((float) DISTANCE_HIGH)-((float) DISTANCE_CLOSE)));
+		float x = distance - (float) DISTANCE_CLOSE);
+		if( x == 0.0 )
+		{
+			return x;
+		}
+		return sqrt(x / (((float) DISTANCE_HIGH)-((float) DISTANCE_CLOSE)));
 	} 
 	else
 	{
@@ -570,13 +575,18 @@ float calculateDistanceFactor( float distance )
 float calculateDistanceFactorRPY( float distance )
 {
 	distance = abs( distance );
-	if( distance < ((float) DISTANCE_CLOSE_RPY) )
+	if( distance <= ((float) DISTANCE_CLOSE_RPY) )
 	{
 		return 0.0;
 	}
 	else if( distance < ((float) DISTANCE_HIGH_RPY) )
 	{
-		return sqrt(distance / (((float) DISTANCE_HIGH_RPY)-((float) DISTANCE_CLOSE_RPY)));
+		float x = distance - (float) DISTANCE_CLOSE_RPY);
+		if( x == 0.0 )
+		{
+			return x;
+		}
+		return sqrt(x / (((float) DISTANCE_HIGH_RPY)-((float) DISTANCE_CLOSE_RPY)));
 	} 
 	else
 	{
