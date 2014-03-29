@@ -73,6 +73,8 @@ void TrackingWorker::run()
 				// Invert x axis for controller. Uncomment if necessary, but only if you really thought about it.
 				// position.setV1(-position.getV1());
 				
+				sendPosition(position, data[0].quadcopterId);
+				
 				std::vector<Vector> positions;
 				std::vector<int> ids;
 				std::vector<int> updates;
