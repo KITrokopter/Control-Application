@@ -1,9 +1,7 @@
 #include "Interpolator.hpp"
-//#include "InterpolatorInfo.hpp"
 #include "Controller.hpp"
 
 unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceLatestTarget, double timediffNormalized, QuadcopterThrust thrustInfo );
-float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest );
 bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF target );
 MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target );
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
@@ -23,42 +21,8 @@ Interpolator::Interpolator()
 	this->timeDiff3 = 0;
 }
 
-/*
-MovementQuadruple Interpolator::calibrate(int id, std::list<MovementQuadruple> sentQuadruples)
-{
-	// TODO
-	long int currentTime = getNanoTime();
-	MovementQuadruple newMovement = sentQuadruples.back();
-	return newMovement;
-}
-*/
-
-
 MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, QuadcopterThrust thrustInfo, int id)
 {
-	/*if( TEST_ROLL_PITCH )
-	{
-		long int aTime = getNanoTime();
-		if( (aTime/5000000000)%2 == 0 )
-		{
-			if( aTimeSwitch==1 )
-			{
-				ROS_INFO("ROLL_MAX sent");
-			}
-			aTimeSwitch = 0;
-			return MovementQuadruple(thrustInfo.getStart(), ROLL_MAX, 0, 0);
-		} 
-		else
-		{
-			if( aTimeSwitch==0 )
-			{
-				ROS_INFO("PITCH_MAX sent");
-			}
-			aTimeSwitch = 1;
-			return MovementQuadruple(thrustInfo.getStart(), 0, PITCH_MAX, 0);
-		}
-	}*/
-	//ROS_INFO("interpolate 01 calculateNextMQ");
 	long int currentTime = getNanoTime();
 	MovementQuadruple newMovement = MovementQuadruple(thrustInfo.getStart(), 0, 0, 0); // Nothing has been sent so far
 
@@ -76,9 +40,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			newMovement.setThrust( THRUST_OFF );
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
-			//break;
 		case STARTED:
-			//ROS_INFO("interpolate 03b started");
 			if( this->status[id].getStarted()+timeDiff1 < currentTime )
 			{
 				newMovement.setRollPitchYawrate( -ROLL_MAX, -PITCH_MAX, 0 );
@@ -88,45 +50,37 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 				newMovement.setRollPitchYawrate( ROLL_MAX, PITCH_MAX, 0 );
 			}
 			return newMovement;
-			//break;
 		case CALC:
 			//ROS_INFO("interpolate 03c calc");
-			if( positions.size() > 2 )	// Enough data to calculate new rpy values (at least two values)
+			newMovement.setRollPitchYawrate( 0, 0, 0 );
+			Position6DOF pos;
+			int counter = 0;
+			for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 			{
-				newMovement.setRollPitchYawrate( 0, 0, 0 );
-				Position6DOF pos;
-				int counter = 0;
-				for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
+				pos.setTimestamp( it->getTimestamp() );
+				if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
 				{
-					pos.setTimestamp( it->getTimestamp() );
-					if( pos.getTimestamp() > status[id].getStarted() + timeDiff1 )
+					pos.setPosition( it->getPosition() );
+					double diffX = pos.getPosition()[0] - target.getPosition()[0];
+					double diffY = pos.getPosition()[1] - target.getPosition()[1];
+					double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
+					if( absDistance == 0)
 					{
-						pos.setPosition( it->getPosition() );
-						double diffX = pos.getPosition()[0] - target.getPosition()[0];
-						double diffY = pos.getPosition()[1] - target.getPosition()[1];
-						double absDistance = sqrt( diffX*diffX + diffY*diffY ); // TODO check for error
-						if( absDistance == 0)
-						{
-							ROS_ERROR("absDistance is zero");
-						}
-						else
-						{
-							diffX = diffX / absDistance;
-							diffY = diffY / absDistance;
-						}
-						this->status[id].setRotation( 0 ); //acos( diffY ) );	// FIXME check
-						this->status[id].setNegativeSign( false ); //negativeRotationalSign(this->status[id].getRotation(), pos, target ) );	// FIXME check
-						this->status[id].setLastUpdated( currentTime );
-						break;
+						ROS_ERROR("absDistance is zero");
 					}
-					counter++;
+					else
+					{
+						diffX = diffX / absDistance;
+						diffY = diffY / absDistance;
+					}
+					this->status[id].setRotation( 0 ); //acos( diffY ) );	// FIXME check
+					this->status[id].setNegativeSign( false ); //negativeRotationalSign(this->status[id].getRotation(), pos, target ) );	// FIXME check
+					this->status[id].setLastUpdated( currentTime );
+					break;
 				}
-				this->status[id].setState( DONE );
+				counter++;
 			}
-			else
-			{
-				// TODO Error, shouldn't have happened after that time (timediff2)
-			}
+			this->status[id].setState( DONE );
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
 		default:			
@@ -148,7 +102,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		newMovement.setRollPitchYawrate( 0, 0, 0 );
 		return newMovement;
 	}
-	//ROS_INFO("interpolate 06");
 	if( sentQuadruples.size() < 3 || positions.size() < 3 )
 	{
 		/* Might not get enough data from camera in a certain time.
@@ -156,7 +109,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		ROS_ERROR("Not enough data in calculateNextMQ, some assumption is wrong...");
 		return newMovement;
 	}
-	//ROS_INFO("interpolate 07");
 
 	/*
 	 * Calculate with given calibration data, actually
@@ -178,15 +130,9 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			positionPast.setPosition( rit->getPosition() );
 			positionPast.setTimestamp( rit->getTimestamp() );
 		}
-		/*if( counter == 0 )
-		{
-			positionNow.setOrientation( positionPast.getOrientation() );
-			positionNow.setPosition( positionPast.getPosition() );
-			positionNow.setTimestamp( positionPast.getTimestamp() );
-		}*/
 		counter++;
 	}
-		// FIXME the following is an alternative to the previous while-construct.
+		// the following is an alternative to the previous while-construct.
 	/*
 		while( (it!=positions.begin()) && (counter<2) )
 		{
@@ -204,7 +150,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	//ROS_INFO("interpolate 09 Got positionPast and positionNow.");
 
 	/* Calculate predicted actual position */
-	// TODO check if positions.back() isn't influenced
 	posAssumed = positions.back();
 	posAssumed.predictNextPosition( positionPast, PREDICT_FUTURE_POSITION_TIME );
 	//ROS_INFO("interpolate 10 calculated assumedPos");
@@ -231,6 +176,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	newMovement.setThrust( newThrust );
 	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
 
+
 	/* Calculate new rpy-values every MIN_TIME_TO_WAIT nanoseconds */
 /*	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
@@ -238,7 +184,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		return newMovement;
 	}
 */
-
 	 /* Calculate new calibration (due to yaw-movement, if |roll|,|pitch| were high enough) */
 	if( ROTATIONAL_CORRECTION )
 	{
@@ -258,42 +203,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	this->status[id].setLastUpdated( currentTime );
 
 	return newMovement;
-
-//	int size = positions.size();
-//	double deltaTarget[size];	// Absolute distance to latest target
-//	double deltaAbsPosition[size-1];	// equals speed	/* arraysize FIXME */
-//	//double deltaSpeed[size-2];	// equals acceleration	/* arraysize FIXME */
-//	int counter = 0;
-//	this->status[id].setLastUpdated( currentTime );
-//
-//	/* Calculate values for declared arrays above for later usage. */
-//	for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
-//	{
-//		positionPast.setOrientation( it->getOrientation() );
-//		positionPast.setPosition( it->getPosition() );
-//		positionPast.setTimestamp( it->getTimestamp() );
-//		deltaTarget[counter] = positionPast.getAbsoluteDistance( target );
-//		if( counter > 0 )
-//		{
-//			//deltaAbsPosition[counter-1] = positionB.getAbsoluteDistance( positionA );
-//			if( counter > 1 )
-//			{
-//				double speedDelta = deltaAbsPosition[counter-1] - deltaAbsPosition[counter-2];
-//				if( speedDelta < 0 )
-//				{
-//					//oscillate = true;
-//					speedDelta = -speedDelta;
-//				}
-//				double timeDelta = positionNow.getTimestamp() - positionPast.getTimestamp();
-//				//deltaSpeed[counter-2] = speedDelta / timeDelta;
-//			}
-//		}
-//		if( positionPast.getTimestamp() != positions.back().getTimestamp() )
-//		{
-//			positionNow = positionPast;
-//		}
-//		counter++;
-//	}
 }
 
 MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, QuadcopterThrust thrustInfo, int id)
@@ -328,6 +237,18 @@ MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sent
 }
 
 
+/*
+ * Increase thrust if
+ * 	below target, zSpeed negative
+ * 	below target, zSpeed positive and too slow
+ * 	above target, zSpeed negative and too high
+ * Decrease thrust if
+ * 	above target, zSpeed positive
+ * 	above target, zSpeed negative and too slow
+ * 	below target, zSpeed positive and too high
+ * Do not change thrust if
+ * 	other
+ */
 unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceLatestTarget, double timediffNormalized, QuadcopterThrust thrustInfo )
 {
 	unsigned int newThrustDiff = 0;
@@ -337,34 +258,22 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 	float zSpeed = (zDistanceFirst-zDistanceLatest) / timediffNormalized;	// in mm/s
 	ROS_INFO("zSpeed %f", zSpeed);
 	
-	/* 
-	 * Increase thrust if
-	 * 	below target, zSpeed negative
-	 * 	below target, zSpeed positive and too slow
-	 * 	above target, zSpeed negative and too high
-	 * Decrease thrust if
-	 * 	above target, zSpeed positive
-	 * 	above target, zSpeed negative and too slow
-	 * 	below target, zSpeed positive and too high
-	 * Do not change thrust if
-	 * 	other
-	 */
 	double cyclesPerSecond = ((double) 1000000000) / ((double) TIME_MIN_CALC);
 	double thrustStepA = ((double) THRUST_STEP) * ((double) distanceFactor) * sqrt(1/cyclesPerSecond);
 	unsigned int thrustStep = thrustStepA;
+	ROS_ERROR("thrustStep %i", thrustStep);
 	//ROS_ERROR("absDistanceLatestTarget %f, distanceFactor %f", absDistanceLatestTarget, distanceFactor);
 	//ROS_ERROR("thrustStepA %f, thrustStep %i", thrustStepA, thrustStep);
-	ROS_ERROR("thrustStep %i", thrustStep);
 	//ROS_ERROR("cycles %f, thrustStepA %f, thrustStep %i", cyclesPerSecond, thrustStepA, thrustStep);	
 	//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
 	if((zSpeed<SPEED_MAX_DECLINING))
 	{
 		ROS_ERROR(" Thrustdiff increase 1");
-		newThrustDiff += 3*thrustStep;
+		newThrustDiff += 2*thrustStep;
 	}
 	else if((zDistanceLatest>0 && zSpeed<0) || (zDistanceLatest>0 && zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zDistanceLatest<0 && zSpeed<0 && zSpeed<SPEED_MAX_DECLINING))
 	{
-		ROS_ERROR(" Thrustdiff increase");
+		ROS_ERROR(" Thrustdiff increase 2");
 		newThrustDiff += thrustStep;
 	}
 	
@@ -373,17 +282,6 @@ unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, f
 		ROS_ERROR(" Thrustdiff decrease");
 		newThrustDiff -= thrustStep;
 	}
-	/*if((zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zSpeed<SPEED_MAX_DECLINING) || (zDistanceLatest>0 && zDistanceLatest>zDistanceFirst && zSpeed<0)) 
-	{  
-		ROS_ERROR(" Thrustdiff increase");
-		newThrustDiff += thrustStep;
-	}
-	if((zSpeed>SPEED_MAX_INCLINING) || (zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zDistanceLatest<zDistanceFirst && zSpeed>0)) 
-	{  
-		ROS_ERROR(" Thrustdiff decrease");
-		newThrustDiff -= thrustStep;
-	}*/
-	
 	return newThrustDiff;
 }
 
@@ -409,7 +307,6 @@ void Interpolator::checkState( int id )
 		default:			
 			break;
 	}
-	/*	if( this->status[id] == UNSTARTED )*/
 }
 
 bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF target )
@@ -463,69 +360,6 @@ MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Positio
 		double newPitch = newPitch / 2;
 	}
 	return MovementQuadruple( 0, newRoll, newPitch, newYawrate );
-}
-
-float calculatePlaneDiff( double aDistanceFirst, double aDistanceLatest, double absDistanceFirstLatest, double timediffNormalized, double aSentLatest ) 
-{
-
-	/*float diff = 0;
-	double aAbsDistance = abs(aDistanceFirst-aDistanceLatest);
-	double distanceFactor = 0.1 + fmin(2.0, (atan(aAbsDistance*1000.0)+1.0)); // higher if further from target, between [0, 2]	//TODO
-*/
-	/* Difference calculated as a-speed in mm/s. 
-	 Positive if going in normalized positive direction. */
-	/*double aSpeed = (aDistanceFirst-aDistanceLatest) * timediffNormalized;	// in mm/s
-	bool distanceIncrease = false;
-	*/
-	/*
-	 * Do not change value if
-	 * 	speed is right and right direction
-	 * 	close to target and right direction
-	 * Increase abs(value) if
-	 * 	too slow
-	 * Decrease abs(value) if
-	 * 	faster than min-speed, close to target and right direction
-	 * 	too fast
-	 * Negate value if
-	 * 	going in wrong direction
-	 */	
-	/* 
-	 * TODO if too slow, SPEED_MIN_PLANE needs to be changed
-	 */
-	
-	// right direction: (aSpeed>0 && aDistanceLatest>0) 
-	// close to target: abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET
-	/*if( (aSpeed>0 && aDistanceLatest>0) && (aSpeed<SPEED_MIN_PLANE))
-	{
-		diff += ROLL_STEP; 
-	}
-	else if( -aSpeed>SPEED_MAX_PLANE )
-	{
-		diff += ROLL_STEP; 
-	}
-	else if( (-aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest<0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
-	{
-		diff += ROLL_STEP; 
-	}
-	else if( (aSpeed<0 && aDistanceLatest<0) && (-aSpeed<SPEED_MIN_PLANE) )
-	{
-		diff -= ROLL_STEP; 
-	}
-	else if( aSpeed>SPEED_MAX_PLANE )
-	{
-		diff -= ROLL_STEP; 
-	}
-	else if( (aSpeed>SPEED_MIN_PLANE) && (aDistanceLatest>0) && (abs(aDistanceLatest)<DISTANCE_CLOSE_TO_TARGET) )
-	{
-		diff -= ROLL_STEP; 
-	}
-
-	if( diff != 0 )
-	{
-		return diff;
-	}
-	
-	return diff;*/
 }
 
 bool reachingTarget( double first, double last, double speed, long int timediff )

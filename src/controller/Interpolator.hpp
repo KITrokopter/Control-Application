@@ -14,7 +14,6 @@
 #define MAX_NUMBER_QUADCOPTER_HIGH 10
 #define MIN_TIME_TO_WAIT 500000000 	// in ns, only for rpy-values
 #define PREDICT_FUTURE_POSITION_TIME 150000000	// in ns
-//#define PREDICT_FUTURE_POSITION_STEPS 1 	// Interpolate with ? number of latest positions (unused)
 
 #define ROTATIONAL_CORRECTION 0	// 0-no correction; 1-always take new value; linear in between wouldn't work
 
@@ -33,17 +32,9 @@
 
 #define TEST_ROLL_PITCH 0
 
-/*
- * TODO flight of circles, rotation, ...
- * 
- * TODO use of timestamps
- * TODO ROS_INFO, ROS_WARN, ROS_ERROR, ROS_DEBUG - correct use
- */
-
 class Interpolator {
 public:
 	Interpolator();
-	//MovementQuadruple calibrate(int id, std::list<MovementQuadruple> sentQuadruples);
 	MovementQuadruple calculateNextMQ(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, Position6DOF &target, QuadcopterThrust thrustInfo, int id);
 	MovementQuadruple calculateHold(std::list<MovementQuadruple> &sentQuadruples, std::list<Position6DOF> &positions, QuadcopterThrust thrustInfo, int id);
 
