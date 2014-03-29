@@ -353,6 +353,7 @@ void Controller::calculateMovement()
 					land( i, &numberOfLanded );
 					break;
 				default:
+					ROS_INFO("default %i", i);
 					break;
 			}
 			sendMovementAll();
@@ -604,7 +605,7 @@ void Controller::rotate()
 			this->listTargets[i].push_back(newPosition);
 		}
 		
-		this->listTargetsMutex.lock();
+		this->listTargetsMutex.unlock();
 	}
 	//Start rotating. Set target for each qc to the previous target of the qc next to the qc
 	while( TIME_ROTATE_CIRCLE > (currentTime - this->timeRotationStarted))
@@ -1140,7 +1141,7 @@ bool Controller::isStable( int internId )
 	 */
 	int compareTime[3] = { 1, 5, 50 };
 	
-	this->listPositionsMutex.unlock();
+	this->listPositionsMutex.lock();
 	size_t sizeOfListPositions = this->listPositions[internId].size();
 	this->listPositionsMutex.unlock();
     if( sizeOfListPositions > compareTime[2] )
