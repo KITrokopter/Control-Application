@@ -60,7 +60,7 @@ void TrackingWorker::run()
 				}
 			}
 			
-			ROS_DEBUG("Latency is %.3fms", latency / 1e6);
+			ROS_DEBUG("POSITION_MODULE: Latency is %.3fms", latency / 1e6);
 			
 			Vector position = tracker.updatePosition(data);
 			
@@ -87,7 +87,7 @@ void TrackingWorker::run()
 			
 			if (emptyCount == 50) {
 				// TODO uncomment
-				ROS_WARN("Position update buffer is empty!");
+				ROS_WARN("POSITION_MODULE: Position update buffer is empty!");
 				emptyCount = 0;
 			}
 			
