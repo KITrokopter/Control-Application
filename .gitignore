@@ -1,9 +1,9 @@
 *~
 *.orig
 *.kate-swp
-.anjuta*
-*anjuta*
-*.anjuta*
+.anjuta
+*anjuta
+*.anjuta
 
 # Compiled Object files
 *.slo
