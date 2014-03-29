@@ -1,0 +1,13 @@
+Assumed und now positions vergleichen
+
+Starten mit Halterung
+
+claculateDistanceFactor doesn't return values between 0 and 1. Fix
+
+Eigene Frage: Wo wird InterpolatorInfo status:rotation gesetzt? Bleibt es immer 0. (in Interpolator)
+
+Wie oft/ wird in regelmaessigen Abstaenden stabilize aufgerufen?
+Gleichmaessigkeit sicher stellen (regelmaessig)
+Regler
+
+SendMovementAll or SendMovement?
