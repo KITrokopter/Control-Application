@@ -1,10 +1,11 @@
 #pragma once
 
 #include <boost/thread.hpp>
-#include <queue>
-#include <map>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
+#include <ros/ros.h>
+#include <queue>
+#include <map>
 
 #include "../IPositionReceiver.hpp"
 #include "../../matlab/Vector.h"
@@ -29,6 +30,8 @@ private:
 	boost::mutex queueMutex;
 	boost::condition_variable queueEmpty;
 	
+	std::map<int, ros::Publisher> quadcopterPositionPublishers;
+	
 	// Graphing
 	Graph errorGraph;
 	
@@ -38,6 +41,8 @@ private:
 	std::vector<CameraData> dequeue();
 	bool dataAvailable();
 	bool haveEnoughData(int count);
+	
+	void sendPosition(Vector position, int quadcopterId);
 public:
 	TrackingWorker(IPositionReceiver *receiver);
 	~TrackingWorker();

@@ -1,11 +1,11 @@
 #include "TrackingWorker.hpp"
 
 #include <boost/chrono/duration.hpp>
-#include <ros/console.h>
 #include <opencv2/core/core.hpp>
-#include <map>
+#include <sstream>
 
 #include "../../matlab/profiling.hpp"
+#include "control_application/quadcopter_position.h"
 
 TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(100, "Difference")
 {
@@ -173,4 +173,21 @@ cv::Mat TrackingWorker::getDistortionCoefficients(int camNo)
 void TrackingWorker::updateTrackingArea()
 {
 	receiver->setTrackingArea(tracker.getTrackingArea());
+}
+
+void TrackingWorker::sendPosition(Vector position, int quadcopterId)
+{
+	if (quadcopterPositionPublishers.count(quadcopterId) == 0) {
+		std::stringstream name;
+		name << "quadcopter_position_" << quadcopterId;
+		
+		ros::NodeHandle n;
+		quadcopterPositionPublishers[quadcopterId] = n.advertise<control_application::quadcopter_position>(name.str(), 4);
+	}
+	
+	control_application::quadcopter_position msg;
+	msg.x = position.getV1();
+	msg.y = position.getV2();
+	msg.z = position.getV3();
+	quadcopterPositionPublishers[quadcopterId].publish(msg);
 }

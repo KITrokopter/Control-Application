@@ -54,6 +54,7 @@ add_message_files(
   FILES
   CurrentPosition.msg
   quadcopter_movement.msg
+  quadcopter_position.msg
 )
 
 ## Generate services in the 'srv' folder
