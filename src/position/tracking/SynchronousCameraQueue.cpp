@@ -101,7 +101,7 @@ std::vector<CameraData> SynchronousCameraQueue::dequeue()
 		for (std::list<Bucket>::iterator it = queue.begin(); it != queue.end(); it++) {
 			if (currentTime - it->arrivalTime > maxDelay) {
 				// TODO uncomment
-				ROS_WARN("The only thing to return is old and probably invalid, but better than nothing so we return it anyways.");
+				ROS_WARN("The only thing to return is old and probably invalid, but better than nothing so we return it anyways. (Q: %d Cam: %d", it->data.quadcopterId, it->data.camNo);
 				
 				// element is overdue and nothing else was found, so return group, even if it's invalid.
 				result = searchGroup(it, currentTime, queue.begin(), --queue.end());

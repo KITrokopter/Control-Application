@@ -1,11 +1,11 @@
 #include "TrackingWorker.hpp"
 
 #include <boost/chrono/duration.hpp>
-#include <ros/console.h>
 #include <opencv2/core/core.hpp>
-#include <map>
+#include <sstream>
 
 #include "../../matlab/profiling.hpp"
+#include "control_application/quadcopter_position.h"
 
 TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(100, "Difference")
 {
@@ -60,7 +60,7 @@ void TrackingWorker::run()
 				}
 			}
 			
-			ROS_DEBUG("Latency is %.3fms", latency / 1e6);
+			ROS_DEBUG("POSITION_MODULE: Latency is %.3fms", latency / 1e6);
 			
 			Vector position = tracker.updatePosition(data);
 			
@@ -70,8 +70,10 @@ void TrackingWorker::run()
 			
 			
 			if (position.isValid()) {
-				// Invert x axis for controller
-				position.setV1(-position.getV1());
+				// Invert x axis for controller. Uncomment if necessary, but only if you really thought about it.
+				// position.setV1(-position.getV1());
+				
+				sendPosition(position, data[0].quadcopterId);
 				
 				std::vector<Vector> positions;
 				std::vector<int> ids;
@@ -87,7 +89,7 @@ void TrackingWorker::run()
 			
 			if (emptyCount == 50) {
 				// TODO uncomment
-				ROS_WARN("Position update buffer is empty!");
+				ROS_WARN("POSITION_MODULE: Position update buffer is empty!");
 				emptyCount = 0;
 			}
 			
@@ -173,4 +175,21 @@ cv::Mat TrackingWorker::getDistortionCoefficients(int camNo)
 void TrackingWorker::updateTrackingArea()
 {
 	receiver->setTrackingArea(tracker.getTrackingArea());
+}
+
+void TrackingWorker::sendPosition(Vector position, int quadcopterId)
+{
+	if (quadcopterPositionPublishers.count(quadcopterId) == 0) {
+		std::stringstream name;
+		name << "quadcopter_position_" << quadcopterId;
+		
+		ros::NodeHandle n;
+		quadcopterPositionPublishers[quadcopterId] = n.advertise<control_application::quadcopter_position>(name.str(), 4);
+	}
+	
+	control_application::quadcopter_position msg;
+	msg.x = position.getV1();
+	msg.y = position.getV2();
+	msg.z = position.getV3();
+	quadcopterPositionPublishers[quadcopterId].publish(msg);
 }

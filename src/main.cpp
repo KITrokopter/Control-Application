@@ -8,7 +8,7 @@
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "control_module");
+	ros::init(argc, argv, "control_application");
 	
 	// Enable debug level logging.
 	if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
