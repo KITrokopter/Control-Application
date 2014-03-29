@@ -171,6 +171,11 @@ public:
     Position(Engine *ep, int numberCameras, bool interpolationDependent);
 
     /**
+      * destroys matlab engine pointer.
+      */
+    ~Position();
+
+    /**
      * checks whether the calibration has been made successfully
      * @param numberCameras number of cameras
      * @return true, if calibration has been made successfully, false otherwise

@@ -52,6 +52,10 @@ void Position::initialize() {
     }
 }
 
+Position::~Position() {
+    engClose(ep);
+}
+
 bool Position::calibratedYet(int numberCameras) {
     // trying to load all output files
     mxArray *good;
@@ -69,7 +73,7 @@ bool Position::calibratedYet(int numberCameras) {
     } else {
         for (int i = 1; i < numberCameras; i++) {
             id << i;
-            load = "try load('/tmp/calibrationResult/Calib_Results_stereo_0_" + id.str() + ".mat'); worked = 1; catch worked = 0; end";
+            load = "try load('/tmp/calibrationResult/Calib_Results_stereo_" + id.str() + "_0.mat'); worked = 1; catch worked = 0; end";
             engEvalString(ep,load.c_str());
             good = engGetVariable(ep, "worked");
             result = mxGetPr(good)[0];
@@ -252,7 +256,7 @@ void Position::loadValues(int cameraId) {
         std::string result;
         std::ostringstream id;
         id << cameraId;
-        result = "load('/tmp/calibrationResult/Calib_Results_stereo_0_" + id.str() + ".mat');";
+        result = "load('/tmp/calibrationResult/Calib_Results_stereo_" + id.str() + "_0.mat');";
         // loads resulting file in matlab workspace
         engEvalString(ep, result.c_str());
     }
