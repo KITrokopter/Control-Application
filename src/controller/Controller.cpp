@@ -64,6 +64,8 @@ Controller::Controller()
 	this->timeOffsetOutput= getNanoTime();
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
+
+	this->control = PControl();
 }
 
 /*
@@ -1095,11 +1097,27 @@ void Controller::moveUp( int internId )
 void Controller::stabilize( int internId )
 {
 	this->listPositionsMutex.lock();
+	Position6DOF latestPosition = this->listPositions.back();
+	this->listPositionsMutex.unlock();
+
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
-	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, thrust_info[internId], internId);
 	this->listTargetsMutex.unlock();
-	this->listPositionsMutex.unlock();
+
+	MovementQuadruple newMovement = listSentQuadruples[internId].back();
+
+	/* Thrust */
+	double heightDiff = latestPosition.getDistanceZ( targetInternId );
+	unsigned int newThrust = newMovement.getThrust();
+	newThrust = newThrust + thrust_info[internId].checkAndFix( control.getManipulatedVariable( heightDiff ) );
+	newThrust = thrust_info[internId].checkAndFix( newThrust );
+	newMovement.setThrust( newThrust );
+
+	/* Roll */
+
+	/* Pitch */
+
+	/* Set new Movement */
 	this->listFutureMovement[internId].clear();
 	this->listFutureMovement[internId].push_front( newMovement );	   
 }

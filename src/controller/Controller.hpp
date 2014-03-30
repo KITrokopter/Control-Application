@@ -1,9 +1,12 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
 #include "CalculatorMoveUp.hpp"
+#include "Control.hpp"
+#include "PControl.hpp"
 #include "Formation.hpp"
 #include "Interpolator.hpp"
 #include "MovementQuadruple.hpp"
+#include "MovementHelper.hpp"
 #include "Mutex.hpp"
 #include "Position6DOF.hpp"
 #include "QuadcopterThrust.hpp"
@@ -13,7 +16,7 @@
 #include "api_application/Message.h"
 #include "api_application/Announce.h"
 #include "api_application/System.h"
-#include "control_application/quadcopter_movement.h"
+#include "control_application/quadcopter_movement.h"	// @Carina ???
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
@@ -163,6 +166,9 @@ private:
 	float battery_status[MAX_NUMBER_QUADCOPTER];
 	std::list<std::vector<float> > formationMovement;
 	QuadcopterThrust thrust_info[MAX_NUMBER_QUADCOPTER];
+
+	/* Control */
+	Control control;
 
 	/* Control variables */
 	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters

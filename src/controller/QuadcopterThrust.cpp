@@ -63,6 +63,23 @@ unsigned int QuadcopterThrust::checkAndFix(double thrust)
 	}
 }
 
+unsigned int QuadcopterThrust::checkAndFix(double thrust)
+{
+	if( thrust < 0 )
+	{
+		return 0;
+	}
+	else if( thrust > this->max )
+	{
+		return this->max;
+	}
+	else
+	{
+		unsigned int newThrust = thrust;
+		return checkAndFix( newThrust );
+	}
+}
+
 void QuadcopterThrust::setWithoutBatteryValue()
 {
 	init();
