@@ -42,6 +42,8 @@
 #define YAWRATE_MAX 0.0
 #define INVALID -1
 
+#define USE_BATTERY_INPUT 1
+
 #define TIME_UPDATED_END 500*1000*1000	// in ns
 #define TIME_UPDATED_CRITICAL 200*1000	// in ns
 #define TIME_MIN_LOOP_CALC 3000 	// 3 ms for usleep
@@ -143,7 +145,7 @@ private:
 	long int timeOffsetOutput;
 	long int timeDurationMoveup;
 	long int timeOffsetChangeThrust;
-	int thrustHelp;	
+
 	/* Position */
 	std::vector<std::list<Position6DOF> > listPositions;
 	std::vector<std::list<Position6DOF> > listTargets;

@@ -2,12 +2,17 @@
 
 QuadcopterThrust::QuadcopterThrust()
 {
-	this->min = 35000;
-	this->max = 42000;
-	this->start = 37000;
-	this->startMax = 45000;
-	this->decline = 27000;
+	init();
 	this->setThrustCalled = false;
+}
+
+void QuadcopterThrust::init()
+{
+	this->min = THRUST_GLOBAL_MIN;
+	this->max = THRUST_GLOBAL_MAX;
+	this->start = 30000;
+	this->startMax = 50000;
+	this->decline = 25000;
 }
 
 bool QuadcopterThrust::checkAndSetBatteryValue( float battery )
@@ -60,11 +65,7 @@ unsigned int QuadcopterThrust::checkAndFix(double thrust)
 
 void QuadcopterThrust::setWithoutBatteryValue()
 {
-	this->min = THRUST_GLOBAL_MIN;
-	this->max = THRUST_GLOBAL_MAX;
-	this->start = 30000;
-	this->startMax = 50000;
-	this->decline = 25000;
+	init();
 	this->setThrustCalled = true;
 }
 

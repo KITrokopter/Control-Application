@@ -44,26 +44,21 @@ Controller::Controller()
 	
 	//All control variables are set to zero
 	this->shutdownStarted = false;	// shutdown not started
-	
 	this->landFinished = false;
-	
 	this->receivedQuadcopters = false; // received no quadcopters
-	
 	this->buildFormationFinished = false; // has not built formation
-	
 	this->formation = new Formation();
-	
 	this->receivedTrackingArea = false;
-	
 	this->rotationInProcess = false;
-	
 	ROS_INFO("ROS stuff set up");
 	
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
-		//Initialize tracked (no quadcopter is tracked at the beginning)
-		tracked[i] = false;
-		this->thrustHelp = thrust_info[i].getStart();
+		tracked[i] = false;	// Initialize tracked (no quadcopter is tracked at the beginning)
+		if( !USE_BATTERY_INPUT )
+		{
+			thrust_info[i].setWithoutBatteryValue();
+		}
 	}
 	ROS_INFO("Constructing done");
 	this->timeOffsetOutput= getNanoTime();
@@ -206,8 +201,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		while( this->listPositions[id].size() > 30 )
 		{
 			//ROS_INFO("erasing");
-			// Remove oldest elements
-			this->listPositions[id].erase( this->listPositions[id].begin() );
+			this->listPositions[id].erase( this->listPositions[id].begin() );	// Remove oldest elements
 		}
 		this->listPositionsMutex.unlock();
 	}	
@@ -1058,57 +1052,42 @@ void Controller::dontMove( int internId)
 	
 }
 
+/*
+ * @Carina: set thrustHelp[internId] here if it hasn't been set before.
+ * Use them as arrays.
+ * Replace "thrust too high" with the following function:
+ * 	newThrust = thrust_info[internId].checkAndFix( currentThrust );
+ */
 void Controller::moveUp( int internId )
 {
-	bool moveUpSmart = false;
 	long int currentTime = getNanoTime();
-	
-	if( !moveUpSmart ) {		
-		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp, 0, 0, 0 );
-		newMovement.setTimestamp( currentTime );
-		//ROS_DEBUG("Thrust is %u", this->thrustHelp);
-		this->listFutureMovement[internId].clear();
-		this->listFutureMovement[internId].push_front( newMovement );
-		//Increases thrust step by step to ensure slow inclining
-		if(currentTime > this->timeOffsetChangeThrust + 10000000 && this->thrustHelp + 200 < this->thrust_info[internId].getStartMax())
-		{
-			usleep(85000);
-			this->thrustHelp += 200;
-			this->timeOffsetChangeThrust = getNanoTime();
-		}
-		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustHelp >= thrust_info[internId].getStartMax() || currentTime > this->timeDurationMoveup + 8000000000)
-		{
-			if(this->thrustHelp >= thrust_info[internId].getStartMax())
-			{
-				ROS_DEBUG("Thrust too high");
-			}
-			if(currentTime > this->timeDurationMoveup + 8000000000)
-			{
-				ROS_DEBUG("Time over");
-			}
-			ROS_INFO("Emergency Shutdown Test");
-			this->shutdownStarted = true;
-			quadcopterMovementStatus[internId] = CALCULATE_LAND;
-		}		
-	} else
+	int thrustHelp = this->thrust_info[internId].getStart();
+	MovementQuadruple newMovement = MovementQuadruple( thrustHelp, 0, 0, 0 );
+	newMovement.setTimestamp( currentTime );
+	this->listFutureMovement[internId].clear();
+	this->listFutureMovement[internId].push_front( newMovement );
+	int step = 200;
+	//Increases thrust step by step to ensure slow inclining
+	if((currentTime > this->timeOffsetChangeThrust + 10000000) && (thrustHelp+step < this->thrust_info[internId].getStartMax()))
 	{
-		if( this->listFutureMovement[internId].size() == 0 )
+		usleep(85000);
+		thrustHelp += step;
+		this->timeOffsetChangeThrust = getNanoTime();
+	}
+	//Protection mechanism for qc (either a too high thrust value or start process took too long)
+	if(thrustHelp >= thrust_info[internId].getStartMax() || currentTime > this->timeDurationMoveup + 8000000000)
+	{
+		if(thrustHelp >= thrust_info[internId].getStartMax())
 		{
-			int diff = 80;
-			long int timeDiff = 400000000;
-			long int currentTime = getNanoTime();
-			MovementQuadruple newMovement = MovementQuadruple( thrust_info[internId].getStartMax(), 0, 0, 0, currentTime );
-			this->listFutureMovement[internId].push_back( newMovement );
-		
-			newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
-			newMovement.setThrust( newMovement.getThrust() + diff );
-			this->listFutureMovement[internId].push_back( newMovement );
-		
-			newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
-			newMovement.setThrust( newMovement.getThrust() + diff );
-			this->listFutureMovement[internId].push_back( newMovement );
+			ROS_DEBUG("Thrust too high");
 		}
+		if(currentTime > this->timeDurationMoveup + 8000000000)
+		{
+			ROS_DEBUG("Time over");
+		}
+		ROS_INFO("Emergency Shutdown Test");
+		this->shutdownStarted = true;
+		quadcopterMovementStatus[internId] = CALCULATE_LAND;
 	}
 }
 
