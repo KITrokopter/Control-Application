@@ -41,7 +41,25 @@ unsigned int QuadcopterThrust::checkAndFix( unsigned int thrust )
 	else return thrust;
 }
 
-void QuadcopterThrust::setWithoutBatteryValue() {
+unsigned int QuadcopterThrust::checkAndFix(double thrust)
+{
+	if( thrust < 0 )
+	{
+		return 0;
+	}
+	else if( thrust > this->max )
+	{
+		return this->max;
+	}
+	else
+	{
+		unsigned int newThrust = thrust;
+		return checkAndFix( newThrust );
+	}
+}
+
+void QuadcopterThrust::setWithoutBatteryValue()
+{
 	this->min = THRUST_GLOBAL_MIN;
 	this->max = THRUST_GLOBAL_MAX;
 	this->start = 30000;
