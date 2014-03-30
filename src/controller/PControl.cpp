@@ -9,11 +9,11 @@
 
 PControl::PControl()
 {
-	// TODO Auto-generated constructor stub
+	this->amplification = AMPLIFICATION_FACTOR;
 
 }
 
 double PControl::getManipulatedVariable(double errorSignal)
 {
-
+	return (this->amplification * errorSignal);
 }
