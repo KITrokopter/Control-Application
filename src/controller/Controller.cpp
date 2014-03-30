@@ -55,6 +55,7 @@ Controller::Controller()
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
 		tracked[i] = false;	// Initialize tracked (no quadcopter is tracked at the beginning)
+		this->quadcopterStatus[i] = QuadcopterInfo();
 		if( !USE_BATTERY_INPUT )
 		{
 			thrust_info[i].setWithoutBatteryValue();
@@ -1101,21 +1102,35 @@ void Controller::stabilize( int internId )
 	this->listPositionsMutex.unlock();
 
 	this->listTargetsMutex.lock();
-	Position6DOF targetInternId = this->listTargets[internId].back();
+	Position6DOF posTarget = this->listTargets[internId].back();
 	this->listTargetsMutex.unlock();
 
 	MovementQuadruple newMovement = listSentQuadruples[internId].back();
 
 	/* Thrust */
-	double heightDiff = latestPosition.getDistanceZ( targetInternId );
+	double heightDiff = latestPosition.getDistanceZ( posTarget );
 	unsigned int newThrust = newMovement.getThrust();
-	newThrust = newThrust + thrust_info[internId].checkAndFix( control.getManipulatedVariable( heightDiff ) );
+	newThrust = newThrust + thrust_info[internId].checkAndFix( controlThrust.getManipulatedVariable( heightDiff ) );
 	newThrust = thrust_info[internId].checkAndFix( newThrust );
 	newMovement.setThrust( newThrust );
 
+	MovementHelper helper;
+	Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getRotation(), latestPosition, posTarget );
+
 	/* Roll */
+	float xDiff = posForRP.getDistanceX( posTarget );	// FIXME casts
+	float newRoll = newMovement.getRoll();	// FIXME casts
+	newRoll = newRoll + controlRollPitch.getManipulatedVariable( xDiff );	// check and fix
 
 	/* Pitch */
+	float yDiff = posForRP.getDistanceY( posTarget );	// FIXME casts
+	float newPitch = newMovement.getPitch();	// FIXME casts
+	newPitch = newPitch + controlRollPitch.getManipulatedVariable( yDiff );	// check and fix
+
+	/* Yawrate */
+	float newYawrate = newMovement.getYawrate();
+
+	newMovement.setRollPitchYawrate( newRoll, newPitch, newYawrate );
 
 	/* Set new Movement */
 	this->listFutureMovement[internId].clear();

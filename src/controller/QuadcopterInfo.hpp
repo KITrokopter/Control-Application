@@ -1,6 +1,12 @@
-#ifndef INTERPOLATORINFO_HPP
-#define INTERPOLATORINFO_HPP
+/*
+ * QuadcopterInfo.hpp
+ *
+ *  Created on: 30.03.2014
+ *      Author: dwx
+ */
 
+#ifndef QUADCOPTERINFO_HPP_
+#define QUADCOPTERINFO_HPP_
 #include <cmath>
 #include <list>
 #include <time.h>
@@ -14,9 +20,9 @@
 #define SHUTDOWN 5
 
 
-class InterpolatorInfo {
+class QuadcopterInfo {
 public:
-	InterpolatorInfo();
+	QuadcopterInfo();
 
 	/* Getter and Setter */
 	short getState();
@@ -45,9 +51,9 @@ private:
 	/*
 	 * States
 	 * 0 not started
-	 * 1 started, sent values for roll/pitch
-	 * 2 roll/pitch has been sent, calculate x/y values
-	 * 3 calibration done, now do only small adjustments
+	 * 1 started
+	 * 2
+	 * 3
 	 * 4 hold (before shutdown), "smart" shutdown
 	 * 5 shutdown (turn off)
 	 */
@@ -56,12 +62,11 @@ private:
 	long int timeStarted;
 	long int timeLastUpdated;	// used in latest state "DONE", before only "started" is relevant
 	long int timeShutdownStarted;
-	
+
 	double x;		// 0-x-roll, 1-y-pitch
 	double y;
 	double rotation;	// in rad; compared to "North" (pitch=1), counterclockwise
 	bool negativeSign;
-
 };
 
-#endif // INTERPOLATORINFO_HPP
+#endif /* QUADCOPTERINFO_HPP_ */

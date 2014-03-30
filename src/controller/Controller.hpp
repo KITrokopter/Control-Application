@@ -10,6 +10,7 @@
 #include "Mutex.hpp"
 #include "Position6DOF.hpp"
 #include "QuadcopterThrust.hpp"
+#include "QuadcopterInfo.hpp"
 #include "ros/ros.h"
 #include "api_application/MoveFormation.h"
 #include "api_application/SetFormation.h"
@@ -168,7 +169,9 @@ private:
 	QuadcopterThrust thrust_info[MAX_NUMBER_QUADCOPTER];
 
 	/* Control */
-	Control control;
+	Control controlThrust, controlRollPitch;
+	QuadcopterInfo quadcopterStatus[MAX_NUMBER_QUADCOPTER];
+
 
 	/* Control variables */
 	bool tracked[MAX_NUMBER_QUADCOPTER]; //Array of tracked quadcopters
