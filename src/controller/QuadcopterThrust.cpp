@@ -17,7 +17,7 @@ bool QuadcopterThrust::checkAndSetBatteryValue( float battery )
 		ROS_ERROR("checkAndSet +");
 		return false;
 	} 
-	else if( battery < BATTERY_LOW )
+	else if( battery < BATTERY_MIN )
 	{
 		//ROS_ERROR("checkAndSet -");
 		return false;
@@ -39,6 +39,15 @@ unsigned int QuadcopterThrust::checkAndFix( unsigned int thrust )
 		return this->min;
 	}
 	else return thrust;
+}
+
+void QuadcopterThrust::setWithoutBatteryValue() {
+	this->min = THRUST_GLOBAL_MIN;
+	this->max = THRUST_GLOBAL_MAX;
+	this->start = 30000;
+	this->startMax = 45000;
+	this->decline = 27000;
+	this->setThrustCalled = false;
 }
 
 void QuadcopterThrust::setThrust( float battery )

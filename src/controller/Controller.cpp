@@ -870,10 +870,10 @@ bool Controller::checkInput(int internId)
 	bool received = this->receivedQuadStatus[internId];
 	unsigned int quadStatus= this->quadcopterMovementStatus[internId];
 	/* Battery */
-	if(this->battery_status[internId] < LOW_BATTERY && quadStatus != CALCULATE_NONE && received)
+	if(this->battery_status[internId] < BATTERY_LOW && quadStatus != CALCULATE_NONE && received)
 	{
-		std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, LOW_BATTERY);
-		//ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, LOW_BATTERY);
+		std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, BATTERY_LOW);
+		//ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, BATTERY_LOW);
 		//emergencyRoutine(message);
 	}
 	long int currentTime = getNanoTime();
@@ -1118,26 +1118,17 @@ void Controller::stabilize( int internId )
 	this->listPositionsMutex.lock();
 	this->listTargetsMutex.lock();
 	Position6DOF targetInternId = this->listTargets[internId].back();
-	//ROS_DEBUG("Target z value set: %f", targetInternId.getPosition()[2]);
 	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, thrust_info[internId], internId);
-	/*if((getNanoTime()/500000000)%2 == 1)
-	{	
-		//ROS_INFO("sta1 Roll %f and pitch %f", newMovement.getRoll(), newMovement.getPitch());
-	}*/
 	this->listTargetsMutex.unlock();
 	this->listPositionsMutex.unlock();
 	this->listFutureMovement[internId].clear();
 	this->listFutureMovement[internId].push_front( newMovement );	   
-	if((getNanoTime()/500000000)%2 == 1)
-	{	
-		//ROS_INFO("sta2 Roll %f and pitch %f", this->listFutureMovement[internId].front().getRoll(), this->listFutureMovement[internId].front().getPitch());
-	}
 }
 
 void Controller::hold( int internId )
 {
+	// FIXME
 	ROS_INFO("%i now land", internId);
-	//FIXME
 	if( HOLD_SKIP )
 	{
 		quadcopterMovementStatus[internId] = CALCULATE_LAND;
@@ -1197,48 +1188,48 @@ void Controller::land( int internId, int * nrLand )
 
 
 /* HELPER FUNCTIONS */
-bool Controller::isStable( int internId )
-{
-	/* 
-	 * Compare latest position of QC with 
-	 * position of QC "compareTimeX"-elements before. 
-	 * Assumption: 30 Elements ~ 1 sec.
-	 */
-	int compareTime[3] = { 1, 5, 50 };
-	
-	this->listPositionsMutex.lock();
-	size_t sizeOfListPositions = this->listPositions[internId].size();
-	this->listPositionsMutex.unlock();
-    if( sizeOfListPositions > compareTime[2] )
-    {
-		/* Reverse iterator to the reverse end */
-		int counter = 0;
-		std::list<Position6DOF>::reverse_iterator rit = this->listPositions[internId].rbegin();
-		for( ; rit != this->listPositions[internId].rend(); ++rit )
-		{
-			if( counter==compareTime[0] || counter==compareTime[1] || counter==compareTime[2] )
-			{
-				if( !closeToTarget( listPositions[internId].back(), *rit, RANGE_STABLE ) )
-				{
-					return false;
-				}
-			}
-			counter++;
-		}
-		return true;
-    } else if ( sizeOfListPositions > compareTime[1] )
-    {
-		/* Possible to work with available information? */
-		return false;
-    } else if ( sizeOfListPositions > compareTime[0] )
-    {
-		return false;
-    } else
-    {
-        /* No information to work with, start emergency routine? */
-        return false;
-    }
-}
+//bool Controller::isStable( int internId )
+//{
+//	/*
+//	 * Compare latest position of QC with
+//	 * position of QC "compareTimeX"-elements before.
+//	 * Assumption: 30 Elements ~ 1 sec.
+//	 */
+//	int compareTime[3] = { 1, 5, 50 };
+//
+//	this->listPositionsMutex.lock();
+//	size_t sizeOfListPositions = this->listPositions[internId].size();
+//	this->listPositionsMutex.unlock();
+//    if( sizeOfListPositions > compareTime[2] )
+//    {
+//		/* Reverse iterator to the reverse end */
+//		int counter = 0;
+//		std::list<Position6DOF>::reverse_iterator rit = this->listPositions[internId].rbegin();
+//		for( ; rit != this->listPositions[internId].rend(); ++rit )
+//		{
+//			if( counter==compareTime[0] || counter==compareTime[1] || counter==compareTime[2] )
+//			{
+//				if( !closeToTarget( listPositions[internId].back(), *rit, RANGE_STABLE ) )
+//				{
+//					return false;
+//				}
+//			}
+//			counter++;
+//		}
+//		return true;
+//    } else if ( sizeOfListPositions > compareTime[1] )
+//    {
+//		/* Possible to work with available information? */
+//		return false;
+//    } else if ( sizeOfListPositions > compareTime[0] )
+//    {
+//		return false;
+//    } else
+//    {
+//        /* No information to work with, start emergency routine? */
+//        return false;
+//    }
+//}
 
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range )
 {

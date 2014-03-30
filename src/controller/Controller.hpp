@@ -36,15 +36,12 @@
 #include <vector>
 //Ros messages/services
 
-#define THRUST_GLOBAL_MAX 60000
-#define THRUST_GLOBAL_MIN 10001
-#define THRUST_OFF 0
-#define THRUST_STEP 11000
+
 #define ROLL_MAX 12.0
 #define PITCH_MAX 12.0
 #define YAWRATE_MAX 0.0
 #define INVALID -1
-#define LOW_BATTERY 3.0//In V
+
 #define TIME_UPDATED_END 500*1000*1000	// in ns
 #define TIME_UPDATED_CRITICAL 200*1000	// in ns
 #define TIME_MIN_LOOP_CALC 3000 	// 3 ms for usleep
@@ -53,6 +50,7 @@
 #define TIME_WAIT_FOR_LANDING 10000
 #define TIME_MIN_CALC 30000000	// 30ms for loop
 #define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
+
 #define DISTANCE_ROTATE_TO_CENTER 100
 
 /* For calculateMovement */
@@ -62,7 +60,6 @@
 #define CALCULATE_MOVE 3	// With target and current position
 #define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
 #define CALCULATE_LAND 5 //Shutdown quadcopter
-
 #define CALCULATE_STABILIZE_STEP 500	// time in ms after next value should be calculated
 
 #define HOLD_SKIP 1
@@ -129,7 +126,8 @@ protected:
 	void hold( int internId );
 
 	/* Helper functions */
-	bool isStable( int internId );
+//	bool isStable( int internId );
+
 private:
 	
 	/* static data */	
@@ -179,19 +177,11 @@ private:
 	long int timeLastCurrent[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
-	//Mutex shutdownMutex;
-	//Mutex landMutex;
 	Mutex formationMovementMutex;
 	Mutex listPositionsMutex;
 	Mutex listTargetsMutex;
-	//Mutex buildFormationMutex;
-	//Mutex trackedArrayMutex;
-	//Mutex receivedQCMutex;
-	//Mutex receivedFormMutex;
-	//Mutex receivedQCStMutex;
 	Mutex lastFormationMovementMutex;
 	Mutex lastCurrentMutex;
-	//Mutex movementStatusMutex;
 
 	/* Threads */
 	pthread_t tCalculateMovement;
@@ -209,28 +199,21 @@ private:
 	/* Subscriber */	
 	ros::Subscriber MoveFormation_sub;	//Subscriber for the MoveFormation data	
 	ros::Subscriber SetFormation_sub;	//Subscriber for Formation data from API
-	//Subscriber for Quadcopter data from QuadcopterModul
-	//ros::Subscriber QuadStatus_sub;
 	ros::Subscriber QuadStatus_sub[10];
-	//Subscriber to System topic (Sends the start and end of the system)
-	ros::Subscriber System_sub;
+	ros::Subscriber System_sub;	//Subscriber to System topic (Sends the start and end of the system)
+	//ros::Subscriber QuadStatus_sub;	//Subscriber for Quadcopter data from QuadcopterModul
 
 	/* Publisher */
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
-	//ros::Publisher Movement_pub;
-	ros::Publisher Movement_pub[10];
-	//Publisher for Message to API
-	ros::Publisher Message_pub;
+	ros::Publisher Movement_pub[10];	//ros::Publisher Movement_pub;
+	ros::Publisher Message_pub;	//Publisher for Message to API
 
 	/* Services */
-	//Service for building formation
-	ros::ServiceServer BuildForm_srv;
-	//Service for shutingdown formation
-	ros::ServiceServer Shutdown_srv;
-	//Service for setting the quadcopter ids
-	ros::ServiceServer QuadID_srv;
-	//Service for rotating
-	ros::ServiceServer Rotation_srv;
+
+	ros::ServiceServer BuildForm_srv;	//Service for building formation
+	ros::ServiceServer Shutdown_srv;	//Service for shutingdown formation
+	ros::ServiceServer QuadID_srv;	//Service for setting the quadcopter ids
+	ros::ServiceServer Rotation_srv;	//Service for rotating
 
 	/* Clients */
 	ros::ServiceClient Announce_client;
