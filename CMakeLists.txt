@@ -144,15 +144,18 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/TrackingArea.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
-  src/controller/
   src/controller/Control.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Interpolator.cpp
   src/controller/InterpolatorInfo.cpp
-  src/controller/Position6DOF.cpp
-  src/controller/Mutex.cpp
+  src/controller/MovementHelper.cpp
   src/controller/MovementQuadruple.cpp
+  src/controller/Mutex.cpp
+  src/controller/PControl.cpp
+  src/controller/Position6DOF.cpp
+  src/controller/QuadcopterControl.cpp
+  src/controller/QuadcopterInfo.cpp
   src/controller/QuadcopterThrust.cpp
 )
 
@@ -193,13 +196,18 @@ add_executable(control_application_test_calibration_node
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
   src/matlab/profiling.cpp
+  src/controller/Control.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
-  src/controller/Position6DOF.cpp
-  src/controller/Mutex.cpp
-  src/controller/MovementQuadruple.cpp
   src/controller/Interpolator.cpp
   src/controller/InterpolatorInfo.cpp
+  src/controller/MovementHelper.cpp
+  src/controller/MovementQuadruple.cpp
+  src/controller/Mutex.cpp
+  src/controller/PControl.cpp
+  src/controller/Position6DOF.cpp
+  src/controller/QuadcopterControl.cpp
+  src/controller/QuadcopterInfo.cpp
   src/controller/QuadcopterThrust.cpp
 )
 
@@ -231,13 +239,18 @@ add_executable(profile_control
   
   test/ProfileControl.cpp
   test/helpers/MovementGenerator.cpp
+  src/controller/Control.cpp
   src/controller/Controller.cpp
-  src/controller/Position6DOF.cpp
   src/controller/Formation.cpp
-  src/controller/MovementQuadruple.cpp
-  src/controller/Mutex.cpp
   src/controller/Interpolator.cpp
   src/controller/InterpolatorInfo.cpp
+  src/controller/MovementHelper.cpp
+  src/controller/MovementQuadruple.cpp
+  src/controller/Mutex.cpp
+  src/controller/PControl.cpp
+  src/controller/Position6DOF.cpp
+  src/controller/QuadcopterControl.cpp
+  src/controller/QuadcopterInfo.cpp
   src/controller/QuadcopterThrust.cpp
   src/matlab/Matlab.cpp 
   src/matlab/Vector.cpp 
