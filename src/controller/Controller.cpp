@@ -1120,16 +1120,20 @@ void Controller::stabilize( int internId )
 	/* Roll */
 	float xDiff = posForRP.getDistanceX( posTarget );
 	float newRoll = newMovement.getRoll();
-	newRoll = newRoll + controlRollPitch.getManipulatedVariable( xDiff );	// check and fix
+	newRoll = newRoll + controlRollPitch.getManipulatedVariable( xDiff );
 
 	/* Pitch */
 	float yDiff = posForRP.getDistanceY( posTarget );
 	float newPitch = newMovement.getPitch();
-	newPitch = newPitch + controlRollPitch.getManipulatedVariable( yDiff );	// check and fix
+	newPitch = newPitch + controlRollPitch.getManipulatedVariable( yDiff );
 
 	/* Yawrate */
 	float newYawrate = newMovement.getYawrate();
 
+	/* Set values */
+	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
+	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
+	quadcopterStatus[internId].getInfo().checkAndFixYawrate( newYawrate );
 	newMovement.setRollPitchYawrate( newRoll, newPitch, newYawrate );
 
 	/* Set new Movement */

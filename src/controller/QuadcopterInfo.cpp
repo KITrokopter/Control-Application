@@ -54,6 +54,45 @@ void QuadcopterInfo::setShutdownStarted( long int newShutdownStarted )
 	this->timeShutdownStarted = newShutdownStarted;
 }
 
+float QuadcopterInfo::checkAndFixRoll( float roll )
+{
+	if( roll < ROLL_MIN )
+	{
+		return ROLL_MIN;
+	}
+	else if( roll > ROLL_MAX )
+	{
+		return ROLL_MAX;
+	}
+	return roll;	
+}
+
+float QuadcopterInfo::checkAndFixPitch( float pitch )
+{
+	if( pitch < PITCH_MIN )
+	{
+		return PITCH_MIN;
+	}
+	else if( pitch > PITCH_MAX )
+	{
+		return PITCH_MAX;
+	}
+	return pitch;
+}
+
+float QuadcopterInfo::checkAndFixYawrate( float yawrate )
+{
+	if( yawrate < YAWRATE_MIN )
+	{
+		return YAWRATE_MIN;
+	}
+	else if( yawrate > YAWRATE_MAX )
+	{
+		return YAWRATE_MAX;
+	}
+	return yawrate;
+}
+
 double QuadcopterInfo::getX()
 {
 	return this->x;

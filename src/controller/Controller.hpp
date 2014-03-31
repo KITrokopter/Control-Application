@@ -41,10 +41,6 @@
 #include <vector>
 //Ros messages/services
 
-
-#define ROLL_MAX 12.0
-#define PITCH_MAX 12.0
-#define YAWRATE_MAX 0.0
 #define INVALID -1
 
 #define USE_BATTERY_INPUT 1
@@ -73,9 +69,6 @@
 #define HOLD_LENGTH 1000	// time in ms to stay in function before "shutdown"
 #define HOLD_FACTOR_THRUST 0.7
 #define HOLD_FACTOR_RPY 0.5
-
-#define RANGE_STABLE 10 // Distance of two points to be considered "equal" in mm
-#define RANGE_STABLE_Z 6 // Difference of two height-Values to be considered "equal" in mm
 
 #define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
 #define MAX_SAVED_SENT_QUADRUPLES 8
