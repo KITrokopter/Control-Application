@@ -144,13 +144,15 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/TrackingArea.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
+  src/controller/
+  src/controller/Control.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
+  src/controller/Interpolator.cpp
+  src/controller/InterpolatorInfo.cpp
   src/controller/Position6DOF.cpp
   src/controller/Mutex.cpp
   src/controller/MovementQuadruple.cpp
-  src/controller/Interpolator.cpp
-  src/controller/InterpolatorInfo.cpp
   src/controller/QuadcopterThrust.cpp
 )
 
