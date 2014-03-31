@@ -39,21 +39,21 @@ public:
 	void setDecline( unsigned int decline );
 	unsigned int getDecline();
 
-	protected:
-		void setThrust( float battery );
+protected:
+	void setThrust( float battery );
 
-	private:
-		/*
-		 * All values should be seen Quadcopter-specific.
-		 * Global min/max values will be in Controller.hpp as global variables.
-		 */
-		unsigned int min;
-		unsigned int max;
-		unsigned int startMax;
-		unsigned int start;
-		unsigned int decline;
+private:
+	/*
+	 * All values should be seen Quadcopter-specific.
+	 * Global min/max values will be in Controller.hpp as global variables.
+	 */
+	unsigned int min;
+	unsigned int max;
+	unsigned int startMax;
+	unsigned int start;
+	unsigned int decline;
 
-		bool setThrustCalled;
+	bool setThrustCalled;
 };
 
 #endif /* QUADCOPTERCONTROL_HPP_ */

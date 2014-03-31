@@ -60,6 +60,7 @@ Controller::Controller()
 		{
 			thrust_info[i].setWithoutBatteryValue();
 		}
+		this->thrustHelp[i] = thrust_info[i].getStart();
 	}
 	ROS_INFO("Constructing done");
 	this->timeOffsetOutput= getNanoTime();
@@ -344,7 +345,7 @@ void Controller::calculateMovement()
 	long int timerCalculateMovement = getNanoTime();
 	while(!end)
 	{
-		calculateMovementStarted = timerCalculateMovement;
+		calculateMovementStarted = getNanoTime();
 		// Iterate over the total number of quadcopters as long as the land process isn't finished
 		//ROS_INFO("Calculate");
 		for(int i = 0; (i < amount) && (!end); i++)
@@ -380,7 +381,7 @@ void Controller::calculateMovement()
 				case CALCULATE_STABILIZE:
 					if( i == 0)
 					{
-					//	ROS_INFO("Stabilize %i", i);
+						ROS_INFO("Stabilize %i at time %i after %i ns", i, getNanoTime(), getNanoTime() - calculateMovementStarted);
 					}
 					stabilize( i );
 					break;
@@ -403,7 +404,7 @@ void Controller::calculateMovement()
 					ROS_INFO("QC in default status: %i", i);
 					break;
 			}
-			sendMovement( i ); //FIXME either this or sendMovementAll
+			//sendMovement( i ); //FIXME either this or sendMovementAll
 			// Check if land process is finished and set control variable accordingly
 			if(this->receivedFormation)
 			{
@@ -416,15 +417,27 @@ void Controller::calculateMovement()
 			this->landFinished = end;
 			
 		}
-		//sendMovementAll(); FIXME
+		sendMovementAll(); //FIXME
+		ROS_INFO("Calculate Finished after %i ns",getNanoTime() - calculateMovementStarted);
 		//Make sure the calculation of the movement data is restricted to a certain rate.
 		timerCalculateMovement = getNanoTime();
-		while( timerCalculateMovement < TIME_MIN_CALC + calculateMovementStarted )
+		long int timeToWait = ((1000000000/ LOOPS_PER_SECOND) - (timerCalculateMovement - calculateMovementStarted)) / 1000;
+		if( timeToWait > 0)
+		{
+			usleep( timeToWait);
+			ROS_INFO("Sleeping time :%i", timeToWait);
+		}
+		else
+		{
+			ROS_INFO("Calculate was too slow: %i", timeToWait);
+		}
+		ROS_INFO("Loop took: %i ns", (getNanoTime() - calculateMovementStarted));
+		/*while( timerCalculateMovement < TIME_MIN_CALC + calculateMovementStarted )
 		{
 			//ROS_DEBUG("Sleeping");
 			usleep( TIME_MIN_LOOP_CALC );
 			timerCalculateMovement = getNanoTime();
-		}
+		}*/
 	}	
 }
 
@@ -1016,6 +1029,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		 * Only if battery-value is useful.
 		 */
 		thrust_info[localQuadcopterId].checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
+		this->thrustHelp[localQuadcopterId] = thrust_info[localQuadcopterId].getStart();
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
 }
@@ -1064,23 +1078,22 @@ void Controller::dontMove( int internId)
 void Controller::moveUp( int internId )
 {
 	long int currentTime = getNanoTime();
-	int thrustHelp = this->thrust_info[internId].getStart();
 	MovementQuadruple newMovement = MovementQuadruple( thrustHelp, 0, 0, 0 );
 	newMovement.setTimestamp( currentTime );
 	this->listFutureMovement[internId].clear();
 	this->listFutureMovement[internId].push_front( newMovement );
 	int step = 200;
 	//Increases thrust step by step to ensure slow inclining
-	if((currentTime > this->timeOffsetChangeThrust + 10000000) && (thrustHelp+step < this->thrust_info[internId].getStartMax()))
+	if((currentTime > this->timeOffsetChangeThrust + 10000000) && (this->thrustHelp[internId] + step < this->thrust_info[internId].getStartMax()))
 	{
 		usleep(85000);
-		thrustHelp += step;
+		this->thrustHelp[internId] += step;
 		this->timeOffsetChangeThrust = getNanoTime();
 	}
 	//Protection mechanism for qc (either a too high thrust value or start process took too long)
-	if(thrustHelp >= thrust_info[internId].getStartMax() || currentTime > this->timeDurationMoveup + 8000000000)
+	if(this->thrustHelp > thrust_info[internId].getStartMax() || currentTime > this->timeDurationMoveup + 8000000000)
 	{
-		if(thrustHelp >= thrust_info[internId].getStartMax())
+		if(this->thrustHelp[internId] > thrust_info[internId].getStartMax())
 		{
 			ROS_DEBUG("Thrust too high");
 		}
@@ -1170,25 +1183,26 @@ void Controller::land( int internId, int * nrLand )
 	}
 	else
 	{
-		if(this->thrustHelp > thrust_info[internId].getDecline())	// FIXME
+		if(this->thrustHelp[internId] > thrust_info[internId].getDecline())	// FIXME
 		{
-			this->thrustHelp = thrust_info[internId].getDecline();	// FIXME
+			this->thrustHelp[internId] = thrust_info[internId].getDecline();	// FIXME
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		ROS_INFO("min");
-		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp - 700 > 0)
+		int step = 700;
+		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp[internId] - step > 0)
 		{
-			//usleep(85000);
-			this->thrustHelp -= 700;
+			usleep(85000);
+			this->thrustHelp[internId] -= step;
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		//Shutdown crazyflie after having left the tracking area.
-		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp, 0, 0, 0 ); 
+		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp[internId], 0, 0, 0 ); 
 		//MovementQuadruple newMovement = this->listFutureMovement[internId].front();
 		//newMovement.setThrust( THRUST_OFF );
 		newMovement.setTimestamp(currentTime);
 		this->listFutureMovement[internId].push_front( newMovement );
-		if( this->thrustHelp - 700 <= 0)
+		if( this->thrustHelp[internId] - step <= 0)
 		{
 			this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
 			dontMove( internId);
