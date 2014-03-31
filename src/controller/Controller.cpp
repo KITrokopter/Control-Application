@@ -1,4 +1,5 @@
 #include "Controller.hpp"
+//#include "PControl.hpp"
 
 void* startThreadCalculateMovement(void* something);
 void* startThreadBuildFormation(void* something);
@@ -67,8 +68,8 @@ Controller::Controller()
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
 
-	this->controlThrust = PControl( AMPLIFICATION_FACTOR_RP );
-	this->controlRollPitch = PControl( AMPLIFICATION_FACTOR_RP );
+	this->controlThrust = new PControl( AMPLIFICATION_FACTOR_RP );
+	this->controlRollPitch = new PControl( AMPLIFICATION_FACTOR_RP );
 }
 
 /*
@@ -1123,9 +1124,9 @@ void Controller::stabilize( int internId )
 	MovementQuadruple newMovement = listSentQuadruples[internId].back();
 
 	/* Thrust */
-	float heightDiff = (float) latestPosition.getDistanceZ( posTarget );
+	double heightDiff = latestPosition.getDistanceZ( posTarget );
 	unsigned int newThrust = newMovement.getThrust();
-	newThrust = newThrust + quadcopterStatus[internId].getThrust().checkAndFix( controlThrust.getManipulatedVariable( heightDiff ) );
+	newThrust = newThrust + quadcopterStatus[internId].getThrust().checkAndFix( controlThrust->getManipulatedVariable( heightDiff ) );
 	newThrust = quadcopterStatus[internId].getThrust().checkAndFix( newThrust );
 	newMovement.setThrust( newThrust );
 
@@ -1135,12 +1136,12 @@ void Controller::stabilize( int internId )
 	/* Roll */
 	float xDiff = posForRP.getDistanceX( posTarget );
 	float newRoll = newMovement.getRoll();
-	newRoll = newRoll + ((float) controlRollPitch.getManipulatedVariable( xDiff ));
+	newRoll = newRoll + ((float) controlRollPitch->getManipulatedVariable( xDiff ));
 
 	/* Pitch */
 	float yDiff = posForRP.getDistanceY( posTarget );
 	float newPitch = newMovement.getPitch();
-	newPitch = newPitch + ((float) controlRollPitch.getManipulatedVariable( yDiff ));
+	newPitch = newPitch + ((float) controlRollPitch->getManipulatedVariable( yDiff ));
 
 	/* Yawrate */
 	float newYawrate = newMovement.getYawrate();

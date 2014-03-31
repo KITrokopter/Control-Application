@@ -1,9 +1,7 @@
 #include "Interpolator.hpp"
 #include "Controller.hpp"
 
-unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceLatestTarget, double timediffNormalized, QuadcopterThrust thrustInfo );
 bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF target );
-MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target );
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range );
 float calculateDistanceFactor( float distance );
 float calculateDistanceFactorRPY( float distance );
@@ -156,29 +154,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	posAssumed.predictNextPosition( positionPast, PREDICT_FUTURE_POSITION_TIME );
 	//ROS_INFO("interpolate 10 calculated assumedPos");
 
-
-	/* Calculate thrust value - always */
-	float zDiffPast = positionPast.getDistanceZ( target );	// unnecessary if prediction works
-	float zDiffNow = positionNow.getDistanceZ( target );
-	float zDiffAssumed = posAssumed.getDistanceZ( target );
-	// leave for testing
-/*	double timediffPastNow = positionNow.getTimestamp() - positionPast.getTimestamp();
-	double timediffNormalized = (double) timediffPastNow / 1000000000;	// should be in seconds
-	double absDistancePastNow = positionPast.getAbsoluteDistance( positionNow );
-	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffPast, zDiffNow, absDistancePastNow, timediffNormalized);*/
-	double timediffNowAssumed = posAssumed.getTimestamp() - positionNow.getTimestamp();
-	double timediffNormalized = ((double) timediffNowAssumed) / ((double) 1000000000);	// should be in seconds
-	float absDistanceNowAssumed = positionNow.getAbsoluteDistance( posAssumed );
-	float absDistanceNowTarget = positionNow.getAbsoluteDistance( target );
-	//ROS_INFO("timediffNormalized: %f", timediffNormalized);
-	unsigned int oldThrust = newMovement.getThrust();
-	unsigned int newThrust = newMovement.getThrust() + calculateThrustDiff(zDiffNow, zDiffAssumed, absDistanceNowTarget, timediffNormalized, thrustInfo);
-	newThrust = thrustInfo.checkAndFix( newThrust );
-	//ROS_INFO("zDiffAssumed-zDiffNow: %f, old thrust %i, new thrust %i", zDiffAssumed-zDiffNow, oldThrust, newThrust);
-	newMovement.setThrust( newThrust );
-	//ROS_INFO("interpolate 11 thrustdiff %u", newThrust);
-
-
 	/* Calculate new rpy-values every MIN_TIME_TO_WAIT nanoseconds */
 /*	if( this->status[id].getLastUpdated()-currentTime < MIN_TIME_TO_WAIT )
 	{
@@ -196,14 +171,6 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 		 */
 		
 	}
-	//ROS_INFO("interpolate 12b rotational correction done");
-
-	/* Calculate correction (calibration data, predictedPosition, target) */
-	MovementQuadruple rpyMovement = calculateRollPitch( status[id].getRotation(), posAssumed, target );
-	newMovement.setRollPitchYawrate( rpyMovement );
-	//ROS_INFO("interpolate 13 rpyMovement calculated");
-	this->status[id].setLastUpdated( currentTime );
-
 	return newMovement;
 }
 

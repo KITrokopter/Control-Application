@@ -166,7 +166,7 @@ private:
 	std::list<std::vector<float> > formationMovement;
 
 	/* Control */
-	Control controlThrust, controlRollPitch;
+	Control *controlThrust, *controlRollPitch;
 	QuadcopterControl quadcopterStatus[MAX_NUMBER_QUADCOPTER];
 
 

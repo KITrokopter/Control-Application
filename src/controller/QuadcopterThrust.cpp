@@ -46,23 +46,6 @@ unsigned int QuadcopterThrust::checkAndFix( unsigned int thrust )
 	else return thrust;
 }
 
-unsigned int QuadcopterThrust::checkAndFix( float thrust )
-{
-	if( thrust < 0 )
-	{
-		return 0;
-	}
-	else if( thrust > this->max )
-	{
-		return this->max;
-	}
-	else
-	{
-		unsigned int newThrust = thrust;
-		return checkAndFix( newThrust );
-	}
-}
-
 unsigned int QuadcopterThrust::checkAndFix( double thrust )
 {
 	if( thrust < 0 )

@@ -10,9 +10,7 @@
 
 class Control {
 public:
-	Control();
-
-	virtual double getManipulatedVariable( double errorSignal );
+	virtual double getManipulatedVariable( double errorSignal ) = 0;
 
 };
 

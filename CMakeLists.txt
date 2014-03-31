@@ -144,7 +144,6 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/TrackingArea.cpp
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
-  src/controller/Control.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Interpolator.cpp
@@ -196,7 +195,6 @@ add_executable(control_application_test_calibration_node
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
   src/matlab/profiling.cpp
-  src/controller/Control.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Interpolator.cpp
@@ -239,7 +237,6 @@ add_executable(profile_control
   
   test/ProfileControl.cpp
   test/helpers/MovementGenerator.cpp
-  src/controller/Control.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Interpolator.cpp

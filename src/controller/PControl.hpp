@@ -11,7 +11,8 @@
 #include "Control.hpp"
 
 
-class PControl: public Control {
+class PControl : public Control {
+
 public:
 	PControl( double amplificationFactor );
 
