@@ -317,14 +317,14 @@ bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF tar
 	double m21 = sin( rotation );
 	double m22 = cos( rotation );
 	double *current = pos.getPosition();
-    double v1 = m11 * current[0] + m12 * current[1];
-    double v2 = m21 * current[0] + m22 * current[1];
-    double error = sqrt((v1-current[0])*(v1-current[0]) + (v2-current[1])*(v2-current[1]));
-    if( error < 0.5 )
-    {
-    	return false;
-    }
-    return true;
+	double v1 = m11 * current[0] + m12 * current[1];
+	double v2 = m21 * current[0] + m22 * current[1];
+	double error = sqrt((v1-current[0])*(v1-current[0]) + (v2-current[1])*(v2-current[1]));
+	if( error < 0.5 )
+	{
+		return false;
+	}
+	return true;
 }
 
 MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target )	

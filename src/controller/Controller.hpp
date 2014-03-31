@@ -55,6 +55,7 @@
 #define TIME_WAIT_FOR_TRACKED 3000
 #define TIME_WAIT_FOR_LANDING 10000
 #define TIME_MIN_CALC 30000000	// 30ms for loop
+#define LOOPS_PER_SECOND 30
 #define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
 
 #define DISTANCE_ROTATE_TO_CENTER 100
@@ -182,6 +183,7 @@ private:
 	long int timeRotationStarted;
 	long int timeLastFormationMovement;
 	long int timeLastCurrent[MAX_NUMBER_QUADCOPTER];
+	unsigned int thrustHelp[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
 	Mutex formationMovementMutex;

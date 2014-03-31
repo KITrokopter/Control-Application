@@ -30,6 +30,9 @@ class QuadcopterControl {
 		QuadcopterInfo info;
 		QuadcopterThrust thrust;
 		
+protected:
+
+private:
 };
 
 #endif /* QUADCOPTERCONTROL_HPP_ */
