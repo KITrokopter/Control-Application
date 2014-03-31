@@ -277,7 +277,7 @@ void Controller::sendMovement( int internId)
 	std::vector< MovementQuadruple > newListElement;
 	while( this->listFutureMovement[internId].size() > 1 )
 	{
-		this->listFutureMovementinternId].pop_back();
+		this->listFutureMovement[internId].pop_back();
 	}
 	unsigned int quadStatus= this->quadcopterMovementStatus[internId];
 	//Check if the qc movement values are in the allowed range.
@@ -381,7 +381,7 @@ void Controller::calculateMovement()
 				case CALCULATE_STABILIZE:
 					if( i == 0)
 					{
-						ROS_INFO("Stabilize %i at time %i after %i ns", i, getNanoTime(), getNanoTime() - calculateMovementStarted);
+						ROS_INFO("Stabilize %i at time %ld after %ld ns", i, getNanoTime(), getNanoTime() - calculateMovementStarted);
 					}
 					stabilize( i );
 					break;
@@ -418,20 +418,20 @@ void Controller::calculateMovement()
 			
 		}
 		sendMovementAll(); //FIXME
-		ROS_INFO("Calculate Finished after %i ns",getNanoTime() - calculateMovementStarted);
+		ROS_INFO("Calculate Finished after %ld ns",getNanoTime() - calculateMovementStarted);
 		//Make sure the calculation of the movement data is restricted to a certain rate.
 		timerCalculateMovement = getNanoTime();
 		long int timeToWait = ((1000000000/ LOOPS_PER_SECOND) - (timerCalculateMovement - calculateMovementStarted)) / 1000;
 		if( timeToWait > 0)
 		{
 			usleep( timeToWait);
-			ROS_INFO("Sleeping time :%i", timeToWait);
+			ROS_INFO("Sleeping time :%ld", timeToWait);
 		}
 		else
 		{
-			ROS_INFO("Calculate was too slow: %i", timeToWait);
+			ROS_INFO("Calculate was too slow: %ld", timeToWait);
 		}
-		ROS_INFO("Loop took: %i ns", (getNanoTime() - calculateMovementStarted));
+		ROS_INFO("Loop took: %ld ns", (getNanoTime() - calculateMovementStarted));
 		/*while( timerCalculateMovement < TIME_MIN_CALC + calculateMovementStarted )
 		{
 			//ROS_DEBUG("Sleeping");
