@@ -66,7 +66,8 @@ Controller::Controller()
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
 
-	this->control = PControl();
+	this->controlThrust = PControl();
+	this->controlThrust = PControl();
 }
 
 /*

@@ -7,9 +7,9 @@
 
 #include "PControl.hpp"
 
-PControl::PControl()
+PControl::PControl( double amplificationFactor )
 {
-	this->amplification = AMPLIFICATION_FACTOR;
+	this->amplification = amplificationFactor;
 
 }
 
