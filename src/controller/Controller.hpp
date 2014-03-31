@@ -160,7 +160,6 @@ private:
 	unsigned int thrust_stab[MAX_NUMBER_QUADCOPTER];
 	float battery_status[MAX_NUMBER_QUADCOPTER];
 	std::list<std::vector<float> > formationMovement;
-	QuadcopterThrust thrust_info[MAX_NUMBER_QUADCOPTER];
 
 	/* Control */
 	Control controlThrust, controlRollPitch;
