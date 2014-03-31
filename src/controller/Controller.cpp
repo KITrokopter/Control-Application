@@ -1114,7 +1114,7 @@ void Controller::moveUp( int internId )
 void Controller::stabilize( int internId )
 {
 	this->listPositionsMutex.lock();
-	Position6DOF latestPosition = this->listPositions[internId].back(); //check if right
+	Position6DOF latestPosition = this->listPositions[internId].back();
 	this->listPositionsMutex.unlock();
 
 	this->listTargetsMutex.lock();
@@ -1147,6 +1147,7 @@ void Controller::stabilize( int internId )
 	float newYawrate = newMovement.getYawrate();
 
 	/* Set values */
+	ROS_INFO("heightDiff %f, xDiff %f, yDiff %f, newThrust %i", heightDiff, xDiff, yDiff, newThrust);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
 	quadcopterStatus[internId].getInfo().checkAndFixYawrate( newYawrate );
