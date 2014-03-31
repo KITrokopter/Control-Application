@@ -11,6 +11,8 @@
 #include <list>
 #include <cmath>
 
+#include "Position6DOF.hpp"
+
 class MovementHelper {
 public:
 	MovementHelper();

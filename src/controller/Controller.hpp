@@ -92,7 +92,7 @@ public:
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovementAll();
-	void Controller::sendMovement( int internId);
+	void sendMovement( int internId);
 	void calculateMovement();
 	void buildFormation();
 	

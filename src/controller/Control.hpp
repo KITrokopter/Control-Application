@@ -11,7 +11,6 @@
 class Control {
 public:
 	Control();
-	virtual ~Control();
 
 	virtual double getManipulatedVariable( double errorSignal );
 

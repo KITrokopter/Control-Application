@@ -9,12 +9,5 @@
 
 Control::Control()
 {
-	// TODO Auto-generated constructor stub
 
 }
-
-Control::~Control()
-{
-	// TODO Auto-generated destructor stub
-}
-

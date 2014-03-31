@@ -58,7 +58,7 @@ Controller::Controller()
 		this->quadcopterStatus[i] = QuadcopterControl();
 		if( !USE_BATTERY_INPUT )
 		{
-			quadcopterStatus[internId].getInfo()[i].setWithoutBatteryValue();
+			quadcopterStatus[i].getInfo()[i].setWithoutBatteryValue();
 		}
 		this->thrustHelp[i] = thrust_info[i].getStart();
 	}
@@ -1123,7 +1123,7 @@ void Controller::stabilize( int internId )
 	MovementQuadruple newMovement = listSentQuadruples[internId].back();
 
 	/* Thrust */
-	double heightDiff = latestPosition.getDistanceZ( posTarget );
+	float heightDiff = (float) latestPosition.getDistanceZ( posTarget );
 	unsigned int newThrust = newMovement.getThrust();
 	newThrust = newThrust + quadcopterStatus[internId].getThrust().checkAndFix( controlThrust.getManipulatedVariable( heightDiff ) );
 	newThrust = quadcopterStatus[internId].getThrust().checkAndFix( newThrust );
