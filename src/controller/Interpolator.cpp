@@ -51,6 +51,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			}
 			return newMovement;
 		case CALC:
+			{
 			//ROS_INFO("interpolate 03c calc");
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			Position6DOF pos;
@@ -83,6 +84,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			this->status[id].setState( DONE );
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			return newMovement;
+			}break;
 		default:			
 			break;
 	}
@@ -237,53 +239,6 @@ MovementQuadruple Interpolator::calculateHold(std::list<MovementQuadruple> &sent
 }
 
 
-/*
- * Increase thrust if
- * 	below target, zSpeed negative
- * 	below target, zSpeed positive and too slow
- * 	above target, zSpeed negative and too high
- * Decrease thrust if
- * 	above target, zSpeed positive
- * 	above target, zSpeed negative and too slow
- * 	below target, zSpeed positive and too high
- * Do not change thrust if
- * 	other
- */
-unsigned int calculateThrustDiff( float zDistanceFirst, float zDistanceLatest, float absDistanceLatestTarget, double timediffNormalized, QuadcopterThrust thrustInfo )
-{
-	unsigned int newThrustDiff = 0;
-	float distanceFactor = calculateDistanceFactor( absDistanceLatestTarget );	
-
-	/* Height-difference calculated as z-speed in mm/s. Positive if inclining. */
-	float zSpeed = (zDistanceFirst-zDistanceLatest) / timediffNormalized;	// in mm/s
-	ROS_INFO("zSpeed %f", zSpeed);
-	
-	double cyclesPerSecond = ((double) 1000000000) / ((double) TIME_MIN_CALC);
-	double thrustStepA = ((double) THRUST_STEP) * ((double) distanceFactor) * sqrt(1/cyclesPerSecond);
-	unsigned int thrustStep = thrustStepA;
-	ROS_ERROR("thrustStep %i", thrustStep);
-	//ROS_ERROR("absDistanceLatestTarget %f, distanceFactor %f", absDistanceLatestTarget, distanceFactor);
-	//ROS_ERROR("thrustStepA %f, thrustStep %i", thrustStepA, thrustStep);
-	//ROS_ERROR("cycles %f, thrustStepA %f, thrustStep %i", cyclesPerSecond, thrustStepA, thrustStep);	
-	//ROS_INFO("zSpeed: %f, zDistF: %f, zDistL: %f", zSpeed, zDistanceFirst, zDistanceLatest);
-	if((zSpeed<SPEED_MAX_DECLINING))
-	{
-		ROS_ERROR(" Thrustdiff increase 1");
-		newThrustDiff += 2*thrustStep;
-	}
-	else if((zDistanceLatest>0 && zSpeed<0) || (zDistanceLatest>0 && zSpeed>0 && zSpeed<SPEED_MIN_INCLINING) || (zDistanceLatest<0 && zSpeed<0 && zSpeed<SPEED_MAX_DECLINING))
-	{
-		ROS_ERROR(" Thrustdiff increase 2");
-		newThrustDiff += thrustStep;
-	}
-	
-	if((zDistanceLatest<0 && zSpeed>0) || (zDistanceLatest<0 && zSpeed<0 && zSpeed>SPEED_MIN_DECLINING) || (zDistanceLatest<0 && zSpeed>0 && zSpeed>SPEED_MAX_INCLINING))
-	{
-		ROS_ERROR(" Thrustdiff decrease");
-		newThrustDiff -= thrustStep;
-	}
-	return newThrustDiff;
-}
 
 void Interpolator::checkState( int id )
 {
@@ -327,41 +282,6 @@ bool negativeRotationalSign( double rotation, Position6DOF pos, Position6DOF tar
 	return true;
 }
 
-MovementQuadruple calculateRollPitch( double rotation, Position6DOF pos, Position6DOF target )	
-{
-	/* values of the Matrix, mij is value of i. line and j. column  */
-	double m11 = cos( rotation );
-	double m12 = -sin( rotation );
-	double m21 = sin( rotation );
-	double m22 = cos( rotation );
-	double *current = pos.getPosition();
-	double v1 = m11 * current[0] + m12 * current[1];
-	double v2 = m21 * current[0] + m22 * current[1];
-	double factor = sqrt(v1*v1 + v2*v2);
-	if(factor == 0 )
-	{
-		ROS_ERROR("Factor is zero");
-	}
-	else
-	{
-		v1 = v1 / factor;
-		v2 = v2 / factor;
-	}
-	double distanceXY = pos.getAbsoluteDistanceXY( target );
-	double factorDistance = calculateDistanceFactorRPY( distanceXY );
-	double newRoll = v1 * ROLL_MAX * factorDistance;
-	double newPitch = v2 * PITCH_MAX * factorDistance;
-	double newYawrate = 0;
-	ROS_ERROR("roll %f, pitch %f, distXY %f, facDist %f", newRoll, newPitch, distanceXY, factorDistance);
-	
-	if( closeToTarget( pos, target, RANGE_STABLE ) )
-	{
-		double newRoll = newRoll / 2;
-		double newPitch = newPitch / 2;
-	}
-	return MovementQuadruple( 0, newRoll, newPitch, newYawrate );
-}
-
 bool reachingTarget( double first, double last, double speed, long int timediff )
 {
 	double timediffNormalized = (double) (timediff / 1000000000);	// should be in seconds
@@ -393,7 +313,7 @@ float calculateDistanceFactor( float distance )
 	}
 	else if( distance < ((float) DISTANCE_HIGH) )
 	{
-		float x = distance - (float) DISTANCE_CLOSE);
+		float x = distance - ((float) DISTANCE_CLOSE);
 		if( x == 0.0 )
 		{
 			return x;
@@ -415,7 +335,7 @@ float calculateDistanceFactorRPY( float distance )
 	}
 	else if( distance < ((float) DISTANCE_HIGH_RPY) )
 	{
-		float x = distance - (float) DISTANCE_CLOSE_RPY);
+		float x = distance - (float)( DISTANCE_CLOSE_RPY);
 		if( x == 0.0 )
 		{
 			return x;

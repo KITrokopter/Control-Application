@@ -58,17 +58,17 @@ Controller::Controller()
 		this->quadcopterStatus[i] = QuadcopterControl();
 		if( !USE_BATTERY_INPUT )
 		{
-			quadcopterStatus[i].getInfo()[i].setWithoutBatteryValue();
+			quadcopterStatus[i].getThrust().setWithoutBatteryValue();
 		}
-		this->thrustHelp[i] = thrust_info[i].getStart();
+		this->thrustHelp[i] = quadcopterStatus[i].getThrust().getStart();
 	}
 	ROS_INFO("Constructing done");
 	this->timeOffsetOutput= getNanoTime();
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
 
-	this->controlThrust = PControl();
-	this->controlThrust = PControl();
+	this->controlThrust = PControl( AMPLIFICATION_FACTOR_RP );
+	this->controlRollPitch = PControl( AMPLIFICATION_FACTOR_RP );
 }
 
 /*
@@ -1113,7 +1113,7 @@ void Controller::moveUp( int internId )
 void Controller::stabilize( int internId )
 {
 	this->listPositionsMutex.lock();
-	Position6DOF latestPosition = this->listPositions.back();
+	Position6DOF latestPosition = this->listPositions[internId].back(); //check if right
 	this->listPositionsMutex.unlock();
 
 	this->listTargetsMutex.lock();
