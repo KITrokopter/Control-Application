@@ -1,16 +1,26 @@
-/*
- * QuadcopterControl.cpp
- *
- *  Created on: 30.03.2014
- *      Author: dwx
- */
-
 #include "QuadcopterControl.hpp"
-
 
 QuadcopterControl::QuadcopterControl()
 {
-	// TODO Auto-generated constructor stub
-
+	this->info = QuadcopterInfo();
+	this->thrust = QuadcopterThrust();
+}
+QuadcopterInfo QuadcopterControl::getInfo()
+{
+	return this->info;
 }
 
+void QuadcopterControl::setInfo( QuadcopterInfo newInfo )
+{
+	this->info = newInfo;
+}
+
+QuadcopterThrust QuadcopterControl::getThrust()
+{
+	return this->thrust;
+}
+
+void QuadcopterControl::setThrust( QuadcopterThrust newThrust )
+{
+	this->thrust = newThrust;
+}

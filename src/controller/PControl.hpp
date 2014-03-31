@@ -10,11 +10,10 @@
 
 #include "Control.hpp"
 
-#define AMPLIFICATION_FACTOR 0.01	// the higher, the more reactive
 
 class PControl: public Control {
 public:
-	PControl();
+	PControl( double amplificationFactor );
 
 	double getManipulatedVariable( double errorSignal );
 

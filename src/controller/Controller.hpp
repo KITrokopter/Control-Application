@@ -9,8 +9,9 @@
 #include "MovementHelper.hpp"
 #include "Mutex.hpp"
 #include "Position6DOF.hpp"
-#include "QuadcopterThrust.hpp"
+#include "QuadcopterControl.hpp"
 #include "QuadcopterInfo.hpp"
+#include "QuadcopterThrust.hpp"
 #include "ros/ros.h"
 #include "api_application/MoveFormation.h"
 #include "api_application/SetFormation.h"
@@ -40,13 +41,12 @@
 #include <vector>
 //Ros messages/services
 
-
-#define ROLL_MAX 12.0
-#define PITCH_MAX 12.0
-#define YAWRATE_MAX 0.0
 #define INVALID -1
 
 #define USE_BATTERY_INPUT 1
+
+#define AMPLIFICATION_FACTOR_RP 0.001
+#define AMPLIFICATION_FACTOR_THRUST 0.01
 
 #define TIME_UPDATED_END 500*1000*1000	// in ns
 #define TIME_UPDATED_CRITICAL 200*1000	// in ns
@@ -73,9 +73,6 @@
 #define HOLD_LENGTH 1000	// time in ms to stay in function before "shutdown"
 #define HOLD_FACTOR_THRUST 0.7
 #define HOLD_FACTOR_RPY 0.5
-
-#define RANGE_STABLE 10 // Distance of two points to be considered "equal" in mm
-#define RANGE_STABLE_Z 6 // Difference of two height-Values to be considered "equal" in mm
 
 #define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
 #define MAX_SAVED_SENT_QUADRUPLES 8
@@ -167,11 +164,10 @@ private:
 	unsigned int thrust_stab[MAX_NUMBER_QUADCOPTER];
 	float battery_status[MAX_NUMBER_QUADCOPTER];
 	std::list<std::vector<float> > formationMovement;
-	QuadcopterThrust thrust_info[MAX_NUMBER_QUADCOPTER];
 
 	/* Control */
 	Control controlThrust, controlRollPitch;
-	QuadcopterInfo quadcopterStatus[MAX_NUMBER_QUADCOPTER];
+	QuadcopterControl quadcopterStatus[MAX_NUMBER_QUADCOPTER];
 
 
 	/* Control variables */

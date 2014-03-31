@@ -26,7 +26,7 @@ class QuadcopterThrust
 		bool checkAndSetBatteryValue( float battery );	
 		void setWithoutBatteryValue();
 		unsigned int checkAndFix( unsigned int thrust );
-		unsigned int checkAndFix( double thrust );
+		unsigned int checkAndFix( float thrust );
 		unsigned int checkAddFix( double thrust);
 
 		void setMin( unsigned int min );

@@ -4,9 +4,9 @@
  *  Created on: 30.03.2014
  *      Author: dwx
  */
-
 #ifndef QUADCOPTERINFO_HPP_
 #define QUADCOPTERINFO_HPP_
+
 #include <cmath>
 #include <list>
 #include <time.h>
@@ -19,6 +19,15 @@
 #define HOLD 4
 #define SHUTDOWN 5
 
+#define ROLL_MIN -50.0
+#define ROLL_MAX 50.0
+#define ROLL_START 0.0
+#define PITCH_MIN -50.0
+#define PITCH_MAX 50.0
+#define PITCH_START 0.0
+#define YAWRATE_MIN -50.0
+#define YAWRATE_MAX 50.0
+#define YAWRATE_START 0.0
 
 class QuadcopterInfo {
 public:
@@ -34,6 +43,10 @@ public:
 	void setLastUpdated( long int newLastUpdated );
 	long int getShutdownStarted();
 	void setShutdownStarted( long int newShutdownStarted );
+
+	float checkAndFixRoll( float roll );
+	float checkAndFixPitch( float pitch );
+	float checkAndFixYawrate( float yawrate );
 
 	double getX();
 	double getY();

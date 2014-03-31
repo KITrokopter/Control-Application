@@ -46,7 +46,7 @@ unsigned int QuadcopterThrust::checkAndFix( unsigned int thrust )
 	else return thrust;
 }
 
-unsigned int QuadcopterThrust::checkAndFix(double thrust)
+unsigned int QuadcopterThrust::checkAndFix( float thrust )
 {
 	if( thrust < 0 )
 	{
@@ -63,7 +63,7 @@ unsigned int QuadcopterThrust::checkAndFix(double thrust)
 	}
 }
 
-unsigned int QuadcopterThrust::checkAndFix(double thrust)
+unsigned int QuadcopterThrust::checkAndFix( double thrust )
 {
 	if( thrust < 0 )
 	{
