@@ -9,8 +9,9 @@
 #include "MovementHelper.hpp"
 #include "Mutex.hpp"
 #include "Position6DOF.hpp"
-#include "QuadcopterThrust.hpp"
+#include "QuadcopterControl.hpp"
 #include "QuadcopterInfo.hpp"
+#include "QuadcopterThrust.hpp"
 #include "ros/ros.h"
 #include "api_application/MoveFormation.h"
 #include "api_application/SetFormation.h"
@@ -170,7 +171,7 @@ private:
 
 	/* Control */
 	Control controlThrust, controlRollPitch;
-	QuadcopterInfo quadcopterStatus[MAX_NUMBER_QUADCOPTER];
+	QuadcopterControl quadcopterStatus[MAX_NUMBER_QUADCOPTER];
 
 
 	/* Control variables */

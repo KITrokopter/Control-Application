@@ -55,7 +55,7 @@ Controller::Controller()
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
 		tracked[i] = false;	// Initialize tracked (no quadcopter is tracked at the beginning)
-		this->quadcopterStatus[i] = QuadcopterInfo();
+		this->quadcopterStatus[i] = QuadcopterControl();
 		if( !USE_BATTERY_INPUT )
 		{
 			thrust_info[i].setWithoutBatteryValue();
@@ -1115,7 +1115,7 @@ void Controller::stabilize( int internId )
 	newMovement.setThrust( newThrust );
 
 	MovementHelper helper;
-	Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getRotation(), latestPosition, posTarget );
+	Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getInfo().getRotation(), latestPosition, posTarget );
 
 	/* Roll */
 	float xDiff = posForRP.getDistanceX( posTarget );

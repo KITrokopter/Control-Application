@@ -4,9 +4,9 @@
  *  Created on: 30.03.2014
  *      Author: dwx
  */
-
 #ifndef QUADCOPTERINFO_HPP_
 #define QUADCOPTERINFO_HPP_
+
 #include <cmath>
 #include <list>
 #include <time.h>
@@ -18,7 +18,6 @@
 #define DONE 3
 #define HOLD 4
 #define SHUTDOWN 5
-
 
 class QuadcopterInfo {
 public:
