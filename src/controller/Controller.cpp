@@ -1118,13 +1118,13 @@ void Controller::stabilize( int internId )
 	Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getRotation(), latestPosition, posTarget );
 
 	/* Roll */
-	float xDiff = posForRP.getDistanceX( posTarget );	// FIXME casts
-	float newRoll = newMovement.getRoll();	// FIXME casts
+	float xDiff = posForRP.getDistanceX( posTarget );
+	float newRoll = newMovement.getRoll();
 	newRoll = newRoll + controlRollPitch.getManipulatedVariable( xDiff );	// check and fix
 
 	/* Pitch */
-	float yDiff = posForRP.getDistanceY( posTarget );	// FIXME casts
-	float newPitch = newMovement.getPitch();	// FIXME casts
+	float yDiff = posForRP.getDistanceY( posTarget );
+	float newPitch = newMovement.getPitch();
 	newPitch = newPitch + controlRollPitch.getManipulatedVariable( yDiff );	// check and fix
 
 	/* Yawrate */
