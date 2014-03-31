@@ -1120,12 +1120,12 @@ void Controller::stabilize( int internId )
 	/* Roll */
 	float xDiff = posForRP.getDistanceX( posTarget );
 	float newRoll = newMovement.getRoll();
-	newRoll = newRoll + controlRollPitch.getManipulatedVariable( xDiff );
+	newRoll = newRoll + ((float) controlRollPitch.getManipulatedVariable( xDiff ));
 
 	/* Pitch */
 	float yDiff = posForRP.getDistanceY( posTarget );
 	float newPitch = newMovement.getPitch();
-	newPitch = newPitch + controlRollPitch.getManipulatedVariable( yDiff );
+	newPitch = newPitch + ((float) controlRollPitch.getManipulatedVariable( yDiff ));
 
 	/* Yawrate */
 	float newYawrate = newMovement.getYawrate();
