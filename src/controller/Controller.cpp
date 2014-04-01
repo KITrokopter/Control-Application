@@ -1132,6 +1132,8 @@ void Controller::stabilize( int internId )
 	newMovement.setThrust( newThrust );
 
 	MovementHelper helper;
+	/*
+	 * Rota
 	Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getInfo().getRotation(), latestPosition, posTarget );
 
 	/* Roll */
