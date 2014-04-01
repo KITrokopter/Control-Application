@@ -46,7 +46,7 @@
 #define USE_BATTERY_INPUT 1
 
 #define AMPLIFICATION_FACTOR_RP 0.003
-#define AMPLIFICATION_FACTOR_THRUST 0.1
+#define AMPLIFICATION_FACTOR_THRUST 0.3
 
 #define TIME_UPDATED_END 2000*1000*1000	// in ns
 #define TIME_UPDATED_CRITICAL 200*1000	// in ns
@@ -181,7 +181,7 @@ private:
 	long int timeRotationStarted;
 	long int timeLastFormationMovement;
 	long int timeLastCurrent[MAX_NUMBER_QUADCOPTER];
-	unsigned int thrustHelp[MAX_NUMBER_QUADCOPTER];
+	int thrustHelp[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
 	Mutex formationMovementMutex;
