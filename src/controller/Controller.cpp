@@ -418,7 +418,7 @@ void Controller::calculateMovement()
 		//Make sure the calculation of the movement data is restricted to a certain rate.
 		timerCalculateMovement = getNanoTime();
 		long int timeToWait = ((1000000000/LOOPS_PER_SECOND) - (timerCalculateMovement-calculateMovementStarted)) / 1000;
-		ROS_INFO("timeToWait %i", timeToWait);
+		ROS_INFO("timeToWait %ld", timeToWait);
 		if( timeToWait > 0)
 		{
 			usleep( timeToWait);
@@ -433,7 +433,7 @@ void Controller::calculateMovement()
 		if( loopCounter == LOOPS_PER_SECOND )
 		{
 			long int current = getNanoTime();
-			ROS_DEBUG("Time of %i loops: %i", LOOPS_PER_SECOND, current-loopCounterTime);
+			ROS_DEBUG("Time of %i loops: %ld", LOOPS_PER_SECOND, current-loopCounterTime);
 			loopCounter = 0;
 			loopCounterTime = getNanoTime();
 		}
@@ -1000,7 +1000,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		pos[2] = msg->zPositions[i];
 		formPos[i].setPosition(pos);
 	}
-	this->formation->setPosition(formPos);
+	this->formation->setFormationPosition(formPos);
 	this->receivedFormation = true;
 	ROS_INFO("Set Formation done");
 	return;
