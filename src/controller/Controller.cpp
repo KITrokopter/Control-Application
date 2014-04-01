@@ -807,6 +807,12 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
   		topicNameMov << "quadcopter_movement_" << id;
 		//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 		this->Movement_pub[i] = this->n.advertise<control_application::quadcopter_movement>(topicNameMov.str().c_str(), 1000);
+		
+		//Publisher of is Tracked		
+		std::stringstream topicNameTrack;
+  		topicNameTrack << "quadcopter_is_tracked_" << id;
+		//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
+		this->Tracked_pub[i] = this->n.advertise<control_application::quadcopter_is_tracked>(topicNameTrack.str().c_str(), 1000);
 	}
 	this->receivedQuadcopters = true;
 	
