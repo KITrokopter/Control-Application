@@ -32,6 +32,13 @@
 
 #define TEST_ROLL_PITCH 0
 
+/*
+ * TODO Timing
+ * TODO list*Movement
+ * TODO hold
+ * TODO move
+ */
+
 class Interpolator {
 public:
 	Interpolator();

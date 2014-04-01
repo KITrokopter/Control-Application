@@ -327,15 +327,14 @@ void Controller::sendMovement( int internId)
 void Controller::calculateMovement()
 {
 	ROS_INFO("Calculation started");
-	//Keep track of the number of quadcopters landed
-	int numberOfLanded = 0;
+	int numberOfLanded = 0;	// Keep track of the number of quadcopters landed
 	int amount = quadcopterMovementStatus.size();
-	// As long as the land process isn't finished, we calculate new data
-	bool end;
+	bool end;	// As long as the land process isn't finished, we calculate new data
 	if(this->receivedFormation)
 	{
-		/* When the number of quadcopters landed excesses the number of quadcopters in the formation, the land
-		 * process is finished
+		/* 
+		 * When the number of quadcopters landed exceeds the number of quadcopters 
+		 * in the formation, the land process is finished.
 		 */
 		end = numberOfLanded >= this->formation->getAmount();
 	}
@@ -366,7 +365,6 @@ void Controller::calculateMovement()
 			}
 			
 			//Calculate movement data accordingly to the quadcopter status/state.
-			quadStatus = this->quadcopterMovementStatus[i];
 			switch( quadStatus )
 			{
 				case CALCULATE_NONE:
@@ -423,7 +421,8 @@ void Controller::calculateMovement()
 		ROS_INFO("Calculate Finished after %ld ns",getNanoTime() - calculateMovementStarted);
 		//Make sure the calculation of the movement data is restricted to a certain rate.
 		timerCalculateMovement = getNanoTime();
-		long int timeToWait = ((1000000000/ LOOPS_PER_SECOND) - (timerCalculateMovement - calculateMovementStarted)) / 1000;
+		long int timeToWait = ((1000000000/TIME_LOOPS_PER_SECOND) - (timerCalculateMovement-calculateMovementStarted)) / 1000;
+		ROS_INFO("timeToWait %i", timeToWait);
 		if( timeToWait > 0)
 		{
 			usleep( timeToWait);
@@ -1123,6 +1122,8 @@ void Controller::stabilize( int internId )
 
 	MovementQuadruple newMovement = listSentQuadruples[internId].back();
 
+	ROS_INFO("In stabilize: ");
+
 	/* Thrust */
 	double heightDiff = latestPosition.getDistanceZ( posTarget );
 	unsigned int newThrust = newMovement.getThrust();
@@ -1147,7 +1148,7 @@ void Controller::stabilize( int internId )
 	float newYawrate = newMovement.getYawrate();
 
 	/* Set values */
-	ROS_INFO("heightDiff %f, xDiff %f, yDiff %f, newThrust %i", heightDiff, xDiff, yDiff, newThrust);
+	ROS_INFO("   heightDiff %f, xDiff %f, yDiff %f, newThrust %i", heightDiff, xDiff, yDiff, newThrust);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
 	quadcopterStatus[internId].getInfo().checkAndFixYawrate( newYawrate );
@@ -1156,6 +1157,8 @@ void Controller::stabilize( int internId )
 	/* Set new Movement */
 	this->listFutureMovement[internId].clear();
 	this->listFutureMovement[internId].push_front( newMovement );	   
+	
+	ROS_INFO("End of stabilize.");
 }
 
 void Controller::hold( int internId )
