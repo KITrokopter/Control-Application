@@ -1127,8 +1127,8 @@ void Controller::stabilize( int internId )
 	/* Thrust */
 	double heightDiff = latestPosition.getDistanceZ( posTarget );
 	unsigned int newThrust = newMovement.getThrust();
-	newThrust = newThrust + quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( controlThrust->getManipulatedVariable( heightDiff ) );
-	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( newThrust );
+	double thrustDiff = controlThrust->getManipulatedVariable( heightDiff );
+	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( newThrust+thrustDiff );
 	newMovement.setThrust( newThrust );
 
 	MovementHelper helper;
@@ -1148,7 +1148,8 @@ void Controller::stabilize( int internId )
 	float newYawrate = newMovement.getYawrate();
 
 	/* Set values */
-	ROS_INFO("   heightDiff %f, xDiff %f, yDiff %f, newThrust %i", heightDiff, xDiff, yDiff, newThrust);
+	ROS_INFO("   heightDiff %f, calculated thrustDiff %f, newThrust %i", heightDiff, thrustDiff, newThrust);
+	ROS_INFO("   xDiff %f, yDiff %f", xDiff, yDiff);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
 	quadcopterStatus[internId].getInfo().checkAndFixYawrate( newYawrate );
