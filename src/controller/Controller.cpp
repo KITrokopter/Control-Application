@@ -68,7 +68,7 @@ Controller::Controller()
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
 
-	this->controlThrust = new PControl( AMPLIFICATION_FACTOR_RP );
+	this->controlThrust = new PControl( AMPLIFICATION_FACTOR_THRUST );
 	this->controlRollPitch = new PControl( AMPLIFICATION_FACTOR_RP );
 }
 
@@ -1131,9 +1131,12 @@ void Controller::stabilize( int internId )
 	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( newThrust+thrustDiff );
 	newMovement.setThrust( newThrust );
 
-	MovementHelper helper;
 	/*
-	 * Rota
+	 * Currently:
+	 * Rotation is always equal zero.
+	 * The amount of yaw is not calculated, it is assumed zero.
+	 */
+	MovementHelper helper;
 	Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getInfo().getRotation(), latestPosition, posTarget );
 
 	/* Roll */

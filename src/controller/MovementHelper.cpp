@@ -28,7 +28,7 @@ Position6DOF MovementHelper::prepareForRP( double rotation, Position6DOF pos, Po
 	}
 	newPosition[0] = m11 * currentPos[0] + m12 * currentPos[1];
 	newPosition[1] = m21 * currentPos[0] + m22 * currentPos[1];
-	newPosition[2] = current[2];
+	newPosition[2] = currentPos[2];
 	for( int i = 0; i < 3; i++ )
 	{
 		currentPos[i] = currentPos[i] + targetPos[i];
