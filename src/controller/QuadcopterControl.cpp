@@ -15,12 +15,12 @@ void QuadcopterControl::setInfo( QuadcopterInfo newInfo )
 	this->info = newInfo;
 }
 
-QuadcopterThrust QuadcopterControl::getThrust()
+QuadcopterThrust QuadcopterControl::getQuadcopterThrust()
 {
-	return this->thrust;
+	return this->quadcopterThrust;
 }
 
-void QuadcopterControl::setThrust( QuadcopterThrust newThrust )
+void QuadcopterControl::setQuadcopterThrust( QuadcopterThrust newQuadcopterThrust )
 {
-	this->thrust = newThrust;
+	this->quadcopterThrust = newQuadcopterThrust;
 }

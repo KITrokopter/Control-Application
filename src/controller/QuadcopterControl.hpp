@@ -21,14 +21,14 @@ class QuadcopterControl {
 		
 		QuadcopterInfo getInfo();
 		void setInfo( QuadcopterInfo newInfo );
-		QuadcopterThrust getThrust();
-		void setThrust( QuadcopterThrust newThrust );
+		QuadcopterThrust getQuadcopterThrust();
+		void setQuadcopterThrust( QuadcopterThrust newQuadcopterThrust );
 
 	protected:
 
 	private:
 		QuadcopterInfo info;
-		QuadcopterThrust thrust;
+		QuadcopterThrust quadcopterThrust;
 		
 protected:
 

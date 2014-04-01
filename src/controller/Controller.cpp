@@ -59,9 +59,9 @@ Controller::Controller()
 		this->quadcopterStatus[i] = QuadcopterControl();
 		if( !USE_BATTERY_INPUT )
 		{
-			quadcopterStatus[i].getThrust().setWithoutBatteryValue();
+			quadcopterStatus[i].getQuadcopterThrust().setWithoutBatteryValue();
 		}
-		this->thrustHelp[i] = quadcopterStatus[i].getThrust().getStart();
+		this->thrustHelp[i] = quadcopterStatus[i].getQuadcopterThrust().getStart();
 	}
 	ROS_INFO("Constructing done");
 	this->timeOffsetOutput= getNanoTime();
@@ -233,11 +233,11 @@ void Controller::sendMovementAll()
 		//Check if the qc movement values are in the allowed range.
 		if(quadStatus == CALCULATE_START) 
 		{
-			this->listFutureMovement[i].checkQuadruple( quadcopterStatus[i].getThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+			this->listFutureMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		}
 		else
 		{
-			this->listFutureMovement[i].checkQuadruple( quadcopterStatus[i].getThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+			this->listFutureMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		}
 		msg.thrust = this->listFutureMovement[i].getThrust();
 		/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
@@ -279,11 +279,11 @@ void Controller::sendMovement( int internId)
 	//Check if the qc movement values are in the allowed range.
 	if(quadStatus == CALCULATE_START) 
 	{
-		this->listFutureMovement[internId].checkQuadruple( quadcopterStatus[internId].getThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		this->listFutureMovement[internId].checkQuadruple( quadcopterStatus[internId].getQuadcopterThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 	}
 	else
 	{
-		this->listFutureMovement[internId].checkQuadruple( quadcopterStatus[internId].getThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		this->listFutureMovement[internId].checkQuadruple( quadcopterStatus[internId].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 	}
 	msg.thrust = this->listFutureMovement[internId].getThrust();
 	/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
@@ -466,7 +466,7 @@ void Controller::buildFormation()
 	Position6DOF formPos[formationAmount];
 	for( int i = 0; i < formationAmount; i++)
 	{
-		formPos[i] = this->formation->getPosition()[i];	
+		formPos[i] = this->formation->getFormationPosition()[i];	
 	}
 	double distance = this->formation->getDistance();
 	
@@ -1021,14 +1021,14 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
 		this->timeOffsetOutput= currentTime;
 	}
-	if( !quadcopterStatus[localQuadcopterId].getThrust().initDone() )
+	if( !quadcopterStatus[localQuadcopterId].getQuadcopterThrust().initDone() )
 	{
 		/* 
 		 * Set spedific thrustvalues for each quadcopter once. 
 		 * Only if battery-value is useful.
 		 */
-		quadcopterStatus[localQuadcopterId].getThrust().checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
-		this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getThrust().getStart();
+		quadcopterStatus[localQuadcopterId].getQuadcopterThrust().checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
+		this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
 }
@@ -1071,27 +1071,27 @@ void Controller::dontMove( int internId)
  * @Carina: set thrustHelp[internId] here if it hasn't been set before.
  * Use them as arrays.
  * Replace "thrust too high" with the following function:
- * 	newThrust = quadcopterStatus[internId].getThrust().checkAndFix( currentThrust );
+ * 	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( currentThrust );
  */
 void Controller::moveUp( int internId )
 {
 	long int currentTime = getNanoTime();
-	int thrustHelp = this->quadcopterStatus[internId].getThrust().getStart();
+	int thrustHelp = this->quadcopterStatus[internId].getQuadcopterThrust().getStart();
 	MovementQuadruple newMovement = MovementQuadruple( thrustHelp, 0, 0, 0 );
 	newMovement.setTimestamp( currentTime );
 	this->listFutureMovement[internId] = newMovement;
 	int step = 200;
 	//Increases thrust step by step to ensure slow inclining
-	if((currentTime > this->timeOffsetChangeThrust + 10000000) && (this->thrustHelp[internId]+step < this->quadcopterStatus[internId].getThrust().getStartMax()))
+	if((currentTime > this->timeOffsetChangeThrust + 10000000) && (this->thrustHelp[internId]+step < this->quadcopterStatus[internId].getQuadcopterThrust().getStartMax()))
 	{
 		usleep(85000);
 		this->thrustHelp[internId] += step;
 		this->timeOffsetChangeThrust = getNanoTime();
 	}
 	//Protection mechanism for qc (either a too high thrust value or start process took too long)
-	if(thrustHelp >= quadcopterStatus[internId].getThrust().getStartMax() || currentTime > this->timeDurationMoveup + 8000000000)
+	if(thrustHelp >= quadcopterStatus[internId].getQuadcopterThrust().getStartMax() || currentTime > this->timeDurationMoveup + 8000000000)
 	{
-		if(thrustHelp >= quadcopterStatus[internId].getThrust().getStartMax())
+		if(thrustHelp >= quadcopterStatus[internId].getQuadcopterThrust().getStartMax())
 		{
 			ROS_DEBUG("Thrust too high");
 		}
@@ -1123,8 +1123,8 @@ void Controller::stabilize( int internId )
 	/* Thrust */
 	double heightDiff = latestPosition.getDistanceZ( posTarget );
 	unsigned int newThrust = newMovement.getThrust();
-	newThrust = newThrust + quadcopterStatus[internId].getThrust().checkAndFix( controlThrust->getManipulatedVariable( heightDiff ) );
-	newThrust = quadcopterStatus[internId].getThrust().checkAndFix( newThrust );
+	newThrust = newThrust + quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( controlThrust->getManipulatedVariable( heightDiff ) );
+	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( newThrust );
 	newMovement.setThrust( newThrust );
 
 	MovementHelper helper;
@@ -1175,16 +1175,16 @@ void Controller::land( int internId, int * nrLand )
 	{
 		ROS_INFO("Declining ros");
 		MovementQuadruple newMovement = this->listFutureMovement[internId];
-		newMovement.setThrust( quadcopterStatus[internId].getThrust().getDecline() );
+		newMovement.setThrust( quadcopterStatus[internId].getQuadcopterThrust().getDecline() );
 		newMovement.setTimestamp( currentTime );
 		this->listFutureMovement[internId] = newMovement;		
 		this->timeOffsetChangeThrust = getNanoTime();
 	}
 	else
 	{
-		if(this->thrustHelp[internId] > quadcopterStatus[internId].getThrust().getDecline())	// FIXME
+		if(this->thrustHelp[internId] > quadcopterStatus[internId].getQuadcopterThrust().getDecline())	// FIXME
 		{
-			this->thrustHelp[internId] = quadcopterStatus[internId].getThrust().getDecline();	// FIXME
+			this->thrustHelp[internId] = quadcopterStatus[internId].getQuadcopterThrust().getDecline();	// FIXME
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		ROS_INFO("min");
