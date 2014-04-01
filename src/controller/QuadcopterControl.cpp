@@ -3,7 +3,7 @@
 QuadcopterControl::QuadcopterControl()
 {
 	this->info = QuadcopterInfo();
-	this->thrust = QuadcopterThrust();
+	this->quadcopterThrust = QuadcopterThrust();
 }
 QuadcopterInfo QuadcopterControl::getInfo()
 {

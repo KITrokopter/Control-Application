@@ -414,21 +414,21 @@ void Controller::calculateMovement()
 			
 		}
 		sendMovementAll(); //FIXME
-		ROS_INFO("Calculate Finished after %ld ns",getNanoTime() - calculateMovementStarted);
+		//ROS_INFO("Calculate Finished after %ld ns",getNanoTime() - calculateMovementStarted);
 		//Make sure the calculation of the movement data is restricted to a certain rate.
 		timerCalculateMovement = getNanoTime();
 		long int timeToWait = ((1000000000/LOOPS_PER_SECOND) - (timerCalculateMovement-calculateMovementStarted)) / 1000;
-		ROS_INFO("timeToWait %ld", timeToWait);
+		//ROS_INFO("timeToWait %ld", timeToWait);
 		if( timeToWait > 0)
 		{
 			usleep( timeToWait);
-			ROS_INFO("Sleeping time :%ld", timeToWait);
+			//ROS_INFO("Sleeping time :%ld", timeToWait);
 		}
 		else
 		{
-			ROS_INFO("Calculate was too slow: %ld", timeToWait);
+			ROS_ERROR("Calculate was too slow: %ld", timeToWait);
 		}
-		ROS_INFO("Loop took: %ld ns", (getNanoTime() - calculateMovementStarted));
+		//ROS_INFO("Loop took: %ld ns", (getNanoTime() - calculateMovementStarted));
 		loopCounter++;
 		if( loopCounter == LOOPS_PER_SECOND )
 		{

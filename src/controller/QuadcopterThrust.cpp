@@ -27,7 +27,7 @@ bool QuadcopterThrust::checkAndSetBatteryValue( float battery )
 		//ROS_ERROR("checkAndSet -");
 		return false;
 	}
-	ROS_DEBUG("checkAndSet working");
+	// ROS_DEBUG("checkAndSet working");
 	setThrust( battery );
 	this->setThrustCalled = true;
 	return true;
