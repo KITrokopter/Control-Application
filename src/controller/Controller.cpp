@@ -187,7 +187,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				//ROS_INFO("tracked");
 				/* Quadcopter has not been tracked before, therefore set tracked to true
 				 and switch to Stabilize-Status when the qc was in starting process */
-				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
+				if(this->quadcopterMovementStatus[id] == CALCULATE_START || this->quadcopterMovementStatus[id] == CALCULATE_NONE)
 				{
 					ROS_DEBUG("Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
