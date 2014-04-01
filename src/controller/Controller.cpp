@@ -284,6 +284,10 @@ void Controller::sendMovement( int internId)
 	{
 		this->currentMovement[internId].checkQuadruple( quadcopterStatus[internId].getQuadcopterThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 	}
+	else if(quadStatus == CALCULATE_LAND)
+	{
+	
+	}
 	else
 	{
 		this->currentMovement[internId].checkQuadruple( quadcopterStatus[internId].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
@@ -1200,6 +1204,7 @@ void Controller::land( int internId, int * nrLand )
 	{
 		if(this->thrustHelp[internId] > quadcopterStatus[internId].getQuadcopterThrust().getDecline())	// FIXME
 		{
+			ROS_DEBUG("Decline newly set in land");
 			this->thrustHelp[internId] = quadcopterStatus[internId].getQuadcopterThrust().getDecline();	// FIXME
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
@@ -1207,6 +1212,7 @@ void Controller::land( int internId, int * nrLand )
 		int step = 700;
 		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp[internId] - step > 0)
 		{
+			ROS_DEBUG("Lower Thrust in land");
 			usleep(85000);
 			this->thrustHelp[internId] -= step;
 			this->timeOffsetChangeThrust = getNanoTime();
