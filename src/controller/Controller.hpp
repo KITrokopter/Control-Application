@@ -53,8 +53,8 @@
 #define TIME_WAIT_FOR_DATA 8000
 #define TIME_WAIT_FOR_TRACKED 3000
 #define TIME_WAIT_FOR_LANDING 10000
-#define TIME_LOOPS_PER_SECOND 30
 #define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
+#define LOOPS_PER_SECOND 30
 
 #define DISTANCE_ROTATE_TO_CENTER 100
 
@@ -152,7 +152,7 @@ private:
 	
 	/* Set data */ 
 	std::vector<std::list<MovementQuadruple> > listSentQuadruples; //last send Movement at the end of the list
-	std::vector<MovementQuadruple> listCurrentMovement;
+	std::vector<MovementQuadruple> currentMovement;
 
 	/* Received data */ 
 	//Arrays for quadcopters sorted by intern id
