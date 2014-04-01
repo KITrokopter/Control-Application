@@ -214,6 +214,7 @@ private:
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 	ros::Publisher Movement_pub[10];	//ros::Publisher Movement_pub;
 	ros::Publisher Message_pub;	//Publisher for Message to API
+	ros::Publisher Tracked_pub[10];
 
 	/* Services */
 
