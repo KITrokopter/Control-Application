@@ -199,7 +199,9 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			}
 			//ROS_INFO("tracked id");
 			this->tracked[id] = true;
+			this->listPositionsMutex.lock();
 			this->listPositions[id].push_back( newPosition );
+			this->listPositionsMutex.unlock();
 		} 
 		//ROS_INFO("Push back");
 		this->listPositionsMutex.lock(); 
@@ -227,21 +229,17 @@ void Controller::sendMovementAll()
 	std::vector< MovementQuadruple > newListElement;
 	for(int i = 0; i < listFutureMovement.size(); i++)
 	{
-		while( this->listFutureMovement[i].size() > 1 )
-		{
-			this->listFutureMovement[i].pop_back();
-		}
 		unsigned int quadStatus= this->quadcopterMovementStatus[i];
 		//Check if the qc movement values are in the allowed range.
 		if(quadStatus == CALCULATE_START) 
 		{
-			this->listFutureMovement[i].front().checkQuadruple( quadcopterStatus[i].getThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+			this->listFutureMovement[i].checkQuadruple( quadcopterStatus[i].getThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		}
 		else
 		{
-			this->listFutureMovement[i].front().checkQuadruple( quadcopterStatus[i].getThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+			this->listFutureMovement[i].checkQuadruple( quadcopterStatus[i].getThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		}
-		msg.thrust = this->listFutureMovement[i].front().getThrust();
+		msg.thrust = this->listFutureMovement[i].getThrust();
 		/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
 		{
 			ROS_INFO("send Roll %f, pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
@@ -249,9 +247,9 @@ void Controller::sendMovementAll()
 		}
 		*/
 
-		msg.roll = this->listFutureMovement[i].front().getRoll();
-		msg.pitch = this->listFutureMovement[i].front().getPitch();
-		msg.yaw = this->listFutureMovement[i].front().getYawrate();
+		msg.roll = this->listFutureMovement[i].getRoll();
+		msg.pitch = this->listFutureMovement[i].getPitch();
+		msg.yaw = this->listFutureMovement[i].getYawrate();
 		this->Movement_pub[i].publish(msg);		
 		//this->listFutureMovement[i].front().setTimestamp( currentTime );
 		//Trim list of sent movement data to a defined value
@@ -261,7 +259,7 @@ void Controller::sendMovementAll()
 			this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
 		}
 		// Save Element (TODO only if not too young, in calculateMovement())
-		this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
+		this->listSentQuadruples[i].push_back( this->listFutureMovement[i] );
 	}
 	//ROS_INFO("sendMovementAll finished");
 }
@@ -277,21 +275,17 @@ void Controller::sendMovement( int internId)
 	
 	long int currentTime = getNanoTime();
 	std::vector< MovementQuadruple > newListElement;
-	while( this->listFutureMovement[internId].size() > 1 )
-	{
-		this->listFutureMovement[internId].pop_back();
-	}
 	unsigned int quadStatus= this->quadcopterMovementStatus[internId];
 	//Check if the qc movement values are in the allowed range.
 	if(quadStatus == CALCULATE_START) 
 	{
-		this->listFutureMovement[internId].front().checkQuadruple( quadcopterStatus[internId].getThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		this->listFutureMovement[internId].checkQuadruple( quadcopterStatus[internId].getThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 	}
 	else
 	{
-		this->listFutureMovement[internId].front().checkQuadruple( quadcopterStatus[internId].getThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		this->listFutureMovement[internId].checkQuadruple( quadcopterStatus[internId].getThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 	}
-	msg.thrust = this->listFutureMovement[internId].front().getThrust();
+	msg.thrust = this->listFutureMovement[internId].getThrust();
 	/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
 	{
 		ROS_INFO("send Roll %f, pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
@@ -299,11 +293,11 @@ void Controller::sendMovement( int internId)
 	}
 	*/
 
-	msg.roll = this->listFutureMovement[internId].front().getRoll();
-	msg.pitch = this->listFutureMovement[internId].front().getPitch();
-	msg.yaw = this->listFutureMovement[internId].front().getYawrate();
+	msg.roll = this->listFutureMovement[internId].getRoll();
+	msg.pitch = this->listFutureMovement[internId].getPitch();
+	msg.yaw = this->listFutureMovement[internId].getYawrate();
 	this->Movement_pub[internId].publish(msg);		
-	//this->listFutureMovement[i].front().setTimestamp( currentTime );
+	//this->listFutureMovement[i].setTimestamp( currentTime );
 	//Trim list of sent movement data to a defined value
 	while( this->listSentQuadruples[internId].size() > MAX_SAVED_SENT_QUADRUPLES )
 	{
@@ -311,7 +305,7 @@ void Controller::sendMovement( int internId)
 		this->listSentQuadruples[internId].erase( this->listSentQuadruples[internId].begin() );
 	}
 	// Save Element (TODO only if not too young, in calculateMovement())
-	this->listSentQuadruples[internId].push_back( this->listFutureMovement[internId].front() );
+	this->listSentQuadruples[internId].push_back( this->listFutureMovement[internId] );
 	//ROS_INFO("sendMovementAll finished");
 }
 
@@ -642,6 +636,7 @@ void Controller::rotate()
 		//Clear all previous Targets
 		this->listTargetsMutex.lock();
 		this->listTargets[i].clear();
+		this->listTargetsMutex.unlock();
 		Position6DOF newPosition;
 		double * targetK = center.getPosition();
 		//Calculate starting Positions for Rotation and the choose nearest qc for that position
@@ -655,7 +650,9 @@ void Controller::rotate()
 			}
 			qcChosen[qcPositionMap[0]] = true;
 			newPosition.setPosition(targetK);
+			this->listTargetsMutex.lock();
 			this->listTargets[0].push_back(newPosition);
+			this->listTargetsMutex.unlock();
 		}
 		else
 		{	
@@ -673,10 +670,11 @@ void Controller::rotate()
 			}
 			qcChosen[qcPositionMap[i]] = true;
 			newPosition.setPosition(targetK);
+			this->listTargetsMutex.lock();
 			this->listTargets[i].push_back(newPosition);
+			this->listTargetsMutex.unlock();
 		}
 		
-		this->listTargetsMutex.unlock();
 	}
 	//Start rotating. Set target for each qc to the previous target of the qc next to the qc
 	while( TIME_ROTATE_CIRCLE > (currentTime - this->timeRotationStarted))
@@ -774,7 +772,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		{
 			Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
 			this->listTargets[i].push_back(defaultTarget);
-			ROS_ERROR("No target set");
+			ROS_ERROR("Default target set");
 		}
 		this->receivedQuadStatus[i] = false; // received no quadcopter status information
 		this->listTargetsMutex.unlock();
@@ -783,7 +781,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		std::list<MovementQuadruple> newEmptyListMovement;	
 		newEmptyListMovement.push_back( noMovement );
 		this->listSentQuadruples.push_back(newEmptyListMovement);
-		this->listFutureMovement.push_back(newEmptyListMovement);
+		this->listFutureMovement.push_back(noMovement);
 		ROS_INFO("Initialization done");
 		
 		//Subscriber to quadcopter status
@@ -1063,10 +1061,9 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 void Controller::dontMove( int internId)
 {
 	MovementQuadruple newMovement = MovementQuadruple( 0, 0, 0, 0 );
-	this->listFutureMovement[internId].clear();
 	long int currentTime = getNanoTime();
 	newMovement.setTimestamp( currentTime );
-	this->listFutureMovement[internId].push_front( newMovement );
+	this->listFutureMovement[internId] = newMovement;
 	
 }
 
@@ -1082,8 +1079,7 @@ void Controller::moveUp( int internId )
 	int thrustHelp = this->quadcopterStatus[internId].getThrust().getStart();
 	MovementQuadruple newMovement = MovementQuadruple( thrustHelp, 0, 0, 0 );
 	newMovement.setTimestamp( currentTime );
-	this->listFutureMovement[internId].clear();
-	this->listFutureMovement[internId].push_front( newMovement );
+	this->listFutureMovement[internId] = newMovement;
 	int step = 200;
 	//Increases thrust step by step to ensure slow inclining
 	if((currentTime > this->timeOffsetChangeThrust + 10000000) && (this->thrustHelp[internId]+step < this->quadcopterStatus[internId].getThrust().getStartMax()))
@@ -1120,7 +1116,7 @@ void Controller::stabilize( int internId )
 	Position6DOF posTarget = this->listTargets[internId].back();
 	this->listTargetsMutex.unlock();
 
-	MovementQuadruple newMovement = listSentQuadruples[internId].back();
+	MovementQuadruple newMovement = this->listSentQuadruples[internId].back();
 
 	ROS_INFO("In stabilize: ");
 
@@ -1155,10 +1151,7 @@ void Controller::stabilize( int internId )
 	newMovement.setRollPitchYawrate( newRoll, newPitch, newYawrate );
 
 	/* Set new Movement */
-	this->listFutureMovement[internId].clear();
-	this->listFutureMovement[internId].push_front( newMovement );	   
-	
-	ROS_INFO("End of stabilize.");
+	this->listFutureMovement[internId] = newMovement ;	   
 }
 
 void Controller::hold( int internId )
@@ -1181,14 +1174,10 @@ void Controller::land( int internId, int * nrLand )
 	if(tracked[internId] == true)
 	{
 		ROS_INFO("Declining ros");
-		/*while( this->listFutureMovement[internId].size() > 1)	// FIXME @dominik
-		{
-			this->listFutureMovement[internId].pop_back();
-		}*/
-		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
+		MovementQuadruple newMovement = this->listFutureMovement[internId];
 		newMovement.setThrust( quadcopterStatus[internId].getThrust().getDecline() );
 		newMovement.setTimestamp( currentTime );
-		this->listFutureMovement[internId].push_front( newMovement );		
+		this->listFutureMovement[internId] = newMovement;		
 		this->timeOffsetChangeThrust = getNanoTime();
 	}
 	else
@@ -1208,10 +1197,10 @@ void Controller::land( int internId, int * nrLand )
 		}
 		//Shutdown crazyflie after having left the tracking area.
 		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp[internId], 0, 0, 0 ); 
-		//MovementQuadruple newMovement = this->listFutureMovement[internId].front();
+		//MovementQuadruple newMovement = this->listFutureMovement[internId];
 		//newMovement.setThrust( THRUST_OFF );
 		newMovement.setTimestamp(currentTime);
-		this->listFutureMovement[internId].push_front( newMovement );
+		this->listFutureMovement[internId] = newMovement;
 		if( this->thrustHelp[internId] - step <= 0)
 		{
 			this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
