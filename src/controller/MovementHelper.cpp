@@ -9,7 +9,6 @@
 
 MovementHelper::MovementHelper() {
 
-
 }
 
 Position6DOF MovementHelper::prepareForRP( double rotation, Position6DOF pos, Position6DOF target )

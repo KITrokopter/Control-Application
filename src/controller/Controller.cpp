@@ -38,7 +38,6 @@ Controller::Controller()
 	//Publisher of Message to API
 	this->Message_pub = this->n.advertise<api_application::Message>("Message", 100);
 	
-
 	//Client
 	this->Announce_client = this->n.serviceClient<api_application::Announce>("Announce");
 	this->Shutdown_client = this->n.serviceClient<control_application::Shutdown>("Shutdown");
@@ -372,7 +371,8 @@ void Controller::calculateMovement()
 					break;
 				case CALCULATE_START:	
 					//ROS_INFO("Start %i", i);
-					moveUp( i );
+					//moveUp( i );
+					stabilize( i );
 					break;
 				case CALCULATE_STABILIZE:
 					if( i == 0)
