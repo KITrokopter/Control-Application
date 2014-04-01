@@ -34,7 +34,6 @@
 
 /*
  * TODO Timing
- * TODO list*Movement
  * TODO hold
  * TODO move
  */
