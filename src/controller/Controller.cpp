@@ -381,7 +381,7 @@ void Controller::calculateMovement()
 				case CALCULATE_STABILIZE:
 					if( i == 0)
 					{
-						ROS_INFO("Stabilize %i at time %ld after %ld ns", i, getNanoTime(), getNanoTime() - calculateMovementStarted);
+						//ROS_INFO("Stabilize %i at time %ld after %ld ns", i, getNanoTime(), getNanoTime() - calculateMovementStarted);
 					}
 					stabilize( i );
 					break;
@@ -1126,7 +1126,7 @@ void Controller::stabilize( int internId )
 
 	MovementQuadruple newMovement = this->listSentQuadruples[internId].back();
 
-	ROS_INFO("In stabilize: ");
+	//ROS_INFO("In stabilize: ");
 
 	/* Thrust */
 	double heightDiff = latestPosition.getDistanceZ( posTarget );
