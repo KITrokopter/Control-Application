@@ -201,8 +201,12 @@ void Position::angleTry(int sign) {
         n.mult(-1);
     }
 
+    ROS_DEBUG("n is [%f, %f, %f]", n.getV1(), n.getV2(), n.getV3());
+
     n.putVariable("n", ep);
     double angle = m->getAngle(Vector(0, 0, 1), b.cross(c));
+    ROS_DEBUG("angle is %f", angle);
+
     double dataAngle[1] = {sign * angle};
     mxArray *ang = mxCreateDoubleMatrix(1, 1, mxREAL);
     memcpy((void *)mxGetPr(ang), (void *)dataAngle, sizeof(dataAngle));
@@ -221,6 +225,10 @@ Vector Position::calculateCoordinateTransformation(Vector w) {
         Vector firstCam = Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]);
         r = engGetVariable(ep, "rotationMatrix");
         rotationMatrix = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
+
+        ROS_DEBUG("Rotationmatrix is:");
+        rotationMatrix.printMatrix();
+
         Vector result = firstCam.aftermult(rotationMatrix);
 
         if (!((result.getV3() < 0.5) && (result.getV3() > -0.5))) {
@@ -229,6 +237,10 @@ Vector Position::calculateCoordinateTransformation(Vector w) {
             angleTry(-1);
             r = engGetVariable(ep, "rotationMatrix");
             rotationMatrix = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
+
+            ROS_DEBUG("Rotationmatrix is:");
+            rotationMatrix.printMatrix();
+
             result = firstCam.aftermult(rotationMatrix);
             ROS_DEBUG("new calculation has result [%.2f, %.2f, %.2f]", result.getV1(), result.getV2(), result.getV3());
 
