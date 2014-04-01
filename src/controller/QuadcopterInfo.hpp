@@ -19,14 +19,14 @@
 #define HOLD 4
 #define SHUTDOWN 5
 
-#define ROLL_MIN -50.0
-#define ROLL_MAX 50.0
+#define ROLL_MIN -10.0
+#define ROLL_MAX 10.0
 #define ROLL_START 0.0
-#define PITCH_MIN -50.0
-#define PITCH_MAX 50.0
+#define PITCH_MIN -10.0
+#define PITCH_MAX 10.0
 #define PITCH_START 0.0
-#define YAWRATE_MIN -50.0
-#define YAWRATE_MAX 50.0
+#define YAWRATE_MIN -0.0
+#define YAWRATE_MAX 0.0
 #define YAWRATE_START 0.0
 
 class QuadcopterInfo {

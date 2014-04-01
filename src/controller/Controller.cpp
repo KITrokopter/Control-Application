@@ -385,7 +385,7 @@ void Controller::calculateMovement()
 				case CALCULATE_STABILIZE:
 					if( i == 0)
 					{
-						ROS_INFO("Stabilize %i at time %ld after %ld ns", i, getNanoTime(), getNanoTime() - calculateMovementStarted);
+						//ROS_INFO("Stabilize %i at time %ld after %ld ns", i, getNanoTime(), getNanoTime() - calculateMovementStarted);
 					}
 					stabilize( i );
 					break;
@@ -427,14 +427,15 @@ void Controller::calculateMovement()
 		timerCalculateMovement = getNanoTime();
 		long int timeToWait = ((1000000000/LOOPS_PER_SECOND) - (timerCalculateMovement-calculateMovementStarted)) / 1000;
 		//ROS_INFO("timeToWait %ld", timeToWait);
-		if( timeToWait > 60000)
+		long int timeOverhead = 60000;	// in us
+		if( timeToWait > 0)
 		{
-			usleep( timeToWait-60000);
+			usleep( timeToWait );
 			//ROS_INFO("Sleeping time :%ld", timeToWait);
 		}
 		else
 		{
-			ROS_ERROR("Calculate was too slow: %ld", timeToWait);
+			//ROS_ERROR("Calculate was too slow: %ld", timeToWait);
 		}
 		//ROS_INFO("Loop took: %ld ns", (getNanoTime() - calculateMovementStarted));
 		loopCounter++;
@@ -916,7 +917,7 @@ bool Controller::checkInput(int internId)
 	long int lastCur = this->timeLastCurrent[internId];
 	if(currentTime - lastCur > TIME_UPDATED_END && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
-		ROS_DEBUG("Time difference %ld", currentTime - lastCur);
+		//ROS_DEBUG("Time difference %ld", currentTime - lastCur);
 		//ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//std::string message2 = std::string("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		std::string message2 = "No new quadcopter position data has been received";
@@ -1045,6 +1046,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		 * Set spedific thrustvalues for each quadcopter once. 
 		 * Only if battery-value is useful.
 		 */
+		ROS_ERROR("initDone is false");
 		quadcopterStatus[localQuadcopterId].getQuadcopterThrust().checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
 		this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
 	}
@@ -1136,7 +1138,7 @@ void Controller::stabilize( int internId )
 
 	MovementQuadruple newMovement = this->listSentQuadruples[internId].back();
 
-	ROS_INFO("In stabilize: ");
+	//ROS_INFO("In stabilize: ");
 
 	/* Thrust */
 	double heightDiff = latestPosition.getDistanceZ( posTarget );
@@ -1169,7 +1171,7 @@ void Controller::stabilize( int internId )
 	float newYawrate = newMovement.getYawrate();
 
 	/* Set values */
-	ROS_INFO("   heightDiff %f, calculated thrustDiff %f, newThrust %i", heightDiff, thrustDiff, newThrust);
+	ROS_INFO("   hDiff %f, calculated tDiff %f, new %i", heightDiff, thrustDiff, newThrust);
 	ROS_INFO("   xDiff %f, rollDiff %f, yDiff %f, pitchDiff %f", xDiff, rollDiff, yDiff, pitchDiff);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
@@ -1214,7 +1216,7 @@ void Controller::land( int internId, int * nrLand )
 			this->thrustHelp[internId] = quadcopterStatus[internId].getQuadcopterThrust().getDecline();	// FIXME
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
-		ROS_INFO("min");
+		//ROS_INFO("min");
 		int step = 700;
 		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp[internId] - step > 0)
 		{
@@ -1226,6 +1228,7 @@ void Controller::land( int internId, int * nrLand )
 		//Shutdown crazyflie after having left the tracking area.
 		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp[internId], 0, 0, 0 ); 
 		newMovement.setTimestamp(currentTime);
+		ROS_DEBUG("LAND THRUST %i", newMovement.getThrust());
 		this->currentMovement[internId] = newMovement;
 		if( this->thrustHelp[internId] - step <= 0)
 		{
