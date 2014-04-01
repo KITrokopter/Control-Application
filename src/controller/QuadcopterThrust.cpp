@@ -81,6 +81,7 @@ void QuadcopterThrust::setThrust( float battery )
 		this->max += ((unsigned int) ((4-battery) * QUADCOPTER_THRUST_RANGE));
 		this->start += ((unsigned int) ((4-battery) * QUADCOPTER_THRUST_RANGE));
 		this->startMax += ((unsigned int) ((4-battery) * QUADCOPTER_THRUST_RANGE));
+		//ROS_INFO("min %i, max %i, start %i, startMax %i", min, max, start, startMax);
 	}
 	else 
 	{
@@ -88,8 +89,8 @@ void QuadcopterThrust::setThrust( float battery )
 		this->max += QUADCOPTER_THRUST_RANGE;
 		this->start += QUADCOPTER_THRUST_RANGE;
 		this->startMax += QUADCOPTER_THRUST_RANGE;
+		//ROS_INFO("min %i, max %i, start %i, startMax %i", min, max, start, startMax);
 	}
-	ROS_INFO("min %i, max %i, start %i, startMax %i", min, max, start, startMax);
 }
 
 bool QuadcopterThrust::initDone()

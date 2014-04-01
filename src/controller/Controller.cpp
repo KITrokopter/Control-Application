@@ -187,7 +187,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				//ROS_INFO("tracked");
 				/* Quadcopter has not been tracked before, therefore set tracked to true
 				 and switch to Stabilize-Status when the qc was in starting process */
-				if(this->quadcopterMovementStatus[id] == CALCULATE_START)
+				if(this->quadcopterMovementStatus[id] == CALCULATE_START || this->quadcopterMovementStatus[id] == CALCULATE_NONE)
 				{
 					ROS_DEBUG("Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
@@ -234,7 +234,11 @@ void Controller::sendMovementAll()
 		{
 			this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		}
-		else
+		else if(quadStatus == CALCULATE_LAND)
+		{
+		
+		}
+		else	
 		{
 			this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 		}
@@ -419,9 +423,9 @@ void Controller::calculateMovement()
 		timerCalculateMovement = getNanoTime();
 		long int timeToWait = ((1000000000/LOOPS_PER_SECOND) - (timerCalculateMovement-calculateMovementStarted)) / 1000;
 		//ROS_INFO("timeToWait %ld", timeToWait);
-		if( timeToWait > 0)
+		if( timeToWait > 60000)
 		{
-			usleep( timeToWait);
+			usleep( timeToWait-60000);
 			//ROS_INFO("Sleeping time :%ld", timeToWait);
 		}
 		else
@@ -1142,19 +1146,21 @@ void Controller::stabilize( int internId )
 	/* Roll */
 	float xDiff = posForRP.getDistanceX( posTarget );
 	float newRoll = newMovement.getRoll();
-	newRoll = newRoll + ((float) controlRollPitch->getManipulatedVariable( xDiff ));
+	double rollDiff = controlRollPitch->getManipulatedVariable( xDiff );
+	newRoll = newRoll + ((float) rollDiff);
 
 	/* Pitch */
 	float yDiff = posForRP.getDistanceY( posTarget );
 	float newPitch = newMovement.getPitch();
-	newPitch = newPitch + ((float) controlRollPitch->getManipulatedVariable( yDiff ));
+	double pitchDiff = controlRollPitch->getManipulatedVariable( yDiff );
+	newPitch = newPitch + ((float) pitchDiff);
 
 	/* Yawrate */
 	float newYawrate = newMovement.getYawrate();
 
 	/* Set values */
 	ROS_INFO("   heightDiff %f, calculated thrustDiff %f, newThrust %i", heightDiff, thrustDiff, newThrust);
-	ROS_INFO("   xDiff %f, yDiff %f", xDiff, yDiff);
+	ROS_INFO("   xDiff %f, rollDiff %f, yDiff %f, pitchDiff %f", xDiff, rollDiff, yDiff, pitchDiff);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
 	quadcopterStatus[internId].getInfo().checkAndFixYawrate( newYawrate );
