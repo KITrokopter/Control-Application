@@ -149,12 +149,12 @@ private:
 	long int timeOffsetChangeThrust;
 
 	/* Position */
-	std::vector<std::list<Position6DOF> > listPositions;
-	std::vector<std::list<Position6DOF> > listTargets;
+	std::vector<std::list<Position6DOF> > listPositions; //newest Position at the end of the list
+	std::vector<std::list<Position6DOF> > listTargets; //newest Position at the end of the list
 	
 	/* Set data */ 
-	std::vector<std::list<MovementQuadruple> > listSentQuadruples;
-	std::vector<std::list<MovementQuadruple> > listFutureMovement;
+	std::vector<std::list<MovementQuadruple> > listSentQuadruples; //last send Movement at the end of the list
+	std::vector<MovementQuadruple> listCurrentMovement;
 
 	/* Received data */ 
 	//Arrays for quadcopters sorted by intern id
