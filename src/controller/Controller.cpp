@@ -371,8 +371,8 @@ void Controller::calculateMovement()
 					break;
 				case CALCULATE_START:	
 					//ROS_INFO("Start %i", i);
-					//moveUp( i );
-					stabilize( i );
+					moveUp( i );
+					//stabilize( i );
 					break;
 				case CALCULATE_STABILIZE:
 					if( i == 0)
