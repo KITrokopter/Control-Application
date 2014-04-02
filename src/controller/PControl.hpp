@@ -20,6 +20,7 @@ public:
 
 private:
 	double amplification;
+	double offset;
 };
 
 #endif /* PCONTROL_HPP_ */
