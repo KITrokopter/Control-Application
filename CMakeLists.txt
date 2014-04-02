@@ -191,12 +191,10 @@ add_executable(control_application_test_calibration_node
   src/matlab/Position.cpp
   src/matlab/AmccCalibration.cpp
   src/matlab/profiling.cpp
-  src/controller/Controller.cpp
   src/controller/Formation.cpp
   src/controller/Position6DOF.cpp
   src/controller/Mutex.cpp
   src/controller/MovementQuadruple.cpp
-  src/controller/Interpolator.cpp
   src/controller/InterpolatorInfo.cpp
   src/controller/QuadcopterThrust.cpp
 )
