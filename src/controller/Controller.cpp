@@ -788,7 +788,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		if( this->receivedTrackingArea)
 		{
 			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
-			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1100 );
+			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1500 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
@@ -798,7 +798,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		}
 		else
 		{
-			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1100 );
+			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1500 );
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_ERROR("Default target set");
 		}
@@ -1187,8 +1187,8 @@ void Controller::stabilize( int internId )
 	float newYawrate = newMovement.getYawrate();
 
 	/* Set values */
-	ROS_INFO("   hDiff %f, calculated tDiff %f, new %i", heightDiff, thrustDiff, newThrust);
-	ROS_INFO("   xDiff %f, rollDiff %f, yDiff %f, pitchDiff %f", xDiff, rollDiff, yDiff, pitchDiff);
+	ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
+	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, rollDiff, yDiff, pitchDiff);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
 	quadcopterStatus[internId].getInfo().checkAndFixYawrate( newYawrate );
