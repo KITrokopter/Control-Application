@@ -67,8 +67,8 @@ Controller::Controller()
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
 
-	this->controlThrust = new PControl( AMPLIFICATION_FACTOR_THRUST );
-	this->controlRollPitch = new PControl( AMPLIFICATION_FACTOR_RP );
+	this->controlThrust = new PControl( AMPLIFICATION_FACTOR_THRUST, THRUST_OFFSET );
+	this->controlRollPitch = new PControl( AMPLIFICATION_FACTOR_RP, RP_OFFSET );
 }
 
 /*
@@ -1159,7 +1159,7 @@ void Controller::stabilize( int internId )
 	double heightDiff = latestPosition.getDistanceZ( posTarget );
 	unsigned int newThrust = newMovement.getThrust();
 	double thrustDiff = controlThrust->getManipulatedVariable( heightDiff );
-	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( newThrust+thrustDiff );
+	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( 0+thrustDiff );
 	newMovement.setThrust( newThrust );
 
 	/*
@@ -1175,13 +1175,13 @@ void Controller::stabilize( int internId )
 	float xDiff = posForRP.getDistanceX( posTarget );
 	float newRoll = newMovement.getRoll();
 	double rollDiff = controlRollPitch->getManipulatedVariable( xDiff );
-	newRoll = newRoll + ((float) rollDiff);
+	newRoll = 0 + ((float) rollDiff);
 
 	/* Pitch */
 	float yDiff = posForRP.getDistanceY( posTarget );
 	float newPitch = newMovement.getPitch();
 	double pitchDiff = controlRollPitch->getManipulatedVariable( yDiff );
-	newPitch = newPitch + ((float) pitchDiff);
+	newPitch = 0 + ((float) pitchDiff);
 
 	/* Yawrate */
 	float newYawrate = newMovement.getYawrate();

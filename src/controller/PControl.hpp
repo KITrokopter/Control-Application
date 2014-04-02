@@ -14,7 +14,7 @@
 class PControl : public Control {
 
 public:
-	PControl( double amplificationFactor );
+	PControl( double amplificationFactor, double offset );
 
 	double getManipulatedVariable( double errorSignal );
 

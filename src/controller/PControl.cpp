@@ -7,13 +7,14 @@
 
 #include "PControl.hpp"
 
-PControl::PControl( double amplificationFactor )
+PControl::PControl( double amplificationFactor, double offset )
 {
 	this->amplification = amplificationFactor;
+	this->offset = offset;
 
 }
 
 double PControl::getManipulatedVariable(double errorSignal)
 {
-	return (this->amplification * errorSignal);
+	return (this->amplification * errorSignal + offset);
 }
