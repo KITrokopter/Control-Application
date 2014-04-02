@@ -48,6 +48,8 @@
 
 #define AMPLIFICATION_FACTOR_RP 0.012
 #define RP_OFFSET 0
+#define AMPLIFICATION_FACTOR_Y 0.012
+#define Y_OFFSET 0
 #define AMPLIFICATION_FACTOR_THRUST 20
 #define THRUST_OFFSET 24000
 
@@ -167,7 +169,7 @@ private:
 	std::list<std::vector<float> > formationMovement;
 
 	/* Control */
-	Control *controlThrust, *controlRollPitch;
+	Control *controlThrust, *controlRollPitch, *controlYawrate;
 	QuadcopterControl quadcopterStatus[MAX_NUMBER_QUADCOPTER];
 
 
