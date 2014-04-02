@@ -245,18 +245,23 @@ void Controller::sendMovementAll()
 				this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 				break;
 		}
-		msg.thrust = this->currentMovement[i].getThrust();
+		msg.thrust = 40000;	// JUST FOR TESTING
+		msg.roll = 40.0;	// JUST FOR TESTING
+		msg.pitch = 0.0;	// JUST FOR TESTING
+		msg.yaw = 0.0;	// JUST FOR TESTING
+		/*msg.thrust = this->currentMovement[i].getThrust();
+		msg.roll = this->currentMovement[i].getRoll();
+		msg.pitch = this->currentMovement[i].getPitch();
+		msg.yaw = this->currentMovement[i].getYawrate();*/
+		this->Movement_pub[i].publish(msg);		
+		
 		/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
 		{
 			ROS_INFO("send Roll %f, pitch %f", this->currentMovement[i].getRoll(), this->currentMovement[i].getPitch());
 			ROS_INFO("send thrust %i", this->currentMovement[i].getThrust());
 		}
 		*/
-
-		msg.roll = this->currentMovement[i].getRoll();
-		msg.pitch = this->currentMovement[i].getPitch();
-		msg.yaw = this->currentMovement[i].getYawrate();
-		this->Movement_pub[i].publish(msg);		
+		
 		//this->currentMovement[i].setTimestamp( currentTime );
 		//Trim list of sent movement data to a defined value
 		while( this->listSentQuadruples[i].size() > MAX_SAVED_SENT_QUADRUPLES )
