@@ -1,4 +1,5 @@
 Header header
 ---
 sensor_msgs/Image[] images
+bool[] containsChessboard # True if the image contains a chessboard.
 uint32[] ids # The ids of the cameras that belong to the images.
