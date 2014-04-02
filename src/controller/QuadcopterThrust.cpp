@@ -71,6 +71,7 @@ void QuadcopterThrust::setWithoutBatteryValue()
 
 void QuadcopterThrust::setThrust( float battery )
 {
+	return;
 	if( battery > 4 )
 	{
 		return;
