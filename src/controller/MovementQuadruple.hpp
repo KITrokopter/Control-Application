@@ -3,6 +3,7 @@
 
 #include <sys/time.h>
 #include "ros/ros.h"
+#include "../matlab/profiling.hpp"
 
 class MovementQuadruple
 {	
