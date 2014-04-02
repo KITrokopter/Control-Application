@@ -165,6 +165,10 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
+		if(id == 0 )
+		{
+			ROS_DEBUG("Update position x:%f y:%f z:%f", it->getV1(), it->getV2(), it->getV3());
+		}
 		//ROS_INFO("Global id is %i",i);
 		//ROS_INFO("Local Id is %i", id);
 		if(id == INVALID)
@@ -245,14 +249,15 @@ void Controller::sendMovementAll()
 				this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 				break;
 		}
-		msg.thrust = 40000;	// JUST FOR TESTING
-		msg.roll = 40.0;	// JUST FOR TESTING
+		/*msg.thrust = 38000;	// JUST FOR TESTING
+		msg.roll = 30.0;	// JUST FOR TESTING
 		msg.pitch = 0.0;	// JUST FOR TESTING
 		msg.yaw = 0.0;	// JUST FOR TESTING
-		/*msg.thrust = this->currentMovement[i].getThrust();
+		ROS_INFO("Roll %f, pitch %f", msg.roll, msg.pitch);*/
+		msg.thrust = this->currentMovement[i].getThrust();
 		msg.roll = this->currentMovement[i].getRoll();
 		msg.pitch = this->currentMovement[i].getPitch();
-		msg.yaw = this->currentMovement[i].getYawrate();*/
+		msg.yaw = this->currentMovement[i].getYawrate();
 		this->Movement_pub[i].publish(msg);		
 		
 		/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
@@ -782,15 +787,18 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->listTargets.push_back(newEmptyListPosition);
 		if( this->receivedTrackingArea)
 		{
-			Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
-			//Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
+			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
+			Position6DOF defaultTarget = Position6DOF(-50, 1500, 1100 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
+			ROS_DEBUG("Set Target at Beginning is %f(y)", this->listTargets[i].back().getPosition()[1]);
+			ROS_DEBUG("Set Target at Beginning is %f(x)", this->listTargets[i].back().getPosition()[0]);
+			
 		}
 		else
 		{
-			Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
+			Position6DOF defaultTarget = Position6DOF(-50, 1500, 1100 );
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_ERROR("Default target set");
 		}
@@ -1210,7 +1218,14 @@ void Controller::land( int internId, int * nrLand )
 	{
 		ROS_INFO("Declining ros");
 		MovementQuadruple newMovement = this->currentMovement[internId];
-		newMovement.setThrust( quadcopterStatus[internId].getQuadcopterThrust().getDecline() );
+		if(currentMovement[internId].getThrust() < quadcopterStatus[internId].getQuadcopterThrust().getDecline() )
+		{
+			newMovement.setThrust(currentMovement[internId].getThrust());
+		}
+		else
+		{
+			newMovement.setThrust( quadcopterStatus[internId].getQuadcopterThrust().getDecline() );
+		}
 		newMovement.setTimestamp( currentTime );
 		this->currentMovement[internId] = newMovement;		
 		this->timeOffsetChangeThrust = getNanoTime();
@@ -1219,8 +1234,15 @@ void Controller::land( int internId, int * nrLand )
 	{
 		if(this->thrustHelp[internId] > quadcopterStatus[internId].getQuadcopterThrust().getDecline())	// FIXME
 		{
-			ROS_DEBUG("Decline newly set in land");
-			this->thrustHelp[internId] = quadcopterStatus[internId].getQuadcopterThrust().getDecline();	// FIXME
+			if(currentMovement[internId].getThrust() < quadcopterStatus[internId].getQuadcopterThrust().getDecline() )
+			{
+				this->thrustHelp[internId] = currentMovement[internId].getThrust();
+			}
+			else
+			{
+				ROS_DEBUG("Decline newly set in land");
+				this->thrustHelp[internId] = quadcopterStatus[internId].getQuadcopterThrust().getDecline();	// FIXME
+			}
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		//ROS_INFO("min");
