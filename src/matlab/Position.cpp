@@ -249,10 +249,10 @@ Vector Position::calculateCoordinateTransformation(Vector w) {
         }
 
         // uncomment if x-axis has to be flipped. Only uncomment, if you are sure, you want to do this.
-
+        /*
         Matrix flip = new Matrix(-1, 0, 0, 0, 1, 0, 0, 0, 1);
         rotationMatrix = flip.multiplicate(rotationMatrix);
-
+        */
 
         mxDestroyArray(r);
         this->transformed = true;
