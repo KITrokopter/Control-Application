@@ -777,11 +777,11 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		this->listTargets.push_back(newEmptyListPosition);
 		if( this->receivedTrackingArea)
 		{
-			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
-			Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
+			Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
+			//Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
-			//ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
+			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
 		}
 		else
 		{
@@ -1048,9 +1048,9 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		 * Set spedific thrustvalues for each quadcopter once. 
 		 * Only if battery-value is useful.
 		 */
-		ROS_ERROR("initDone is false");
+		//ROS_ERROR("initDone is false");
 		quadcopterStatus[localQuadcopterId].getQuadcopterThrust().checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
-		this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
+		//this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
 }
