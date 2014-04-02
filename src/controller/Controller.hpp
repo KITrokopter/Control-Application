@@ -23,6 +23,7 @@
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
 #include "control_application/Rotation.h"
+#include "control_application/quadcopter_is_tracked.h"
 #include "quadcopter_application/quadcopter_status.h"
 #include "../position/IPositionReceiver.hpp"
 #include "../matlab/profiling.hpp"
