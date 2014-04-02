@@ -2,7 +2,7 @@
 #include "Formation.hpp"
 #include <stdlib.h>
 //Don't know if we need that
-Formation::Formation(int distance, int amount, Position6DOF * pos)
+Formation::Formation(int distance, int amount, Position6DOF * position)
 {
 	this->distance = distance;
 	this->amount = amount;

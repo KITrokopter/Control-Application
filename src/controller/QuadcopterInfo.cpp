@@ -9,6 +9,14 @@
 
 QuadcopterInfo::QuadcopterInfo() {
 	this->state = UNSTARTED;
+	//timeStarted;
+	//timeLastUpdated;
+	//timeShutdownStarted;
+
+	x = 0.0;
+	y = 0.0;
+	rotation = 0.0;
+	negativeSign = false;
 }
 
 /* Getter and Setter */

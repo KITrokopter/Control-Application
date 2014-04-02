@@ -18,7 +18,7 @@ Controller::Controller()
 	* The first NodeHandle constructed will fully initialize this node, and the last
 	* NodeHandle destructed will close down the node.
 	*/
-	ros::NodeHandle n;
+	//ros::NodeHandle n;
 	//Subscriber
 	//Subscriber for the MoveFormation data of the Quadcopters (1000 is the max. buffered messages)
 	this->MoveFormation_sub = this->n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
@@ -55,7 +55,7 @@ Controller::Controller()
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
 		tracked[i] = false;	// Initialize tracked (no quadcopter is tracked at the beginning)
-		this->quadcopterStatus[i] = QuadcopterControl();
+		//this->quadcopterStatus[i] = QuadcopterControl();
 		if( !USE_BATTERY_INPUT )
 		{
 			quadcopterStatus[i].getQuadcopterThrust().setWithoutBatteryValue();
