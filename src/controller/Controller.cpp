@@ -262,8 +262,7 @@ void Controller::sendMovementAll()
 			// Remove oldest elements
 			this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
 		}
-		// Save Element (TODO only if not too young, in calculateMovement())
-		this->listSentQuadruples[i].push_back( this->currentMovement[i] );
+		this->listSentQuadruples[i].push_back( this->currentMovement[i] );	// Save Element 
 	}
 	//ROS_INFO("sendMovementAll finished");
 }

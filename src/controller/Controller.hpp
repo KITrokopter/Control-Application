@@ -18,7 +18,7 @@
 #include "api_application/Message.h"
 #include "api_application/Announce.h"
 #include "api_application/System.h"
-#include "control_application/quadcopter_movement.h"	// @Carina ???
+#include "control_application/quadcopter_movement.h"
 #include "control_application/BuildFormation.h"
 #include "control_application/Shutdown.h"
 #include "control_application/SetQuadcopters.h"
