@@ -788,7 +788,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		if( this->receivedTrackingArea)
 		{
 			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
-			Position6DOF defaultTarget = Position6DOF(-50, 1500, 1100 );
+			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1100 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
@@ -798,7 +798,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		}
 		else
 		{
-			Position6DOF defaultTarget = Position6DOF(-50, 1500, 1100 );
+			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1100 );
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_ERROR("Default target set");
 		}
@@ -1167,8 +1167,9 @@ void Controller::stabilize( int internId )
 	 * Rotation is always equal zero.
 	 * The amount of yaw is not calculated, it is assumed zero.
 	 */
-	MovementHelper helper;
-	Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getInfo().getRotation(), latestPosition, posTarget );
+	//MovementHelper helper;
+	//Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getInfo().getRotation(), latestPosition, posTarget );
+	Position6DOF posForRP = latestPosition;
 
 	/* Roll */
 	float xDiff = posForRP.getDistanceX( posTarget );
