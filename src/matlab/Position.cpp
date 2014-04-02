@@ -229,6 +229,7 @@ Vector Position::calculateCoordinateTransformation(Vector w) {
         ROS_DEBUG("Rotationmatrix is:");
         rotationMatrix.printMatrix();
 
+
         Vector result = firstCam.aftermult(rotationMatrix);
 
         if (!((result.getV3() < 0.5) && (result.getV3() > -0.5))) {
