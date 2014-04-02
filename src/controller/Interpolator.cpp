@@ -30,6 +30,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	}
 	newMovement.setTimestamp( currentTime );
 
+	int counter = 0;
 	checkState( id );
 	switch( this->status[id].getState() )
 	{
@@ -54,6 +55,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 			newMovement.setRollPitchYawrate( 0, 0, 0 );
 			Position6DOF pos;
 			int counter = 0;
+			counter = 0;
 			for(std::list<Position6DOF>::iterator it = positions.begin(); it != positions.end(); ++it)
 			{
 				pos.setTimestamp( it->getTimestamp() );
@@ -121,7 +123,7 @@ MovementQuadruple Interpolator::calculateNextMQ(std::list<MovementQuadruple> &se
 	Position6DOF positionNow = positions.back();	// positionPast is older than positionNow
 	Position6DOF posAssumed;
 	std::list<Position6DOF>::reverse_iterator rit;
-	int counter = 0;
+	counter = 0;
 	for( rit=positions.rbegin(); (rit!=positions.rend()) && (counter<2); ++rit )
 	{
 		if( counter == 1 )
@@ -302,7 +304,7 @@ float calculateDistanceFactorRPY( float distance )
 	}
 	else if( distance < ((float) DISTANCE_HIGH_RPY) )
 	{
-		float x = distance - (float)( DISTANCE_CLOSE_RPY);
+		float x = distance - ((float) DISTANCE_CLOSE_RPY);
 		if( x == 0.0 )
 		{
 			return x;
