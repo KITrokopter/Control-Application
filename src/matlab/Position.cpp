@@ -197,9 +197,6 @@ void Position::angleTry(int sign) {
     //ROS_DEBUG("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
 
     Vector n = intersectionLine.getU().mult(1/intersectionLine.getU().getLength());
-    if (n.getV3() < 0) {
-        n.mult(-1);
-    }
 
     ROS_DEBUG("n is [%f, %f, %f]", n.getV1(), n.getV2(), n.getV3());
 
@@ -250,6 +247,13 @@ Vector Position::calculateCoordinateTransformation(Vector w) {
                 return Vector(NAN, NAN, NAN);
             }
         }
+
+        // uncomment if x-axis has to be flipped. Only uncomment, if you are sure, you want to do this.
+
+        Matrix flip = new Matrix(-1, 0, 0, 0, 1, 0, 0, 0, 1);
+        rotationMatrix = flip.multiplicate(rotationMatrix);
+
+
         mxDestroyArray(r);
         this->transformed = true;
     }
