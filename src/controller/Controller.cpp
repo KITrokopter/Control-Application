@@ -193,7 +193,9 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
 					this->timeDurationMoveup = getNanoTime();
 					/*this->shutdownStarted = true;*/
-
+					control_application::quadcopter_is_tracked_ msg;
+					msg.is_tracked = true;
+					Tracked_pub[trackedLocal].publish(msg);
 				}
 			}
 			//ROS_INFO("tracked id");
