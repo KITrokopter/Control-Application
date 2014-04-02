@@ -230,17 +230,18 @@ void Controller::sendMovementAll()
 	{
 		unsigned int quadStatus= this->quadcopterMovementStatus[i];
 		//Check if the qc movement values are in the allowed range.
-		if(quadStatus == CALCULATE_START) 
+		switch( quadStatus )
 		{
-			this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
-		}
-		else if(quadStatus == CALCULATE_LAND)
-		{
-		
-		}
-		else	
-		{
-			this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+			case CALCULATE_START:
+				this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+				break;
+				
+			case CALCULATE_LAND:
+				break;
+				
+			default:
+				this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+				break;
 		}
 		msg.thrust = this->currentMovement[i].getThrust();
 		/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
