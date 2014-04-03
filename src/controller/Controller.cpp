@@ -1151,17 +1151,12 @@ void Controller::stabilize( int internId )
 	//ROS_INFO("In stabilize: ");
 
 	/* Thrust */
-	double heightDiff = latestPosition.getDistanceZ( posTarget );
+	double heightDiff = latestPosition.getDistanceZ( posTarget, this->controlThrust.getAmplification() );
 	unsigned int newThrust = newMovement.getThrust();
 	double thrustDiff = controlThrust->getManipulatedVariable( heightDiff );
 	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( 0+thrustDiff );
 	newMovement.setThrust( newThrust );
 
-	/*
-	 * Currently:
-	 * Rotation is always equal zero.
-	 * The amount of yaw is not calculated, it is assumed zero.
-	 */
 	//MovementHelper helper;
 	//Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getInfo().getRotation(), latestPosition, posTarget );
 	Position6DOF posForRP = latestPosition;
