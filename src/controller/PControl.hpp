@@ -7,11 +7,10 @@
 class PControl : public Control {
 
 public:
-    PControl( double pFactor, double offset )
-    PControl( double pFactor, double dFactor, double offset )
-    PControl( double pFactorPos, double pFactorNeg, double dFactor, double offset )
+    	PControl( double pFactor, double offset );
+    	PControl( double pFactor, double dFactor, double offset );
+    	PControl( double pFactorPos, double pFactorNeg, double dFactor, double offset );
 
-	double getManipulatedVariable( double errorSignal );
 	double getManipulatedVariable( double errorSignal );
 
 protected:

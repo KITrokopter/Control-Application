@@ -12,7 +12,7 @@ PControl::PControl( double pFactor, double offset )
 	this->pAmplification = pFactor;
 	this->pAmplificationPos = pFactor;
 	this->pAmplificationNeg = pFactor;
-	this->dAmplification = dFactor;
+	this->dAmplification = 0.0;
 	this->offset = offset;
 	this->distanceOld = 0.0;
 }
@@ -41,7 +41,7 @@ double PControl::getManipulatedVariable(double errorSignal)
 {
 	setPAmplification( errorSignal );
 	double distanceDiff = errorSignal - distanceOld;
-	double y = this->amplificationP * (errorSignal + (amplificationD * distanceDiff));
+	double y = this->pAmplification * (errorSignal + (dAmplification * distanceDiff));
 	y += this->offset;
 	this->distanceOld = errorSignal;
 	return y;
