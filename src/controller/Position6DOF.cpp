@@ -117,6 +117,11 @@ double Position6DOF::getDistanceZ( Position6DOF otherPosition )
 	return (otherPosition.getPosition()[2] - this->position[2]);
 }
 
+double Position6DOF::getDistanceZ( Position6DOF otherPosition, double koeff )
+{
+	return (otherPosition.getPosition()[2] - (koeff - 1.0)/ * koeff * this->position[2]);
+}
+
 void Position6DOF::predictNextPosition( Position6DOF olderPosition, long int timeInFuture )
 {
 	long int timediff = this->timestamp - olderPosition.getTimestamp();

@@ -48,6 +48,11 @@ double PControl::getManipulatedVariable(double errorSignal)
 	
 }
 
+double PControl::getAmplification()
+{
+	this->pAmplification;
+}
+
 void PControl::setPAmplification( double errorSignal )
 {
 	if( errorSignal >= 0.0 )
