@@ -50,7 +50,7 @@ double PControl::getManipulatedVariable(double errorSignal)
 
 double PControl::getAmplification()
 {
-	this->pAmplification;
+	return this->pAmplification;
 }
 
 void PControl::setPAmplification( double errorSignal )

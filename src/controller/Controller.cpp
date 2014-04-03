@@ -1151,7 +1151,7 @@ void Controller::stabilize( int internId )
 	//ROS_INFO("In stabilize: ");
 
 	/* Thrust */
-	double heightDiff = latestPosition.getDistanceZ( posTarget, this->controlThrust.getAmplification() );
+	double heightDiff = latestPosition.getDistanceZ( posTarget, this->controlThrust->getAmplification() );
 	unsigned int newThrust = newMovement.getThrust();
 	double thrustDiff = controlThrust->getManipulatedVariable( heightDiff );
 	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( 0+thrustDiff );
