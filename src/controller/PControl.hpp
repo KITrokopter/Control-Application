@@ -25,6 +25,7 @@ private:
 	double dAmplification;	
 	double offset;
 	double distanceOld;
+	double Integrator;
 };
 
 #endif /* PCONTROL_HPP_ */

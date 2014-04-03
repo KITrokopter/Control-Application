@@ -15,6 +15,7 @@ PControl::PControl( double pFactor, double offset )
 	this->dAmplification = 0.0;
 	this->offset = offset;
 	this->distanceOld = 0.0;
+	this->Integrator = 0.0;
 }
 
 PControl::PControl( double pFactor, double dFactor, double offset )
@@ -25,6 +26,7 @@ PControl::PControl( double pFactor, double dFactor, double offset )
 	this->dAmplification = dFactor;
 	this->offset = offset;
 	this->distanceOld = 0.0;
+	this->Integrator = 0.0;
 }
 
 PControl::PControl( double pFactorPos, double pFactorNeg, double dFactor, double offset )
@@ -35,13 +37,16 @@ PControl::PControl( double pFactorPos, double pFactorNeg, double dFactor, double
 	this->dAmplification = dFactor;
 	this->offset = offset;
 	this->distanceOld = 0.0;
+	this->Integrator = 0.0;
 }
 
 double PControl::getManipulatedVariable(double errorSignal)
 {
+	this->Integrator += errorSignal;
 	setPAmplification( errorSignal );
 	double distanceDiff = errorSignal - distanceOld;
 	double y = this->pAmplification * (errorSignal + (dAmplification * distanceDiff));
+	y += this->Integrator;
 	y += this->offset;
 	this->distanceOld = errorSignal;
 	return y;
