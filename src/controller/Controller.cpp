@@ -1182,12 +1182,12 @@ void Controller::stabilize( int internId )
 	float newPitch = ((float) controlRollPitch->getManipulatedVariable( yDiff ));
 
 	/* Yawrate */
-	float yawDiff = this->yaw_stab[internId];
+	float yawDiff = 0.0 - this->yaw_stab[internId];
 	float newYawrate = ((float) controlRollPitch->getManipulatedVariable( yawDiff ));
 
 	/* Set values */
 	ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
-	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, rollDiff, yDiff, pitchDiff);
+	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, newRoll, yDiff, newPitch);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
 	quadcopterStatus[internId].getInfo().checkAndFixYawrate( newYawrate );
