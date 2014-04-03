@@ -4,13 +4,11 @@
 #include "Control.hpp"
 #include "PControl.hpp"
 #include "Formation.hpp"
-#include "Interpolator.hpp"
 #include "MovementQuadruple.hpp"
 #include "MovementHelper.hpp"
 #include "Mutex.hpp"
 #include "Position6DOF.hpp"
 #include "QuadcopterControl.hpp"
-#include "QuadcopterInfo.hpp"
 #include "QuadcopterThrust.hpp"
 #include "ros/ros.h"
 #include "api_application/MoveFormation.h"
@@ -141,7 +139,6 @@ private:
 	Formation *formation;	//Receive data over ROS
 	unsigned int senderID;	//Receive data over ROS	
 	TrackingArea trackingArea;
-	Interpolator interpolator;
 	
 	//Mapping of quadcopter global id qudcopters[local id] = global id
 	std::vector<unsigned long int > quadcopters;
