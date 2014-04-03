@@ -884,7 +884,7 @@ bool Controller::checkInput(int internId)
 	}
 	long int currentTime = getNanoTime();
 	long int lastForm = this->timeLastFormationMovement;
-	if(currentTime - lastForm > TIME_UPDATED_END && quadStatus == CALCULATE_MOVE)
+	if(currentTime - lastForm > ((long int) TIME_UPDATED_END) && quadStatus == CALCULATE_MOVE)
 	{
 		//std::string message = std::string("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		std::string message = "No new formation movement data has been received";
@@ -893,7 +893,7 @@ bool Controller::checkInput(int internId)
 		return false;
 	}
 	long int lastCur = this->timeLastCurrent[internId];
-	if(currentTime - lastCur > TIME_UPDATED_END && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
+	if(currentTime - lastCur > ((long int) TIME_UPDATED_END) && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
 		//ROS_DEBUG("Time difference %ld", currentTime - lastCur);
 		//ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
@@ -909,7 +909,7 @@ bool Controller::checkInput(int internId)
 		tracked[internId] = false;
 		control_application::quadcopter_is_tracked msg;
 		msg.is_tracked = false;
-		Tracked_pub[trackedLocal].publish(msg);
+		Tracked_pub[internId].publish(msg);
 		return false;
 	}
 	//ROS_INFO("Critical");
@@ -925,7 +925,7 @@ bool Controller::checkInput(int internId)
 		tracked[internId] = false;
 		control_application::quadcopter_is_tracked msg;
 		msg.is_tracked = false;
-		Tracked_pub[trackedLocal].publish(msg);
+		Tracked_pub[internId].publish(msg);
 		return false;
 	}
 	
