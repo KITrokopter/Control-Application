@@ -244,15 +244,15 @@ void Controller::sendMovementAll()
 				this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 				break;
 		}
-		/*msg.thrust = 38000;	// JUST FOR TESTING
-		msg.roll = 30.0;	// JUST FOR TESTING
-		msg.pitch = 0.0;	// JUST FOR TESTING
-		msg.yaw = 0.0;	// JUST FOR TESTING
-		ROS_INFO("Roll %f, pitch %f", msg.roll, msg.pitch);*/
+		//msg.thrust = 31000;	// JUST FOR TESTING
+		//msg.roll = 0.0;	// JUST FOR TESTING
+		//msg.pitch = 0.0;	// JUST FOR TESTING
+		//msg.yaw = 10.0;	// JUST FOR TESTING
 		msg.thrust = this->currentMovement[i].getThrust();
 		msg.roll = this->currentMovement[i].getRoll();
 		msg.pitch = this->currentMovement[i].getPitch();
 		msg.yaw = this->currentMovement[i].getYawrate();
+		//ROS_INFO("Roll %f, pitch %f, yaw %f", msg.roll, msg.pitch, msg.yaw);
 		this->Movement_pub[i].publish(msg);		
 		
 		//Trim list of sent movement data to a defined value
@@ -1176,7 +1176,7 @@ void Controller::stabilize( int internId )
 
 	/* Yawrate */
 	float yawDiff = 0.0 - this->yaw_stab[internId];
-	float newYawrate = ((float) controlRollPitch->getManipulatedVariable( yawDiff ));
+	float newYawrate = ((float) controlYawrate->getManipulatedVariable( yawDiff ));
 
 	/* Set values */
 	ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
