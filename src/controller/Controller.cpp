@@ -67,7 +67,7 @@ Controller::Controller()
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
 
-	this->controlThrust = new PControl( AMPLIFICATION_FACTOR_THRUST, THRUST_OFFSET );
+	this->controlThrust = new PControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, THRUST_OFFSET );
 	this->controlRollPitch = new PControl( AMPLIFICATION_FACTOR_RP, RP_OFFSET );
 	this->controlYawrate = new PControl( AMPLIFICATION_FACTOR_Y, Y_OFFSET );
 		
@@ -441,8 +441,8 @@ void Controller::calculateMovement()
 		timerCalculateMovement = getNanoTime();
 		long int timeToWait = ((1000000000/LOOPS_PER_SECOND) - (timerCalculateMovement-calculateMovementStarted)) / 1000;
 		//ROS_INFO("timeToWait %ld", timeToWait);
-		long int timeOverhead = 60000;	// in us
-		if( timeToWait > 0)
+		long int timeOverhead = 10000;	// in us
+		if( timeToWait > timeOverhead)
 		{
 			usleep( timeToWait );
 			//ROS_INFO("Sleeping time :%ld", timeToWait);

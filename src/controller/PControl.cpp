@@ -7,14 +7,55 @@
 
 #include "PControl.hpp"
 
-PControl::PControl( double amplificationFactor, double offset )
+PControl::PControl( double pFactor, double offset )
 {
-	this->amplification = amplificationFactor;
+	this->pAmplification = pFactor;
+	this->pAmplificationPos = pFactor;
+	this->pAmplificationNeg = pFactor;
+	this->dAmplification = dFactor;
 	this->offset = offset;
+	this->distanceOld = 0.0;
+}
 
+PControl::PControl( double pFactor, double dFactor, double offset )
+{
+	this->pAmplification = pFactor;
+	this->pAmplificationPos = pFactor;
+	this->pAmplificationNeg = pFactor;
+	this->dAmplification = dFactor;
+	this->offset = offset;
+	this->distanceOld = 0.0;
+}
+
+PControl::PControl( double pFactorPos, double pFactorNeg, double dFactor, double offset )
+{
+	this->pAmplification = pFactorPos;
+	this->pAmplificationPos = pFactorPos;
+	this->pAmplificationNeg = pFactorNeg;
+	this->dAmplification = dFactor;
+	this->offset = offset;
+	this->distanceOld = 0.0;
 }
 
 double PControl::getManipulatedVariable(double errorSignal)
 {
-	return (this->amplification * errorSignal + offset);
+	setPAmplification( errorSignal );
+	double distanceDiff = errorSignal - distanceOld;
+	double y = this->amplificationP * (errorSignal + (amplificationD * distanceDiff));
+	y += this->offset;
+	this->distanceOld = errorSignal;
+	return y;
+	
+}
+
+void PControl::setPAmplification( double errorSignal )
+{
+	if( errorSignal >= 0.0 )
+	{
+		this->pAmplification = this->pAmplificationPos;
+	}
+	else
+	{
+		this->pAmplification = this->pAmplificationNeg;
+	}
 }
