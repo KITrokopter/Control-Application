@@ -1269,51 +1269,6 @@ void Controller::land( int internId, int * nrLand )
 	}
 }
 
-
-/* HELPER FUNCTIONS */
-//bool Controller::isStable( int internId )
-//{
-//	/*
-//	 * Compare latest position of QC with
-//	 * position of QC "compareTimeX"-elements before.
-//	 * Assumption: 30 Elements ~ 1 sec.
-//	 */
-//	int compareTime[3] = { 1, 5, 50 };
-//
-//	this->listPositionsMutex.lock();
-//	size_t sizeOfListPositions = this->listPositions[internId].size();
-//	this->listPositionsMutex.unlock();
-//    if( sizeOfListPositions > compareTime[2] )
-//    {
-//		/* Reverse iterator to the reverse end */
-//		int counter = 0;
-//		std::list<Position6DOF>::reverse_iterator rit = this->listPositions[internId].rbegin();
-//		for( ; rit != this->listPositions[internId].rend(); ++rit )
-//		{
-//			if( counter==compareTime[0] || counter==compareTime[1] || counter==compareTime[2] )
-//			{
-//				if( !closeToTarget( listPositions[internId].back(), *rit, RANGE_STABLE ) )
-//				{
-//					return false;
-//				}
-//			}
-//			counter++;
-//		}
-//		return true;
-//    } else if ( sizeOfListPositions > compareTime[1] )
-//    {
-//		/* Possible to work with available information? */
-//		return false;
-//    } else if ( sizeOfListPositions > compareTime[0] )
-//    {
-//		return false;
-//    } else
-//    {
-//        /* No information to work with, start emergency routine? */
-//        return false;
-//    }
-//}
-
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range )
 {
 	double distance = position1.getAbsoluteDistance( position2 ); //TODO need to abs range too?

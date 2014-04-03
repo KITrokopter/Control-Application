@@ -147,8 +147,6 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/AmccCalibration.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
-  src/controller/Interpolator.cpp
-  src/controller/InterpolatorInfo.cpp
   src/controller/MovementHelper.cpp
   src/controller/MovementQuadruple.cpp
   src/controller/Mutex.cpp
@@ -198,8 +196,6 @@ add_executable(control_application_test_calibration_node
   src/matlab/profiling.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
-  src/controller/Interpolator.cpp
-  src/controller/InterpolatorInfo.cpp
   src/controller/MovementHelper.cpp
   src/controller/MovementQuadruple.cpp
   src/controller/Mutex.cpp
@@ -240,8 +236,6 @@ add_executable(profile_control
   test/helpers/MovementGenerator.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
-  src/controller/Interpolator.cpp
-  src/controller/InterpolatorInfo.cpp
   src/controller/MovementHelper.cpp
   src/controller/MovementQuadruple.cpp
   src/controller/Mutex.cpp
