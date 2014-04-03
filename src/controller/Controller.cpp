@@ -279,7 +279,7 @@ void Controller::sendMovement( int internId)
 	std::vector< MovementQuadruple > newListElement;
 	while( this->listFutureMovement[internId].size() > 1 )
 	{
-		this->listFutureMovementinternId].pop_back();
+		this->listFutureMovement[internId].pop_back();
 	}
 	unsigned int quadStatus= this->quadcopterMovementStatus[internId];
 	//Check if the qc movement values are in the allowed range.
