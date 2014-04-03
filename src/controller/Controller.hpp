@@ -53,12 +53,13 @@
 #define AMPLIFICATION_Y 0.012
 #define Y_OFFSET 0
 
-#define TIME_UPDATED_END 500*1000*1000	// in ns
-#define TIME_UPDATED_CRITICAL 200*1000	// in ns
+#define TIME_UPDATED_END 3000*1000*1000	// in ns
+#define TIME_UPDATED_CRITICAL 250*1000*1000	// in ns
 #define TIME_WAIT_FOR_DATA 8000
 #define TIME_WAIT_FOR_TRACKED 3000
 #define TIME_WAIT_FOR_LANDING 10000
 #define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
+#define TIME_WAIT_AT_LANDING 10*1000*1000 // in microseconds
 #define LOOPS_PER_SECOND 30
 
 #define DISTANCE_ROTATE_TO_CENTER 100
@@ -116,7 +117,8 @@ public:
 	/* Helper functions */
 	int getLocalId(int globalId);
 	bool checkInput(int internId);
-	void emergencyRoutine(std::string message);	
+	void emergencyRoutine(std::string message, int internId);
+	void emergencyShutdownRoutine(std::string message);
 	int searchNeighbor( double * target, bool * ids);
     
 protected:
@@ -181,6 +183,7 @@ private:
 	bool buildFormationFinished;
 	bool receivedTrackingArea;
 	bool shutdownStarted;
+	bool emergencyShutdown[MAX_NUMBER_QUADCOPTER];
 	bool rotationInProcess;
 	long int timeRotationStarted;
 	long int timeLastFormationMovement;

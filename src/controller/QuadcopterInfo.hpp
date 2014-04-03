@@ -25,8 +25,8 @@
 #define PITCH_MIN -12.0
 #define PITCH_MAX 12.0
 #define PITCH_START 0.0
-#define YAWRATE_MIN -0.0
-#define YAWRATE_MAX 0.0
+#define YAWRATE_MIN -12.0
+#define YAWRATE_MAX 12.0
 #define YAWRATE_START 0.0
 
 class QuadcopterInfo {
