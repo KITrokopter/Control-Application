@@ -1,6 +1,6 @@
 #ifndef MOVEMENT_QUADRUPLE_HPP
 #define MOVEMENT_QUADRUPLE_HPP
-
+#include "../matlab/profiling.hpp"
 #include <sys/time.h>
 #include "ros/ros.h"
 #include "../matlab/profiling.hpp"

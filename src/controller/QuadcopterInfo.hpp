@@ -19,11 +19,11 @@
 #define HOLD 4
 #define SHUTDOWN 5
 
-#define ROLL_MIN -5.0
-#define ROLL_MAX 5.0
-#define ROLL_START 0.0
-#define PITCH_MIN -5.0
-#define PITCH_MAX 5.0
+#define ROLL_MIN -12.0
+#define ROLL_MAX 12.0
+#define ROLL_START 12.0
+#define PITCH_MIN -12.0
+#define PITCH_MAX 12.0
 #define PITCH_START 0.0
 #define YAWRATE_MIN -0.0
 #define YAWRATE_MAX 0.0

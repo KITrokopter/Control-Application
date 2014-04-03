@@ -69,6 +69,8 @@ Controller::Controller()
 
 	this->controlThrust = new PControl( AMPLIFICATION_FACTOR_THRUST, THRUST_OFFSET );
 	this->controlRollPitch = new PControl( AMPLIFICATION_FACTOR_RP, RP_OFFSET );
+	this->controlYawrate = new PControl( AMPLIFICATION_FACTOR_Y, Y_OFFSET );
+		
 }
 
 /*
@@ -788,7 +790,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		if( this->receivedTrackingArea)
 		{
 			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
-			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1100 );
+			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1500 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
@@ -798,7 +800,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		}
 		else
 		{
-			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1100 );
+			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1500 );
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_ERROR("Default target set");
 		}
@@ -1173,22 +1175,19 @@ void Controller::stabilize( int internId )
 
 	/* Roll */
 	float xDiff = posForRP.getDistanceX( posTarget );
-	float newRoll = newMovement.getRoll();
-	double rollDiff = controlRollPitch->getManipulatedVariable( xDiff );
-	newRoll = 0 + ((float) rollDiff);
+	float newRoll = ((float) controlRollPitch->getManipulatedVariable( xDiff ));
 
 	/* Pitch */
 	float yDiff = posForRP.getDistanceY( posTarget );
-	float newPitch = newMovement.getPitch();
-	double pitchDiff = controlRollPitch->getManipulatedVariable( yDiff );
-	newPitch = 0 + ((float) pitchDiff);
+	float newPitch = ((float) controlRollPitch->getManipulatedVariable( yDiff ));
 
 	/* Yawrate */
-	float newYawrate = newMovement.getYawrate();
+	float yawDiff = this->yaw_stab[internId];
+	float newYawrate = ((float) controlRollPitch->getManipulatedVariable( yawDiff ));
 
 	/* Set values */
-	ROS_INFO("   hDiff %f, calculated tDiff %f, new %i", heightDiff, thrustDiff, newThrust);
-	ROS_INFO("   xDiff %f, rollDiff %f, yDiff %f, pitchDiff %f", xDiff, rollDiff, yDiff, pitchDiff);
+	ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
+	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, rollDiff, yDiff, pitchDiff);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
 	quadcopterStatus[internId].getInfo().checkAndFixYawrate( newYawrate );
