@@ -46,7 +46,7 @@ double PControl::getManipulatedVariable(double errorSignal)
 	setPAmplification( errorSignal );
 	double distanceDiff = errorSignal - distanceOld;
 	double y = this->pAmplification * (errorSignal + (dAmplification * distanceDiff));
-	y += this->Integrator;
+	y += this->Integrator * 0.1;
 	y += this->offset;
 	this->distanceOld = errorSignal;
 	return y;
