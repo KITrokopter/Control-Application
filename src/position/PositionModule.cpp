@@ -145,12 +145,12 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			if (!foundAllCorners)
 			{
 				ROS_INFO("Took bad picture (id %d)", it->first);
-				pictureContainsChessboardMap[it->first] = true;
+				pictureContainsChessboardMap[it->first] = false;
 			}
 			else
 			{
 				ROS_INFO("Took good picture (id %d)", it->first);
-				pictureContainsChessboardMap[it->first] = false;
+				pictureContainsChessboardMap[it->first] = true;
 				goodPictures++;
 			}
 			
