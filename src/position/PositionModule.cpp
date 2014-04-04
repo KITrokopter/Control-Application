@@ -424,7 +424,7 @@ void PositionModule::setPictureSendingActivated(bool activated)
 	camera_application::PictureSendingActivation msg;
 	msg.ID = 0;
 	msg.active = activated;
-	msg.global = true;
+	msg.all = true;
 	
 	pictureSendingActivationPublisher.publish(msg);
 }
