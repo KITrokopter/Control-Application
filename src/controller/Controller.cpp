@@ -69,8 +69,8 @@ Controller::Controller()
 	this->timeOffsetChangeThrust = getNanoTime();
 
 	this->controlThrust = new PControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, THRUST_OFFSET );
-	this->controlRollPitch = new PControl( AMPLIFICATION_FACTOR_RP, RP_OFFSET );
-	this->controlYawrate = new PControl( AMPLIFICATION_FACTOR_Y, Y_OFFSET );
+	this->controlRollPitch = new PControl( AMPLIFICATION_RP, RP_OFFSET );
+	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
 		
 }
 
@@ -244,15 +244,15 @@ void Controller::sendMovementAll()
 				this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 				break;
 		}
-		/*msg.thrust = 38000;	// JUST FOR TESTING
-		msg.roll = 30.0;	// JUST FOR TESTING
-		msg.pitch = 0.0;	// JUST FOR TESTING
-		msg.yaw = 0.0;	// JUST FOR TESTING
-		ROS_INFO("Roll %f, pitch %f", msg.roll, msg.pitch);*/
+		//msg.thrust = 31000;	// JUST FOR TESTING
+		//msg.roll = 0.0;	// JUST FOR TESTING
+		//msg.pitch = 0.0;	// JUST FOR TESTING
+		//msg.yaw = 10.0;	// JUST FOR TESTING
 		msg.thrust = this->currentMovement[i].getThrust();
 		msg.roll = this->currentMovement[i].getRoll();
 		msg.pitch = this->currentMovement[i].getPitch();
 		msg.yaw = this->currentMovement[i].getYawrate();
+		//ROS_INFO("Roll %f, pitch %f, yaw %f", msg.roll, msg.pitch, msg.yaw);
 		this->Movement_pub[i].publish(msg);		
 		
 		//Trim list of sent movement data to a defined value
@@ -751,7 +751,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		if( this->receivedTrackingArea)
 		{
 			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
-			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1500 );
+			Position6DOF defaultTarget = Position6DOF(0, 1000, 1500 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
@@ -761,7 +761,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		}
 		else
 		{
-			Position6DOF defaultTarget = Position6DOF(-50, 1000, 1500 );
+			Position6DOF defaultTarget = Position6DOF(0, 1400, 1000 );
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_ERROR("Default target set");
 		}
@@ -1161,17 +1161,13 @@ void Controller::stabilize( int internId )
 	//ROS_INFO("In stabilize: ");
 
 	/* Thrust */
+	//double heightDiff = latestPosition.getDistanceZ( posTarget, this->controlThrust->getAmplification() );
 	double heightDiff = latestPosition.getDistanceZ( posTarget );
 	unsigned int newThrust = newMovement.getThrust();
 	double thrustDiff = controlThrust->getManipulatedVariable( heightDiff );
 	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( 0+thrustDiff );
 	newMovement.setThrust( newThrust );
 
-	/*
-	 * Currently:
-	 * Rotation is always equal zero.
-	 * The amount of yaw is not calculated, it is assumed zero.
-	 */
 	//MovementHelper helper;
 	//Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getInfo().getRotation(), latestPosition, posTarget );
 	Position6DOF posForRP = latestPosition;
@@ -1186,7 +1182,7 @@ void Controller::stabilize( int internId )
 
 	/* Yawrate */
 	float yawDiff = 0.0 - this->yaw_stab[internId];
-	float newYawrate = ((float) controlRollPitch->getManipulatedVariable( yawDiff ));
+	float newYawrate = ((float) controlYawrate->getManipulatedVariable( yawDiff ));
 
 	/* Set values */
 	ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
