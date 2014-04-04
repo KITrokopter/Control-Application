@@ -132,6 +132,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 	pictureCacheMutex.lock();
 	
 	std::map<int, cv::Mat*> pictureMap;
+	std::map<int, bool> pictureContainsChessboardMap;
 	int goodPictures = 0;
 	
 	for (std::map<int, cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++)
@@ -144,10 +145,12 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			if (!foundAllCorners)
 			{
 				ROS_INFO("Took bad picture (id %d)", it->first);
+				pictureContainsChessboardMap[it->first] = true;
 			}
 			else
 			{
 				ROS_INFO("Took good picture (id %d)", it->first);
+				pictureContainsChessboardMap[it->first] = false;
 				goodPictures++;
 			}
 			
@@ -211,6 +214,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			}
 			
 			res.images.push_back(img);
+			res.containsChessboard.push_back(pictureContainsChessboardMap[it->first]);
 			res.ids.push_back(it->first);
 			
 			delete it->second;

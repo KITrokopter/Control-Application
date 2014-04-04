@@ -167,10 +167,6 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
-		if(id == 0 )
-		{
-			ROS_DEBUG("Update position x:%f y:%f z:%f", it->getV1(), it->getV2(), it->getV3());
-		}
 		if(id == INVALID)
 		{
 			continue;	
