@@ -68,7 +68,7 @@ Controller::Controller()
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
 
-	this->controlThrust = new PDIControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, THRUST_OFFSET );
+	this->controlThrust = new PDIControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, AMPLIFICATION_THRUST_I, THRUST_OFFSET );
 	this->controlRoll = new PControl( AMPLIFICATION_RP, RP_OFFSET );
 	this->controlPitch = new PControl( AMPLIFICATION_RP, RP_OFFSET );
 	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
