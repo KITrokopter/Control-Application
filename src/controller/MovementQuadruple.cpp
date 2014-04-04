@@ -5,7 +5,8 @@ MovementQuadruple::MovementQuadruple( unsigned int newThrust, float newRoll, flo
 	this->thrust = newThrust;
 	this->roll = newRoll;
 	this->pitch = newPitch;
-	this->yawrate = newYawrate;		
+	this->yawrate = newYawrate;	
+	this->timestamp = getNanoTime();	
 }
 
 MovementQuadruple::MovementQuadruple( unsigned int newThrust, float newRoll, float newPitch, float newYawrate, long int newTimestamp)

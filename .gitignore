@@ -1,8 +1,8 @@
 *~
 *.orig
 *.kate-swp
-.anjuta
-*anjuta
+.anjuta_sym_db.db
+*anjuta*
 *.anjuta
 
 # Compiled Object files

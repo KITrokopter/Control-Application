@@ -1,5 +1,11 @@
-#ifndef INTERPOLATORINFO_HPP
-#define INTERPOLATORINFO_HPP
+/*
+ * QuadcopterInfo.hpp
+ *
+ *  Created on: 30.03.2014
+ *      Author: dwx
+ */
+#ifndef QUADCOPTERINFO_HPP_
+#define QUADCOPTERINFO_HPP_
 
 #include <cmath>
 #include <list>
@@ -13,20 +19,19 @@
 #define HOLD 4
 #define SHUTDOWN 5
 
-/*
- * TODO 3D-view
- * 
- * TODO hold
- * 
- * TODO test of speed, either optimize or save data-to-sent in advance
- * TODO optimize interpolation (step size time-dependant)
- * TODO optimize interpolation (replace linear function)
- * 
- */
+#define ROLL_MIN -12.0
+#define ROLL_MAX 12.0
+#define ROLL_START 12.0
+#define PITCH_MIN -12.0
+#define PITCH_MAX 12.0
+#define PITCH_START 0.0
+#define YAWRATE_MIN -12.0
+#define YAWRATE_MAX 12.0
+#define YAWRATE_START 0.0
 
-class InterpolatorInfo {
+class QuadcopterInfo {
 public:
-	InterpolatorInfo();
+	QuadcopterInfo();
 
 	/* Getter and Setter */
 	short getState();
@@ -38,6 +43,10 @@ public:
 	void setLastUpdated( long int newLastUpdated );
 	long int getShutdownStarted();
 	void setShutdownStarted( long int newShutdownStarted );
+
+	float checkAndFixRoll( float roll );
+	float checkAndFixPitch( float pitch );
+	float checkAndFixYawrate( float yawrate );
 
 	double getX();
 	double getY();
@@ -55,9 +64,9 @@ private:
 	/*
 	 * States
 	 * 0 not started
-	 * 1 started, sent values for roll/pitch
-	 * 2 roll/pitch has been sent, calculate x/y values
-	 * 3 calibration done, now do only small adjustments
+	 * 1 started
+	 * 2
+	 * 3
 	 * 4 hold (before shutdown), "smart" shutdown
 	 * 5 shutdown (turn off)
 	 */
@@ -66,12 +75,11 @@ private:
 	long int timeStarted;
 	long int timeLastUpdated;	// used in latest state "DONE", before only "started" is relevant
 	long int timeShutdownStarted;
-	
+
 	double x;		// 0-x-roll, 1-y-pitch
 	double y;
 	double rotation;	// in rad; compared to "North" (pitch=1), counterclockwise
 	bool negativeSign;
-
 };
 
-#endif // INTERPOLATORINFO_HPP
+#endif /* QUADCOPTERINFO_HPP_ */

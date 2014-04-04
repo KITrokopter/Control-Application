@@ -1,4 +1,5 @@
 #include "Controller.hpp"
+//#include "PControl.hpp"
 
 void* startThreadCalculateMovement(void* something);
 void* startThreadBuildFormation(void* something);
@@ -17,7 +18,7 @@ Controller::Controller()
 	* The first NodeHandle constructed will fully initialize this node, and the last
 	* NodeHandle destructed will close down the node.
 	*/
-	ros::NodeHandle n;
+	//ros::NodeHandle n;
 	//Subscriber
 	//Subscriber for the MoveFormation data of the Quadcopters (1000 is the max. buffered messages)
 	this->MoveFormation_sub = this->n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
@@ -37,38 +38,41 @@ Controller::Controller()
 	//Publisher of Message to API
 	this->Message_pub = this->n.advertise<api_application::Message>("Message", 100);
 	
-
 	//Client
 	this->Announce_client = this->n.serviceClient<api_application::Announce>("Announce");
 	this->Shutdown_client = this->n.serviceClient<control_application::Shutdown>("Shutdown");
 	
 	//All control variables are set to zero
 	this->shutdownStarted = false;	// shutdown not started
-	
 	this->landFinished = false;
-	
 	this->receivedQuadcopters = false; // received no quadcopters
-	
 	this->buildFormationFinished = false; // has not built formation
-	
 	this->formation = new Formation();
-	
 	this->receivedTrackingArea = false;
-	
 	this->rotationInProcess = false;
-	
 	ROS_INFO("ROS stuff set up");
 	
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
-		//Initialize tracked (no quadcopter is tracked at the beginning)
-		tracked[i] = false;
-		this->thrustHelp = thrust_info[i].getStart();
+		tracked[i] = false;	// Initialize tracked (no quadcopter is tracked at the beginning)
+		this->emergencyShutdown[i] = false;
+		//this->quadcopterStatus[i] = QuadcopterControl();
+		if( !USE_BATTERY_INPUT )
+		{
+			quadcopterStatus[i].getQuadcopterThrust().setWithoutBatteryValue();
+		}
+		this->thrustHelp[i] = quadcopterStatus[i].getQuadcopterThrust().getStart();
 	}
 	ROS_INFO("Constructing done");
 	this->timeOffsetOutput= getNanoTime();
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
+
+	this->controlThrust = new PDIControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, AMPLIFICATION_THRUST_I, THRUST_OFFSET );
+	this->controlRoll = new PControl( AMPLIFICATION_RP, RP_OFFSET );
+	this->controlPitch = new PControl( AMPLIFICATION_RP, RP_OFFSET );
+	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
+		
 }
 
 /*
@@ -152,8 +156,6 @@ void Controller::setTargetPosition()
  */
 void Controller::updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates)
 {
-	//ROS_DEBUG("UpdatePosition");		
-	//ROS_INFO("Update Position");
 	if(!receivedQuadcopters || !receivedFormation)
 	{
 		return;
@@ -165,8 +167,10 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
 		id = getLocalId(i);
-		//ROS_INFO("Global id is %i",i);
-		//ROS_INFO("Local Id is %i", id);
+		if(id == 0 )
+		{
+			ROS_DEBUG("Update position x:%f y:%f z:%f", it->getV1(), it->getV2(), it->getV3());
+		}
 		if(id == INVALID)
 		{
 			continue;	
@@ -179,39 +183,38 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		//Check if new positions are valid.
 		if( it->getV1() != INVALID ) 
 		{	
-			//ROS_INFO("Valid");
 			/* Quadcopter is tracked */
 			bool trackedLocal = this->tracked[id];
 			if( trackedLocal == false )
 			{
-				//ROS_INFO("tracked");
 				/* Quadcopter has not been tracked before, therefore set tracked to true
-				 and switch to Stabilize-Status when the qc was in starting process */
-				if(this->quadcopterMovementStatus[id] == CALCULATE_START || this->quadcopterMovementStatus[id] == CALCULATE_NONE)
+				 and switch to Stabilize-Status when the qc was in starting process 
+				 or qc has left tracking area and has now entered the tracking area again*/
+				unsigned int quadStatus = this->quadcopterMovementStatus[id];
+				bool emergencyLanding = (quadStatus == CALCULATE_LAND) && this->emergencyShutdown[id] && this->shutdownStarted == false;
+				if(quadStatus == CALCULATE_START || quadStatus == CALCULATE_NONE || emergencyLanding)
 				{
 					ROS_DEBUG("Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
 					this->timeDurationMoveup = getNanoTime();
-					/*this->shutdownStarted = true;*/
-
 				}
 			}
-			//ROS_INFO("tracked id");
 			this->tracked[id] = true;
+			control_application::quadcopter_is_tracked msg;
+			msg.is_tracked = true;
+			Tracked_pub[trackedLocal].publish(msg);
+			this->listPositionsMutex.lock();
 			this->listPositions[id].push_back( newPosition );
+			this->listPositionsMutex.unlock();
 		} 
-		//ROS_INFO("Push back");
 		this->listPositionsMutex.lock(); 
 		//Trim Position list to 30 elements.
 		while( this->listPositions[id].size() > 30 )
 		{
-			//ROS_INFO("erasing");
-			// Remove oldest elements
-			this->listPositions[id].erase( this->listPositions[id].begin() );
+			this->listPositions[id].erase( this->listPositions[id].begin() );	// Remove oldest elements
 		}
 		this->listPositionsMutex.unlock();
-	}	
-	//ROS_INFO("Update Position finished");	
+	}		
 }
 
 /*
@@ -225,45 +228,42 @@ void Controller::sendMovementAll()
 	
 	long int currentTime = getNanoTime();
 	std::vector< MovementQuadruple > newListElement;
-	for(int i = 0; i < listFutureMovement.size(); i++)
+	for(int i = 0; i < currentMovement.size(); i++)
 	{
-		while( this->listFutureMovement[i].size() > 1 )
-		{
-			this->listFutureMovement[i].pop_back();
-		}
 		unsigned int quadStatus= this->quadcopterMovementStatus[i];
 		//Check if the qc movement values are in the allowed range.
-		if(quadStatus == CALCULATE_START) 
+		switch( quadStatus )
 		{
-			this->listFutureMovement[i].front().checkQuadruple( thrust_info[i].getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+			case CALCULATE_START:
+				this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+				break;
+				
+			case CALCULATE_LAND:
+				break;
+				
+			default:
+				this->currentMovement[i].checkQuadruple( quadcopterStatus[i].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+				break;
 		}
-		else
-		{
-			this->listFutureMovement[i].front().checkQuadruple( thrust_info[i].getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
-		}
-		msg.thrust = this->listFutureMovement[i].front().getThrust();
-		/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
-		{
-			ROS_INFO("send Roll %f, pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
-			ROS_INFO("send thrust %i", this->listFutureMovement[i].front().getThrust());
-		}
-		*/
-
-		msg.roll = this->listFutureMovement[i].front().getRoll();
-		msg.pitch = this->listFutureMovement[i].front().getPitch();
-		msg.yaw = this->listFutureMovement[i].front().getYawrate();
+		//msg.thrust = 31000;	// JUST FOR TESTING
+		//msg.roll = 0.0;	// JUST FOR TESTING
+		//msg.pitch = 0.0;	// JUST FOR TESTING
+		//msg.yaw = 10.0;	// JUST FOR TESTING
+		msg.thrust = this->currentMovement[i].getThrust();
+		msg.roll = this->currentMovement[i].getRoll();
+		msg.pitch = this->currentMovement[i].getPitch();
+		msg.yaw = this->currentMovement[i].getYawrate();
+		//ROS_INFO("Roll %f, pitch %f, yaw %f", msg.roll, msg.pitch, msg.yaw);
 		this->Movement_pub[i].publish(msg);		
-		//this->listFutureMovement[i].front().setTimestamp( currentTime );
+		
 		//Trim list of sent movement data to a defined value
 		while( this->listSentQuadruples[i].size() > MAX_SAVED_SENT_QUADRUPLES )
 		{
 			// Remove oldest elements
 			this->listSentQuadruples[i].erase( this->listSentQuadruples[i].begin() );
 		}
-		// Save Element (TODO only if not too young, in calculateMovement())
-		this->listSentQuadruples[i].push_back( this->listFutureMovement[i].front() );
+		this->listSentQuadruples[i].push_back( this->currentMovement[i] );	// Save Element 
 	}
-	//ROS_INFO("sendMovementAll finished");
 }
 
 /*
@@ -277,33 +277,25 @@ void Controller::sendMovement( int internId)
 	
 	long int currentTime = getNanoTime();
 	std::vector< MovementQuadruple > newListElement;
-	while( this->listFutureMovement[internId].size() > 1 )
-	{
-		this->listFutureMovementinternId].pop_back();
-	}
 	unsigned int quadStatus= this->quadcopterMovementStatus[internId];
 	//Check if the qc movement values are in the allowed range.
 	if(quadStatus == CALCULATE_START) 
 	{
-		this->listFutureMovement[internId].front().checkQuadruple( thrust_info[internId].getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		this->currentMovement[internId].checkQuadruple( quadcopterStatus[internId].getQuadcopterThrust().getStartMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+	}
+	else if(quadStatus == CALCULATE_LAND)
+	{
+	
 	}
 	else
 	{
-		this->listFutureMovement[internId].front().checkQuadruple( thrust_info[internId].getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
+		this->currentMovement[internId].checkQuadruple( quadcopterStatus[internId].getQuadcopterThrust().getMax(), ROLL_MAX, PITCH_MAX, YAWRATE_MAX );
 	}
-	msg.thrust = this->listFutureMovement[internId].front().getThrust();
-	/*if(((getNanoTime()/500000000)%2 == 1) && (i == 0))
-	{
-		ROS_INFO("send Roll %f, pitch %f", this->listFutureMovement[i].front().getRoll(), this->listFutureMovement[i].front().getPitch());
-		ROS_INFO("send thrust %i", this->listFutureMovement[i].front().getThrust());
-	}
-	*/
-
-	msg.roll = this->listFutureMovement[internId].front().getRoll();
-	msg.pitch = this->listFutureMovement[internId].front().getPitch();
-	msg.yaw = this->listFutureMovement[internId].front().getYawrate();
+	msg.thrust = this->currentMovement[internId].getThrust();
+	msg.roll = this->currentMovement[internId].getRoll();
+	msg.pitch = this->currentMovement[internId].getPitch();
+	msg.yaw = this->currentMovement[internId].getYawrate();
 	this->Movement_pub[internId].publish(msg);		
-	//this->listFutureMovement[i].front().setTimestamp( currentTime );
 	//Trim list of sent movement data to a defined value
 	while( this->listSentQuadruples[internId].size() > MAX_SAVED_SENT_QUADRUPLES )
 	{
@@ -311,8 +303,7 @@ void Controller::sendMovement( int internId)
 		this->listSentQuadruples[internId].erase( this->listSentQuadruples[internId].begin() );
 	}
 	// Save Element (TODO only if not too young, in calculateMovement())
-	this->listSentQuadruples[internId].push_back( this->listFutureMovement[internId].front() );
-	//ROS_INFO("sendMovementAll finished");
+	this->listSentQuadruples[internId].push_back( this->currentMovement[internId] );
 }
 
 	
@@ -327,15 +318,14 @@ void Controller::sendMovement( int internId)
 void Controller::calculateMovement()
 {
 	ROS_INFO("Calculation started");
-	//Keep track of the number of quadcopters landed
-	int numberOfLanded = 0;
+	int numberOfLanded = 0;	// Keep track of the number of quadcopters landed
 	int amount = quadcopterMovementStatus.size();
-	// As long as the land process isn't finished, we calculate new data
-	bool end;
+	bool end;	// As long as the land process isn't finished, we calculate new data
 	if(this->receivedFormation)
 	{
-		/* When the number of quadcopters landed excesses the number of quadcopters in the formation, the land
-		 * process is finished
+		/* 
+		 * When the number of quadcopters landed exceeds the number of quadcopters 
+		 * in the formation, the land process is finished.
 		 */
 		end = numberOfLanded >= this->formation->getAmount();
 	}
@@ -345,9 +335,11 @@ void Controller::calculateMovement()
 	}
 	long int calculateMovementStarted = getNanoTime();
 	long int timerCalculateMovement = getNanoTime();
+	int loopCounter = 0;
+	long int loopCounterTime = getNanoTime();
 	while(!end)
 	{
-		calculateMovementStarted = timerCalculateMovement;
+		calculateMovementStarted = getNanoTime();
 		// Iterate over the total number of quadcopters as long as the land process isn't finished
 		//ROS_INFO("Calculate");
 		for(int i = 0; (i < amount) && (!end); i++)
@@ -355,9 +347,8 @@ void Controller::calculateMovement()
 			//Check if there is enough data to check input for correct data.
 			bool enoughData = this->receivedFormation && this->receivedQuadcopters;
 			unsigned int quadStatus = this->quadcopterMovementStatus[i];
-			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_STABILIZE) //only for testing TODO
+			if(quadStatus == CALCULATE_LAND || quadStatus == CALCULATE_STABILIZE)
 			{
-				//ROS_INFO("land or hold");
 				if( enoughData)
 				{
 					//Check if quadcopter is in tracked and/or the battery status is sufficiently high.
@@ -366,25 +357,17 @@ void Controller::calculateMovement()
 			}
 			
 			//Calculate movement data accordingly to the quadcopter status/state.
-			quadStatus = this->quadcopterMovementStatus[i];
 			switch( quadStatus )
 			{
 				case CALCULATE_NONE:
-					if(numberOfLanded >= 1)
-					{
-						 ROS_INFO("None: %i", i);
-					}
 					dontMove( i );
 					break;
 				case CALCULATE_START:	
 					//ROS_INFO("Start %i", i);
 					moveUp( i );
+					//stabilize( i );
 					break;
 				case CALCULATE_STABILIZE:
-					if( i == 0)
-					{
-					//	ROS_INFO("Stabilize %i", i);
-					}
 					stabilize( i );
 					break;
 				case CALCULATE_HOLD:	
@@ -406,7 +389,6 @@ void Controller::calculateMovement()
 					ROS_INFO("QC in default status: %i", i);
 					break;
 			}
-			sendMovement( i ); //FIXME either this or sendMovementAll
 			// Check if land process is finished and set control variable accordingly
 			if(this->receivedFormation)
 			{
@@ -419,14 +401,27 @@ void Controller::calculateMovement()
 			this->landFinished = end;
 			
 		}
-		//sendMovementAll(); FIXME
+		sendMovementAll(); //FIXME
 		//Make sure the calculation of the movement data is restricted to a certain rate.
 		timerCalculateMovement = getNanoTime();
-		while( timerCalculateMovement < TIME_MIN_CALC + calculateMovementStarted )
+		long int timeToWait = ((1000000000/LOOPS_PER_SECOND) - (timerCalculateMovement-calculateMovementStarted)) / 1000;
+		long int timeOverhead = 10000;	// in us
+		if( timeToWait > timeOverhead)
 		{
-			//ROS_DEBUG("Sleeping");
-			usleep( TIME_MIN_LOOP_CALC );
-			timerCalculateMovement = getNanoTime();
+			usleep( timeToWait );
+		}
+		else
+		{
+			//ROS_ERROR("Calculate was too slow: %ld", timeToWait);
+		}
+		//ROS_INFO("Loop took: %ld ns", (getNanoTime() - calculateMovementStarted));
+		loopCounter++;
+		if( loopCounter == LOOPS_PER_SECOND )
+		{
+			long int current = getNanoTime();
+			ROS_DEBUG("Time of %i loops: %ld", LOOPS_PER_SECOND, current-loopCounterTime);
+			loopCounter = 0;
+			loopCounterTime = getNanoTime();
 		}
 	}	
 }
@@ -461,7 +456,7 @@ void Controller::buildFormation()
 	Position6DOF formPos[formationAmount];
 	for( int i = 0; i < formationAmount; i++)
 	{
-		formPos[i] = this->formation->getPosition()[i];	
+		formPos[i] = this->formation->getFormationPosition()[i];	
 	}
 	double distance = this->formation->getDistance();
 	
@@ -497,7 +492,6 @@ void Controller::buildFormation()
 		{
         		quadStatus = this->quadcopterMovementStatus[i];
 			usleep(TIME_WAIT_FOR_TRACKED);
-			//ROS_INFO("Starting");
 			//If Shutdown has been called, abort.
 			shutdown = this->shutdownStarted;
 			if(shutdown)
@@ -548,7 +542,6 @@ void Controller::buildFormation()
 			}
 			else
 			{
-				//FIXME for testing
 				this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
 				//this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
 			}
@@ -578,11 +571,11 @@ void Controller::buildFormation()
 		}
 		else
 		{
-			//FIXME for testing
 			this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
 			//this->quadcopterMovementStatus[i] = CALCULATE_MOVE;
 		}
 		ROS_INFO("Done with %i",i);
+		usleep(TIME_WAIT_AT_LANDING);
 	}
 	ROS_INFO("BuildFormation finished");
 	this->buildFormationFinished = true;
@@ -631,6 +624,7 @@ void Controller::rotate()
 		//Clear all previous Targets
 		this->listTargetsMutex.lock();
 		this->listTargets[i].clear();
+		this->listTargetsMutex.unlock();
 		Position6DOF newPosition;
 		double * targetK = center.getPosition();
 		//Calculate starting Positions for Rotation and the choose nearest qc for that position
@@ -644,7 +638,9 @@ void Controller::rotate()
 			}
 			qcChosen[qcPositionMap[0]] = true;
 			newPosition.setPosition(targetK);
+			this->listTargetsMutex.lock();
 			this->listTargets[0].push_back(newPosition);
+			this->listTargetsMutex.unlock();
 		}
 		else
 		{	
@@ -662,10 +658,11 @@ void Controller::rotate()
 			}
 			qcChosen[qcPositionMap[i]] = true;
 			newPosition.setPosition(targetK);
+			this->listTargetsMutex.lock();
 			this->listTargets[i].push_back(newPosition);
+			this->listTargetsMutex.unlock();
 		}
 		
-		this->listTargetsMutex.unlock();
 	}
 	//Start rotating. Set target for each qc to the previous target of the qc next to the qc
 	while( TIME_ROTATE_CIRCLE > (currentTime - this->timeRotationStarted))
@@ -754,16 +751,19 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		if( this->receivedTrackingArea)
 		{
 			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
-			Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
+			Position6DOF defaultTarget = Position6DOF(0, 1000, 1500 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
-			//ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
+			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
+			ROS_DEBUG("Set Target at Beginning is %f(y)", this->listTargets[i].back().getPosition()[1]);
+			ROS_DEBUG("Set Target at Beginning is %f(x)", this->listTargets[i].back().getPosition()[0]);
+			
 		}
 		else
 		{
-			Position6DOF defaultTarget = Position6DOF(-100, 1400, 200 );
+			Position6DOF defaultTarget = Position6DOF(0, 1400, 1000 );
 			this->listTargets[i].push_back(defaultTarget);
-			ROS_ERROR("No target set");
+			ROS_ERROR("Default target set");
 		}
 		this->receivedQuadStatus[i] = false; // received no quadcopter status information
 		this->listTargetsMutex.unlock();
@@ -772,7 +772,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		std::list<MovementQuadruple> newEmptyListMovement;	
 		newEmptyListMovement.push_back( noMovement );
 		this->listSentQuadruples.push_back(newEmptyListMovement);
-		this->listFutureMovement.push_back(newEmptyListMovement);
+		this->currentMovement.push_back(noMovement);
 		ROS_INFO("Initialization done");
 		
 		//Subscriber to quadcopter status
@@ -786,6 +786,12 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
   		topicNameMov << "quadcopter_movement_" << id;
 		//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
 		this->Movement_pub[i] = this->n.advertise<control_application::quadcopter_movement>(topicNameMov.str().c_str(), 1000);
+		
+		//Publisher of is Tracked		
+		std::stringstream topicNameTrack;
+  		topicNameTrack << "quadcopter_is_tracked_" << id;
+		//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
+		this->Tracked_pub[i] = this->n.advertise<control_application::quadcopter_is_tracked>(topicNameTrack.str().c_str(), 1000);
 	}
 	this->receivedQuadcopters = true;
 	
@@ -833,7 +839,8 @@ void Controller::shutdownFormation()
 	/* Bring all quadcopters to a hold */
 	for(unsigned int i = 0; i < formationAmount; i++)
 	{
-		quadcopterMovementStatus[i] = CALCULATE_HOLD;
+		this->quadcopterMovementStatus[i] = CALCULATE_HOLD;
+		this->emergencyShutdown[i] = false;
 	}
 	
 	ROS_INFO("SHUTDOWN landFinished is %i", landFinished);
@@ -870,39 +877,56 @@ bool Controller::checkInput(int internId)
 	bool received = this->receivedQuadStatus[internId];
 	unsigned int quadStatus= this->quadcopterMovementStatus[internId];
 	/* Battery */
-	if(this->battery_status[internId] < LOW_BATTERY && quadStatus != CALCULATE_NONE && received)
+	if(this->battery_status[internId] < BATTERY_LOW && quadStatus != CALCULATE_NONE && received)
 	{
-		std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, LOW_BATTERY);
-		//ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, LOW_BATTERY);
-		//emergencyRoutine(message);
+		std::string message("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, BATTERY_LOW);
+		//ROS_INFO("Battery of Quadcopter %i is low (below %f). Shutdown formation\n", internId, BATTERY_LOW);
+		//emergencyRoutine(message, internId);
 	}
 	long int currentTime = getNanoTime();
 	long int lastForm = this->timeLastFormationMovement;
-	if(currentTime - lastForm > TIME_UPDATED_END && quadStatus == CALCULATE_MOVE)
+	if(currentTime - lastForm > ((long int) TIME_UPDATED_END) && quadStatus == CALCULATE_MOVE)
 	{
 		//std::string message = std::string("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		std::string message = "No new formation movement data has been received";
 		//ROS_INFO("No new formation movement data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
-		//emergencyRoutine(message);
+		//emergencyRoutine(message, internId);
 		return false;
 	}
 	long int lastCur = this->timeLastCurrent[internId];
-	if(currentTime - lastCur > TIME_UPDATED_END && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
+	if(currentTime - lastCur > ((long int) TIME_UPDATED_END) && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
-		ROS_DEBUG("Time difference %ld", currentTime - lastCur);
+		//ROS_DEBUG("Time difference %ld", currentTime - lastCur);
 		//ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//std::string message2 = std::string("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
-		std::string message2 = "No new quadcopter position data has been received";
-		emergencyRoutine(message2);
+		std::string message = "No new quadcopter position data has been received";
+		if(this->shutdownStarted == false)
+		{
+			
+			emergencyShutdownRoutine(message);
+		}
+			
 		//ROS_INFO("tracked false");
 		tracked[internId] = false;
+		control_application::quadcopter_is_tracked msg;
+		msg.is_tracked = false;
+		Tracked_pub[internId].publish(msg);
 		return false;
 	}
 	//ROS_INFO("Critical");
 	if(currentTime - lastCur > TIME_UPDATED_CRITICAL && quadStatus != CALCULATE_NONE && quadStatus != CALCULATE_START)
 	{
-		//ROS_INFO("tracked false");	
+		//ROS_INFO("tracked false");
+		std::string message = "No new quadcopter position data has been received";
+		if(this->shutdownStarted == false)
+		{
+			this->emergencyShutdown[internId] = true;
+			emergencyRoutine(message, internId);
+		}
 		tracked[internId] = false;
+		control_application::quadcopter_is_tracked msg;
+		msg.is_tracked = false;
+		Tracked_pub[internId].publish(msg);
 		return false;
 	}
 	
@@ -910,9 +934,24 @@ bool Controller::checkInput(int internId)
 }
 
 /*
- * Emergency Routine. Gets started e.g. low battery status. Sends warning via Ros and then shuts down formation.
+ * Emergency Routine. Gets started e.g. low battery status. Sends warning via Ros and then starts the landing process for this qc.
  */
-void Controller::emergencyRoutine(std::string message)
+void Controller::emergencyRoutine(std::string message, int internId)
+{
+	ROS_INFO("Emergency Routine called");
+	api_application::Message msg;
+	msg.senderID = this->senderID;
+	//Type 2 is a warning message
+	msg.type = 2;
+	msg.message = message;
+	this->Message_pub.publish(msg);
+	if(this->shutdownStarted == false)
+	{
+		this->quadcopterMovementStatus[internId] = CALCULATE_LAND;
+	}
+}
+
+void Controller::emergencyShutdownRoutine(std::string message)
 {
 	ROS_INFO("Emergency Routine called");
 	api_application::Message msg;
@@ -987,7 +1026,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 		pos[2] = msg->zPositions[i];
 		formPos[i].setPosition(pos);
 	}
-	this->formation->setPosition(formPos);
+	this->formation->setFormationPosition(formPos);
 	this->receivedFormation = true;
 	ROS_INFO("Set Formation done");
 	return;
@@ -1012,13 +1051,15 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
 		this->timeOffsetOutput= currentTime;
 	}
-	if( !thrust_info[localQuadcopterId].initDone() )
+	if( !quadcopterStatus[localQuadcopterId].getQuadcopterThrust().initDone() )
 	{
 		/* 
 		 * Set spedific thrustvalues for each quadcopter once. 
 		 * Only if battery-value is useful.
 		 */
-		thrust_info[localQuadcopterId].checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
+		//ROS_ERROR("initDone is false");
+		quadcopterStatus[localQuadcopterId].getQuadcopterThrust().checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
+		//this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
 }
@@ -1051,64 +1092,47 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 void Controller::dontMove( int internId)
 {
 	MovementQuadruple newMovement = MovementQuadruple( 0, 0, 0, 0 );
-	this->listFutureMovement[internId].clear();
 	long int currentTime = getNanoTime();
 	newMovement.setTimestamp( currentTime );
-	this->listFutureMovement[internId].push_front( newMovement );
+	this->currentMovement[internId] = newMovement;
 	
 }
 
+/*
+ * @Carina: set thrustHelp[internId] here if it hasn't been set before.
+ * Use them as arrays.
+ * Replace "thrust too high" with the following function:
+ * 	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( currentThrust );
+ */
 void Controller::moveUp( int internId )
 {
-	bool moveUpSmart = false;
 	long int currentTime = getNanoTime();
-	
-	if( !moveUpSmart ) {		
-		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp, 0, 0, 0 );
-		newMovement.setTimestamp( currentTime );
-		//ROS_DEBUG("Thrust is %u", this->thrustHelp);
-		this->listFutureMovement[internId].clear();
-		this->listFutureMovement[internId].push_front( newMovement );
-		//Increases thrust step by step to ensure slow inclining
-		if(currentTime > this->timeOffsetChangeThrust + 10000000 && this->thrustHelp + 200 < this->thrust_info[internId].getStartMax())
-		{
-			usleep(85000);
-			this->thrustHelp += 200;
-			this->timeOffsetChangeThrust = getNanoTime();
-		}
-		//Protection mechanism for qc (either a too high thrust value or start process took too long)
-		if(this->thrustHelp >= thrust_info[internId].getStartMax() || currentTime > this->timeDurationMoveup + 8000000000)
-		{
-			if(this->thrustHelp >= thrust_info[internId].getStartMax())
-			{
-				ROS_DEBUG("Thrust too high");
-			}
-			if(currentTime > this->timeDurationMoveup + 8000000000)
-			{
-				ROS_DEBUG("Time over");
-			}
-			ROS_INFO("Emergency Shutdown Test");
-			this->shutdownStarted = true;
-			quadcopterMovementStatus[internId] = CALCULATE_LAND;
-		}		
-	} else
+	int thrustHelp = this->quadcopterStatus[internId].getQuadcopterThrust().getStart();
+	MovementQuadruple newMovement = MovementQuadruple( thrustHelp, 0, 0, 0 );
+	newMovement.setTimestamp( currentTime );
+	this->currentMovement[internId] = newMovement;
+	int step = 200;
+	//Increases thrust step by step to ensure slow inclining
+	if((currentTime > this->timeOffsetChangeThrust + 10000000) && (this->thrustHelp[internId]+step < this->quadcopterStatus[internId].getQuadcopterThrust().getStartMax()))
 	{
-		if( this->listFutureMovement[internId].size() == 0 )
+		usleep(85000);
+		this->thrustHelp[internId] += step;
+		this->timeOffsetChangeThrust = getNanoTime();
+	}
+	//Protection mechanism for qc (either a too high thrust value or start process took too long)
+	if(thrustHelp >= quadcopterStatus[internId].getQuadcopterThrust().getStartMax() || currentTime > this->timeDurationMoveup + 8000000000)
+	{
+		if(thrustHelp >= quadcopterStatus[internId].getQuadcopterThrust().getStartMax())
 		{
-			int diff = 80;
-			long int timeDiff = 400000000;
-			long int currentTime = getNanoTime();
-			MovementQuadruple newMovement = MovementQuadruple( thrust_info[internId].getStartMax(), 0, 0, 0, currentTime );
-			this->listFutureMovement[internId].push_back( newMovement );
-		
-			newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
-			newMovement.setThrust( newMovement.getThrust() + diff );
-			this->listFutureMovement[internId].push_back( newMovement );
-		
-			newMovement.setTimestamp( newMovement.getTimestamp() + timeDiff );
-			newMovement.setThrust( newMovement.getThrust() + diff );
-			this->listFutureMovement[internId].push_back( newMovement );
+			ROS_DEBUG("Thrust too high");
 		}
+		if(currentTime > this->timeDurationMoveup + 8000000000)
+		{
+			ROS_DEBUG("Time over");
+		}
+		ROS_INFO("Emergency Shutdown Test");
+		this->shutdownStarted = true;
+		quadcopterMovementStatus[internId] = CALCULATE_LAND;
 	}
 }
 
@@ -1116,28 +1140,57 @@ void Controller::moveUp( int internId )
 void Controller::stabilize( int internId )
 {
 	this->listPositionsMutex.lock();
-	this->listTargetsMutex.lock();
-	Position6DOF targetInternId = this->listTargets[internId].back();
-	//ROS_DEBUG("Target z value set: %f", targetInternId.getPosition()[2]);
-	MovementQuadruple newMovement = this->interpolator.calculateNextMQ(this->listSentQuadruples[internId], this->listPositions[internId], targetInternId, thrust_info[internId], internId);
-	/*if((getNanoTime()/500000000)%2 == 1)
-	{	
-		//ROS_INFO("sta1 Roll %f and pitch %f", newMovement.getRoll(), newMovement.getPitch());
-	}*/
-	this->listTargetsMutex.unlock();
+	Position6DOF latestPosition = this->listPositions[internId].back();
 	this->listPositionsMutex.unlock();
-	this->listFutureMovement[internId].clear();
-	this->listFutureMovement[internId].push_front( newMovement );	   
-	if((getNanoTime()/500000000)%2 == 1)
-	{	
-		//ROS_INFO("sta2 Roll %f and pitch %f", this->listFutureMovement[internId].front().getRoll(), this->listFutureMovement[internId].front().getPitch());
-	}
+
+	this->listTargetsMutex.lock();
+	Position6DOF posTarget = this->listTargets[internId].back();
+	this->listTargetsMutex.unlock();
+
+	MovementQuadruple newMovement = this->listSentQuadruples[internId].back();
+
+	//ROS_INFO("In stabilize: ");
+
+	/* Thrust */
+	//double heightDiff = latestPosition.getDistanceZ( posTarget, this->controlThrust->getAmplification() );
+	double heightDiff = latestPosition.getDistanceZ( posTarget );
+	unsigned int newThrust = newMovement.getThrust();
+	double thrustDiff = controlThrust->getManipulatedVariable( heightDiff );
+	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( 0+thrustDiff );
+	newMovement.setThrust( newThrust );
+
+	//MovementHelper helper;
+	//Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getInfo().getRotation(), latestPosition, posTarget );
+	Position6DOF posForRP = latestPosition;
+
+	/* Roll */
+	float xDiff = posForRP.getDistanceX( posTarget );
+	float newRoll = ((float) controlRoll->getManipulatedVariable( xDiff ));
+
+	/* Pitch */
+	float yDiff = posForRP.getDistanceY( posTarget );
+	float newPitch = ((float) controlPitch->getManipulatedVariable( yDiff ));
+
+	/* Yawrate */
+	float yawDiff = 0.0 - this->yaw_stab[internId];
+	float newYawrate = ((float) controlYawrate->getManipulatedVariable( yawDiff ));
+
+	/* Set values */
+	ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
+	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, newRoll, yDiff, newPitch);
+	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
+	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
+	quadcopterStatus[internId].getInfo().checkAndFixYawrate( newYawrate );
+	newMovement.setRollPitchYawrate( newRoll, newPitch, newYawrate );
+
+	/* Set new Movement */
+	this->currentMovement[internId] = newMovement;	   
 }
 
 void Controller::hold( int internId )
 {
+	// FIXME
 	ROS_INFO("%i now land", internId);
-	//FIXME
 	if( HOLD_SKIP )
 	{
 		quadcopterMovementStatus[internId] = CALCULATE_LAND;
@@ -1154,38 +1207,49 @@ void Controller::land( int internId, int * nrLand )
 	if(tracked[internId] == true)
 	{
 		ROS_INFO("Declining ros");
-		/*while( this->listFutureMovement[internId].size() > 1)	// FIXME @dominik
+		MovementQuadruple newMovement = this->currentMovement[internId];
+		if(currentMovement[internId].getThrust() < quadcopterStatus[internId].getQuadcopterThrust().getDecline() )
 		{
-			this->listFutureMovement[internId].pop_back();
-		}*/
-		//MovementQuadruple newMovement = MovementQuadruple( thrust_info[internId].getMin(), 0, 0, 0 ); FIXME 
-		MovementQuadruple newMovement = this->listFutureMovement[internId].front();
-		newMovement.setThrust( thrust_info[internId].getDecline() );
+			newMovement.setThrust(currentMovement[internId].getThrust());
+		}
+		else
+		{
+			newMovement.setThrust( quadcopterStatus[internId].getQuadcopterThrust().getDecline() );
+		}
 		newMovement.setTimestamp( currentTime );
-		this->listFutureMovement[internId].push_front( newMovement );		
+		this->currentMovement[internId] = newMovement;		
 		this->timeOffsetChangeThrust = getNanoTime();
 	}
 	else
 	{
-		if(this->thrustHelp > thrust_info[internId].getDecline())	// FIXME
+		if(this->thrustHelp[internId] > quadcopterStatus[internId].getQuadcopterThrust().getDecline())	// FIXME
 		{
-			this->thrustHelp = thrust_info[internId].getDecline();	// FIXME
+			if(currentMovement[internId].getThrust() < quadcopterStatus[internId].getQuadcopterThrust().getDecline() )
+			{
+				this->thrustHelp[internId] = currentMovement[internId].getThrust();
+			}
+			else
+			{
+				ROS_DEBUG("Decline newly set in land");
+				this->thrustHelp[internId] = quadcopterStatus[internId].getQuadcopterThrust().getDecline();	// FIXME
+			}
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
-		ROS_INFO("min");
-		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp - 700 > 0)
+		//ROS_INFO("min");
+		int step = 700;
+		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp[internId] - step > 0)
 		{
-			//usleep(85000);
-			this->thrustHelp -= 700;
+			ROS_DEBUG("Lower Thrust in land");
+			usleep(85000);
+			this->thrustHelp[internId] -= step;
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		//Shutdown crazyflie after having left the tracking area.
-		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp, 0, 0, 0 ); 
-		//MovementQuadruple newMovement = this->listFutureMovement[internId].front();
-		//newMovement.setThrust( THRUST_OFF );
+		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp[internId], 0, 0, 0 ); 
 		newMovement.setTimestamp(currentTime);
-		this->listFutureMovement[internId].push_front( newMovement );
-		if( this->thrustHelp - 700 <= 0)
+		ROS_DEBUG("LAND THRUST %i", newMovement.getThrust());
+		this->currentMovement[internId] = newMovement;
+		if( this->thrustHelp[internId] - step <= 0)
 		{
 			this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
 			dontMove( internId);
@@ -1193,51 +1257,6 @@ void Controller::land( int internId, int * nrLand )
 			ROS_INFO("Landed: %i", *nrLand);
 		}
 	}
-}
-
-
-/* HELPER FUNCTIONS */
-bool Controller::isStable( int internId )
-{
-	/* 
-	 * Compare latest position of QC with 
-	 * position of QC "compareTimeX"-elements before. 
-	 * Assumption: 30 Elements ~ 1 sec.
-	 */
-	int compareTime[3] = { 1, 5, 50 };
-	
-	this->listPositionsMutex.lock();
-	size_t sizeOfListPositions = this->listPositions[internId].size();
-	this->listPositionsMutex.unlock();
-    if( sizeOfListPositions > compareTime[2] )
-    {
-		/* Reverse iterator to the reverse end */
-		int counter = 0;
-		std::list<Position6DOF>::reverse_iterator rit = this->listPositions[internId].rbegin();
-		for( ; rit != this->listPositions[internId].rend(); ++rit )
-		{
-			if( counter==compareTime[0] || counter==compareTime[1] || counter==compareTime[2] )
-			{
-				if( !closeToTarget( listPositions[internId].back(), *rit, RANGE_STABLE ) )
-				{
-					return false;
-				}
-			}
-			counter++;
-		}
-		return true;
-    } else if ( sizeOfListPositions > compareTime[1] )
-    {
-		/* Possible to work with available information? */
-		return false;
-    } else if ( sizeOfListPositions > compareTime[0] )
-    {
-		return false;
-    } else
-    {
-        /* No information to work with, start emergency routine? */
-        return false;
-    }
 }
 
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range )

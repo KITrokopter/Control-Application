@@ -5,17 +5,28 @@
 #include <map>
 #include "ros/ros.h"
 
-#define QUADCOPTER_THRUST_RANGE 13000
 #define BATTERY_MAX 8
-#define BATTERY_LOW 1
+#define BATTERY_MIN 1
+
+#define BATTERY_LOW 3.0//In V
+
+#define THRUST_GLOBAL_MAX 60000
+#define THRUST_GLOBAL_MIN 10001
+#define THRUST_OFF 0
+
+#define QUADCOPTER_THRUST_RANGE 13000
+
 
 class QuadcopterThrust
 {	
 	public:
 		QuadcopterThrust();
+		void init();
 		bool initDone();
 		bool checkAndSetBatteryValue( float battery );	
+		void setWithoutBatteryValue();
 		unsigned int checkAndFix( unsigned int thrust );
+		unsigned int checkAndFix( double thrust);
 
 		void setMin( unsigned int min );
 		unsigned int getMin();

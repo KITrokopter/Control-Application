@@ -10,10 +10,10 @@ public:
 	Formation();
 	void setDistance(int distance);
 	void setAmount(int amount);
-	void setPosition(Position6DOF * position);
+	void setFormationPosition(Position6DOF * position);
 	int getDistance();
 	int getAmount();
-	Position6DOF* getPosition();
+	Position6DOF* getFormationPosition();
 private:
 	int distance;
 	int amount;

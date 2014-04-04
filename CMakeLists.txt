@@ -55,6 +55,7 @@ add_message_files(
   CurrentPosition.msg
   quadcopter_movement.msg
   quadcopter_position.msg
+  quadcopter_is_tracked.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -146,11 +147,14 @@ if(EXISTS ${MATLAB_PATH})
   src/matlab/AmccCalibration.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
-  src/controller/Position6DOF.cpp
-  src/controller/Mutex.cpp
+  src/controller/MovementHelper.cpp
   src/controller/MovementQuadruple.cpp
-  src/controller/Interpolator.cpp
-  src/controller/InterpolatorInfo.cpp
+  src/controller/Mutex.cpp
+  src/controller/PControl.cpp
+  src/controller/PDIControl.cpp
+  src/controller/Position6DOF.cpp
+  src/controller/QuadcopterControl.cpp
+  src/controller/QuadcopterInfo.cpp
   src/controller/QuadcopterThrust.cpp
 )
 
@@ -193,11 +197,14 @@ add_executable(control_application_test_calibration_node
   src/matlab/profiling.cpp
   src/controller/Controller.cpp
   src/controller/Formation.cpp
-  src/controller/Position6DOF.cpp
-  src/controller/Mutex.cpp
+  src/controller/MovementHelper.cpp
   src/controller/MovementQuadruple.cpp
-  src/controller/Interpolator.cpp
-  src/controller/InterpolatorInfo.cpp
+  src/controller/Mutex.cpp
+  src/controller/PControl.cpp
+  src/controller/PDIControl.cpp
+  src/controller/Position6DOF.cpp
+  src/controller/QuadcopterControl.cpp
+  src/controller/QuadcopterInfo.cpp
   src/controller/QuadcopterThrust.cpp
 )
 
@@ -230,12 +237,15 @@ add_executable(profile_control
   test/ProfileControl.cpp
   test/helpers/MovementGenerator.cpp
   src/controller/Controller.cpp
-  src/controller/Position6DOF.cpp
   src/controller/Formation.cpp
+  src/controller/MovementHelper.cpp
   src/controller/MovementQuadruple.cpp
   src/controller/Mutex.cpp
-  src/controller/Interpolator.cpp
-  src/controller/InterpolatorInfo.cpp
+  src/controller/PControl.cpp
+  src/controller/PDIControl.cpp
+  src/controller/Position6DOF.cpp
+  src/controller/QuadcopterControl.cpp
+  src/controller/QuadcopterInfo.cpp
   src/controller/QuadcopterThrust.cpp
   src/matlab/Matlab.cpp 
   src/matlab/Vector.cpp 
