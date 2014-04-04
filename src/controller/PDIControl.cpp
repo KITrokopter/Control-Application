@@ -53,6 +53,11 @@ double PDIControl::getAmplification()
 	return this->pAmplification;
 }
 
+void PDIControl::setOffset( double offset )
+{
+	this->offset = offset;
+}
+
 void PDIControl::setPAmplification( double errorSignal )
 {
 	if( errorSignal >= 0.0 )

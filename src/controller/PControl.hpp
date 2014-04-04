@@ -12,6 +12,7 @@ public:
 
 	double getAmplification();
 	double getManipulatedVariable( double errorSignal );
+	void setOffset( double offset );
 
 protected:
 	void setPAmplification( double errorSignal );

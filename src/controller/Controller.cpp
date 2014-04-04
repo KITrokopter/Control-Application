@@ -1167,6 +1167,7 @@ void Controller::stabilize( int internId )
 	//double heightDiff = latestPosition.getDistanceZ( posTarget, this->controlThrust->getAmplification() );
 	double heightDiff = latestPosition.getDistanceZ( posTarget );
 	unsigned int newThrust = newMovement.getThrust();
+	controlThrust->setOffset( this->quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getOffset() );
 	double thrustDiff = controlThrust->getManipulatedVariable( heightDiff );
 	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( 0+thrustDiff );
 	newMovement.setThrust( newThrust );
