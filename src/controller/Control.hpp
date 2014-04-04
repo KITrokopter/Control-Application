@@ -12,7 +12,7 @@ class Control {
 public:
 	virtual double getManipulatedVariable( double errorSignal ) = 0;
 	virtual double getAmplification() = 0;
-	virtual void setOffset( double offset );
+	virtual void setOffset( double offset ) = 0;
 
 };
 
