@@ -192,6 +192,8 @@ private:
 	long int timeLastFormationMovement;
 	long int timeLastCurrent[MAX_NUMBER_QUADCOPTER];
 	int thrustHelp[MAX_NUMBER_QUADCOPTER];
+	int batteryStatusCounter[MAX_NUMBER_QUADCOPTER];
+	float batteryStatusSum[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
 	Mutex formationMovementMutex;

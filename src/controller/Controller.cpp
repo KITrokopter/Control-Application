@@ -62,6 +62,9 @@ Controller::Controller()
 			quadcopterStatus[i].getQuadcopterThrust().setWithoutBatteryValue();
 		}
 		this->thrustHelp[i] = quadcopterStatus[i].getQuadcopterThrust().getStart();
+		
+		this->batteryStatusCounter[i] = 0;
+		this->batteryStatusSum[i] = 0;
 	}
 	ROS_INFO("Constructing done");
 	this->timeOffsetOutput= getNanoTime();
@@ -72,7 +75,6 @@ Controller::Controller()
 	this->controlRoll = new PControl( AMPLIFICATION_RP, RP_OFFSET );
 	this->controlPitch = new PControl( AMPLIFICATION_RP, RP_OFFSET );
 	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
-		
 }
 
 /*
@@ -1062,6 +1064,16 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		//this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
+
+	this->batteryStatusCounter[localQuadcopterId]++;
+	batteryStatusSum[localQuadcopterId] += this->battery_status[localQuadcopterId];
+	if( this->batteryStatusCounter[localQuadcopterId] >= 10 )
+	{
+		batteryStatusCounter[localQuadcopterId] = batteryStatusCounter[localQuadcopterId] / 10;
+		this->quadcopterStatus[localQuadcopterId].getQuadcopterThrust().setOffset( batteryStatusCounter[localQuadcopterId] );
+		this->batteryStatusCounter[localQuadcopterId] = 0;
+		this->batteryStatusSum[localQuadcopterId] = 0;
+	}
 }
 
 /*
