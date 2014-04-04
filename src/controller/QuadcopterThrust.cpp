@@ -13,7 +13,7 @@ void QuadcopterThrust::init()
 	this->start = 30000;
 	this->startMax = 50000;
 	this->decline = 25000;
-	this->offset = 26000;
+	this->offset = 32000;
 }
 
 bool QuadcopterThrust::checkAndSetBatteryValue( float battery )
@@ -66,8 +66,11 @@ unsigned int QuadcopterThrust::checkAndFix( double thrust )
 
 void QuadcopterThrust::setWithoutBatteryValue()
 {
-	init();
-	this->setThrustCalled = true;
+	if( !setThrustCalled )
+	{
+		init();
+		this->setThrustCalled = true;
+	}
 }
 
 void QuadcopterThrust::setThrust( float battery )

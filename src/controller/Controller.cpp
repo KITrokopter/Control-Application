@@ -753,7 +753,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		if( this->receivedTrackingArea)
 		{
 			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
-			Position6DOF defaultTarget = Position6DOF(0, 500, 1000 );
+			Position6DOF defaultTarget = Position6DOF(-100, 800, 1000 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
@@ -1066,13 +1066,15 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	this->receivedQuadStatus[localQuadcopterId] = true;
 
 	this->batteryStatusCounter[localQuadcopterId]++;
+	ROS_DEBUG("batteryCounter++");
 	batteryStatusSum[localQuadcopterId] += this->battery_status[localQuadcopterId];
-	if( this->batteryStatusCounter[localQuadcopterId] >= 10 )
+	if( this->batteryStatusCounter[localQuadcopterId] >= 5 )
 	{
 		batteryStatusCounter[localQuadcopterId] = batteryStatusCounter[localQuadcopterId] / 10;
 		this->quadcopterStatus[localQuadcopterId].getQuadcopterThrust().setOffset( batteryStatusCounter[localQuadcopterId] );
 		this->batteryStatusCounter[localQuadcopterId] = 0;
 		this->batteryStatusSum[localQuadcopterId] = 0;
+		ROS_ERROR("batteryCounter >= 5 %i", quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getOffset());
 	}
 }
 
