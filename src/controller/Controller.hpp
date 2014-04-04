@@ -170,7 +170,8 @@ private:
 	std::list<std::vector<float> > formationMovement;
 
 	/* Control */
-	Control *controlThrust, *controlRollPitch, *controlYawrate;
+	Control *controlThrust;		// PDI-Controller
+	Control *controlRoll, *controlPitch, *controlYawrate;	// P-Controller
 	QuadcopterControl quadcopterStatus[MAX_NUMBER_QUADCOPTER];
 
 

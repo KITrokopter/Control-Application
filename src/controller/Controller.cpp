@@ -68,8 +68,9 @@ Controller::Controller()
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
 
-	this->controlThrust = new PControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, THRUST_OFFSET );
-	this->controlRollPitch = new PControl( AMPLIFICATION_RP, RP_OFFSET );
+	this->controlThrust = new PDIControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, THRUST_OFFSET );
+	this->controlRoll = new PControl( AMPLIFICATION_RP, RP_OFFSET );
+	this->controlPitch = new PControl( AMPLIFICATION_RP, RP_OFFSET );
 	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
 		
 }
@@ -1164,11 +1165,11 @@ void Controller::stabilize( int internId )
 
 	/* Roll */
 	float xDiff = posForRP.getDistanceX( posTarget );
-	float newRoll = ((float) controlRollPitch->getManipulatedVariable( xDiff ));
+	float newRoll = ((float) controlRoll->getManipulatedVariable( xDiff ));
 
 	/* Pitch */
 	float yDiff = posForRP.getDistanceY( posTarget );
-	float newPitch = ((float) controlRollPitch->getManipulatedVariable( yDiff ));
+	float newPitch = ((float) controlPitch->getManipulatedVariable( yDiff ));
 
 	/* Yawrate */
 	float yawDiff = 0.0 - this->yaw_stab[internId];
@@ -1183,7 +1184,7 @@ void Controller::stabilize( int internId )
 	newMovement.setRollPitchYawrate( newRoll, newPitch, newYawrate );
 
 	/* Set new Movement */
-	this->currentMovement[internId] = newMovement ;	   
+	this->currentMovement[internId] = newMovement;	   
 }
 
 void Controller::hold( int internId )

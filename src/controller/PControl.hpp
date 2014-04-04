@@ -8,8 +8,6 @@ class PControl : public Control {
 
 public:
 	PControl( double pFactor, double offset );
-	PControl( double pFactor, double dFactor, double offset );
-	PControl( double pFactorPos, double pFactorNeg, double dFactor, double offset );
 
 	double getAmplification();
 	double getManipulatedVariable( double errorSignal );
@@ -22,10 +20,7 @@ private:
 	double pAmplification;
 	double pAmplificationPos;
 	double pAmplificationNeg;
-	double dAmplification;	
 	double offset;
-	double distanceOld;
-	double Integrator;
 };
 
 #endif /* PCONTROL_HPP_ */
