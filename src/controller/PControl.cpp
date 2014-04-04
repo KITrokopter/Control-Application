@@ -8,7 +8,7 @@ PControl::PControl( double pFactor, double offset )
 	this->offset = offset;
 }
 
-PDIControl::PDIControl( double pFactorPos, double pFactorNeg, double dFactor, double offset )
+PControl::PControl( double pFactorPos, double pFactorNeg, double offset )
 {
 	this->pAmplification = pFactorPos;
 	this->pAmplificationPos = pFactorPos;

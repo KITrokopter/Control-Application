@@ -3,6 +3,7 @@
 //#include "CalculatorMoveUp.hpp"
 #include "Control.hpp"
 #include "PControl.hpp"
+#include "PDIControl.hpp"
 #include "Formation.hpp"
 #include "MovementQuadruple.hpp"
 #include "MovementHelper.hpp"
