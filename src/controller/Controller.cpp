@@ -1232,11 +1232,19 @@ void Controller::land( int internId, int * nrLand )
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
 		//ROS_INFO("min");
-		int step = 700;
+		int step = 0;
+		if(this->shutdownStarted)
+		{
+			step = DECLINE_SHUTDOWN_STEP;
+		}
+		else
+		{
+			step = DECLINE_NOT_TRACKED_STEP;
+		}
 		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp[internId] - step > 0)
 		{
 			ROS_DEBUG("Lower Thrust in land");
-			usleep(85000);
+			usleep(85000); //FIXME sleep here? still needed?
 			this->thrustHelp[internId] -= step;
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
