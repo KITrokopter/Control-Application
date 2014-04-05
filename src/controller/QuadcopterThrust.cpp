@@ -13,6 +13,7 @@ void QuadcopterThrust::init()
 	this->start = 30000;
 	this->startMax = 50000;
 	this->decline = 25000;
+	this->offset = 32000;
 }
 
 bool QuadcopterThrust::checkAndSetBatteryValue( float battery )
@@ -65,8 +66,11 @@ unsigned int QuadcopterThrust::checkAndFix( double thrust )
 
 void QuadcopterThrust::setWithoutBatteryValue()
 {
-	init();
-	this->setThrustCalled = true;
+	if( !setThrustCalled )
+	{
+		init();
+		this->setThrustCalled = true;
+	}
 }
 
 void QuadcopterThrust::setThrust( float battery )
@@ -148,5 +152,25 @@ void QuadcopterThrust::setDecline( unsigned int decline )
 
 unsigned int QuadcopterThrust::getDecline()
 {
-	return decline;
+	return this->decline;
+}
+
+void QuadcopterThrust::setOffset( float battery )
+{
+	if( battery > 4.2 )
+	{
+		this->offset = THRUST_OFFSET_LOW;
+	}
+	else if( battery > 2.8 )
+	{
+		this->offset = THRUST_OFFSET_LOW + ((unsigned int) ((4.2-battery)*QUADCOPTER_THRUST_RANGE));
+	}
+	else
+	{
+		this->offset = THRUST_OFFSET_LOW + QUADCOPTER_THRUST_RANGE;
+	}
+}
+unsigned int QuadcopterThrust::getOffset()
+{
+	return this->offset;
 }

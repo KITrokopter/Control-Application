@@ -151,6 +151,7 @@ if(EXISTS ${MATLAB_PATH})
   src/controller/MovementQuadruple.cpp
   src/controller/Mutex.cpp
   src/controller/PControl.cpp
+  src/controller/PDIControl.cpp
   src/controller/Position6DOF.cpp
   src/controller/QuadcopterControl.cpp
   src/controller/QuadcopterInfo.cpp
@@ -200,6 +201,7 @@ add_executable(control_application_test_calibration_node
   src/controller/MovementQuadruple.cpp
   src/controller/Mutex.cpp
   src/controller/PControl.cpp
+  src/controller/PDIControl.cpp
   src/controller/Position6DOF.cpp
   src/controller/QuadcopterControl.cpp
   src/controller/QuadcopterInfo.cpp
@@ -240,6 +242,7 @@ add_executable(profile_control
   src/controller/MovementQuadruple.cpp
   src/controller/Mutex.cpp
   src/controller/PControl.cpp
+  src/controller/PDIControl.cpp
   src/controller/Position6DOF.cpp
   src/controller/QuadcopterControl.cpp
   src/controller/QuadcopterInfo.cpp

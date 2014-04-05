@@ -3,6 +3,7 @@
 //#include "CalculatorMoveUp.hpp"
 #include "Control.hpp"
 #include "PControl.hpp"
+#include "PDIControl.hpp"
 #include "Formation.hpp"
 #include "MovementQuadruple.hpp"
 #include "MovementHelper.hpp"
@@ -44,10 +45,11 @@
 
 #define USE_BATTERY_INPUT 1
 
-#define AMPLIFICATION_THRUST_P_POS 12
-#define AMPLIFICATION_THRUST_P_NEG 5
+#define AMPLIFICATION_THRUST_P_POS 15
+#define AMPLIFICATION_THRUST_P_NEG 4
 #define AMPLIFICATION_THRUST_D 5
-#define THRUST_OFFSET 31000
+#define AMPLIFICATION_THRUST_I 0.1
+#define THRUST_OFFSET 27000
 #define AMPLIFICATION_RP 0.018
 #define RP_OFFSET 0
 #define AMPLIFICATION_Y (-0.28)
@@ -60,7 +62,7 @@
 #define TIME_WAIT_FOR_LANDING 10000
 #define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
 #define TIME_WAIT_AT_LANDING 10*1000*1000 // in microseconds
-#define LOOPS_PER_SECOND 30
+#define LOOPS_PER_SECOND 10
 
 #define DISTANCE_ROTATE_TO_CENTER 100
 
@@ -170,7 +172,8 @@ private:
 	std::list<std::vector<float> > formationMovement;
 
 	/* Control */
-	Control *controlThrust, *controlRollPitch, *controlYawrate;
+	Control *controlThrust;		// PDI-Controller
+	Control *controlRoll, *controlPitch, *controlYawrate;	// P-Controller
 	QuadcopterControl quadcopterStatus[MAX_NUMBER_QUADCOPTER];
 
 
@@ -189,6 +192,8 @@ private:
 	long int timeLastFormationMovement;
 	long int timeLastCurrent[MAX_NUMBER_QUADCOPTER];
 	int thrustHelp[MAX_NUMBER_QUADCOPTER];
+	int batteryStatusCounter[MAX_NUMBER_QUADCOPTER];
+	float batteryStatusSum[MAX_NUMBER_QUADCOPTER];
 	
 	/* Mutex */
 	Mutex formationMovementMutex;

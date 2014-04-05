@@ -13,8 +13,9 @@
 #define THRUST_GLOBAL_MAX 60000
 #define THRUST_GLOBAL_MIN 10001
 #define THRUST_OFF 0
+#define THRUST_OFFSET_LOW 32000
 
-#define QUADCOPTER_THRUST_RANGE 13000
+#define QUADCOPTER_THRUST_RANGE 18000
 
 
 class QuadcopterThrust
@@ -39,6 +40,9 @@ class QuadcopterThrust
 		void setDecline( unsigned int decline );
 		unsigned int getDecline();
 
+		void setOffset( float battery );
+		unsigned int getOffset();
+
 	protected:		
 		void setThrust( float battery );
 
@@ -52,6 +56,8 @@ class QuadcopterThrust
 		unsigned int startMax;
 		unsigned int start;
 		unsigned int decline;
+
+		unsigned int offset;
 
 		bool setThrustCalled;
 };
