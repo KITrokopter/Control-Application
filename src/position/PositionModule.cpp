@@ -201,26 +201,28 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 			
 			// Save picture on disk for amcctoolbox.
 			std::cout << "Saving picture: " << cv::imwrite(ss.str(), *(it->second)) << std::endl;
-			
-			sensor_msgs::Image img;
-			img.width = 640;
-			img.height = 480;
-			img.step = 3 * 640;
-			img.data.reserve(img.step * img.height);
-			
-			for (int i = 0; i < 640 * 480 * 3; i++)
-			{
-				img.data[i] = it->second->data[i];
-			}
-			
-			res.images.push_back(img);
-			res.containsChessboard.push_back(pictureContainsChessboardMap[it->first]);
-			res.ids.push_back(it->first);
-			
-			delete it->second;
 		}
 		
 		calibrationPictureCount++;
+	}
+	
+	// Send pictures and delete them after that.
+	for (std::map<int, cv::Mat*>::iterator it = pictureMap.begin(); it != pictureMap.end(); it++) {
+		sensor_msgs::Image img;
+		img.width = 640;
+		img.height = 480;
+		img.step = 3 * 640;
+		img.data.reserve(img.step * img.height);
+		
+		for (int i = 0; i < 640 * 480 * 3; i++)	{
+			img.data[i] = it->second->data[i];
+		}
+		
+		res.images.push_back(img);
+		res.containsChessboard.push_back(pictureContainsChessboardMap[it->first]);
+		res.ids.push_back(it->first);
+		
+		delete it->second;
 	}
 	
 	return true;
