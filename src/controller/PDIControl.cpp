@@ -48,11 +48,6 @@ double PDIControl::getManipulatedVariable(double errorSignal)
 	return y;
 }
 
-double PDIControl::getAmplification()
-{
-	return this->pAmplification;
-}
-
 void PDIControl::setOffset( double offset )
 {
 	this->offset = offset;

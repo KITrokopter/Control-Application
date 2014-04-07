@@ -12,8 +12,8 @@ public:
 	virtual double getManipulatedVariable( double errorSignal ) = 0;
 
 	/**
-	 *
-	 * @param offset
+	 * Used if offset changes during time, e.g. battery-dependent.
+	 * @param offset Used offset
 	 */
 	virtual void setOffset( double offset ) = 0;
 

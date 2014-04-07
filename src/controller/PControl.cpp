@@ -28,11 +28,6 @@ void PControl::setOffset( double offset )
 	this->offset = offset;
 }
 
-double PControl::getAmplification()
-{
-	return this->pAmplification;
-}
-
 void PControl::setPAmplification( double errorSignal )
 {
 	if( errorSignal >= 0.0 )
