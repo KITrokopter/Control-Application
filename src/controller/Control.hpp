@@ -10,8 +10,24 @@
 
 class Control {
 public:
+
+	/**
+	 *
+	 * @param errorSignal
+	 * @return
+	 */
 	virtual double getManipulatedVariable( double errorSignal ) = 0;
+
+	/**
+	 *
+	 * @return
+	 */
 	virtual double getAmplification() = 0;
+
+	/**
+	 *
+	 * @param offset
+	 */
 	virtual void setOffset( double offset ) = 0;
 
 };

@@ -70,6 +70,11 @@ private:
 	 * 4 hold (before shutdown), "smart" shutdown
 	 * 5 shutdown (turn off)
 	 */
+
+
+	/**
+	 *
+	 */
 	short state;
 
 	long int timeStarted;

@@ -22,11 +22,42 @@ class QuadcopterThrust
 {	
 	public:
 		QuadcopterThrust();
+
+		/**
+		 *
+		 */
 		void init();
+
+		/**
+		 *
+		 * @return
+		 */
 		bool initDone();
+
+		/**
+		 *
+		 * @param battery
+		 * @return
+		 */
 		bool checkAndSetBatteryValue( float battery );	
+
+		/**
+		 *
+		 */
 		void setWithoutBatteryValue();
+
+		/**
+		 *
+		 * @param thrust
+		 * @return
+		 */
 		unsigned int checkAndFix( unsigned int thrust );
+
+		/**
+		 *
+		 * @param thrust
+		 * @return
+		 */
 		unsigned int checkAndFix( double thrust);
 
 		void setMin( unsigned int min );
