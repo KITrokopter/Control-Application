@@ -742,7 +742,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	unsigned long int i;
 	for( i = 0; i < req.amount; i++)
 	{
-		this->quadcopters.push_back(req.quadcoptersId[i]);
+		this->quadcopters.push_back(req.quadcopterIds[i]);
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		
 		//Initialization of Arrays of Lists
