@@ -68,7 +68,7 @@ bool Position::calibratedYet(int numberCameras) {
     bool ok = true;
 
     if (result == 0) {
-        ROS_DEBUG("Can't find camera calibration of camera 0");
+        ROS_DEBUG("Camera 0 isn't calibrated yet.");
         ok = false;
     } else {
         for (int i = 1; i < numberCameras; i++) {
@@ -79,7 +79,7 @@ bool Position::calibratedYet(int numberCameras) {
             result = mxGetPr(good)[0];
 
             if (result == 0) {
-                ROS_DEBUG("Can't find camera calibration of camera %d", i);
+                ROS_DEBUG("Camera %d isn't calibrated yet", i);
                 ok = false;
             }
 
