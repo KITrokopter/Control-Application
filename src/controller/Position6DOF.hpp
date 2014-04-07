@@ -19,7 +19,7 @@ public:
 	Position6DOF(double x, double y, double z, double xOrientation, double yOrientation, double zOrientation);
 	Position6DOF(double x, double y, double z);
 	Position6DOF(Vector vector);
-	Position6DOF(){};
+	Position6DOF(){};	// FIXME
 
 	double getAbsoluteDistance();
 	double getAbsoluteDistance( Position6DOF otherPosition );

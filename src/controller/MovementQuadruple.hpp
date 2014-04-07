@@ -22,9 +22,18 @@ class MovementQuadruple
 		long int getTimestamp();
 		void setTimestamp( long int newTimestamp );
 
+
+		/**
+		 *
+		 * @param maxThrust
+		 * @param maxRoll
+		 * @param maxPitch
+		 * @param maxYawrate
+		 * @return
+		 */
 		bool checkQuadruple( int maxThrust, float maxRoll, float maxPitch, float maxYawrate );
 
-		void invertRollPitchYawrate( float factorThrust, float factorRPY );
+		void invertRollPitchYawrate( float factorThrust, float factorRPY );	// FIXME
 		
 	private:
 		unsigned int thrust;

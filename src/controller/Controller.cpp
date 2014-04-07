@@ -721,7 +721,8 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
 }
 
 /*
- * Service to set Quadcopter IDs. Also initialize dynamic arrays according to the given amount of qc
+ * Service to set Quadcopter IDs. Also initialize dynamic arrays according to the given amount of qc and set starting target.
+ * Also initialize multiple publisher
  */
 bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &req, control_application::SetQuadcopters::Response &res)
 {
@@ -804,10 +805,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 }
 
 /*
- * Shutdown
- * Set all values to zero and thrust to minimum. Send the values and exit program
- * after that.
- * 
+ * Shutdown Service which starts a new thread for shutdownFormation
  */
 bool Controller::shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res)
 {
@@ -824,7 +822,7 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 }
 
 /*
- * Shutdown Formation
+ * Shutdown Formation. Sets all Quadcopters on Land to start the landing process. Then wait for them to all land.
  */
 void Controller::shutdownFormation()
 {
@@ -858,6 +856,9 @@ void Controller::shutdownFormation()
 	ROS_INFO("Shutdown function finished");	
 }
 
+/*
+ * Simple helper function to search for globalId in our mapping array and returns the fitting localId
+ */
 int Controller::getLocalId(int globalId)	// TODO testme
 {
   for(int i = 0; i < this->quadcopters.size() ; i++ )
@@ -871,7 +872,8 @@ int Controller::getLocalId(int globalId)	// TODO testme
 }
 
 /*
- * Checks if formation movement data and quadcopter positions have been received lately. Otherwise calls emergencyroutine.
+ * Checks if formation movement data and quadcopter positions have been received lately and if the battery status is sufficient.
+ * Otherwise calls emergencyroutine or simply send an error message.
  */
 bool Controller::checkInput(int internId)
 {
@@ -937,6 +939,7 @@ bool Controller::checkInput(int internId)
 
 /*
  * Emergency Routine. Gets started e.g. low battery status. Sends warning via Ros and then starts the landing process for this qc.
+ * If qc enters the tracking area again it will switch back to stabilizing.
  */
 void Controller::emergencyRoutine(std::string message, int internId)
 {
@@ -953,9 +956,13 @@ void Controller::emergencyRoutine(std::string message, int internId)
 	}
 }
 
+/*
+ * Emergency Shutdown routine. Calls the Shutdown service to create a thread for shutdownFormation.
+ */
 void Controller::emergencyShutdownRoutine(std::string message)
 {
 	ROS_INFO("Emergency Routine called");
+	//Sends an error message to the api via ros
 	api_application::Message msg;
 	msg.senderID = this->senderID;
 	//Type 2 is a warning message
@@ -1103,6 +1110,9 @@ void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
 	}
 }
 
+/*
+ * Helper function for qc that are not supposed to move. Set all values to zero.
+ */
 void Controller::dontMove( int internId)
 {
 	MovementQuadruple newMovement = MovementQuadruple( 0, 0, 0, 0 );
@@ -1113,10 +1123,7 @@ void Controller::dontMove( int internId)
 }
 
 /*
- * @Carina: set thrustHelp[internId] here if it hasn't been set before.
- * Use them as arrays.
- * Replace "thrust too high" with the following function:
- * 	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( currentThrust );
+ * Helper function to increase thrust stepwise to start incremental.
  */
 void Controller::moveUp( int internId )
 {
@@ -1151,6 +1158,9 @@ void Controller::moveUp( int internId )
 }
 
 
+/*
+ * Helper function to stabilize qc with help of the pid controller. Calculates different differences between x, y and z and controls qc.
+ */
 void Controller::stabilize( int internId )
 {
 	this->listPositionsMutex.lock();
@@ -1202,6 +1212,9 @@ void Controller::stabilize( int internId )
 	this->currentMovement[internId] = newMovement;	   
 }
 
+/*
+ * Helper function. No useful function right now. Might be used for behavious directly before land.
+ */
 void Controller::hold( int internId )
 {
 	// FIXME
@@ -1214,6 +1227,10 @@ void Controller::hold( int internId )
 
 }
 
+/*
+ * Helper function to control the landing process. First decrease constantly till qc left tracking area
+ * and the decrease stepwise till zero.
+ */
 void Controller::land( int internId, int * nrLand )
 {
 	ROS_INFO("Land");
@@ -1274,6 +1291,9 @@ void Controller::land( int internId, int * nrLand )
 	}
 }
 
+/*
+ * Helper function to check if two positions are close/ in a specific range to each other.
+ */
 static bool closeToTarget( Position6DOF position1, Position6DOF position2, double range )
 {
 	double distance = position1.getAbsoluteDistance( position2 ); //TODO need to abs range too?
@@ -1284,6 +1304,9 @@ static bool closeToTarget( Position6DOF position1, Position6DOF position2, doubl
 	return false;
 }
 
+/*
+ * Helper function to search for a close neighbor of target quadcopter and return the wanted id.
+ */
 int Controller::searchNeighbor( double * target, bool * ids)
 {
 	float distance = -1;

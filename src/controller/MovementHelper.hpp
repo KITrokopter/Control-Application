@@ -19,6 +19,14 @@ public:
 //	double getHeightDiff( std::list<Position6DOF> listPositions );
 //	double getHeightDiffReverse( std::list<Position6DOF> listPositions );
 
+
+	/**
+	 *
+	 * @param rotation
+	 * @param pos
+	 * @param target
+	 * @return
+	 */
 	static Position6DOF prepareForRP( double rotation, Position6DOF pos, Position6DOF target );
 };
 
