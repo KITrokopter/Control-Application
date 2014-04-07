@@ -1070,13 +1070,13 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		 * Only if battery-value is useful.
 		 */
 		//ROS_ERROR("initDone is false");
-		QuadcopterThrust new qcThrust = this->quadcopterStatus[localQuadcopterId].getQuadcopterThrust();
+		QuadcopterThrust qcThrust = this->quadcopterStatus[localQuadcopterId].getQuadcopterThrust();
 		qcThrust.checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
 		this->quadcopterStatus[localQuadcopterId].setQuadcopterThrust( qcThrust );
 		//this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
 		
-		this->baroTarget[i] = this->baro[i] + BARO_OFFSET;
-		ROS_DEBUG("baroTarget set to %f", this->baroTarget[i]);
+		this->baroTarget[localQuadcopterId] = this->baro[localQuadcopterId] + BARO_OFFSET;
+		ROS_DEBUG("baroTarget set to %f", this->baroTarget[localQuadcopterId]);
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
 
@@ -1087,7 +1087,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	if( this->batteryStatusCounter[localQuadcopterId] >= counterT )
 	{
 		batteryStatusSum[localQuadcopterId] = batteryStatusSum[localQuadcopterId] / counterT;
-		QuadcopterThrust new qcThrust = this->quadcopterStatus[localQuadcopterId].getQuadcopterThrust();
+		QuadcopterThrust qcThrust = this->quadcopterStatus[localQuadcopterId].getQuadcopterThrust();
 		qcThrust.setOffset( batteryStatusSum[localQuadcopterId] );
 		this->quadcopterStatus[localQuadcopterId].setQuadcopterThrust( qcThrust );
 		this->batteryStatusCounter[localQuadcopterId] = 0;
@@ -1211,8 +1211,8 @@ void Controller::stabilize( int internId )
 	float newYawrate = ((float) controlYawrate->getManipulatedVariable( yawDiff ));
 
 	/* Set values */
-	//ROS_INFO("   baroDiff %f, calculated t %f, new %i", baroDiff, thrustDiff, newThrust);
-	ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
+	//ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
+	ROS_INFO("   baroDiff %f, new %i", baroDiff, newThrust);
 	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, newRoll, yDiff, newPitch);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );

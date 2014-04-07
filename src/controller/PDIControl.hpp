@@ -2,6 +2,7 @@
 #define PDICONTROL_HPP_
 
 #include "Control.hpp"
+#include "ros/ros.h"
 
 
 class PDIControl : public Control {
