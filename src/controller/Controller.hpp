@@ -74,6 +74,8 @@
 #define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
 #define CALCULATE_LAND 5 //Shutdown quadcopter
 #define CALCULATE_STABILIZE_STEP 500	// time in ms after next value should be calculated
+#define DECLINE_SHUTDOWN_STEP 700
+#define DECLINE_NOT_TRACKED_STEP 100
 
 #define HOLD_SKIP 1
 #define HOLD_LENGTH 1000	// time in ms to stay in function before "shutdown"
