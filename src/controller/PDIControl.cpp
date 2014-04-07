@@ -40,11 +40,14 @@ double PDIControl::getManipulatedVariable(double errorSignal)
 {
 	setPAmplification( errorSignal );
 	double distanceDiff = errorSignal - distanceOld;
-	double y = this->pAmplification * (errorSignal + (this->dAmplification * distanceDiff));	
+	double p = this->pAmplification * errorSignal;
+	double d = this->pAmplification * (this->dAmplification * distanceDiff);
 	this->integrator += errorSignal;
-	y += this->integrator * this->iAmplification;
-	y += this->offset;	
+	double i = this->integrator * this->iAmplification;
+	double y = p + d + i + offset;
 	this->distanceOld = errorSignal;	
+	ROS_DEBUG("error %f, distDiff %f, offset %f", errorSignal, distanceDiff, offset);
+	ROS_DEBUG("p %f, d %f, i %f, y %f", p, d, i, y);
 	return y;
 }
 

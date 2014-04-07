@@ -65,6 +65,8 @@ Controller::Controller()
 		
 		this->batteryStatusCounter[i] = 0;
 		this->batteryStatusSum[i] = 0;
+		this->baro[i] = 0;
+		this->baroTarget[i] = this->baro[i] + BARO_OFFSET;
 	}
 	ROS_INFO("Constructing done");
 	this->timeOffsetOutput= getNanoTime();
@@ -1054,8 +1056,9 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	this->pitch_stab[localQuadcopterId] = msg->stabilizer_pitch;
 	this->yaw_stab[localQuadcopterId] = msg->stabilizer_yaw;
 	this->thrust_stab[localQuadcopterId] = msg->stabilizer_thrust;
+	this->baro[localQuadcopterId] = msg->baro;
 	long int currentTime = getNanoTime();
-	if(localQuadcopterId == 0 && currentTime > this->timeOffsetOutput + 2000000000)
+	if(localQuadcopterId == 0 && currentTime > this->timeOffsetOutput + 1000000000)
 	{
 		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
 		this->timeOffsetOutput= currentTime;
@@ -1067,18 +1070,26 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		 * Only if battery-value is useful.
 		 */
 		//ROS_ERROR("initDone is false");
-		quadcopterStatus[localQuadcopterId].getQuadcopterThrust().checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
+		QuadcopterThrust new qcThrust = this->quadcopterStatus[localQuadcopterId].getQuadcopterThrust();
+		qcThrust.checkAndSetBatteryValue( this->battery_status[localQuadcopterId] );
+		this->quadcopterStatus[localQuadcopterId].setQuadcopterThrust( qcThrust );
 		//this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
+		
+		this->baroTarget[i] = this->baro[i] + BARO_OFFSET;
+		ROS_DEBUG("baroTarget set to %f", this->baroTarget[i]);
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
 
 	this->batteryStatusCounter[localQuadcopterId]++;
 	ROS_DEBUG("batteryCounter++");
 	batteryStatusSum[localQuadcopterId] += this->battery_status[localQuadcopterId];
-	if( this->batteryStatusCounter[localQuadcopterId] >= 5 )
+	int counterT = 5;
+	if( this->batteryStatusCounter[localQuadcopterId] >= counterT )
 	{
-		batteryStatusSum[localQuadcopterId] = batteryStatusSum[localQuadcopterId] / 5;
-		this->quadcopterStatus[localQuadcopterId].getQuadcopterThrust().setOffset( batteryStatusSum[localQuadcopterId] );
+		batteryStatusSum[localQuadcopterId] = batteryStatusSum[localQuadcopterId] / counterT;
+		QuadcopterThrust new qcThrust = this->quadcopterStatus[localQuadcopterId].getQuadcopterThrust();
+		qcThrust.setOffset( batteryStatusSum[localQuadcopterId] );
+		this->quadcopterStatus[localQuadcopterId].setQuadcopterThrust( qcThrust );
 		this->batteryStatusCounter[localQuadcopterId] = 0;
 		this->batteryStatusSum[localQuadcopterId] = 0;
 		ROS_ERROR("batteryCounter >= 5 %i", quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getOffset());
@@ -1176,17 +1187,16 @@ void Controller::stabilize( int internId )
 	//ROS_INFO("In stabilize: ");
 
 	/* Thrust */
-	//double heightDiff = latestPosition.getDistanceZ( posTarget, this->controlThrust->getAmplification() );
-	double heightDiff = latestPosition.getDistanceZ( posTarget );
-	unsigned int newThrust = newMovement.getThrust();
+	//double heightDiff = latestPosition.getDistanceZ( posTarget );
+	double baroDiff = baroTarget[internId] - baro[internId];
+	double calculatedThrust = controlThrust->getManipulatedVariable( baroDiff );	
 	controlThrust->setOffset( this->quadcopterStatus[internId].getQuadcopterThrust().getOffset() );
-	double thrustDiff = controlThrust->getManipulatedVariable( heightDiff );
-	newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( 0+thrustDiff );
+	unsigned int newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( calculatedThrust );
 	newMovement.setThrust( newThrust );
 
 	//MovementHelper helper;
 	//Position6DOF posForRP = helper.prepareForRP( quadcopterStatus[internId].getInfo().getRotation(), latestPosition, posTarget );
-	Position6DOF posForRP = latestPosition;
+	Position6DOF posForRP = latestPosition;	// So far used without rotation
 
 	/* Roll */
 	float xDiff = posForRP.getDistanceX( posTarget );
@@ -1201,6 +1211,7 @@ void Controller::stabilize( int internId )
 	float newYawrate = ((float) controlYawrate->getManipulatedVariable( yawDiff ));
 
 	/* Set values */
+	//ROS_INFO("   baroDiff %f, calculated t %f, new %i", baroDiff, thrustDiff, newThrust);
 	ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
 	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, newRoll, yDiff, newPitch);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );

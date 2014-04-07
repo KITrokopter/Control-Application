@@ -25,7 +25,7 @@ bool QuadcopterThrust::checkAndSetBatteryValue( float battery )
 	} 
 	else if( battery < BATTERY_MIN )
 	{
-		//ROS_ERROR("checkAndSet -");
+		ROS_ERROR("checkAndSet -");
 		return false;
 	}
 	// ROS_DEBUG("checkAndSet working");

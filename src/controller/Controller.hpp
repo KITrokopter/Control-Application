@@ -1,6 +1,5 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
-//#include "CalculatorMoveUp.hpp"
 #include "Control.hpp"
 #include "PControl.hpp"
 #include "PDIControl.hpp"
@@ -39,17 +38,18 @@
 #include <string>
 #include <unistd.h>
 #include <vector>
-//Ros messages/services
 
 #define INVALID -1
 
 #define USE_BATTERY_INPUT 1
 
-#define AMPLIFICATION_THRUST_P_POS 15
-#define AMPLIFICATION_THRUST_P_NEG 4
+#define BARO_OFFSET 0.8
+
+#define AMPLIFICATION_THRUST_P_POS 15000
+#define AMPLIFICATION_THRUST_P_NEG 4000
 #define AMPLIFICATION_THRUST_D 5
-#define AMPLIFICATION_THRUST_I 0.1
-#define THRUST_OFFSET 27000
+#define AMPLIFICATION_THRUST_I 0.0
+#define THRUST_OFFSET 30000
 #define AMPLIFICATION_RP 0.018
 #define RP_OFFSET 0
 #define AMPLIFICATION_Y (-0.28)
@@ -62,7 +62,7 @@
 #define TIME_WAIT_FOR_LANDING 10000
 #define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
 #define TIME_WAIT_AT_LANDING 10*1000*1000 // in microseconds
-#define LOOPS_PER_SECOND 10
+#define LOOPS_PER_SECOND 20
 
 #define DISTANCE_ROTATE_TO_CENTER 100
 
@@ -80,7 +80,7 @@
 #define HOLD_FACTOR_THRUST 0.7
 #define HOLD_FACTOR_RPY 0.5
 
-#define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
+#define MAX_NUMBER_QUADCOPTER 10	// Used for lists
 #define MAX_SAVED_SENT_QUADRUPLES 8
 
 class Formation;
@@ -94,7 +94,6 @@ public:
 	void setTrackingArea(TrackingArea area);
 
 	/* Movement and Positioning */
-	//Position6DOF* getTargetPosition();
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovementAll();
@@ -137,7 +136,6 @@ protected:
 	void hold( int internId );
 
 	/* Helper functions */
-//	bool isStable( int internId );
 
 private:
 	
@@ -162,13 +160,17 @@ private:
 	std::vector<std::list<MovementQuadruple> > listSentQuadruples; //last send Movement at the end of the list
 	std::vector<MovementQuadruple> currentMovement;
 
-	/* Received data */ 
-	//Arrays for quadcopters sorted by intern id
+	/*
+	 * Received data 
+	 * Arrays for quadcopters sorted by intern id.
+	 */ 
 	float pitch_stab[MAX_NUMBER_QUADCOPTER];
 	float roll_stab[MAX_NUMBER_QUADCOPTER];
 	float yaw_stab[MAX_NUMBER_QUADCOPTER];
 	unsigned int thrust_stab[MAX_NUMBER_QUADCOPTER];
 	float battery_status[MAX_NUMBER_QUADCOPTER];
+	float baro[MAX_NUMBER_QUADCOPTER];
+	float baroTarget[MAX_NUMBER_QUADCOPTER];
 	std::list<std::vector<float> > formationMovement;
 
 	/* Control */
