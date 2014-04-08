@@ -62,7 +62,7 @@ Controller::Controller()
 			quadcopterStatus[i].getQuadcopterThrust().setWithoutBatteryValue();
 		}
 		this->thrustHelp[i] = quadcopterStatus[i].getQuadcopterThrust().getStart();
-		
+		this->quadcopterMovementStatus[i] = CALCULATE_NONE;
 		this->batteryStatusCounter[i] = 0;
 		this->batteryStatusSum[i] = 0;
 		this->baro[i] = 0;
@@ -162,6 +162,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 {
 	if(!receivedQuadcopters || !receivedFormation)
 	{
+		ROS_DEBUG("No SetQuadcopters or no SetFormation");
 		return;
 	}
 	/* Save position vectors */	
@@ -173,16 +174,18 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		id = getLocalId(i);
 		if(id == INVALID)
 		{
+			ROS_DEBUG("Invalid id %i", id);
 			continue;	
 		}
-		currentTime = getNanoTime();
-		this->timeLastCurrent[id] = currentTime;
-		Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
-		newPosition.setTimestamp( currentTime );
+		
 		
 		//Check if new positions are valid.
-		if( it->getV1() != INVALID ) 
+		if( it->isValid() ) 
 		{	
+			currentTime = getNanoTime();
+			this->timeLastCurrent[id] = currentTime;
+			Position6DOF newPosition = Position6DOF (it->getV1(), it->getV2(), it->getV3());
+			newPosition.setTimestamp( currentTime );
 			/* Quadcopter is tracked */
 			bool trackedLocal = this->tracked[id];
 			if( trackedLocal == false )
@@ -208,6 +211,10 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			this->listPositions[id].push_back( newPosition );
 			this->listPositionsMutex.unlock();
 		} 
+		else
+		{
+			ROS_DEBUG("Invalid position of %i", id);
+		}
 		this->listPositionsMutex.lock(); 
 		//Trim Position list to 30 elements.
 		while( this->listPositions[id].size() > 30 )
@@ -330,6 +337,7 @@ void Controller::calculateMovement()
 		 * in the formation, the land process is finished.
 		 */
 		ROS_ERROR("Formation amount %i", this->formation->getAmount());
+		amount = this->formation->getAmount();
 		end = numberOfLanded >= this->formation->getAmount();
 	}
 	else
@@ -437,7 +445,7 @@ void Controller::calculateMovement()
  */
 void Controller::buildFormation()
 {
-	for(int i = 0; i < this->formation->getDistance(); i++)
+	for(int i = 0; i < this->formation->getAmount(); i++)
 	{
 		this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
 	}
