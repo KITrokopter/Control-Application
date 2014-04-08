@@ -1,6 +1,6 @@
 /*
  * Line.h
- *
+ * Line consisting of one point on the line and one direction vector
  *  Created on: 21.01.2014
  *      Author: daniela
  */
