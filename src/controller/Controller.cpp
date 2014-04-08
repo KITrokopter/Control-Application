@@ -265,6 +265,7 @@ void Controller::sendMovementAll()
 		}
 		this->listSentQuadruples[i].push_back( this->currentMovement[i] );	// Save Element 
 	}
+	ROS_ERROR("Send Movement all");
 }
 
 /*
@@ -328,6 +329,7 @@ void Controller::calculateMovement()
 		 * When the number of quadcopters landed exceeds the number of quadcopters 
 		 * in the formation, the land process is finished.
 		 */
+		ROS_ERROR("Formation amount %i", this->formation->getAmount());
 		end = numberOfLanded >= this->formation->getAmount();
 	}
 	else
@@ -424,7 +426,8 @@ void Controller::calculateMovement()
 			loopCounter = 0;
 			loopCounterTime = getNanoTime();
 		}
-	}	
+	}
+	ROS_ERROR("Calculate Movement terminadeted/n/n/n!!");
 }
 
 /*
