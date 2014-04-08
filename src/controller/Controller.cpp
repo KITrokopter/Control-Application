@@ -1208,7 +1208,7 @@ void Controller::stabilize( int internId )
 
 	/* Set values */
 	//ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
-	//ROS_INFO("   baroDiff %f, new %i", baroDiff, newThrust);
+	ROS_INFO("   baroDiff %f, new %i", baroDiff, newThrust);
 	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, newRoll, yDiff, newPitch);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
