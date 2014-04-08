@@ -15,20 +15,28 @@ int main(int argc, char **argv)
 		ros::console::notifyLoggerLevelsChanged();
 	}
 	
-	IPositionReceiver* receiver = new Controller();
-	PositionModule p(receiver);
+	Controller receiver;
+	PositionModule p(&receiver);
 	
 	if (p.isInitialized()) {
 		// DO STUFF
+		ROS_DEBUG("p.isInitialized true");
 		ros::spin();
 	} else {
 		ros::shutdown();
 	}
-	
+	for(int i = 0; i < 500; i++)
+	{
+		if(ros::ok())
+		{
+			break;
+		}
+		usleep(10000);
+	}
+		
 	while (ros::ok())
 	{
 		usleep(10000);
 	}
-	
-	delete receiver;
+	ROS_ERROR("End of main");
 }

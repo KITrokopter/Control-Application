@@ -46,6 +46,7 @@ Controller::Controller()
 	this->shutdownStarted = false;	// shutdown not started
 	this->landFinished = false;
 	this->receivedQuadcopters = false; // received no quadcopters
+	this->receivedFormation = false;
 	this->buildFormationFinished = false; // has not built formation
 	this->formation = new Formation();
 	this->receivedTrackingArea = false;
@@ -62,7 +63,7 @@ Controller::Controller()
 			quadcopterStatus[i].getQuadcopterThrust().setWithoutBatteryValue();
 		}
 		this->thrustHelp[i] = quadcopterStatus[i].getQuadcopterThrust().getStart();
-		this->quadcopterMovementStatus[i] = CALCULATE_NONE;
+		//this->quadcopterMovementStatus[i] = CALCULATE_NONE;
 		this->batteryStatusCounter[i] = 0;
 		this->batteryStatusSum[i] = 0;
 		this->baro[i] = 0;
@@ -171,7 +172,14 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	long int currentTime = getNanoTime();
 	for(std::vector<Vector>::iterator it = positions.begin(); it != positions.end(); ++it, i++)
 	{
-		id = getLocalId(i);
+		if(i >= ids.size())
+		{
+			ROS_DEBUG("Id array is too small");
+			break;
+		}	
+		ROS_DEBUG("Id at Update position is %i", ids[i]);
+		id = getLocalId(ids[i]);
+		ROS_DEBUG("Id local is %i", id);
 		if(id == INVALID)
 		{
 			ROS_DEBUG("Invalid id %i", id);
@@ -206,7 +214,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 			this->tracked[id] = true;
 			control_application::quadcopter_is_tracked msg;
 			msg.is_tracked = true;
-			Tracked_pub[trackedLocal].publish(msg);
+			Tracked_pub[id].publish(msg);
 			this->listPositionsMutex.lock();
 			this->listPositions[id].push_back( newPosition );
 			this->listPositionsMutex.unlock();
@@ -272,7 +280,7 @@ void Controller::sendMovementAll()
 		}
 		this->listSentQuadruples[i].push_back( this->currentMovement[i] );	// Save Element 
 	}
-	ROS_ERROR("Send Movement all");
+	//ROS_DEBUG("Send Movement all");
 }
 
 /*
@@ -336,9 +344,11 @@ void Controller::calculateMovement()
 		 * When the number of quadcopters landed exceeds the number of quadcopters 
 		 * in the formation, the land process is finished.
 		 */
-		ROS_ERROR("Formation amount %i", this->formation->getAmount());
-		amount = this->formation->getAmount();
-		end = numberOfLanded >= this->formation->getAmount();
+		//ROS_ERROR("Formation amount %i", this->formation->getAmount());
+		//amount = this->formation->getAmount();
+		amount = 1; //FIXME
+		//end = numberOfLanded >= this->formation->getAmount();
+		end = numberOfLanded >= 1;
 	}
 	else
 	{
@@ -403,7 +413,9 @@ void Controller::calculateMovement()
 			// Check if land process is finished and set control variable accordingly
 			if(this->receivedFormation)
 			{
-				end = numberOfLanded >= this->formation->getAmount();
+				//end = numberOfLanded >= this->formation->getAmount();
+				end = numberOfLanded >= 1; //FIXME
+				//ROS_DEBUG("Formation now set");
 			}
 			else
 			{
@@ -445,7 +457,7 @@ void Controller::calculateMovement()
  */
 void Controller::buildFormation()
 {
-	for(int i = 0; i < this->formation->getAmount(); i++)
+	for(int i = 0; i < 1; i++)
 	{
 		this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
 	}
@@ -753,9 +765,11 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		return false;
 	}
 	ROS_INFO("Service setQuadcopters has been called amount %i", req.amount);
+	ROS_DEBUG("Amount %i", req.amount);
 	unsigned long int i;
 	for( i = 0; i < req.amount; i++)
 	{
+		ROS_DEBUG("Quadcopter id: %i", req.quadcopterIds[i]);
 		this->quadcopters.push_back(req.quadcopterIds[i]);
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		
@@ -848,7 +862,8 @@ void Controller::shutdownFormation()
 
 	ROS_INFO("ShutdownFormation started");	
 	this->shutdownStarted = true; /* Start shutdown process */
-	int formationAmount = this->formation->getAmount();
+	//int formationAmount = this->formation->getAmount();
+	int formationAmount = 1;
 	
 	/* Bring all quadcopters to a hold */
 	for(unsigned int i = 0; i < formationAmount; i++)
@@ -1105,7 +1120,7 @@ void Controller::quadStatusCallback(const quadcopter_application::quadcopter_sta
 		this->quadcopterStatus[localQuadcopterId].setQuadcopterThrust( qcThrust );
 		this->batteryStatusCounter[localQuadcopterId] = 0;
 		this->batteryStatusSum[localQuadcopterId] = 0;
-		ROS_DEBUG("batteryCounter >= 5 %i", quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getOffset());
+		//ROS_DEBUG("batteryCounter >= 5 %i", quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getOffset());
 	}
 }
 
@@ -1201,10 +1216,10 @@ void Controller::stabilize( int internId )
 	//ROS_INFO("In stabilize: ");
 
 	/* Thrust */
-	//double heightDiff = latestPosition.getDistanceZ( posTarget );
-	double baroDiff = baroTarget[internId] - baro[internId];
-	double calculatedThrust = controlThrust->getManipulatedVariable( baroDiff );
-	//double calculatedThrust = controlThrust->getManipulatedVariable( heightDiff );
+	double heightDiff = latestPosition.getDistanceZ( posTarget );
+	//double baroDiff = baroTarget[internId] - baro[internId];
+	//double calculatedThrust = controlThrust->getManipulatedVariable( baroDiff );
+	double calculatedThrust = controlThrust->getManipulatedVariable( heightDiff );
 	controlThrust->setOffset( this->quadcopterStatus[internId].getQuadcopterThrust().getOffset() );
 	unsigned int newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( calculatedThrust );
 	newMovement.setThrust( newThrust );
@@ -1226,8 +1241,8 @@ void Controller::stabilize( int internId )
 	float newYawrate = ((float) controlYawrate->getManipulatedVariable( yawDiff ));
 
 	/* Set values */
-	//ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
-	ROS_INFO("   baroDiff %f, new %i", baroDiff, newThrust);
+	ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, calculatedThrust, newThrust);
+	//ROS_INFO("   baroDiff %f, new %i", baroDiff, newThrust);
 	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, newRoll, yDiff, newPitch);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
