@@ -21,6 +21,9 @@ private:
      */
     double v1, v2, v3;
 
+	/**
+	 * whether vector is valid or not
+	 */
     bool valid;
 public:
     /**
@@ -147,8 +150,8 @@ public:
 	bool isLinearDependent(Vector u);
 
 	/**
-	 * Returns true if the vector contains no NaN values.
-	 * @return True if the vector contains no NaN values.
+	 * Returns true if the vector contains no NaN values and is valid.
+	 * @return True if the vector contains no NaN values and is valid.
 	 */
 	bool isValid();
 
