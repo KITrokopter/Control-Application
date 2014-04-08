@@ -192,7 +192,8 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				 or qc has left tracking area and has now entered the tracking area again*/
 				unsigned int quadStatus = this->quadcopterMovementStatus[id];
 				bool emergencyLanding = (quadStatus == CALCULATE_LAND) && this->emergencyShutdown[id] && this->shutdownStarted == false;
-				if(quadStatus == CALCULATE_START || quadStatus == CALCULATE_NONE || emergencyLanding)
+				//if(quadStatus == CALCULATE_START || quadStatus == CALCULATE_NONE || emergencyLanding)
+				if(quadStatus != CALCULATE_LAND || emergencyLanding)
 				{
 					ROS_DEBUG("Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
@@ -433,7 +434,11 @@ void Controller::calculateMovement()
  */
 void Controller::buildFormation()
 {
-	ROS_INFO("Service buildFormation has been called");
+	for(int i = 0; i < this->formation->getDistance(); i++)
+	{
+		this->quadcopterMovementStatus[i] = CALCULATE_STABILIZE;
+	}
+	/*ROS_INFO("Service buildFormation has been called");
 	//Check if Formation and Quadcopters have been set and build formation can be started
 	bool notEnoughData = !receivedQuadcopters || !receivedFormation;
 	int counter = 0;
@@ -520,7 +525,7 @@ void Controller::buildFormation()
 			firstElement.setPosition(first);
 			/*this->listTargetsMutex.lock(); FIXME
 			this->listTargets[0].push_back(firstElement);
-			this->listTargetsMutex.unlock();*/
+			this->listTargetsMutex.unlock();*//*
 		}
 		else
 		{
@@ -533,7 +538,7 @@ void Controller::buildFormation()
 			targetElement.setPosition(target);
 			/*this->listTargetsMutex.lock(); FIXME
 			this->listTargets[i].push_back(targetElement);
-			this->listTargetsMutex.unlock();*/
+			this->listTargetsMutex.unlock();*//*
 			//If Shutdown has been called, abort.
 			shutdown = this->shutdownStarted;
 			if(shutdown)
@@ -562,7 +567,7 @@ void Controller::buildFormation()
 		element.setPosition(pointer);
 		/*this->listTargetsMutex.lock(); FIXME
 		this->listTargets[i].push_back(element);
-		this->listTargetsMutex.unlock();*/
+		this->listTargetsMutex.unlock();*//*
 		//If Shutdown has been called, abort.
 		shutdown = this->shutdownStarted;
 		if(shutdown)
@@ -576,7 +581,7 @@ void Controller::buildFormation()
 		}
 		ROS_INFO("Done with %i",i);
 		usleep(TIME_WAIT_AT_LANDING);
-	}
+	}*/
 	ROS_INFO("BuildFormation finished");
 	this->buildFormationFinished = true;
 }
@@ -902,6 +907,7 @@ bool Controller::checkInput(int internId)
 		//ROS_INFO("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		//std::string message2 = std::string("No quadcopter position data has been received since %i sec. Shutdown formation\n", TIME_UPDATED_END);
 		std::string message = "No new quadcopter position data has been received";
+		ROS_ERROR("Left tracking area2");
 		if(this->shutdownStarted == false)
 		{
 			
@@ -920,6 +926,7 @@ bool Controller::checkInput(int internId)
 	{
 		//ROS_INFO("tracked false");
 		std::string message = "No new quadcopter position data has been received";
+		ROS_ERROR("Left trackin area");
 		if(this->shutdownStarted == false)
 		{
 			this->emergencyShutdown[internId] = true;
@@ -1169,6 +1176,7 @@ void Controller::moveUp( int internId )
  */
 void Controller::stabilize( int internId )
 {
+	ROS_ERROR("Stabilize");
 	this->listPositionsMutex.lock();
 	Position6DOF latestPosition = this->listPositions[internId].back();
 	this->listPositionsMutex.unlock();
