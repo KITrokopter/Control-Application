@@ -981,7 +981,7 @@ void Controller::emergencyShutdownRoutine(std::string message)
 /*
 * Callback for Ros Subscriber of Formation Movement
 */
-void Controller::MoveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
+void Controller::moveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
 {
 	if(this->rotationInProcess)
 	{
@@ -1008,7 +1008,7 @@ void Controller::MoveFormationCallback(const api_application::MoveFormation::Con
 /*
 * Callback for Ros Subscriber of set Formation
 */
-void Controller::SetFormationCallback(const api_application::SetFormation::ConstPtr &msg)
+void Controller::setFormationCallback(const api_application::SetFormation::ConstPtr &msg)
 {
 	if(this->receivedFormation)
 	{
@@ -1042,7 +1042,7 @@ void Controller::SetFormationCallback(const api_application::SetFormation::Const
 /*
  * Callback for Ros Subscriber of quadcopter status
  */
-void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr)
+void Controller::quadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr)
 {
 	//ROS_INFO("I heard Quadcopter Status. topicNr: %i", topicNr);
 	//Intern mapping
@@ -1071,8 +1071,8 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		this->quadcopterStatus[localQuadcopterId].setQuadcopterThrust( qcThrust );
 		//this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
 		
-		this->baroTarget[localQuadcopterId] = this->baro[localQuadcopterId] + BARO_OFFSET;
-		ROS_DEBUG("baroTarget set to %f", this->baroTarget[localQuadcopterId]);
+		//this->baroTarget[localQuadcopterId] = this->baro[localQuadcopterId] + BARO_OFFSET;
+		//ROS_DEBUG("baroTarget set to %f", this->baroTarget[localQuadcopterId]);
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
 
@@ -1094,7 +1094,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 /*
  * Callback for Ros Subscriber of system status. 1 = start, 2 = end
  */
-void Controller::SystemCallback(const api_application::System::ConstPtr& msg)
+void Controller::systemCallback(const api_application::System::ConstPtr& msg)
 {
 	ROS_INFO("I heard System. Status: %i", msg->command);
 	if(msg->command == 1)
@@ -1182,9 +1182,10 @@ void Controller::stabilize( int internId )
 	//ROS_INFO("In stabilize: ");
 
 	/* Thrust */
-	//double heightDiff = latestPosition.getDistanceZ( posTarget );
-	double baroDiff = baroTarget[internId] - baro[internId];
-	double calculatedThrust = controlThrust->getManipulatedVariable( baroDiff );	
+	double heightDiff = latestPosition.getDistanceZ( posTarget );
+	//double baroDiff = baroTarget[internId] - baro[internId];
+	//double calculatedThrust = controlThrust->getManipulatedVariable( baroDiff );
+	double calculatedThrust = controlThrust->getManipulatedVariable( heightDiff );
 	controlThrust->setOffset( this->quadcopterStatus[internId].getQuadcopterThrust().getOffset() );
 	unsigned int newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( calculatedThrust );
 	newMovement.setThrust( newThrust );
@@ -1207,7 +1208,7 @@ void Controller::stabilize( int internId )
 
 	/* Set values */
 	//ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, thrustDiff, newThrust);
-	ROS_INFO("   baroDiff %f, new %i", baroDiff, newThrust);
+	//ROS_INFO("   baroDiff %f, new %i", baroDiff, newThrust);
 	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, newRoll, yDiff, newPitch);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );

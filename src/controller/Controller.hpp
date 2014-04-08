@@ -126,10 +126,10 @@ public:
     
 protected:
 	//Callbacks for Ros subscriber
-	void MoveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
-	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
-	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
-	void SystemCallback(const api_application::System::ConstPtr& msg);
+	void moveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
+	void setFormationCallback(const api_application::SetFormation::ConstPtr& msg);
+	void quadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
+	void systemCallback(const api_application::System::ConstPtr& msg);
 	
 	void dontMove( int internId);
 	void moveUp( int internId );
