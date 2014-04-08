@@ -18,6 +18,7 @@ Vector::Vector() {
 	this->v1= 0;
 	this->v2 = 0;
 	this->v3 = 0;
+	this->valid = true;
 }
 
 Vector::Vector(double v1, double v2, double v3) {
