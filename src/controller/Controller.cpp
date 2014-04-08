@@ -1349,24 +1349,40 @@ int Controller::searchNeighbor( double * target, bool * ids)
 	return neighborId;
 }
 
+/*
+ * Helper function to start a new thread for movement calculation
+ * 
+ */
 void* startThreadCalculateMovement(void* something)
 {
 	Controller *someOther = (Controller *) something; 
 	someOther->calculateMovement();
 }
 
+/*
+ * Helper function to start a new thread for formation building
+ * 
+ */
 void* startThreadBuildFormation(void* something)
 {
 	Controller *someOther = (Controller *) something; 
 	someOther->buildFormation();
 }
 
+/*
+ * Helper function to start a new thread for formation shutdown
+ * 
+ */
 void* startThreadShutdown(void* something)
 {
 	Controller *someOther = (Controller *) something;
 	someOther->shutdownFormation();
 }
 
+/*
+ * Helper function to start a new thread for formation rotation
+ * 
+ */
 void* startThreadRotation(void* something)
 {
 	Controller *someOther = (Controller *) something;
