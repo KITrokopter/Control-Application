@@ -215,7 +215,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		img.data.reserve(img.step * img.height);
 		
 		for (int i = 0; i < 640 * 480 * 3; i++)	{
-			img.data[i] = it->second->data[i];
+			img.data.push_back(it->second->data[i]);
 		}
 		
 		res.images.push_back(img);
