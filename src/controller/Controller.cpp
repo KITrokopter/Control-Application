@@ -21,11 +21,11 @@ Controller::Controller()
 	//ros::NodeHandle n;
 	//Subscriber
 	//Subscriber for the MoveFormation data of the Quadcopters (1000 is the max. buffered messages)
-	this->MoveFormation_sub = this->n.subscribe("MoveFormation", 1000, &Controller::MoveFormationCallback, this);
+	this->MoveFormation_sub = this->n.subscribe("MoveFormation", 1000, &Controller::moveFormationCallback, this);
 	//Subscriber for the SetFormation data of the Quadcopters (100 is the max. buffered messages)
-	this->SetFormation_sub = this->n.subscribe("SetFormation", 100, &Controller::SetFormationCallback, this);
+	this->SetFormation_sub = this->n.subscribe("SetFormation", 100, &Controller::setFormationCallback, this);
 	//Subscriber for the quadcopter status data of the Quadcopters (1000 is the max. buffered messages)
-	this->System_sub = this->n.subscribe("System", 1000, &Controller::SystemCallback, this);
+	this->System_sub = this->n.subscribe("System", 1000, &Controller::systemCallback, this);
 
 	//Service
 	//Service for BuildFormation and Shutdown
@@ -780,7 +780,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		std::stringstream topicNameQS;
 		int id = this->quadcopters[i];
   		topicNameQS << "quadcopter_status_" << id;
-		this->QuadStatus_sub[i] = this->n.subscribe<quadcopter_application::quadcopter_status>(topicNameQS.str().c_str(), 1000, boost::bind(&Controller::QuadStatusCallback, this, _1, i));
+		this->QuadStatus_sub[i] = this->n.subscribe<quadcopter_application::quadcopter_status>(topicNameQS.str().c_str(), 1000, boost::bind(&Controller::quadStatusCallback, this, _1, i));
 		
 		//Publisher of Movement			
 		std::stringstream topicNameMov;
