@@ -1077,7 +1077,6 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 	this->receivedQuadStatus[localQuadcopterId] = true;
 
 	this->batteryStatusCounter[localQuadcopterId]++;
-	ROS_DEBUG("batteryCounter++");
 	batteryStatusSum[localQuadcopterId] += this->battery_status[localQuadcopterId];
 	int counterT = 5;
 	if( this->batteryStatusCounter[localQuadcopterId] >= counterT )
@@ -1088,7 +1087,7 @@ void Controller::QuadStatusCallback(const quadcopter_application::quadcopter_sta
 		this->quadcopterStatus[localQuadcopterId].setQuadcopterThrust( qcThrust );
 		this->batteryStatusCounter[localQuadcopterId] = 0;
 		this->batteryStatusSum[localQuadcopterId] = 0;
-		ROS_ERROR("batteryCounter >= 5 %i", quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getOffset());
+		ROS_DEBUG("batteryCounter >= 5 %i", quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getOffset());
 	}
 }
 
