@@ -457,11 +457,7 @@ void Position::calculateOrientation(int cameraId) {
             loadValues(cameraId);
             mxArray *r = engGetVariable(ep, "R");
             camRotMat[cameraId] = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
-            // camRotMat * [0, 0, 1]
-            //engEvalString(ep, "test = rodrigues(R)");
-            //Vector test = engGetVariable(ep, "test");
             camCoordCameraOrient[cameraId] = (Vector(0, 0, 1)).aftermult(camRotMat[cameraId]);
-            //ROS_DEBUG("%f, %f, %f should be %f, %f, %f", test.getV1(), test.getV2(), test.getV3(), camCoordCameraOrient[cameraId].getV1(),  camCoordCameraOrient[cameraId].getV2(), camCoordCameraOrient[cameraId].getV3());
         } else {
             // camera 0 is at the origin and looks down the positive z axis
             camRotMat[0] = Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);

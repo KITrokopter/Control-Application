@@ -237,3 +237,31 @@ double Matlab::getAngle(Vector u, Vector v) {
     }
     return angle;
 }
+
+/*
+ * calculates the distance of E: a + r*u + s*v and a point x
+ */
+double Matlab::getDistPointPlane(Vector a, Vector u, Vector v, Vector x) {
+    Vector n = Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
+    double l = n.getLength();
+    double result = (n.scalarMult(x) - n.scalarMult(a))/l;
+    if (result < 0) {
+        return -result;
+    } else {
+        return result;
+    }
+}
+
+/*
+ * calculates perpendicular point of point x and plane E: a + ru + sv
+ */
+Vector Matlab::getPerpPointPlane(Vector a, Vector u, Vector v, Vector x) {
+    // n * x = n * a => as x + t*n is the perpendicular point it has to be: n * (x + t*n) = n * a <=> = n*a/(n*x*n.getLength())
+    Vector n = Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
+    double d = n.scalarMult(a)-(n.scalarMult(x));
+    double e = n.getV1()*n.getV1() + n.getV2()*n.getV2() + n.getV3()*n.getV3();
+    double t = (d/e);
+    Vector perp = x.add(n.mult(t));
+    return perp;
+}
+

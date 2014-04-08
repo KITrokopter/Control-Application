@@ -83,37 +83,10 @@ void TrackingArea::setCenter(Vector center) {
 }
 
 /*
- * calculates the distance of E: a + r*u + s*v and a point x
- */
-double TrackingArea::getDistPointPlane(Vector a, Vector u, Vector v, Vector x) {
-    Vector n = Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
-    double l = n.getLength();
-    double result = (n.scalarMult(x) - n.scalarMult(a))/l;
-    if (result < 0) {
-        return -result;
-    } else {
-        return result;
-    }
-}
-
-/*
- * calculates perpendicular point of point x and plane E: a + ru + sv
- */
-Vector TrackingArea::getPerpPointPlane(Vector a, Vector u, Vector v, Vector x) {
-    // n * x = n * a => as x + t*n is the perpendicular point it has to be: n * (x + t*n) = n * a <=> = n*a/(n*x*n.getLength())
-    Vector n = Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
-    double d = n.scalarMult(a)-(n.scalarMult(x));
-    double e = n.getV1()*n.getV1() + n.getV2()*n.getV2() + n.getV3()*n.getV3();
-    double t = (d/e);
-    Vector perp = x.add(n.mult(t));
-    return perp;
-}
-
-
-/*
  *  checks whether a point x is in the TrackingArea or not
 */
 bool TrackingArea::contains(Vector x) {
+    Matlab m = Matlab();
     if ((x.getV3() > up.getV3()) || (x.getV3() < low.getV3()) || (x.getV2() < a1.getV2()) || (x.getV2() > a2.getV2()) || (x.getV1() < a1.getV1()) || (x.getV1() > a3.getV1())) {
         return false;
     } else {
@@ -124,15 +97,15 @@ bool TrackingArea::contains(Vector x) {
             Vector a = up;
             Vector u = Vector(1, 0, 0);
             Vector v = Vector(0, 1, 0);
-            distZ = getDistPointPlane(a, u, v, x);
+            distZ = m.getDistPointPlane(a, u, v, x);
 
             u = Vector(1, 0, 0);
             v = Vector(0, 0, 1);
-            distY = getDistPointPlane(a, u, v, x);
+            distY = m.getDistPointPlane(a, u, v, x);
 
             u = Vector(0, 1, 0);
             v = Vector(0, 0, 1);
-            distX = getDistPointPlane(a, u, v, x);
+            distX = m.getDistPointPlane(a, u, v, x);
 
             maxX = center.getV1() - a1.getV1();
             maxY = center.getV2() - a1.getV2();
@@ -143,15 +116,15 @@ bool TrackingArea::contains(Vector x) {
             Vector a = low;
             Vector u = Vector(1, 0, 0);
             Vector v = Vector(0, 1, 0);
-            distZ = getDistPointPlane(a, u, v, x);
+            distZ = m.getDistPointPlane(a, u, v, x);
 
             u = Vector(1, 0, 0);
             v = Vector(0, 0, 1);
-            distY = getDistPointPlane(a, u, v, x);
+            distY = m.getDistPointPlane(a, u, v, x);
 
             u = Vector(0, 1, 0);
             v = Vector(0, 0, 1);
-            distX = getDistPointPlane(a, u, v, x);
+            distX = m.getDistPointPlane(a, u, v, x);
 
             maxX = center.getV1() - a1.getV1();
             maxY = center.getV2() - a1.getV2();
@@ -194,7 +167,7 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
     double hypotenuse = maxRange / cos(28.5 * M_PI / 180);
     double maxDiffHorizontal = hypotenuse * sin(28.5 * M_PI / 180);
 
-    Vector perp = getPerpPointPlane(horizontal.getA(), horizontal.getU(), cameraDirection, x);
+    Vector perp = m.getPerpPointPlane(horizontal.getA(), horizontal.getU(), cameraDirection, x);
     double diff = (perp.add(x.mult(-1))).getLength();
     double length = (perp.add(cameraPosition.mult(-1))).getLength();
 
@@ -205,7 +178,7 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
         hypotenuse = maxRange / cos(21.5 * M_PI/180);
         double maxDiffVertical = maxRange * sin(21.5 * M_PI / 180);
 
-        perp = getPerpPointPlane(vertical.getA(), vertical.getU(), cameraDirection, x);
+        perp = m.getPerpPointPlane(vertical.getA(), vertical.getU(), cameraDirection, x);
         diff = (perp.add(x.mult(-1))).getLength();
         length = (perp.add(cameraPosition.mult(-1))).getLength();
 
