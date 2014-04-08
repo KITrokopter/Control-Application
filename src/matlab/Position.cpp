@@ -5,7 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstring>
-#include "engine.h"
+#include <engine.h>
 #include "Vector.h"
 #include "Line.h"
 #include "Matrix.h"
@@ -50,6 +50,7 @@ void Position::initialize() {
     } else {
         ROS_INFO("Using always the same interpolation factor.");
     }
+    m = Matlab();
 }
 
 Position::~Position() {
@@ -102,9 +103,9 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     bool calculated = calibratedYet(numberCameras);
 
     if (calculated == false) {
-        ROS_DEBUG("Calibrating with amcc toolbox");
-        AmccCalibration *calib = new AmccCalibration(ep);
-        calib->multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
+        ROS_DEBUG("Calibrating with amcc toolbox. This may take up to 20 minutes.");
+        AmccCalibration calib(ep);
+        calib.multiCameraCalibration(numberCameras, chessboardData->getChessFieldWidth(), chessboardData->getChessFieldHeight(), chessboardData->getNumberCornersX(), chessboardData->getNumberCornersY());
     }
 
     // checking whether calibration did work (trying to load all output files)
@@ -157,7 +158,6 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
         ROS_DEBUG("Distance between camera 0 and 2 is %.2f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %.2f", v1.add(v2.mult(-1)).getLength());
 
-        ROS_DEBUG("Calculating tracking area");
         setTrackingArea(2300);
         tracking.printTrackingArea();
     }
@@ -170,7 +170,6 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
 void Position::angleTry(int sign) {
     // Plain of the cameras E = a + r * u + s * (c - a)
     // as a is always the origin, E intersects the xy-plain in the origin => translation vector is not neccesary
-    Matlab *m = new Matlab();
 
     // a, b, c are the positions of camera 0, 1, 2 in camera coordinate system 0 (might not be calculated yet)
     Vector a = Vector(0, 0, 0);
@@ -182,7 +181,6 @@ void Position::angleTry(int sign) {
     Vector c = Vector(mxGetPr(r)[0], mxGetPr(r)[1], mxGetPr(r)[2]);
     mxDestroyArray(r);
     Vector u = b.add(a.mult(-1));
-    Vector v = c.add(a.mult(-1));
 
     Line cameras = Line(a, u);
     // calculates intersection line of plain of cameras in reality and plane of cameras in coordination system
@@ -193,16 +191,13 @@ void Position::angleTry(int sign) {
     Vector y = Vector(1, 0, 0);
     Line xAxis = Line(origin, x);
     // works if E isn't already on the x axis or the y axis
-    Line intersectionLine = m->getIntersectionLine(cameras, c, xAxis, y);
+    Line intersectionLine = m.getIntersectionLine(cameras, c, xAxis, y);
     //ROS_DEBUG("[%f, %f, %f] + r * [%f, %f, %f]\n", intersectionLine.getA().getV1(), intersectionLine.getA().getV2(), intersectionLine.getA().getV3(), intersectionLine.getU().getV1(), intersectionLine.getU().getV2(), intersectionLine.getU().getV3());
 
     Vector n = intersectionLine.getU().mult(1/intersectionLine.getU().getLength());
 
-    ROS_DEBUG("n is [%f, %f, %f]", n.getV1(), n.getV2(), n.getV3());
-
     n.putVariable("n", ep);
-    double angle = m->getAngle(Vector(0, 0, 1), b.cross(c));
-    ROS_DEBUG("angle is %f", angle);
+    double angle = m.getAngle(Vector(0, 0, 1), b.cross(c));
 
     double dataAngle[1] = {sign * angle};
     mxArray *ang = mxCreateDoubleMatrix(1, 1, mxREAL);
@@ -223,10 +218,6 @@ Vector Position::calculateCoordinateTransformation(Vector w) {
         r = engGetVariable(ep, "rotationMatrix");
         rotationMatrix = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
 
-        ROS_DEBUG("Rotationmatrix is:");
-        rotationMatrix.printMatrix();
-
-
         Vector result = firstCam.aftermult(rotationMatrix);
 
         if (!((result.getV3() < 0.5) && (result.getV3() > -0.5))) {
@@ -236,9 +227,6 @@ Vector Position::calculateCoordinateTransformation(Vector w) {
             r = engGetVariable(ep, "rotationMatrix");
             rotationMatrix = Matrix(mxGetPr(r)[0], mxGetPr(r)[3], mxGetPr(r)[6], mxGetPr(r)[1], mxGetPr(r)[4], mxGetPr(r)[7], mxGetPr(r)[2], mxGetPr(r)[5], mxGetPr(r)[8]);
 
-            ROS_DEBUG("Rotationmatrix is:");
-            rotationMatrix.printMatrix();
-
             result = firstCam.aftermult(rotationMatrix);
             ROS_DEBUG("new calculation has result [%.2f, %.2f, %.2f]", result.getV1(), result.getV2(), result.getV3());
 
@@ -247,12 +235,6 @@ Vector Position::calculateCoordinateTransformation(Vector w) {
                 return Vector(NAN, NAN, NAN);
             }
         }
-
-        // uncomment if x-axis has to be flipped. Only uncomment, if you are sure, you want to do this.
-        /*
-        Matrix flip = new Matrix(-1, 0, 0, 0, 1, 0, 0, 0, 1);
-        rotationMatrix = flip.multiplicate(rotationMatrix);
-        */
 
         mxDestroyArray(r);
         this->transformed = true;
@@ -294,7 +276,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
 
     for(int i = 1; i < cameraLines.size(); i++) {
         if (cameraLines[i].quadcopterId != quadcopterId) {
-            ROS_ERROR("scheduler passes datas of different quadcopter ids.");
+            ROS_ERROR("scheduler passes datas of different quadcopter ids!");
         }
     }
 
@@ -315,7 +297,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
         imageAge[cameraLines[i].camNo] = 0;
     }
 
-    Vector* direction = new Vector[cameraLines.size()];
+    Vector direction[cameraLines.size()];
 
     // rotating coordinate system in coordinate system of camera 0 and then in real coordination system
     // direction = rotationMatrix * (camRotMat * quad)
@@ -324,7 +306,6 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
         // save result
         (quadPos[quadcopterId])[cameraLines[i].camNo] = direction[i];
     }
-
 
     // controlling whether all cameras already tracked the quadcopter once
     int valid = 0;
@@ -355,14 +336,13 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             }
 
             // building lines from camera position to quadcopter position
-            Line *quadPositions = new Line[numberCameras];
+            Line quadPositions[numberCameras];
             for (int i = 0; i < numberCameras; i++) {
                 Vector camPos = getPosition(i);
                 quadPositions[i] = Line(camPos, quadPos[quadcopterId][i]);
             }
 
-            Matlab *m = new Matlab();
-            Vector quadPosition = m->interpolateLines(quadPositions, numberCameras, Vector(0, 0, 0), 1);
+            Vector quadPosition = m.interpolateLines(quadPositions, numberCameras, Vector(0, 0, 0), 1);
 
             oldPos[quadcopterId] = quadPosition;
             ROS_INFO("POSITION_MODULE: First seen position of quadcopter %d is [%.2f, %.2f, %.2f], %s", quadcopterId, quadPosition.getV1(), quadPosition.getV2(), quadPosition.getV3(), tracking.inCameraRange(quadPosition)? "in tracking area" : "NOT in tracking area");
@@ -385,7 +365,6 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
                 ROS_WARN("POSITION_MODULE: Only camera %d still tracks quadcopter %d.", cameraLines[0].camNo, cameraLines[0].quadcopterId);
             }
 
-            Matlab *m = new Matlab();
             Vector newPos;
             double interpolationFactor;
 
@@ -405,21 +384,21 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
             }
 
             if (cameraLines.size() > 1) {
-                Line* tracking = new Line[cameraLines.size()];
+                Line tracking[cameraLines.size()];
                 for (int i = 0; i < cameraLines.size(); i++) {
                     tracking[i] = Line(getPosition(cameraLines[i].camNo), quadPos[quadcopterId][(cameraLines[i].camNo)]);
                     //ROS_DEBUG("camera %d, [%f, %f, %f] + r * [%f, %f, %f]", cameraLines[i].camNo, getPosition(cameraLines[i].camNo).getV1(), getPosition(cameraLines[i].camNo).getV2(), getPosition(cameraLines[i].camNo).getV3(), quadPos[quadcopterId][(cameraLines[i].camNo)].getV1(), quadPos[quadcopterId][(cameraLines[i].camNo)].getV2(), quadPos[quadcopterId][(cameraLines[i].camNo)].getV3());
                 }
-                newPos = m->interpolateLines(tracking, cameraLines.size(), oldPos[quadcopterId], interpolationFactor);
+                newPos = m.interpolateLines(tracking, cameraLines.size(), oldPos[quadcopterId], interpolationFactor);
 
             } else {
                 Vector position = getPosition(cameraLines[0].camNo);
                 Line tracked = Line(position, quadPos[quadcopterId][0]);
 
-                newPos = m->interpolateLine(tracked, oldPos[quadcopterId], interpolationFactor);
+                newPos = m.interpolateLine(tracked, oldPos[quadcopterId], interpolationFactor);
             }
             if (newPos.getValid()) {
-                this->error = m->getError();
+                this->error = m.getError();
 
                 // calculates distance between last seen position and new calculated position
                 distance = (oldPos[quadcopterId]).add(newPos.mult(-1)).getLength();

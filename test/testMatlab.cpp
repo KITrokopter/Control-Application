@@ -1,6 +1,6 @@
 #include "../src/matlab/Vector.h"
 #include "../src/matlab/Line.h"
-#include "../src/matlab/engine.h"
+#include <engine.h>
 #include "../src/matlab/AmccCalibration.h"
 #include "../src/matlab/Matlab.h"
 #include "../src/matlab/TrackingArea.h"

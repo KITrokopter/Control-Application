@@ -86,9 +86,9 @@ void TrackingArea::setCenter(Vector center) {
  * calculates the distance of E: a + r*u + s*v and a point x
  */
 double TrackingArea::getDistPointPlane(Vector a, Vector u, Vector v, Vector x) {
-    Vector *n = new Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
-    double l = n->getLength();
-    double result = (n->scalarMult(x) - n->scalarMult(a))/l;
+    Vector n = Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
+    double l = n.getLength();
+    double result = (n.scalarMult(x) - n.scalarMult(a))/l;
     if (result < 0) {
         return -result;
     } else {
@@ -101,11 +101,11 @@ double TrackingArea::getDistPointPlane(Vector a, Vector u, Vector v, Vector x) {
  */
 Vector TrackingArea::getPerpPointPlane(Vector a, Vector u, Vector v, Vector x) {
     // n * x = n * a => as x + t*n is the perpendicular point it has to be: n * (x + t*n) = n * a <=> = n*a/(n*x*n.getLength())
-    Vector *n = new Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
-    double d = n->scalarMult(a)-(n->scalarMult(x));
-    double e = n->getV1()*n->getV1() + n->getV2()*n->getV2() + n->getV3()*n->getV3();
+    Vector n = Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
+    double d = n.scalarMult(a)-(n.scalarMult(x));
+    double e = n.getV1()*n.getV1() + n.getV2()*n.getV2() + n.getV3()*n.getV3();
     double t = (d/e);
-    Vector perp = x.add(n->mult(t));
+    Vector perp = x.add(n.mult(t));
     return perp;
 }
 
@@ -167,7 +167,7 @@ bool TrackingArea::contains(Vector x) {
 }
 
 bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection, Vector x) {
-    Matlab *m = new Matlab();
+    Matlab m = Matlab();
     // center point of the floor of the pyramid
     Vector n = cameraPosition.add(cameraDirection.mult(maxRange/cameraDirection.getLength()));
     // finding direction vectors of the plane of the floor of the camera range pyramid.
@@ -182,13 +182,13 @@ bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection,
     Vector b = Vector(cameraDirection.getV1(), cameraDirection.getV2() + 0.1, 0);
     Line g = Line(cameraPosition, a);
 
-    Line horizontal = m->getIntersectionLine(f, v, g, b);
+    Line horizontal = m.getIntersectionLine(f, v, g, b);
 
     v = cameraDirection.cross(horizontal.getU());
 
     horizontal.setA(n);
 
-    Line vertical = *(new Line(n, v));
+    Line vertical = Line(n, v);
 
     double maxLengthHorizontal = maxRange;
     double hypotenuse = maxRange / cos(28.5 * M_PI / 180);
@@ -401,13 +401,13 @@ double TrackingArea::increaseSearch(double posChange, double height, double heig
 }
 
 void TrackingArea::setTrackingArea() {
-    Matlab *m = new Matlab();
-    Line *cameraLines = new Line[numberCameras];
+    Matlab m = Matlab();
+    Line cameraLines[numberCameras];
     for (int i = 0; i < numberCameras; i++) {
         cameraLines[i] = Line();
         cameraLines[i] = Line(cameraPosition[i], cameraDirection[i]);
     }
-    Vector center = m->interpolateLines(cameraLines, numberCameras, Vector(0, 0, 0), 1);
+    Vector center = m.interpolateLines(cameraLines, numberCameras, Vector(0, 0, 0), 1);
     ROS_DEBUG("center is [%.2f, %.2f, %.2f]", center.getV1(), center.getV2(), center.getV3());
     if (!(inCameraRange(center))) {
         ROS_ERROR("center isn't tracked, maximal range %f is too small!", maxRange);

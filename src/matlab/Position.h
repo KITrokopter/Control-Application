@@ -142,6 +142,11 @@ private:
      */
     void setTrackingArea(double maxRange);
 
+    /**
+     * m is Matlab instance to calculate perpendicular points
+     */
+    Matlab m;
+
 public:
 
     /**

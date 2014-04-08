@@ -12,7 +12,7 @@
 #include <iostream>
 #include <ros/ros.h>
 #include <cmath>
-#include "Matrix 2x2.h"
+#include "Matrix2x2.h"
 #include "profiling.hpp"
 #define  BUFSIZE 256
 
@@ -119,7 +119,7 @@ Vector Matlab::interpolateLines(Line *lines, int quantity, Vector oldPos, double
     }
 
     // saving perpendicular foot points of all lines of array lines
-    Vector *points = new Vector[2 * sum];
+    Vector points[2 * sum];
 	int pos = 0;
     int intersects;
     Vector result[2];

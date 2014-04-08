@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+include_directories(~/matlab/extern/include)
+
 # Use C++ 11
 # I'll just leave this here in case we want to use it
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
