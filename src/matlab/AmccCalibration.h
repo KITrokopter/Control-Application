@@ -1,6 +1,7 @@
 /*
  * AmccCalibration.h
  *
+ * multi camera calibration with amcc toolbox
  * used method of
  * M. Warren, D. McKinnon, B. Upcroft, "Online Calibration of Stereo Rigs for Long-Term Autonomy", in International Conference on Robotics and Automation, Karlsruhe, Germany, 2013.
  *
