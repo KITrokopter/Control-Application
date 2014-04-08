@@ -1071,8 +1071,8 @@ void Controller::quadStatusCallback(const quadcopter_application::quadcopter_sta
 		this->quadcopterStatus[localQuadcopterId].setQuadcopterThrust( qcThrust );
 		//this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
 		
-		//this->baroTarget[localQuadcopterId] = this->baro[localQuadcopterId] + BARO_OFFSET;
-		//ROS_DEBUG("baroTarget set to %f", this->baroTarget[localQuadcopterId]);
+		this->baroTarget[localQuadcopterId] = this->baro[localQuadcopterId] + BARO_OFFSET;
+		ROS_DEBUG("baroTarget set to %f", this->baroTarget[localQuadcopterId]);
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
 
@@ -1182,10 +1182,10 @@ void Controller::stabilize( int internId )
 	//ROS_INFO("In stabilize: ");
 
 	/* Thrust */
-	double heightDiff = latestPosition.getDistanceZ( posTarget );
-	//double baroDiff = baroTarget[internId] - baro[internId];
-	//double calculatedThrust = controlThrust->getManipulatedVariable( baroDiff );
-	double calculatedThrust = controlThrust->getManipulatedVariable( heightDiff );
+	//double heightDiff = latestPosition.getDistanceZ( posTarget );
+	double baroDiff = baroTarget[internId] - baro[internId];
+	double calculatedThrust = controlThrust->getManipulatedVariable( baroDiff );
+	//double calculatedThrust = controlThrust->getManipulatedVariable( heightDiff );
 	controlThrust->setOffset( this->quadcopterStatus[internId].getQuadcopterThrust().getOffset() );
 	unsigned int newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( calculatedThrust );
 	newMovement.setThrust( newThrust );
