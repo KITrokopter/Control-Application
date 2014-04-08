@@ -1,3 +1,12 @@
+/**
+ * Position.h
+ * 
+ * calculating current position of quadcopter
+ * Created on: 23.02.2014
+ *      Author: daniela
+ */
+
+
 #ifndef POSITION_H
 #define POSITION_H
 #include "engine.h"
