@@ -9,7 +9,7 @@
 #include "Vector.h"
 #include "Line.h"
 #include "Matrix.h"
-#include "Matlab.h"
+#include "TrackingMath.h"
 #include "TrackingArea.h"
 #include "AmccCalibration.h"
 #include <vector>
@@ -50,7 +50,7 @@ void Position::initialize() {
     } else {
         ROS_INFO("Using always the same interpolation factor.");
     }
-    m = Matlab();
+    m = TrackingMath();
 }
 
 Position::~Position() {

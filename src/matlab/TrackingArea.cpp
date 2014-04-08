@@ -8,7 +8,7 @@
 #include <cmath>
 #include "Vector.h"
 #include "Line.h"
-#include "Matlab.h"
+#include "TrackingMath.h"
 #include "engine.h"
 #include <math.h>
 #include <iostream>
@@ -86,7 +86,7 @@ void TrackingArea::setCenter(Vector center) {
  *  checks whether a point x is in the TrackingArea or not
 */
 bool TrackingArea::contains(Vector x) {
-    Matlab m = Matlab();
+    TrackingMath m = TrackingMath();
     if ((x.getV3() > up.getV3()) || (x.getV3() < low.getV3()) || (x.getV2() < a1.getV2()) || (x.getV2() > a2.getV2()) || (x.getV1() < a1.getV1()) || (x.getV1() > a3.getV1())) {
         return false;
     } else {
@@ -140,7 +140,7 @@ bool TrackingArea::contains(Vector x) {
 }
 
 bool TrackingArea::inTrackingArea(Vector cameraPosition, Vector cameraDirection, Vector x) {
-    Matlab m = Matlab();
+    TrackingMath m = TrackingMath();
     // center point of the floor of the pyramid
     Vector n = cameraPosition.add(cameraDirection.mult(maxRange/cameraDirection.getLength()));
     // finding direction vectors of the plane of the floor of the camera range pyramid.
@@ -374,7 +374,7 @@ double TrackingArea::increaseSearch(double posChange, double height, double heig
 }
 
 void TrackingArea::setTrackingArea() {
-    Matlab m = Matlab();
+    TrackingMath m = TrackingMath();
     Line cameraLines[numberCameras];
     for (int i = 0; i < numberCameras; i++) {
         cameraLines[i] = Line();

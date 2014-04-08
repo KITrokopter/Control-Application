@@ -2,7 +2,7 @@
 #include "../src/matlab/Line.h"
 #include <engine.h>
 #include "../src/matlab/AmccCalibration.h"
-#include "../src/matlab/Matlab.h"
+#include "../src/matlab/TrackingMath.h"
 #include "../src/matlab/TrackingArea.h"
 #include "../src/matlab/profiling.hpp"
 #include "../src/matlab/Position.h"
@@ -14,7 +14,7 @@
 #include <math.h>
 #include <ros/ros.h>
 
-bool calibrate(Matlab *m) {
+bool calibrate(TrackingMath *m) {
     /*Position *h = new Position(m->getEngine(), 3);
     ChessboardData *c = new ChessboardData(7, 7, 57, 57);
     bool ok = h->calibrate(c, 3);
@@ -68,7 +68,7 @@ void tracking() {
     }*/
 }
 
-void perp(Matlab *m) {
+void perp(TrackingMath *m) {
 
     /*//Lotfußpunkt f: (-7,5,3) Lotfußpunkt g: (-1, 1, 5)
     Vector* a = new Vector(-7, 2, -3);

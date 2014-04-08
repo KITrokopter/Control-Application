@@ -138,7 +138,7 @@ if(EXISTS ${MATLAB_PATH})
   
   src/main.cpp
   src/KitrokopterMessages.cpp
-  src/matlab/Matlab.cpp 
+  src/matlab/TrackingMath.cpp 
   src/matlab/Matrix2x2.cpp
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp
@@ -187,7 +187,7 @@ add_executable(control_application_test_calibration_node
   
   test/testMatlab.cpp
   src/KitrokopterMessages.cpp
-  src/matlab/Matlab.cpp 
+  src/matlab/TrackingMath.cpp 
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp
   src/matlab/Matrix.cpp
@@ -249,7 +249,7 @@ add_executable(profile_control
   src/controller/QuadcopterControl.cpp
   src/controller/QuadcopterInfo.cpp
   src/controller/QuadcopterThrust.cpp
-  src/matlab/Matlab.cpp 
+  src/matlab/TrackingMath.cpp 
   src/matlab/Vector.cpp 
   src/matlab/Line.cpp
   src/matlab/Matrix.cpp
@@ -290,7 +290,7 @@ add_executable(position_module
   src/matlab/Line.cpp
   src/matlab/Matrix.cpp
   src/matlab/Matrix2x2.cpp
-  src/matlab/Matlab.cpp
+  src/matlab/TrackingMath.cpp
   src/matlab/Position.cpp
   src/matlab/TrackingArea.cpp
   src/matlab/AmccCalibration.cpp

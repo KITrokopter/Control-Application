@@ -68,26 +68,6 @@ private:
     void setCenter(Vector center);
 
     /**
-     * calculates distance of plane and point
-     * @param a point in plane
-     * @param u first direction vector of plane
-     * @param v second direction vector of plane
-     * @param x point
-     * @return distance of x and plain
-     */
-    double getDistPointPlane(Vector a, Vector u, Vector v, Vector x);
-
-    /**
-     * calculates perpendicular foot point of plane and point
-     * @param a point on plane
-     * @param u first direction vector of plane
-     * @param v second directon vector of plane
-     * @param x point
-     * @return perpendicular foot point of plane and x
-     */
-    Vector getPerpPointPlane(Vector a, Vector u, Vector v, Vector x);
-
-    /**
      * checks whether a point can be tracked of a single camera
      * @param cameraPosition position of camera
      * @param cameraDirection orientation of camera

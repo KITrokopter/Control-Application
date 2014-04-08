@@ -8,7 +8,7 @@
  *      Author: daniela
  */
 
-#include "Matlab.h"
+#include "TrackingMath.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

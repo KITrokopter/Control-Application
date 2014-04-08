@@ -1,11 +1,11 @@
 /*
- * Matlab.cpp
+ * TrackingMath.cpp
  *
  *  Created on: 13.01.2014
  *      Author: daniela
  */
 
-#include "Matlab.h"
+#include "TrackingMath.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,11 +16,11 @@
 #include "profiling.hpp"
 #define  BUFSIZE 256
 
-Matlab::Matlab() {
+TrackingMath::TrackingMath() {
     error = 0;
 }
 
-Vector Matlab::perpFootOneLine(Line f, Vector b) {
+Vector TrackingMath::perpFootOneLine(Line f, Vector b) {
     Vector a = f.getA();
     Vector u = f.getU();
     // d = b * u
@@ -32,7 +32,7 @@ Vector Matlab::perpFootOneLine(Line f, Vector b) {
     return result;
 }
 
-int Matlab::perpFootTwoLines(Line f, Line g, Vector *result) {
+int TrackingMath::perpFootTwoLines(Line f, Line g, Vector *result) {
     bool same;
     Vector x;
     // Vectors to check later, if the Matrix of two components of both Vectors can be inverted
@@ -111,7 +111,7 @@ int Matlab::perpFootTwoLines(Line f, Line g, Vector *result) {
     return 2;
 }
 
-Vector Matlab::interpolateLines(Line *lines, int quantity, Vector oldPos, double interpolationFactor) {
+Vector TrackingMath::interpolateLines(Line *lines, int quantity, Vector oldPos, double interpolationFactor) {
 
     int sum = 0;
     for (int i = 1; i < quantity; i++) {
@@ -179,7 +179,7 @@ Vector Matlab::interpolateLines(Line *lines, int quantity, Vector oldPos, double
     }
 }
 
-Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
+Vector TrackingMath::interpolateLine(Line line, Vector quadPos, double interpolationFactor) {
 
     // caculate perpendicular foor point of line and quadPos
     Vector newPos = perpFootOneLine(line, quadPos);
@@ -192,7 +192,7 @@ Vector Matlab::interpolateLine(Line line, Vector quadPos, double interpolationFa
     return result;
 }
 
-Vector Matlab::interpolate(Vector oldPos, Vector newPos, double interpolationFactor) {
+Vector TrackingMath::interpolate(Vector oldPos, Vector newPos, double interpolationFactor) {
     double v1 = newPos.getV1()*interpolationFactor + oldPos.getV1() * (1 - interpolationFactor);
     double v2 = newPos.getV2()*interpolationFactor + oldPos.getV2() * (1 - interpolationFactor);
     double v3 = newPos.getV3()*interpolationFactor + oldPos.getV3() * (1 - interpolationFactor);
@@ -200,7 +200,7 @@ Vector Matlab::interpolate(Vector oldPos, Vector newPos, double interpolationFac
     return result;
 }
 
-Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {
+Line TrackingMath::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV2) {
 
     // E1 == g
     Vector v = directV1.add(f.getA().mult(-1));
@@ -222,11 +222,11 @@ Line Matlab::getIntersectionLine(Line f, Vector directV1, Line g, Vector directV
     return intersectionLine;
 }
 
-double Matlab::getError() {
+double TrackingMath::getError() {
     return this->error;
 }
 
-double Matlab::getAngle(Vector u, Vector v) {
+double TrackingMath::getAngle(Vector u, Vector v) {
     // cos(alpha)= u*v/(|u|*|v|)
     double angle = u.scalarMult(v)/(u.getLength() * v.getLength());
     angle = acos(angle);
@@ -241,7 +241,7 @@ double Matlab::getAngle(Vector u, Vector v) {
 /*
  * calculates the distance of E: a + r*u + s*v and a point x
  */
-double Matlab::getDistPointPlane(Vector a, Vector u, Vector v, Vector x) {
+double TrackingMath::getDistPointPlane(Vector a, Vector u, Vector v, Vector x) {
     Vector n = Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
     double l = n.getLength();
     double result = (n.scalarMult(x) - n.scalarMult(a))/l;
@@ -255,7 +255,7 @@ double Matlab::getDistPointPlane(Vector a, Vector u, Vector v, Vector x) {
 /*
  * calculates perpendicular point of point x and plane E: a + ru + sv
  */
-Vector Matlab::getPerpPointPlane(Vector a, Vector u, Vector v, Vector x) {
+Vector TrackingMath::getPerpPointPlane(Vector a, Vector u, Vector v, Vector x) {
     // n * x = n * a => as x + t*n is the perpendicular point it has to be: n * (x + t*n) = n * a <=> = n*a/(n*x*n.getLength())
     Vector n = Vector(u.getV2()*v.getV3()-u.getV3()*v.getV2(), u.getV3()*v.getV1()-u.getV1()*v.getV3(), u.getV1()*v.getV2()- u.getV2()* v.getV1());
     double d = n.scalarMult(a)-(n.scalarMult(x));

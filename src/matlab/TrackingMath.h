@@ -1,17 +1,17 @@
 /*
- * Matlab.h
+ * TrackingMath.h
  *
  *  Created on: 13.01.2014
  *      Author: daniela
  */
 
-#ifndef MATLAB_H_
-#define MATLAB_H_
+#ifndef TRACKING_MATH_H_
+#define TRACKING_MATH_H_
 #include "Line.h"
 #include "Vector.h"
 #include "engine.h"
 
-class Matlab {
+class TrackingMath {
 private:
 
     /**
@@ -24,7 +24,7 @@ public:
     /**
      * empty constructor.
      */
-	Matlab();
+    TrackingMath();
 
     /**
      * calculates perpendicular foot of line f and point b.
@@ -122,4 +122,4 @@ public:
 
 };
 
-#endif /* MATLAB_H_ */
+#endif /* TRACKING_MATH_H_ */

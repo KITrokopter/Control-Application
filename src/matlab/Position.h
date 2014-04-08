@@ -6,9 +6,9 @@
 #include "Vector.h"
 #include "Line.h"
 #include "Matrix.h"
-#include "Matlab.h"
+#include "TrackingMath.h"
 #include "AmccCalibration.h"
-#include "engine.h"
+#include <engine.h>
 #include <vector>
 #include "TrackingArea.h"
 #include "../position/tracking/CameraData.hpp"
@@ -145,7 +145,7 @@ private:
     /**
      * m is Matlab instance to calculate perpendicular points
      */
-    Matlab m;
+    TrackingMath m;
 
 public:
 
