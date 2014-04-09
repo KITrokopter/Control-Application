@@ -22,16 +22,16 @@ int main(int argc, char **argv)
 		// DO STUFF
 		ROS_DEBUG("p.isInitialized true");
 		ros::spin();
+		for(int i = 0; i < 100; i++)
+		{
+		  if(ros::ok())
+		  {
+			  break;
+		  }
+		  usleep(10000);
+		}
 	} else {
 		ros::shutdown();
-	}
-	for(int i = 0; i < 500; i++)
-	{
-		if(ros::ok())
-		{
-			break;
-		}
-		usleep(10000);
 	}
 		
 	while (ros::ok())

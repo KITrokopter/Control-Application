@@ -13,12 +13,53 @@ static bool closeToTarget( Position6DOF position1, Position6DOF position2, doubl
  */
 Controller::Controller()
 {
+	
+	//All control variables are set to zero
+	this->shutdownStarted = false;	// shutdown not started
+	this->landFinished = false;
+	this->receivedQuadcopters = false; // received no quadcopters
+	this->receivedFormation = false;
+	this->buildFormationFinished = false; // has not built formation
+	this->formation = new Formation();
+	this->receivedTrackingArea = false;
+	this->rotationInProcess = false;
+	
+	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
+	{
+		tracked[i] = false;	// Initialize tracked (no quadcopter is tracked at the beginning)
+		receivedQuadStatus[i] = false;
+		this->emergencyShutdown[i] = false;
+		timeLastCurrent[i] = 0;
+		//this->quadcopterStatus[i] = QuadcopterControl();
+		if( !USE_BATTERY_INPUT )
+		{
+			quadcopterStatus[i].getQuadcopterThrust().setWithoutBatteryValue();
+		}
+		this->thrustHelp[i] = quadcopterStatus[i].getQuadcopterThrust().getStart();
+		//this->quadcopterMovementStatus[i] = CALCULATE_NONE;
+		pitch_stab[i] = 0;
+		roll_stab[i] = 0;
+		yaw_stab[i] = 0;
+		thrust_stab[i] = 0;
+		battery_status[i] = 0;
+		this->batteryStatusCounter[i] = 0;
+		this->batteryStatusSum[i] = 0;
+		this->baro[i] = 0;
+		this->baroTarget[i] = this->baro[i] + BARO_OFFSET;
+	}
+	
+
+	this->controlThrust = new PDIControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, AMPLIFICATION_THRUST_I, THRUST_OFFSET );
+	this->controlRoll = new PControl( AMPLIFICATION_RP, RP_OFFSET );
+	this->controlPitch = new PControl( AMPLIFICATION_RP, RP_OFFSET );
+	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
+	
+	ROS_INFO("ROS stuff setting up");
 	/*
   	* NodeHandle is the main access point to communications with the ROS system.
 	* The first NodeHandle constructed will fully initialize this node, and the last
 	* NodeHandle destructed will close down the node.
 	*/
-	//ros::NodeHandle n;
 	//Subscriber
 	//Subscriber for the MoveFormation data of the Quadcopters (1000 is the max. buffered messages)
 	this->MoveFormation_sub = this->n.subscribe("MoveFormation", 1000, &Controller::moveFormationCallback, this);
@@ -42,42 +83,11 @@ Controller::Controller()
 	this->Announce_client = this->n.serviceClient<api_application::Announce>("Announce");
 	this->Shutdown_client = this->n.serviceClient<control_application::Shutdown>("Shutdown");
 	
-	//All control variables are set to zero
-	this->shutdownStarted = false;	// shutdown not started
-	this->landFinished = false;
-	this->receivedQuadcopters = false; // received no quadcopters
-	this->receivedFormation = false;
-	this->buildFormationFinished = false; // has not built formation
-	this->formation = new Formation();
-	this->receivedTrackingArea = false;
-	this->rotationInProcess = false;
-	ROS_INFO("ROS stuff set up");
-	
-	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
-	{
-		tracked[i] = false;	// Initialize tracked (no quadcopter is tracked at the beginning)
-		this->emergencyShutdown[i] = false;
-		//this->quadcopterStatus[i] = QuadcopterControl();
-		if( !USE_BATTERY_INPUT )
-		{
-			quadcopterStatus[i].getQuadcopterThrust().setWithoutBatteryValue();
-		}
-		this->thrustHelp[i] = quadcopterStatus[i].getQuadcopterThrust().getStart();
-		//this->quadcopterMovementStatus[i] = CALCULATE_NONE;
-		this->batteryStatusCounter[i] = 0;
-		this->batteryStatusSum[i] = 0;
-		this->baro[i] = 0;
-		this->baroTarget[i] = this->baro[i] + BARO_OFFSET;
-	}
-	ROS_INFO("Constructing done");
 	this->timeOffsetOutput= getNanoTime();
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
-
-	this->controlThrust = new PDIControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, AMPLIFICATION_THRUST_I, THRUST_OFFSET );
-	this->controlRoll = new PControl( AMPLIFICATION_RP, RP_OFFSET );
-	this->controlPitch = new PControl( AMPLIFICATION_RP, RP_OFFSET );
-	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
+	ROS_INFO("Constructing done");
+	
 }
 
 /*
@@ -335,6 +345,17 @@ void Controller::sendMovement( int internId)
 void Controller::calculateMovement()
 {
 	ROS_INFO("Calculation started");
+	int waitCounter = 0;
+	while((!this->receivedQuadcopters))
+	{
+		usleep(TIME_WAIT_FOR_QUADCOPTERS);
+		waitCounter++;
+		if( waitCounter > 100)
+		{
+			ROS_ERROR("No SetQuadcopters received in time");
+			return;
+		}
+	}
 	int numberOfLanded = 0;	// Keep track of the number of quadcopters landed
 	int amount = quadcopterMovementStatus.size();
 	bool end;	// As long as the land process isn't finished, we calculate new data
@@ -1080,6 +1101,10 @@ void Controller::quadStatusCallback(const quadcopter_application::quadcopter_sta
 	//ROS_INFO("I heard Quadcopter Status. topicNr: %i", topicNr);
 	//Intern mapping
 	int localQuadcopterId = this->getLocalId(topicNr);
+	if(localQuadcopterId < 0) {
+	  ROS_DEBUG("localQuadcopterId < 0!!!");
+	  return;
+	}
 	this->battery_status[localQuadcopterId] = msg->battery_status;
 	this->roll_stab[localQuadcopterId] = msg->stabilizer_roll;
 	this->pitch_stab[localQuadcopterId] = msg->stabilizer_pitch;

@@ -49,7 +49,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	
 	api_application::Announce announce;
 	announce.request.type = 3; // 3 means position module
-	
+	msg = 0;
 	if (announceClient.call(announce))
 	{
 		rosId = announce.response.id;
@@ -62,6 +62,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 		else
 		{
 			ROS_INFO("Position module successfully announced. Got id %d", rosId);
+			msg = new KitrokopterMessages(rosId);
 		}
 	}
 	else
@@ -70,7 +71,6 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 		_isInitialized = false;
 	}
 	
-	msg = new KitrokopterMessages(rosId);
 	
 	if (_isInitialized)
 	{
@@ -88,7 +88,10 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 
 PositionModule::~PositionModule()
 {
-	msg->~KitrokopterMessages();
+      if(msg) {
+	    msg->~KitrokopterMessages();
+	    delete msg;
+      }
 	log.close();
 	
 	// TODO: Free picture cache.

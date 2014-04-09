@@ -64,6 +64,7 @@
 #define TIME_WAIT_FOR_LANDING 10000
 #define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
 #define TIME_WAIT_AT_LANDING 10*1000*1000 // in microseconds
+#define TIME_WAIT_FOR_QUADCOPTERS 8000 // in microseconds
 #define LOOPS_PER_SECOND 20
 
 #define DISTANCE_ROTATE_TO_CENTER 100
@@ -224,15 +225,15 @@ private:
 	/* Subscriber */	
 	ros::Subscriber MoveFormation_sub;	//Subscriber for the MoveFormation data	
 	ros::Subscriber SetFormation_sub;	//Subscriber for Formation data from API
-	ros::Subscriber QuadStatus_sub[10];
+	ros::Subscriber QuadStatus_sub[MAX_NUMBER_QUADCOPTER];
 	ros::Subscriber System_sub;	//Subscriber to System topic (Sends the start and end of the system)
 	//ros::Subscriber QuadStatus_sub;	//Subscriber for Quadcopter data from QuadcopterModul
 
 	/* Publisher */
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
-	ros::Publisher Movement_pub[10];	//ros::Publisher Movement_pub;
+	ros::Publisher Movement_pub[MAX_NUMBER_QUADCOPTER];	//ros::Publisher Movement_pub;
 	ros::Publisher Message_pub;	//Publisher for Message to API
-	ros::Publisher Tracked_pub[10];
+	ros::Publisher Tracked_pub[MAX_NUMBER_QUADCOPTER];
 
 	/* Services */
 
