@@ -15,6 +15,7 @@ Controller::Controller()
 {
 	
 	//All control variables are set to zero
+	this->constructionDone = false;
 	this->shutdownStarted = false;	// shutdown not started
 	this->landFinished = false;
 	this->receivedQuadcopters = false; // received no quadcopters
@@ -92,6 +93,7 @@ Controller::Controller()
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
 	ROS_INFO("Constructing done");
+	this->constructionDone = true;
 	
 }
 
