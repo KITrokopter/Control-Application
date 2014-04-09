@@ -5,12 +5,12 @@
 #include <map>
 #include "ros/ros.h"
 
-#define BATTERY_MAX 8
-#define BATTERY_MIN 1
+#define BATTERY_MAX 5
+#define BATTERY_MIN 3
 
 #define BATTERY_LOW 3.0//In V
 
-#define THRUST_GLOBAL_MAX 60000
+#define THRUST_GLOBAL_MAX 50000
 #define THRUST_GLOBAL_MIN 10001
 #define THRUST_OFF 0
 #define THRUST_OFFSET_LOW 32000
