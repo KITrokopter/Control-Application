@@ -191,6 +191,7 @@ private:
 	bool receivedFormation;
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
 	bool buildFormationFinished;
+	bool buildFormationStarted;
 	bool receivedTrackingArea;
 	bool shutdownStarted;
 	bool emergencyShutdown[MAX_NUMBER_QUADCOPTER];

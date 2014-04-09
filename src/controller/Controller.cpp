@@ -23,6 +23,11 @@ Controller::Controller()
 	this->formation = new Formation();
 	this->receivedTrackingArea = false;
 	this->rotationInProcess = false;
+	this->buildFormationStarted = false;
+	this->tBuildFormation = 0;
+	this->tCalculateMovement = 0;
+	this->tShutdownFormation = 0;
+	this->tRotation = 0;
 	
 	for(int i = 0; i< MAX_NUMBER_QUADCOPTER; i++)
 	{
@@ -762,6 +767,7 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
 		ROS_ERROR("Formation was already build. No rebuildling allowed.");
 		return false;
 	}
+	this->buildFormationStarted = true;
 	pthread_create(&tBuildFormation, NULL, startThreadBuildFormation, this);
 	ROS_INFO("Thread tBuildFormation set up");
 	return true;
@@ -803,7 +809,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		if( this->receivedTrackingArea)
 		{
 			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
-			Position6DOF defaultTarget = Position6DOF(-100, 800, 1000 );
+			Position6DOF defaultTarget = Position6DOF(-100, 800, 300 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
@@ -813,7 +819,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		}
 		else
 		{
-			Position6DOF defaultTarget = Position6DOF(0, 1400, 1000 );
+			Position6DOF defaultTarget = Position6DOF(0, 1400, 300 );
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_ERROR("Default target set");
 		}
@@ -899,10 +905,13 @@ void Controller::shutdownFormation()
 		usleep(TIME_WAIT_FOR_LANDING);
 	}
 	ROS_INFO("Join threads");
-	void *resultCalc;
-	pthread_join(tCalculateMovement, &resultCalc);
-	void *resultBuild;
-	pthread_join(tBuildFormation, &resultBuild);
+	//void *resultCalc;
+	pthread_join(tCalculateMovement, 0);
+	//void *resultBuild;
+	if(buildFormationStarted)
+	{
+		pthread_join(tBuildFormation, 0);
+	}
 	ROS_INFO("Shutdown function finished");	
 }
 
