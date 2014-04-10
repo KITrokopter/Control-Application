@@ -5,6 +5,11 @@
 #include <inttypes.h>
 #include <vector>
 
+/**
+ * A test helper that generates a linear movement over time.
+ * 
+ * @author Sebastian Schmidt
+ */
 class MovementGenerator {
 private:
 	IPositionReceiver *receiver;

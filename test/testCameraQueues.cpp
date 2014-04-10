@@ -10,6 +10,12 @@
 
 using namespace std;
 
+/**
+ * Converts an int to string.
+ * 
+ * @param i The integer.
+ * @return i as string.
+ */
 string toString(long int i)
 {
 	stringstream ss;
@@ -17,6 +23,13 @@ string toString(long int i)
 	return ss.str();
 }
 
+/**
+ * Inserts data into the camera queue, using the given parameters and some default values.
+ * 
+ * @param q The queue to insert into.
+ * @param camNo The number of the camera.
+ * @param time The timestamp for the generated data.
+ */
 void insertData(SynchronousCameraQueue *q, int camNo, long int time)
 {
 	
@@ -30,6 +43,11 @@ void insertData(SynchronousCameraQueue *q, int camNo, long int time)
 	q->enqueue(data);
 }
 
+/**
+ * A test case to check if the samples are correctly grouped.
+ * 
+ * @return An empty string if the test was successful, or the error otherwise.
+ */
 string testGrouping()
 {
 	setNanoTime(0);
@@ -94,6 +112,11 @@ string testGrouping()
 	return "";
 }
 
+/**
+ * A test case to check if the dataAvailable() function works correctly.
+ * 
+ * @return An empty string if the test was successful, or the error otherwise.
+ */
 string testDataAvailable()
 {
 	setNanoTime(0);
@@ -144,6 +167,11 @@ string testDataAvailable()
 	return "";
 }
 
+/**
+ * A test case to check if the dequeue function works correctly.
+ * 
+ * @return An empty string if the test was successful, or the error otherwise.
+ */
 string testDequeue()
 {
 	setNanoTime(0);
@@ -179,6 +207,11 @@ string testDequeue()
 	return "";
 }
 
+/**
+ * A test case to check if enqueueing works correctly.
+ * 
+ * @return An empty string if the test was successful, or the error otherwise.
+ */
 string testEnqueue()
 {
 	setNanoTime(0);
@@ -208,6 +241,12 @@ string testEnqueue()
 	return "";
 }
 
+/**
+ * Executes a test method.
+ * 
+ * @param name The name of the test.
+ * @param f The test method to call.
+ */
 void test(string name, string (*f)())
 {
 	cout << "EXECUTING: " << name << " ... ";
@@ -222,6 +261,11 @@ void test(string name, string (*f)())
 	}
 }
 
+/**
+ * Executes some test methods.
+ * 
+ * @return 0.
+ */
 int main()
 {
 	cout << "=====================================================================";
@@ -241,4 +285,6 @@ int main()
 	cout << "=====================================================================";
 	cout << "=====================================================================";
 	cout << endl;
+	
+	return 0;
 }
