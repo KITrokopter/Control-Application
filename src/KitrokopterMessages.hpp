@@ -9,6 +9,12 @@
 #define KM_WARNING 2
 #define KM_ERROR 3
 
+/**
+ * Class to use the message topic.
+ * This allows to send status messages to the user.
+ * 
+ * @author Sebastian Schmidt
+ */
 class KitrokopterMessages
 {
 private:
