@@ -173,7 +173,7 @@ private:
 	 */ 
 	float pitch_stab[MAX_NUMBER_QUADCOPTER];
 	float roll_stab[MAX_NUMBER_QUADCOPTER];
-	float yaw_stab[MAX_NUMBER_QUADCOPTER];
+	float yaw_stab[MAX_NUMBER_QUADCOPTER]; //in degree
 	unsigned int thrust_stab[MAX_NUMBER_QUADCOPTER];
 	float battery_status[MAX_NUMBER_QUADCOPTER];
 	float baro[MAX_NUMBER_QUADCOPTER];
