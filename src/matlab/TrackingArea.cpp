@@ -529,6 +529,10 @@ void TrackingArea::setTrackingArea() {
 
 void TrackingArea::printTrackingArea() {
     ROS_DEBUG("Tracking area is from [%.2f, %.2f, %.2f] to [%.2f, %.2f, %.2f], square is of size %.2f, upper point is [%.2f, %.2f, %.2f], lower point is [%.2f, %.2f, %.2f].", a1.getV1(), a1.getV2(), a1.getV3(), a3.getV1(), a3.getV2(), a3.getV3(), a1.add(a2.mult(-1)).getLength(), up.getV1(), up.getV2(), up.getV3(), low.getV1(), low.getV2(), low.getV3());
+    Vector c = center;
+    // center is center, just moved up/down
+    c.setV3(a1.getV3());
+    ROS_DEBUG("Center of tracking area is [%.2f, %.2f, %.2f]", c.getV1(), c.getV2(), c.getV3());
 }
 
 Vector TrackingArea::getCenterOfTrackingArea() {
