@@ -20,7 +20,7 @@
 #include "camera_application/CameraCalibrationData.h"
 #include "api_application/System.h"
 #include "../controller/Mutex.hpp"
-#include "../matlab/Position.h"
+#include "../matlab/PositionCalculator.h"
 #include "tracking/TrackingWorker.hpp"
 #include "IdDictionary.hpp"
 

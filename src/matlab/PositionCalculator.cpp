@@ -1,4 +1,4 @@
-#include "Position.h"
+#include "PositionCalculator.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,7 +18,7 @@
 #include <ros/ros.h>
 #include "profiling.hpp"
 
-Position::Position()
+PositionCalculator::PositionCalculator()
 {
     this->numberCameras = 0;
 	Engine *ep;
@@ -31,14 +31,14 @@ Position::Position()
     initialize();
 }
 
-Position::Position(Engine *ep, int numberCameras)
+PositionCalculator::PositionCalculator(Engine *ep, int numberCameras)
 {
     this->numberCameras = numberCameras;
     this->ep = ep;
     initialize();
 }
 
-void Position::initialize() {
+void PositionCalculator::initialize() {
     this->transformed = false;
     this->interpolationDependent = true;
     distance = 0;
@@ -53,11 +53,11 @@ void Position::initialize() {
     m = TrackingMath();
 }
 
-Position::~Position() {
+PositionCalculator::~PositionCalculator() {
     engClose(ep);
 }
 
-bool Position::calibratedYet(int numberCameras) {
+bool PositionCalculator::calibratedYet(int numberCameras) {
     // trying to load all output files
     mxArray *good;
     std::string load;
@@ -92,7 +92,7 @@ bool Position::calibratedYet(int numberCameras) {
 }
 
 
-bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
+bool PositionCalculator::calibrate(ChessboardData *chessboardData, int numberCameras) {
 
     this->numberCameras = numberCameras;
     if (numberCameras < 3) {
@@ -167,7 +167,7 @@ bool Position::calibrate(ChessboardData *chessboardData, int numberCameras) {
     return ok;
 }
 
-void Position::angleTry(int sign) {
+void PositionCalculator::angleTry(int sign) {
     // Plain of the cameras E = a + r * u + s * (c - a)
     // as a is always the origin, E intersects the xy-plain in the origin => translation vector is not neccesary
 
@@ -207,7 +207,7 @@ void Position::angleTry(int sign) {
 }
 
 // calculates Vector in the calibration coordinate of camera 0 in the real camera coordination
-Vector Position::calculateCoordinateTransformation(Vector w) {
+Vector PositionCalculator::calculateCoordinateTransformation(Vector w) {
     if (transformed == false) {
         angleTry(1);
 
@@ -243,11 +243,11 @@ Vector Position::calculateCoordinateTransformation(Vector w) {
     return w.aftermult(rotationMatrix);
 }
 
-void Position::setNumberCameras(int numberCameras) {
+void PositionCalculator::setNumberCameras(int numberCameras) {
     this->numberCameras = numberCameras;
 }
 
-void Position::loadValues(int cameraId) {
+void PositionCalculator::loadValues(int cameraId) {
     if (cameraId == 0) {
         // loads resulting file in matlab workspace
         engEvalString(ep, "load('/tmp/calibrationResult/Calib_Results_0.mat');");
@@ -261,7 +261,7 @@ void Position::loadValues(int cameraId) {
     }
 }
 
-Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
+Vector PositionCalculator::updatePosition(std::vector<CameraData> cameraLines) {
 
     int quadcopterId = cameraLines[0].quadcopterId;
 
@@ -432,7 +432,7 @@ Vector Position::updatePosition(std::vector<CameraData> cameraLines) {
     }
 }
 
-void Position::calculatePosition(int cameraId) {
+void PositionCalculator::calculatePosition(int cameraId) {
     if (cameraId != -1) {
         if (cameraId != 0) {
             loadValues(cameraId);
@@ -447,11 +447,11 @@ void Position::calculatePosition(int cameraId) {
     }
 }
 
-Vector Position::getPosition(int cameraId) {
+Vector PositionCalculator::getPosition(int cameraId) {
     return this->realCameraPos[cameraId];
 }
 
-void Position::calculateOrientation(int cameraId) {
+void PositionCalculator::calculateOrientation(int cameraId) {
     if (cameraId != -1) {
         if (cameraId != 0) {
             loadValues(cameraId);
@@ -467,19 +467,19 @@ void Position::calculateOrientation(int cameraId) {
     }
 }
 
-void Position::setTrackingArea(double maxRange) {
+void PositionCalculator::setTrackingArea(double maxRange) {
     this->tracking = TrackingArea(realCameraPos, realCameraOrient, numberCameras, maxRange);
 }
 
-TrackingArea Position::getTrackingArea() {
+TrackingArea PositionCalculator::getTrackingArea() {
     return this->tracking;
 }
 
-double Position::getDistance() {
+double PositionCalculator::getDistance() {
     return this->distance;
 }
 
-cv::Mat Position::getDistortionCoefficients(int cameraId) {
+cv::Mat PositionCalculator::getDistortionCoefficients(int cameraId) {
     std::string result;
     std::ostringstream id;
     id << cameraId;
@@ -501,7 +501,7 @@ cv::Mat Position::getDistortionCoefficients(int cameraId) {
 	return distortionCoefficients;
 }
 
-cv::Mat Position::getIntrinsicsMatrix(int cameraId) {
+cv::Mat PositionCalculator::getIntrinsicsMatrix(int cameraId) {
     std::string result;
     std::ostringstream id;
     id << cameraId;
@@ -531,11 +531,11 @@ cv::Mat Position::getIntrinsicsMatrix(int cameraId) {
     return intrinsicsMatrix;
 }
 
-Matrix Position::getRotationMatrix(int cameraId) {
+Matrix PositionCalculator::getRotationMatrix(int cameraId) {
     Matrix rotation = rotationMatrix.multiplicate(camRotMat[cameraId]);
     return rotation;
 }
 
-double Position::getError() {
+double PositionCalculator::getError() {
     return this->error;
 }

@@ -1,5 +1,5 @@
-#ifndef POSITION_H
-#define POSITION_H
+#ifndef POSITION_CALCULATOR_H
+#define POSITION_CALCULATOR_H
 #include "engine.h"
 #include "AmccCalibration.h"
 #include "../position/ChessboardData.hpp"
@@ -15,7 +15,7 @@
 
 #include <opencv2/core/core.hpp>
 
-class Position {
+class PositionCalculator {
 private:
 
     /**
@@ -152,20 +152,20 @@ public:
     /**
      * constructor, maximal amount of quadcopters is 50, maximal amount of cameras is 20.
      */
-    Position();
+    PositionCalculator();
 
     /**
      * constructor, maximal amount of quadcopters is 50, maximal amount of cameras is 20.
      * @param interpolationDependent is interpolation factor that is always the same if false
      */
-    Position(bool interpolationDependent);
+    PositionCalculator(bool interpolationDependent);
 
     /**
      * constructor, maximal amount of quadcopters is 50.
      * @param ep Engine pointer
      * @param numberCameras number of cameras
      */
-    Position(Engine *ep, int numberCameras);
+    PositionCalculator(Engine *ep, int numberCameras);
 
     /**
      * constructor, maximal amount of quadcopters is 50.
@@ -173,12 +173,12 @@ public:
      * @param numberCameras number of cameras
      * @param interpolationDependent is interpolation factor that is always the same if false
      */
-    Position(Engine *ep, int numberCameras, bool interpolationDependent);
+    PositionCalculator(Engine *ep, int numberCameras, bool interpolationDependent);
 
     /**
       * destroys matlab engine pointer.
       */
-    ~Position();
+    ~PositionCalculator();
 
     /**
      * checks whether the calibration has been made successfully
@@ -264,4 +264,4 @@ public:
 
 };
 
-#endif // POSITION_H //
+#endif // POSITION_CALCULATOR_H //

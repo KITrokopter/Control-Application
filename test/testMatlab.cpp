@@ -5,7 +5,7 @@
 #include "../src/matlab/TrackingMath.h"
 #include "../src/matlab/TrackingArea.h"
 #include "../src/matlab/profiling.hpp"
-#include "../src/matlab/Position.h"
+#include "../src/matlab/PositionCalculator.h"
 #include "../src/position/ChessboardData.hpp"
 #include <stdlib.h>
 #include <stdio.h>
@@ -102,7 +102,7 @@ void perp(TrackingMath *m) {
 }
 
 void trackingArea() {
-    Position p = Position();
+    PositionCalculator p = PositionCalculator();
     ChessboardData *c = new ChessboardData(7, 7, 57, 57);
     p.calibrate(c, 3);
 }

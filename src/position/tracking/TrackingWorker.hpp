@@ -10,7 +10,7 @@
 #include "../IPositionReceiver.hpp"
 #include "../../matlab/Vector.h"
 #include "../../matlab/Matrix.h"
-#include "../../matlab/Position.h"
+#include "../../matlab/PositionCalculator.h"
 #include "../../controller/Mutex.hpp"
 
 #include "Graph.hpp"
@@ -23,7 +23,7 @@ class TrackingWorker {
 private:
 	boost::thread *thread;
 	IPositionReceiver *receiver;
-	Position tracker;
+    PositionCalculator tracker;
 	volatile bool stop;
 
 	TrackingQueue<SynchronousCameraQueue> queue;
