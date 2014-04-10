@@ -19,6 +19,11 @@
 #include "SynchronousCameraQueue.hpp"
 #include "TrackingQueue.hpp"
 
+/**
+ * Asynchronously schedules the received camera data per quadcopter and passes them to the position calculator.
+ * 
+ * @author Sebastian Schmidt
+ */
 class TrackingWorker {
 private:
 	boost::thread *thread;
