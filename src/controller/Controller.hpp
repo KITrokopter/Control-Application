@@ -28,6 +28,7 @@
 #include "../matlab/Vector.h"
 #include "../matlab/TrackingArea.h"
 #include "../matlab/Matrix2x2.h"
+#include "../matlab/Matrix.h"
 #include <boost/bind.hpp>
 #include <cmath>
 #include <list>
@@ -49,14 +50,14 @@
 
 #define AMPLIFICATION_THRUST_P_POS 15
 #define AMPLIFICATION_THRUST_P_NEG 12
-#define AMPLIFICATION_THRUST_D 8
+#define AMPLIFICATION_THRUST_D 10
 #define AMPLIFICATION_THRUST_I 0.0
 #define THRUST_OFFSET 40000
 //#define AMPLIFICATION_RP 0.018
-#define AMPLIFICATION_P 7
-#define AMPLIFICATION_R 7
+#define AMPLIFICATION_P 0.25
+#define AMPLIFICATION_R 0.25
 #define RP_OFFSET 0
-#define AMPLIFICATION_Y 0
+#define AMPLIFICATION_Y 4
 #define Y_OFFSET 0
 
 #define TIME_UPDATED_END 2000*1000*1000	// in ns
@@ -67,7 +68,7 @@
 #define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
 #define TIME_WAIT_AT_LANDING 10*1000*1000 // in microseconds
 #define TIME_WAIT_FOR_QUADCOPTERS 8000 // in microseconds
-#define LOOPS_PER_SECOND 20
+#define LOOPS_PER_SECOND 10
 
 #define DISTANCE_ROTATE_TO_CENTER 100
 

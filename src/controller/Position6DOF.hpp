@@ -13,6 +13,7 @@ public:
 	double* getPosition();
 	double* getOrientation();
 	void setPosition(double * position);
+	void setPosition(Vector vector);
 	void setOrientation(double* orientation);
 	long int getTimestamp();
 	void setTimestamp(long int newTimestamp);

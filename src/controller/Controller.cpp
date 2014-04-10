@@ -60,7 +60,7 @@ Controller::Controller()
 	this->controlPitch = new PControl( AMPLIFICATION_P, RP_OFFSET );
 	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
 	
-	ROS_INFO("ROS stuff setting up");
+	ROS_INFO("CONTROLLER: ROS stuff setting up");
 	/*
   	* NodeHandle is the main access point to communications with the ROS system.
 	* The first NodeHandle constructed will fully initialize this node, and the last
@@ -92,7 +92,7 @@ Controller::Controller()
 	this->timeOffsetOutput= getNanoTime();
 	this->timeDurationMoveup = getNanoTime();
 	this->timeOffsetChangeThrust = getNanoTime();
-	ROS_INFO("Constructing done");
+	ROS_INFO("CONTROLLER: Constructing done");
 	this->constructionDone = true;
 	
 }
@@ -109,7 +109,7 @@ void Controller::initialize()
 	{
 		this->senderID = srv.response.id;
 	}
-	ROS_INFO("Initialize done");
+	ROS_INFO("CONTROLLER: Initialize done");
 }
 
 /*
@@ -180,7 +180,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 {
 	if(!receivedQuadcopters || !receivedFormation)
 	{
-		ROS_DEBUG("No SetQuadcopters or no SetFormation");
+		ROS_DEBUG("CONTROLLER: No SetQuadcopters or no SetFormation");
 		return;
 	}
 	/* Save position vectors */	
@@ -191,15 +191,15 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	{
 		if(i >= ids.size())
 		{
-			ROS_DEBUG("Id array is too small");
+			ROS_DEBUG("CONTROLLER: Id array is too small");
 			break;
 		}	
-		ROS_DEBUG("Id at Update position is %i", ids[i]);
+		//ROS_DEBUG("Id at Update position is %i", ids[i]);
 		id = getLocalId(ids[i]);
-		ROS_DEBUG("Id local is %i", id);
+		//ROS_DEBUG("Id local is %i", id);
 		if(id == INVALID)
 		{
-			ROS_DEBUG("Invalid id %i", id);
+			ROS_DEBUG("CONTROLLER: Invalid id %i", id);
 			continue;	
 		}
 		
@@ -223,7 +223,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 				//if(quadStatus == CALCULATE_START || quadStatus == CALCULATE_NONE || emergencyLanding)
 				if(quadStatus != CALCULATE_LAND || emergencyLanding)
 				{
-					ROS_DEBUG("Stabilizing now %i", id);
+					ROS_DEBUG("CONTROLLER: Stabilizing now %i", id);
 					this->quadcopterMovementStatus[id] = CALCULATE_STABILIZE;
 					this->timeDurationMoveup = getNanoTime();
 				}
@@ -238,7 +238,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 		} 
 		else
 		{
-			ROS_DEBUG("Invalid position of %i", id);
+			ROS_DEBUG("CONTROLLER: Invalid position of %i", id);
 		}
 		this->listPositionsMutex.lock(); 
 		//Trim Position list to 30 elements.
@@ -351,7 +351,7 @@ void Controller::sendMovement( int internId)
  */	
 void Controller::calculateMovement()
 {
-	ROS_INFO("Calculation started");
+	ROS_INFO("CONTROLLER: Calculation started");
 	int waitCounter = 0;
 	while((!this->receivedQuadcopters))
 	{
@@ -359,7 +359,7 @@ void Controller::calculateMovement()
 		waitCounter++;
 		if( waitCounter > 100)
 		{
-			ROS_ERROR("No SetQuadcopters received in time");
+			ROS_ERROR("CONTROLLER: No SetQuadcopters received in time");
 			return;
 		}
 	}
@@ -420,7 +420,7 @@ void Controller::calculateMovement()
 					stabilize( i );
 					break;
 				case CALCULATE_HOLD:	
-					ROS_INFO("Hold %i", i);
+					ROS_INFO("CONTROLLER: Hold %i", i);
 					hold( i );				
 					break;
 				case CALCULATE_MOVE:
@@ -430,12 +430,12 @@ void Controller::calculateMovement()
 				case CALCULATE_LAND:
 					if(numberOfLanded > 1 && i == 0)
 					{
-						 ROS_INFO("Landed in Calc: %i", numberOfLanded);
+						 ROS_INFO("CONTROLLER: Landed in Calc: %i", numberOfLanded);
 					}
 					land( i, &numberOfLanded );
 					break;
 				default:
-					ROS_INFO("QC in default status: %i", i);
+					ROS_INFO("CONTROLLER: QC in default status: %i", i);
 					break;
 			}
 			// Check if land process is finished and set control variable accordingly
@@ -470,12 +470,12 @@ void Controller::calculateMovement()
 		if( loopCounter == LOOPS_PER_SECOND )
 		{
 			long int current = getNanoTime();
-			ROS_DEBUG("Time of %i loops: %ld", LOOPS_PER_SECOND, current-loopCounterTime);
+			ROS_DEBUG("CONTROLLER: Time of %i loops: %ld", LOOPS_PER_SECOND, current-loopCounterTime);
 			loopCounter = 0;
 			loopCounterTime = getNanoTime();
 		}
 	}
-	ROS_ERROR("Calculate Movement terminadeted/n/n/n!!");
+	ROS_ERROR("CONTROLLER: Calculate Movement terminadeted/n/n/n!!");
 }
 
 /*
@@ -633,7 +633,7 @@ void Controller::buildFormation()
 		ROS_INFO("Done with %i",i);
 		usleep(TIME_WAIT_AT_LANDING);
 	}*/
-	ROS_INFO("BuildFormation finished");
+	ROS_INFO("CONTROLLER: BuildFormation finished");
 	this->buildFormationFinished = true;
 }
 
@@ -645,11 +645,11 @@ bool Controller::rotateFormation(control_application::Rotation::Request  &req, c
 	//If a rotation is already running, return false and don't start a new one.
 	if(this->rotationInProcess)
 	{
-		ROS_ERROR("Rotation is already in process. Please wait to start a new rotation");
+		ROS_ERROR("CONTROLLER: Rotation is already in process. Please wait to start a new rotation");
 		return false;
 	}
 	pthread_create(&tRotation, NULL, startThreadRotation, this);
-	ROS_INFO("Thread tRotation set up");
+	ROS_INFO("CONTROLLER: Thread tRotation set up");
 	this->timeRotationStarted = getNanoTime();
 	this->rotationInProcess = true;
 	return true;
@@ -690,7 +690,7 @@ void Controller::rotate()
 			qcPositionMap[0] = searchNeighbor(targetK, qcChosen);
 			if(searchNeighbor(targetK, qcChosen) == -1)
 			{
-				ROS_DEBUG("No neighbor found");
+				ROS_DEBUG("CONTROLLER: No neighbor found");
 			}
 			qcChosen[qcPositionMap[0]] = true;
 			newPosition.setPosition(targetK);
@@ -710,7 +710,7 @@ void Controller::rotate()
 			qcPositionMap[i] = searchNeighbor(targetK, qcChosen);
 			if(searchNeighbor(targetK, qcChosen) == -1)
 			{
-				ROS_DEBUG("No neighbor found");
+				ROS_DEBUG("CONTROLLER: No neighbor found");
 			}
 			qcChosen[qcPositionMap[i]] = true;
 			newPosition.setPosition(targetK);
@@ -766,12 +766,12 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
 	//If buildformation was already build, a new build request is ignored. 
 	if(this->buildFormationFinished)
 	{
-		ROS_ERROR("Formation was already build. No rebuildling allowed.");
+		ROS_ERROR("CONTROLLER: Formation was already build. No rebuildling allowed.");
 		return false;
 	}
 	this->buildFormationStarted = true;
 	pthread_create(&tBuildFormation, NULL, startThreadBuildFormation, this);
-	ROS_INFO("Thread tBuildFormation set up");
+	ROS_INFO("CONTROLLER: Thread tBuildFormation set up");
 	return true;
 }
 
@@ -784,21 +784,21 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	//If setQuadcopters was already executed, a new setting request is ignored.
 	if(this->receivedQuadcopters)
 	{
-		ROS_ERROR("Quadcopters already set. No resetting allowed");
+		ROS_ERROR("CONTROLLER: Quadcopters already set. No resetting allowed");
 		return false;
 	}
 	//If there are too less qcs to build the given formation, ignore request.
 	if(this->receivedFormation && (req.amount < this->formation->getAmount()))
 	{
-		ROS_ERROR("You have too less quadcopters to create the formation. Please set more Quadcopters or restart the system.");
+		ROS_ERROR("CONTROLLER: You have too less quadcopters to create the formation. Please set more Quadcopters or restart the system.");
 		return false;
 	}
-	ROS_INFO("Service setQuadcopters has been called amount %i", req.amount);
-	ROS_DEBUG("Amount %i", req.amount);
+	ROS_INFO("CONTROLLER: Service setQuadcopters has been called amount %i", req.amount);
+	ROS_DEBUG("CONTROLLER: Amount %i", req.amount);
 	unsigned long int i;
 	for( i = 0; i < req.amount; i++)
 	{
-		ROS_DEBUG("Quadcopter id: %i", req.quadcopterIds[i]);
+		ROS_DEBUG("CONTROLLER: Quadcopter id: %i", req.quadcopterIds[i]);
 		this->quadcopters.push_back(req.quadcopterIds[i]);
 		this->quadcopterMovementStatus.push_back(CALCULATE_NONE);
 		
@@ -814,16 +814,16 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 			Position6DOF defaultTarget = Position6DOF(-200, 1400, 300 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
-			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
-			ROS_DEBUG("Set Target at Beginning is %f(y)", this->listTargets[i].back().getPosition()[1]);
-			ROS_DEBUG("Set Target at Beginning is %f(x)", this->listTargets[i].back().getPosition()[0]);
+			ROS_DEBUG("CONTROLLER: Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
+			ROS_DEBUG("CONTROLLER: Set Target at Beginning is %f(y)", this->listTargets[i].back().getPosition()[1]);
+			ROS_DEBUG("CONTROLLER: Set Target at Beginning is %f(x)", this->listTargets[i].back().getPosition()[0]);
 			
 		}
 		else
 		{
 			Position6DOF defaultTarget = Position6DOF(0, 1400, 200 );
 			this->listTargets[i].push_back(defaultTarget);
-			ROS_ERROR("Default target set");
+			ROS_ERROR("CONTROLLER: Default target set");
 		}
 		this->receivedQuadStatus[i] = false; // received no quadcopter status information
 		this->listTargetsMutex.unlock();
@@ -833,13 +833,14 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		newEmptyListMovement.push_back( noMovement );
 		this->listSentQuadruples.push_back(newEmptyListMovement);
 		this->currentMovement.push_back(noMovement);
-		ROS_INFO("Initialization done");
+		ROS_INFO("CONTROLLER: Initialization done");
 		
 		//Subscriber to quadcopter status
 		std::stringstream topicNameQS;
 		int id = this->quadcopters[i];
   		topicNameQS << "quadcopter_status_" << id;
-		this->QuadStatus_sub[i] = this->n.subscribe<quadcopter_application::quadcopter_status>(topicNameQS.str().c_str(), 1000, boost::bind(&Controller::quadStatusCallback, this, _1, i));
+		ROS_ERROR("CONTROLLER: Topic name: %s", topicNameQS.str().c_str());	
+		this->QuadStatus_sub[i] = this->n.subscribe<quadcopter_application::quadcopter_status>(topicNameQS.str().c_str(), 1000, boost::bind(&Controller::quadStatusCallback, this, _1, id));
 		
 		//Publisher of Movement			
 		std::stringstream topicNameMov;
@@ -856,7 +857,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	this->receivedQuadcopters = true;
 	
 	pthread_create(&tCalculateMovement, NULL, startThreadCalculateMovement, this);
-	ROS_INFO("Thread tCalculateMovement set up");
+	ROS_INFO("CONTROLLER: Thread tCalculateMovement set up");
 	
 	return true;
 }
@@ -868,12 +869,12 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 {
 	if(this->shutdownStarted)
 	{
-		ROS_ERROR("Shutdown already started");
+		ROS_ERROR("CONTROLLER: Shutdown already started");
 		return false;
 	}
-	ROS_INFO("Service shutdown has been called");
+	ROS_INFO("CONTROLLER: Service shutdown has been called");
 	pthread_create(&tShutdownFormation, NULL, &startThreadShutdown, this);
-	ROS_INFO("Thread tShutdownFormation set up");
+	ROS_INFO("CONTROLLER: Thread tShutdownFormation set up");
 	return true;
 	
 }
@@ -885,11 +886,11 @@ void Controller::shutdownFormation()
 {
 	if(this->shutdownStarted)
         {
-                ROS_ERROR("Shutdown already started");
+                ROS_ERROR("CONTROLLER: Shutdown already started");
                 return;
         }
 
-	ROS_INFO("ShutdownFormation started");	
+	ROS_INFO("CONTROLLER: ShutdownFormation started");	
 	this->shutdownStarted = true; /* Start shutdown process */
 	//int formationAmount = this->formation->getAmount();
 	int formationAmount = 1;
@@ -901,12 +902,12 @@ void Controller::shutdownFormation()
 		this->emergencyShutdown[i] = false;
 	}
 	
-	ROS_INFO("SHUTDOWN landFinished is %i", landFinished);
+	ROS_INFO("CONTROLLER: SHUTDOWN landFinished is %i", landFinished);
 	while(!this->landFinished)
 	{
 		usleep(TIME_WAIT_FOR_LANDING);
 	}
-	ROS_INFO("Join threads");
+	ROS_INFO("CONTROLLER: Join threads");
 	//void *resultCalc;
 	pthread_join(tCalculateMovement, 0);
 	//void *resultBuild;
@@ -914,7 +915,7 @@ void Controller::shutdownFormation()
 	{
 		pthread_join(tBuildFormation, 0);
 	}
-	ROS_INFO("Shutdown function finished");	
+	ROS_INFO("CONTROLLER: Shutdown function finished");	
 }
 
 /*
@@ -984,7 +985,7 @@ bool Controller::checkInput(int internId)
 	{
 		//ROS_INFO("tracked false");
 		std::string message = "No new quadcopter position data has been received";
-		ROS_ERROR("Left trackin area");
+		ROS_ERROR("CONTROLLER: Left trackin area");
 		if(this->shutdownStarted == false)
 		{
 			this->emergencyShutdown[internId] = true;
@@ -1006,7 +1007,7 @@ bool Controller::checkInput(int internId)
  */
 void Controller::emergencyRoutine(std::string message, int internId)
 {
-	ROS_INFO("Emergency Routine called");
+	ROS_INFO("CONTROLLER: Emergency Routine called");
 	api_application::Message msg;
 	msg.senderID = this->senderID;
 	//Type 2 is a warning message
@@ -1024,7 +1025,7 @@ void Controller::emergencyRoutine(std::string message, int internId)
  */
 void Controller::emergencyShutdownRoutine(std::string message)
 {
-	ROS_INFO("Emergency Routine called");
+	ROS_INFO("CONTROLLER: Emergency Routine called");
 	//Sends an error message to the api via ros
 	api_application::Message msg;
 	msg.senderID = this->senderID;
@@ -1034,11 +1035,11 @@ void Controller::emergencyShutdownRoutine(std::string message)
 	this->Message_pub.publish(msg);
 	if(!this->shutdownStarted)
 	{
-		ROS_INFO("I want to shutdown");
+		ROS_INFO("CONTROLLER: I want to shutdown");
 		control_application::Shutdown srv;
 		if(Shutdown_client.call(srv))
 		{
-			ROS_INFO("Shutdown call true");
+			ROS_INFO("CONTROLLER: Shutdown call true");
 		}
 	}
 }
@@ -1050,10 +1051,10 @@ void Controller::moveFormationCallback(const api_application::MoveFormation::Con
 {
 	if(this->rotationInProcess)
 	{
-		ROS_ERROR("Rotation in Process. Moving the formation is not allowed. Please wait for the rotation to be finished.");
+		ROS_ERROR("CONTROLLER: Rotation in Process. Moving the formation is not allowed. Please wait for the rotation to be finished.");
 		return;
 	}
-	ROS_INFO("I heard Movement. xMovement: %f", msg->xMovement);
+	ROS_INFO("CONTROLLER: I heard Movement. xMovement: %f", msg->xMovement);
 	std::vector<float> movement;
 	movement.push_back( msg->xMovement );
 	movement.push_back( msg->yMovement );
@@ -1077,15 +1078,15 @@ void Controller::setFormationCallback(const api_application::SetFormation::Const
 {
 	if(this->receivedFormation)
 	{
-		ROS_ERROR("Formation was already set. No resetting allowed");
+		ROS_ERROR("CONTROLLER: Formation was already set. No resetting allowed");
 		return;
 	}
 	if(this->receivedQuadcopters && (this->quadcopterMovementStatus.size() < msg->amount))
 	{
-		ROS_ERROR("Your formation has to many quadcopters set. Please set a different Formation or restart the system");
+		ROS_ERROR("CONTROLLER: Your formation has to many quadcopters set. Please set a different Formation or restart the system");
 		return;
 	}
-	ROS_INFO("I heard Formation. amount: %i", msg->amount);
+	ROS_INFO("CONTROLLER: I heard Formation. amount: %i", msg->amount);
 	this->formation->setDistance(msg->distance);
 	this->formation->setAmount(msg->amount);
 	//Iterate over all needed quadcopters for formation and set the formation position of each quadcopter
@@ -1100,7 +1101,7 @@ void Controller::setFormationCallback(const api_application::SetFormation::Const
 	}
 	this->formation->setFormationPosition(formPos);
 	this->receivedFormation = true;
-	ROS_INFO("Set Formation done");
+	ROS_INFO("CONTROLLER: Set Formation done");
 	return;
 }
 
@@ -1120,12 +1121,17 @@ void Controller::quadStatusCallback(const quadcopter_application::quadcopter_sta
 	this->roll_stab[localQuadcopterId] = msg->stabilizer_roll;
 	this->pitch_stab[localQuadcopterId] = msg->stabilizer_pitch;
 	this->yaw_stab[localQuadcopterId] = msg->stabilizer_yaw;
+	//if(yaw_stab[localQuadcopterId] != 0)
+	/*{
+		ROS_ERROR("Yaw is %f", this->yaw_stab[localQuadcopterId]);
+		ROS_ERROR("Yaw is %f", msg->stabilizer_yaw);
+	}*/
 	this->thrust_stab[localQuadcopterId] = msg->stabilizer_thrust;
 	this->baro[localQuadcopterId] = msg->baro;
 	long int currentTime = getNanoTime();
-	if(localQuadcopterId == 0 && currentTime > this->timeOffsetOutput + 1000000000)
+	if(localQuadcopterId == 0 && currentTime > this->timeOffsetOutput + 1000000)
 	{
-		ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
+		//ROS_INFO("bat: %f, roll: %f, pitch: %f, yaw: %f, thrust: %u", msg->battery_status, msg->stabilizer_roll, msg->stabilizer_pitch, msg->stabilizer_yaw, msg->stabilizer_thrust);
 		this->timeOffsetOutput= currentTime;
 	}
 	if( !quadcopterStatus[localQuadcopterId].getQuadcopterThrust().initDone() )
@@ -1141,7 +1147,7 @@ void Controller::quadStatusCallback(const quadcopter_application::quadcopter_sta
 		//this->thrustHelp[localQuadcopterId] = quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getStart();
 		
 		this->baroTarget[localQuadcopterId] = this->baro[localQuadcopterId] + BARO_OFFSET;
-		ROS_DEBUG("baroTarget set to %f", this->baroTarget[localQuadcopterId]);
+		ROS_DEBUG("CONTROLLER: baroTarget set to %f", this->baroTarget[localQuadcopterId]);
 	}
 	this->receivedQuadStatus[localQuadcopterId] = true;
 
@@ -1165,7 +1171,7 @@ void Controller::quadStatusCallback(const quadcopter_application::quadcopter_sta
  */
 void Controller::systemCallback(const api_application::System::ConstPtr& msg)
 {
-	ROS_INFO("I heard System. Status: %i", msg->command);
+	ROS_INFO("CONTROLLER: I heard System. Status: %i", msg->command);
 	if(msg->command == 1)
 	{
 		initialize();
@@ -1174,7 +1180,7 @@ void Controller::systemCallback(const api_application::System::ConstPtr& msg)
 	{
 		if(!this->shutdownStarted)
 		{
-			ROS_INFO("I want to shutdown");
+			ROS_INFO("CONTROLLER: I want to shutdown");
 			control_application::Shutdown srv;
 			/*if(Shutdown_client.call(srv))
 			{
@@ -1220,13 +1226,13 @@ void Controller::moveUp( int internId )
 	{
 		if(thrustHelp >= quadcopterStatus[internId].getQuadcopterThrust().getStartMax())
 		{
-			ROS_DEBUG("Thrust too high");
+			ROS_DEBUG("CONTROLLER: Thrust too high");
 		}
 		if(currentTime > this->timeDurationMoveup + 8000000000)
 		{
 			ROS_DEBUG("Time over");
 		}
-		ROS_INFO("Emergency Shutdown Test");
+		ROS_INFO("CONTROLLER: Emergency Shutdown Test");
 		this->shutdownStarted = true;
 		quadcopterMovementStatus[internId] = CALCULATE_LAND;
 	}
@@ -1238,27 +1244,32 @@ void Controller::moveUp( int internId )
  */
 void Controller::stabilize( int internId )
 {
-	ROS_ERROR("Stabilize");
-	float rotationAngle = (this->yaw_stab[internId] / 360) * 2 * M_PI;
-	Matrix2x2 rotationMatrix = Matrix2x2(cos(rotationAngle), -sin(rotationAngle), sin(rotationAngle), cos(rotationAngle));
-	
+	//ROS_ERROR("Stabilize");
+	float rotationAngle = (this->yaw_stab[internId] / (float) 360) *(float) 2 * M_PI;
+	//Matrix2x2 rotationMatrix = Matrix2x2(cos(rotationAngle), -sin(rotationAngle), sin(rotationAngle), cos(rotationAngle));
+	Matrix rotationMatrix = Matrix(cos(rotationAngle), -sin(rotationAngle), 0, sin(rotationAngle), cos(rotationAngle), 0, 0, 0, 1);
+
 	this->listPositionsMutex.lock();
 	Position6DOF latestPosition = this->listPositions[internId].back();
 	this->listPositionsMutex.unlock();
 	double * position = latestPosition.getPosition();
-	Vector vectorPos = Vector(position[0], position[1], 0);
-	vectorPos = rotationMatrix.multiplicate(vectorPos);
-	vectorPos.setV3(position[2]);
+	Vector vectorPos = Vector(position[0], position[1], position[2]);
+	//ROS_INFO("Before Vector %f,%f,%f", vectorPos.getV1(), vectorPos.getV2(), vectorPos.getV3());
+	//vectorPos = rotationMatrix.multiplicate(vectorPos);
+	vectorPos = vectorPos.aftermult(rotationMatrix);
+	//vectorPos.setV3(position[2]);
 	latestPosition.setPosition(vectorPos);
+	//ROS_INFO("Vector %f,%f,%f", vectorPos.getV1(), vectorPos.getV2(), vectorPos.getV3());
 	
 	this->listTargetsMutex.lock();
 	Position6DOF posTarget = this->listTargets[internId].back();
 	this->listTargetsMutex.unlock();
 	double * target = posTarget.getPosition();
-	Vector vectorTarget = Vector(target[0], target[1], 0);
-	vectorTarget = rotationMatrix.multiplicate(vectorTarget);
-	vectorTarget.setV3(target[2]);
+	Vector vectorTarget = Vector(target[0], target[1], target[2]);
+	vectorTarget = vectorTarget.aftermult(rotationMatrix);
+	//vectorTarget.setV3(target[2]);
 	posTarget.setPosition(vectorTarget);
+	ROS_INFO("CONTROLLER: Yaw is: %f, Rotation %f, oldpos(%f,%f,%f) newpos(%f,%f,%f)", this->yaw_stab[internId], rotationAngle,  position[0], position[1], position[2], latestPosition.getPosition()[0], latestPosition.getPosition()[1], latestPosition.getPosition()[2]);	
 
 	MovementQuadruple newMovement = this->listSentQuadruples[internId].back();
 	
@@ -1288,9 +1299,9 @@ void Controller::stabilize( int internId )
 	float newYawrate = ((float) controlYawrate->getManipulatedVariable( yawDiff ));
 
 	/* Set values */
-	ROS_INFO("   hDiff %f, calculated t %f, new %i", heightDiff, calculatedThrust, newThrust);
+	ROS_INFO("  CONTROLLER: hDiff %f, calculated t %f, new %i", heightDiff, calculatedThrust, newThrust);
 	//ROS_INFO("   baroDiff %f, new %i", baroDiff, newThrust);
-	ROS_INFO("   xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, newRoll, yDiff, newPitch);
+	ROS_INFO("  CONTROLLER: xDiff %f, roll %f, yDiff %f, pitch %f", xDiff, newRoll, yDiff, newPitch);
 	quadcopterStatus[internId].getInfo().checkAndFixRoll( newRoll );
 	quadcopterStatus[internId].getInfo().checkAndFixPitch( newPitch );
 	quadcopterStatus[internId].getInfo().checkAndFixYawrate( newYawrate );
@@ -1306,7 +1317,7 @@ void Controller::stabilize( int internId )
 void Controller::hold( int internId )
 {
 	// FIXME
-	ROS_INFO("%i now land", internId);
+	ROS_INFO("CONTROLLER: %i now land", internId);
 	if( HOLD_SKIP )
 	{
 		quadcopterMovementStatus[internId] = CALCULATE_LAND;
@@ -1321,12 +1332,12 @@ void Controller::hold( int internId )
  */
 void Controller::land( int internId, int * nrLand )
 {
-	ROS_INFO("Land");
+	ROS_INFO("CONTROLLER: Land");
 	long int currentTime = getNanoTime();
 	//Decline until crazyflie isn't tracked anymore
 	if(tracked[internId] == true)
 	{
-		ROS_INFO("Declining ros");
+		ROS_INFO("CONTROLLER: Declining ros");
 		MovementQuadruple newMovement = this->currentMovement[internId];
 		if(currentMovement[internId].getThrust() < quadcopterStatus[internId].getQuadcopterThrust().getDecline() )
 		{
@@ -1350,7 +1361,7 @@ void Controller::land( int internId, int * nrLand )
 			}
 			else
 			{
-				ROS_DEBUG("Decline newly set in land");
+				ROS_DEBUG("CONTROLLER: Decline newly set in land");
 				this->thrustHelp[internId] = quadcopterStatus[internId].getQuadcopterThrust().getDecline();	// FIXME
 			}
 			this->timeOffsetChangeThrust = getNanoTime();
@@ -1367,7 +1378,7 @@ void Controller::land( int internId, int * nrLand )
 		}
 		if(currentTime > this->timeOffsetChangeThrust + 1000000 && this->thrustHelp[internId] - step > 0)
 		{
-			ROS_DEBUG("Lower Thrust in land");
+			ROS_DEBUG("CONTROLLER: Lower Thrust in land");
 			usleep(85000); //FIXME sleep here? still needed?
 			this->thrustHelp[internId] -= step;
 			this->timeOffsetChangeThrust = getNanoTime();
@@ -1375,14 +1386,14 @@ void Controller::land( int internId, int * nrLand )
 		//Shutdown crazyflie after having left the tracking area.
 		MovementQuadruple newMovement = MovementQuadruple( this->thrustHelp[internId], 0, 0, 0 ); 
 		newMovement.setTimestamp(currentTime);
-		ROS_DEBUG("LAND THRUST %i", newMovement.getThrust());
+		ROS_DEBUG("CONTROLLER: LAND THRUST %i", newMovement.getThrust());
 		this->currentMovement[internId] = newMovement;
 		if( this->thrustHelp[internId] - step <= 0)
 		{
 			this->quadcopterMovementStatus[internId] = CALCULATE_NONE;
 			dontMove( internId);
 			(*nrLand)++;
-			ROS_INFO("Landed: %i", *nrLand);
+			ROS_INFO("CONTROLLER: Landed: %i", *nrLand);
 		}
 	}
 }
