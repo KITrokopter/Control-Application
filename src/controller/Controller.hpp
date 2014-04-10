@@ -48,16 +48,18 @@
 #define ID 4
 
 #define AMPLIFICATION_THRUST_P_POS 15
-#define AMPLIFICATION_THRUST_P_NEG 4000
-#define AMPLIFICATION_THRUST_D 5
+#define AMPLIFICATION_THRUST_P_NEG 12
+#define AMPLIFICATION_THRUST_D 8
 #define AMPLIFICATION_THRUST_I 0.0
-#define THRUST_OFFSET 30000
-#define AMPLIFICATION_RP 0.018
+#define THRUST_OFFSET 40000
+//#define AMPLIFICATION_RP 0.018
+#define AMPLIFICATION_P 7
+#define AMPLIFICATION_R 7
 #define RP_OFFSET 0
-#define AMPLIFICATION_Y (-0.28)
+#define AMPLIFICATION_Y 0
 #define Y_OFFSET 0
 
-#define TIME_UPDATED_END 3000*1000*1000	// in ns
+#define TIME_UPDATED_END 2000*1000*1000	// in ns
 #define TIME_UPDATED_CRITICAL 250*1000*1000	// in ns
 #define TIME_WAIT_FOR_DATA 8000
 #define TIME_WAIT_FOR_TRACKED 3000
@@ -77,7 +79,7 @@
 #define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
 #define CALCULATE_LAND 5 //Shutdown quadcopter
 #define CALCULATE_STABILIZE_STEP 500	// time in ms after next value should be calculated
-#define DECLINE_SHUTDOWN_STEP 700
+#define DECLINE_SHUTDOWN_STEP 900
 #define DECLINE_NOT_TRACKED_STEP 100
 
 #define HOLD_SKIP 1

@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * A container for the geometric attributes of the chessboard.
+ * 
+ * @author Sebastian Schmidt
+ */
 class ChessboardData {
 private:
 	/// The vertical number of fields

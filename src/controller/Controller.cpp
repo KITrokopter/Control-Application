@@ -56,8 +56,8 @@ Controller::Controller()
 	
 
 	this->controlThrust = new PDIControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, AMPLIFICATION_THRUST_I, THRUST_OFFSET );
-	this->controlRoll = new PControl( AMPLIFICATION_RP, RP_OFFSET );
-	this->controlPitch = new PControl( AMPLIFICATION_RP, RP_OFFSET );
+	this->controlRoll = new PControl( AMPLIFICATION_R, R_OFFSET );
+	this->controlPitch = new PControl( AMPLIFICATION_P, P_OFFSET );
 	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
 	
 	ROS_INFO("ROS stuff setting up");
@@ -811,7 +811,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		if( this->receivedTrackingArea)
 		{
 			//Position6DOF defaultTarget = Position6DOF(this->trackingArea.getCenterOfTrackingArea());
-			Position6DOF defaultTarget = Position6DOF(-100, 800, 300 );
+			Position6DOF defaultTarget = Position6DOF(-200, 1400, 300 );
 			//ROS_DEBUG("The target we want to set has z value: %f", defaultTarget.getPosition()[2]);
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_DEBUG("Set Target at Beginning is %f(z)", this->listTargets[i].back().getPosition()[2]);
@@ -821,7 +821,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 		}
 		else
 		{
-			Position6DOF defaultTarget = Position6DOF(0, 1400, 300 );
+			Position6DOF defaultTarget = Position6DOF(0, 1400, 200 );
 			this->listTargets[i].push_back(defaultTarget);
 			ROS_ERROR("Default target set");
 		}
@@ -1113,7 +1113,7 @@ void Controller::quadStatusCallback(const quadcopter_application::quadcopter_sta
 	//Intern mapping
 	int localQuadcopterId = this->getLocalId(topicNr);
 	if(localQuadcopterId < 0) {
-	  ROS_DEBUG("localQuadcopterId < 0!!!");
+	  //ROS_DEBUG("localQuadcopterId < 0!!!");
 	  return;
 	}
 	this->battery_status[localQuadcopterId] = msg->battery_status;

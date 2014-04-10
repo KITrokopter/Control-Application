@@ -64,6 +64,7 @@ void PDIControl::setPAmplification( double errorSignal )
 	}
 	else
 	{
+		ROS_DEBUG("Error signal negative. Above target");
 		this->pAmplification = this->pAmplificationNeg;
 	}
 }
