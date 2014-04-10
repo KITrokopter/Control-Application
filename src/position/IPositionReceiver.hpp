@@ -5,6 +5,11 @@
 #include "../matlab/Vector.h"
 #include "../matlab/TrackingArea.h"
 
+/**
+ * An interface for classes that want to receive the position data from the tracking system.
+ * 
+ * @author Sebastian Schmidt
+ */
 class IPositionReceiver
 {
 public:
@@ -18,8 +23,8 @@ public:
 	 * @param updates The amount of image data that went into the position of the quadcopter since the last call of this method.
 	 *             Can be ignored for now, but may be useful later.
 	 *
-	 * Values in the same position in a std::vector belong together. That means, positions.at(i) is the position of the
-	 * quadcopter with id ids.at(i) that was generated with updates.at(i) images since the last call of this method.
+	 * Values in the same position in a std::vector belong together. That means, positions[i] is the position of the
+	 * quadcopter with id ids[i] that was generated with updates[i] images since the last call of this method.
 	 */
 	virtual void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates) = 0;
 	

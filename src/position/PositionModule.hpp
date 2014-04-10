@@ -24,6 +24,12 @@
 #include "tracking/TrackingWorker.hpp"
 #include "IdDictionary.hpp"
 
+/**
+ * The main class of the position module.
+ * Connects to the other relevant modules via ROS and passes commands and data that is received to the tracking system.
+ * 
+ * @author Sebastian Schmidt
+ */
 class PositionModule {
 private:
 	bool _isInitialized;

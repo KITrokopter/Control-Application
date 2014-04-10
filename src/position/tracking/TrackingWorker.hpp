@@ -34,6 +34,7 @@ private:
 	
 	// Graphing
 	Graph errorGraph;
+	Graph latencyGraph;
 	
 	void run();
 	
