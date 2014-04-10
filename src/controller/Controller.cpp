@@ -1239,18 +1239,27 @@ void Controller::moveUp( int internId )
 void Controller::stabilize( int internId )
 {
 	ROS_ERROR("Stabilize");
+	float rotationAngle = (this->yaw_stab[internId] / 360) * 2 * M_PI;
+	rotationMatrix = Matrix2x2(cos(i * rotationAngle), -sin(i * rotationAngle), sin(i * rotationAngle), cos(i * rotationAngle));
+	
 	this->listPositionsMutex.lock();
 	Position6DOF latestPosition = this->listPositions[internId].back();
 	this->listPositionsMutex.unlock();
-
+	double * position = latestPosition.getPosition();
+	Vector vectorPos = Vector(position[0], position[1], 0);
+	vectorPos = rotationMatrix.multiplicate(vectorPos);
+	vectorPos.setV3(position[2]);
+	
 	this->listTargetsMutex.lock();
 	Position6DOF posTarget = this->listTargets[internId].back();
 	this->listTargetsMutex.unlock();
+	double * target = posTarget.getPosition();
+	Vector vectorTarget = Vector(target[0], target[1], 0);
+	vectorTarget = rotationMatrix.multiplicate(vectorTarget);
+	vectorTarget.setV3(target[2]);
 
 	MovementQuadruple newMovement = this->listSentQuadruples[internId].back();
-
-	//ROS_INFO("In stabilize: ");
-
+	
 	/* Thrust */
 	double heightDiff = latestPosition.getDistanceZ( posTarget );
 	//double baroDiff = baroTarget[internId] - baro[internId];
