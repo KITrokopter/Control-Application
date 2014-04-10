@@ -56,8 +56,8 @@ Controller::Controller()
 	
 
 	this->controlThrust = new PDIControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, AMPLIFICATION_THRUST_I, THRUST_OFFSET );
-	this->controlRoll = new PControl( AMPLIFICATION_R, R_OFFSET );
-	this->controlPitch = new PControl( AMPLIFICATION_P, P_OFFSET );
+	this->controlRoll = new PControl( AMPLIFICATION_R, RP_OFFSET );
+	this->controlPitch = new PControl( AMPLIFICATION_P, RP_OFFSET );
 	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
 	
 	ROS_INFO("ROS stuff setting up");
