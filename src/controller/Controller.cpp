@@ -1256,7 +1256,7 @@ void Controller::stabilize( int internId )
 	//double baroDiff = baroTarget[internId] - baro[internId];
 	//double calculatedThrust = controlThrust->getManipulatedVariable( baroDiff );
 	double calculatedThrust = controlThrust->getManipulatedVariable( heightDiff );
-	controlThrust->setOffset( this->quadcopterStatus[internId].getQuadcopterThrust().getOffset() );
+	//controlThrust->setOffset( this->quadcopterStatus[internId].getQuadcopterThrust().getOffset() );
 	unsigned int newThrust = quadcopterStatus[internId].getQuadcopterThrust().checkAndFix( calculatedThrust );
 	newMovement.setThrust( newThrust );
 
