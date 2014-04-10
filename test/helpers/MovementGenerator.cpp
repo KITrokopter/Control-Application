@@ -9,17 +9,6 @@
 #include <string>
 #include <algorithm>
 
-MovementGenerator::MovementGenerator(IPositionReceiver *receiver)
-{
-	this->receiver = receiver;
-	errorRate = 0;
-	errorSize = 0;
-	defaultErrorSize = 0;
-	quadcopterCount = 0;
-	steps = 1;
-	stepsPerSecond = 30;
-}
-
 MovementGenerator::MovementGenerator(IPositionReceiver *receiver, std::vector<Vector> from, std::vector<Vector> to, double errorRate, double errorSize, double defaultErrorSize, int steps, double stepsPerSecond)
 {
 	this->receiver = receiver;
