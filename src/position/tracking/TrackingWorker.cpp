@@ -7,7 +7,7 @@
 #include "../../matlab/profiling.hpp"
 #include "control_application/quadcopter_position.h"
 
-TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(100, "Difference")
+TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(100, "Difference"), latencyGraph(500, "Latency")
 {
 	assert(receiver != 0);
 	
@@ -19,6 +19,7 @@ TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(100, "D
 	colors[1] = cv::Scalar(0, 255, 255);
 	colors[2] = cv::Scalar(255, 0, 255);
 	errorGraph.setColors(colors);
+	latencyGraph.setColors(colors);
 	
 	thread = new boost::thread(boost::bind(&TrackingWorker::run, this));
 }
@@ -60,6 +61,7 @@ void TrackingWorker::run()
 				}
 			}
 			
+			latencyGraph.nextPoint(latency / 1e6, 0);
 			ROS_DEBUG("POSITION_MODULE: Latency is %.3fms", latency / 1e6);
 			
 			Vector position = tracker.updatePosition(data);
