@@ -7,6 +7,11 @@
 #include "../../matlab/profiling.hpp"
 #include "control_application/quadcopter_position.h"
 
+/**
+ * Constructs a new tracking worker and starts the working thread.
+ * 
+ * @param receiver The object the calculated positions should be passed to.
+ */
 TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(100, "Difference"), latencyGraph(500, "Latency")
 {
 	assert(receiver != 0);
@@ -24,12 +29,19 @@ TrackingWorker::TrackingWorker(IPositionReceiver *receiver) : errorGraph(100, "D
 	thread = new boost::thread(boost::bind(&TrackingWorker::run, this));
 }
 
+/**
+ * Destroys the tracking worker and joins the worker thread.
+ */
 TrackingWorker::~TrackingWorker()
 {
 	stop = true;
 	thread->join();
 }
 
+/**
+ * Is run by the worker thread. Checks if enough camera data is available.
+ * If there is enough, a new position is calculated and sent to the position receiver.
+ */
 void TrackingWorker::run()
 {
 	ROS_INFO("Started tracking thread");
@@ -103,6 +115,14 @@ void TrackingWorker::run()
 	ROS_INFO("Stopped tracking thread");
 }
 
+/**
+ * Schedules camera data to be processed.
+ * 
+ * @param cameraVector The direction the camera sees the crazyflie in.
+ * @param camNo The number of the camera.
+ * @param quadcopterId The id of the quadcopter.
+ * @param time The time the data was measured.
+ */
 void TrackingWorker::updatePosition(Vector cameraVector, int camNo, int quadcopterId, long int time)
 {
 	CameraData data;
@@ -115,11 +135,21 @@ void TrackingWorker::updatePosition(Vector cameraVector, int camNo, int quadcopt
 	updatePosition(data);
 }
 
+/**
+ * Schedules the given camera data to be processed.
+ * 
+ * @param data The camera data.
+ */
 void TrackingWorker::updatePosition(CameraData data)
 {
 	enqueue(data);
 }
 
+/**
+ * Enqueues a camera data object into the queue.
+ * 
+ * @param data The data to be enqueued.
+ */
 void TrackingWorker::enqueue(CameraData data)
 {
 	boost::mutex::scoped_lock lock(queueMutex);
@@ -129,6 +159,11 @@ void TrackingWorker::enqueue(CameraData data)
 	queueEmpty.notify_all();
 }
 
+/**
+ * Dequeues camera data from one or more cameras.
+ * 
+ * @return Data from one or more cameras.
+ */
 std::vector<CameraData> TrackingWorker::dequeue()
 {
 	boost::mutex::scoped_lock lock(queueMutex);
@@ -144,41 +179,90 @@ std::vector<CameraData> TrackingWorker::dequeue()
 	}
 }
 
+/**
+ * Returns true if there is data in the queue that can be returned.
+ * If it returns false, it is does not always mean that there is really nothing to return.
+ * Classes implementing this should ensure that if there is good data available, true is returned.
+ * 
+ * @return True if data is available, false if it can not be ensured that data is available.
+ */
 bool TrackingWorker::dataAvailable()
 {
 	return queue.dataAvailable();
 }
 
-bool TrackingWorker::calibrate(ChessboardData *chessboard, int camNo)
+/**
+ * Passes the calibration request to the underlying position calculator.
+ * 
+ * @param chessboard The properties of the chessboard for calibration.
+ * @param camNo The amount of cameras that are calibrated.
+ * @return True if the calibration was successful, false otherwise.
+ */
+bool TrackingWorker::calibrate(ChessboardData *chessboard, int cameraAmount)
 {
-	return tracker.calibrate(chessboard, camNo);
+	return tracker.calibrate(chessboard, cameraAmount);
 }
 
+/**
+ * Returns the position of the camera with the given number.
+ * 
+ * @param camNo The number of the camera.
+ * @return The position of the camera.
+ */
 Vector TrackingWorker::getCameraPosition(int camNo)
 {
 	return tracker.getPosition(camNo);
 }
 
+/**
+ * Returns the rotation matrix of the camera with the given number.
+ * 
+ * @param camNo The number of the camera.
+ * @return The rotation matrix of the camera.
+ */
 Matrix TrackingWorker::getRotationMatrix(int camNo)
 {
 	return tracker.getRotationMatrix(camNo);
 }
 
+/**
+ * Returns the intrinsics matrix of the camera with the given number.<br />
+ * (This is part of the single camera calibration result.)
+ * 
+ * @param camNo The number of the camera.
+ * @return The intrinsics matrix of the camera.
+ */
 cv::Mat TrackingWorker::getIntrinsicsMatrix(int camNo)
 {
 	return tracker.getIntrinsicsMatrix(camNo);
 }
 
+/**
+ * Returns the distortion coefficients of the camera with the given number.<br />
+ * (This is part of the single camera calibration result.)
+ * 
+ * @param camNo The number of the camera.
+ * @return The distortion coefficients of the camera.
+ */
 cv::Mat TrackingWorker::getDistortionCoefficients(int camNo)
 {
 	return tracker.getDistortionCoefficients(camNo);
 }
 
+/**
+ * Passes the tracking area to the position receiver.
+ */
 void TrackingWorker::updateTrackingArea()
 {
 	receiver->setTrackingArea(tracker.getTrackingArea());
 }
 
+/**
+ * Sends a position vector to the quadcopter_position_{id} topic.
+ * 
+ * @param position The position of the quadcopter.
+ * @param quadcopterId The id of the quadcopter.
+ */
 void TrackingWorker::sendPosition(Vector position, int quadcopterId)
 {
 	if (quadcopterPositionPublishers.count(quadcopterId) == 0) {
