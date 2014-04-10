@@ -56,8 +56,8 @@ Controller::Controller()
 	
 
 	this->controlThrust = new PDIControl( AMPLIFICATION_THRUST_P_POS, AMPLIFICATION_THRUST_P_NEG, AMPLIFICATION_THRUST_D, AMPLIFICATION_THRUST_I, THRUST_OFFSET );
-	this->controlRoll = new PControl( AMPLIFICATION_R, R_OFFSET );
-	this->controlPitch = new PControl( AMPLIFICATION_P, P_OFFSET );
+	this->controlRoll = new PControl( AMPLIFICATION_R, RP_OFFSET );
+	this->controlPitch = new PControl( AMPLIFICATION_P, RP_OFFSET );
 	this->controlYawrate = new PControl( AMPLIFICATION_Y, Y_OFFSET );
 	
 	ROS_INFO("ROS stuff setting up");
@@ -1239,18 +1239,27 @@ void Controller::moveUp( int internId )
 void Controller::stabilize( int internId )
 {
 	ROS_ERROR("Stabilize");
+	float rotationAngle = (this->yaw_stab[internId] / 360) * 2 * M_PI;
+	rotationMatrix = Matrix2x2(cos(i * rotationAngle), -sin(i * rotationAngle), sin(i * rotationAngle), cos(i * rotationAngle));
+	
 	this->listPositionsMutex.lock();
 	Position6DOF latestPosition = this->listPositions[internId].back();
 	this->listPositionsMutex.unlock();
-
+	double * position = latestPosition.getPosition();
+	Vector vectorPos = Vector(position[0], position[1], 0);
+	vectorPos = rotationMatrix.multiplicate(vectorPos);
+	vectorPos.setV3(position[2]);
+	
 	this->listTargetsMutex.lock();
 	Position6DOF posTarget = this->listTargets[internId].back();
 	this->listTargetsMutex.unlock();
+	double * target = posTarget.getPosition();
+	Vector vectorTarget = Vector(target[0], target[1], 0);
+	vectorTarget = rotationMatrix.multiplicate(vectorTarget);
+	vectorTarget.setV3(target[2]);
 
 	MovementQuadruple newMovement = this->listSentQuadruples[internId].back();
-
-	//ROS_INFO("In stabilize: ");
-
+	
 	/* Thrust */
 	double heightDiff = latestPosition.getDistanceZ( posTarget );
 	//double baroDiff = baroTarget[internId] - baro[internId];
