@@ -1240,7 +1240,7 @@ void Controller::stabilize( int internId )
 {
 	ROS_ERROR("Stabilize");
 	float rotationAngle = (this->yaw_stab[internId] / 360) * 2 * M_PI;
-	rotationMatrix = Matrix2x2(cos(i * rotationAngle), -sin(i * rotationAngle), sin(i * rotationAngle), cos(i * rotationAngle));
+	Matrix2x2 rotationMatrix = Matrix2x2(cos(rotationAngle), -sin(rotationAngle), sin(rotationAngle), cos(rotationAngle));
 	
 	this->listPositionsMutex.lock();
 	Position6DOF latestPosition = this->listPositions[internId].back();
@@ -1249,6 +1249,7 @@ void Controller::stabilize( int internId )
 	Vector vectorPos = Vector(position[0], position[1], 0);
 	vectorPos = rotationMatrix.multiplicate(vectorPos);
 	vectorPos.setV3(position[2]);
+	
 	
 	this->listTargetsMutex.lock();
 	Position6DOF posTarget = this->listTargets[internId].back();
