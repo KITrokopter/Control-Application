@@ -69,6 +69,18 @@ void Position6DOF::setPosition(double* position)
 }
 
 /*
+ * Setter for Position
+ */
+void Position6DOF::setPosition(Vector vector)
+{
+	this->position[0] = vector.getV1();
+	this->position[1] = vector.getV2();
+	this->position[2] = vector.getV3();
+}
+
+
+
+/*
  * Setter for orientation
  */
 void Position6DOF::setOrientation( double* orientation)
