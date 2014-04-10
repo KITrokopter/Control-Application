@@ -282,8 +282,8 @@ target_link_libraries(control_application_node
 add_executable(position_module
   ${POSITION_SOURCES}
   
-  src/position/tmpmain.cpp
-  src/position/DummyPositionReceiver.cpp
+  test/testPositionModule.cpp
+  test/helpers/DummyPositionReceiver.cpp
   
   src/KitrokopterMessages.cpp
   src/matlab/Vector.cpp

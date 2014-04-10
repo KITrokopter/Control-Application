@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 
 #include "position/IPositionReceiver.hpp"
-#include "position/DummyPositionReceiver.hpp"
 #include "position/PositionModule.hpp"
 #include "controller/Controller.hpp"
 #include <stdlib.h>

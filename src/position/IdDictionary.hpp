@@ -8,6 +8,12 @@
 
 using namespace std;
 
+/**
+ * A dictionary to translate bewteen random and continuous ids, keeping the order of the numbers.<br />
+ * For the documentation, we call the number space of the random ids A, and the space of the continuous ids B.
+ * 
+ * @author Sebastian Schmidt
+ */
 class IdDictionary
 {
 private:
