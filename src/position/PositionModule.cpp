@@ -20,6 +20,12 @@
 #include "../matlab/Vector.h"
 #include "../matlab/profiling.hpp"
 
+/**
+ * Sets up the ROS communications and requests an id from the API.
+ * If the id requests failed, the isInitialized() method will always return false. Otherwise it will always return true.
+ * 
+ * @param receiver The object the position data should be sent to.
+ */
 PositionModule::PositionModule(IPositionReceiver* receiver) : 
 	trackingWorker(receiver)
 {
@@ -86,12 +92,16 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	}
 }
 
+/**
+ * Destroys the position module.
+ */
 PositionModule::~PositionModule()
 {
-      if(msg) {
-	    msg->~KitrokopterMessages();
-	    delete msg;
-      }
+	if(msg) {
+		msg->~KitrokopterMessages();
+		delete msg;
+	}
+	
 	log.close();
 	
 	// TODO: Free picture cache.
@@ -99,7 +109,9 @@ PositionModule::~PositionModule()
 	ROS_DEBUG("PositionModule destroyed");
 }
 
-// Service
+/**
+ * Service callback that starts the calibration process.
+ */
 bool PositionModule::startCalibrationCallback(control_application::StartCalibration::Request &req, control_application::StartCalibration::Response &res)
 {
 	res.ok = !isCalibrating;
