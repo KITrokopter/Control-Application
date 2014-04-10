@@ -1249,7 +1249,7 @@ void Controller::stabilize( int internId )
 	Vector vectorPos = Vector(position[0], position[1], 0);
 	vectorPos = rotationMatrix.multiplicate(vectorPos);
 	vectorPos.setV3(position[2]);
-	
+	latestPosition.setPosition(vectorPos);
 	
 	this->listTargetsMutex.lock();
 	Position6DOF posTarget = this->listTargets[internId].back();
@@ -1258,6 +1258,7 @@ void Controller::stabilize( int internId )
 	Vector vectorTarget = Vector(target[0], target[1], 0);
 	vectorTarget = rotationMatrix.multiplicate(vectorTarget);
 	vectorTarget.setV3(target[2]);
+	posTarget.setPosition(vectorTarget);
 
 	MovementQuadruple newMovement = this->listSentQuadruples[internId].back();
 	
