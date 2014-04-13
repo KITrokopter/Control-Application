@@ -16,39 +16,39 @@
 
 
 class QuadcopterControl {
-	public:
-		QuadcopterControl();
-		
-		/**
-		 *
-		 * @return
-		 */
-		QuadcopterInfo getInfo();
+public:
+	QuadcopterControl();
 
-		/**
-		 *
-		 * @param newInfo
-		 */
-		void setInfo( QuadcopterInfo newInfo );
+	/**
+	 *
+	 * @return
+	 */
+	QuadcopterInfo getInfo();
 
-		/**
-		 *
-		 * @return
-		 */
-		QuadcopterThrust getQuadcopterThrust();
+	/**
+	 *
+	 * @param newInfo
+	 */
+	void setInfo(QuadcopterInfo newInfo);
 
-		/**
-		 *
-		 * @param newQuadcopterThrust
-		 */
-		void setQuadcopterThrust( QuadcopterThrust newQuadcopterThrust );
+	/**
+	 *
+	 * @return
+	 */
+	QuadcopterThrust getQuadcopterThrust();
 
-	protected:
+	/**
+	 *
+	 * @param newQuadcopterThrust
+	 */
+	void setQuadcopterThrust(QuadcopterThrust newQuadcopterThrust);
 
-	private:
-		QuadcopterInfo info;
-		QuadcopterThrust quadcopterThrust;
-		
+protected:
+
+private:
+	QuadcopterInfo info;
+	QuadcopterThrust quadcopterThrust;
+
 protected:
 
 private:

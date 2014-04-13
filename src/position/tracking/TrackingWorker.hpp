@@ -20,42 +20,45 @@
 #include "TrackingQueue.hpp"
 
 /**
- * Asynchronously schedules the received camera data per quadcopter and passes them to the position calculator.
- * 
+ * Asynchronously schedules the received camera data per quadcopter and passes
+ * them to the position calculator.
+ *
  * @author Sebastian Schmidt
  */
 class TrackingWorker {
 private:
 	boost::thread *thread;
 	IPositionReceiver *receiver;
-    PositionCalculator tracker;
+	PositionCalculator tracker;
 	volatile bool stop;
 
 	TrackingQueue<SynchronousCameraQueue> queue;
 	boost::mutex queueMutex;
 	boost::condition_variable queueEmpty;
-	
+
 	std::map<int, ros::Publisher> quadcopterPositionPublishers;
-	
+
 	// Graphing
 	Graph errorGraph;
 	Graph latencyGraph;
-	
+
 	void run();
-	
+
 	void enqueue(CameraData data);
+
 	std::vector<CameraData> dequeue();
 	bool dataAvailable();
 	bool haveEnoughData(int count);
-	
+
 	void sendPosition(Vector position, int quadcopterId);
+
 public:
 	TrackingWorker(IPositionReceiver *receiver);
 	~TrackingWorker();
-	
+
 	void updatePosition(Vector cameraVector, int camNo, int quadcopterId, long int time);
 	void updatePosition(CameraData cameraData);
-	
+
 	bool calibrate(ChessboardData *chessboard, int camNo);
 	Vector getCameraPosition(int camNo);
 	Matrix getRotationMatrix(int camNo);

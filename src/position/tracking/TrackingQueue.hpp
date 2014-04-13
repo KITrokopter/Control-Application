@@ -14,7 +14,7 @@
  * @author Sebastian Schmidt
  * @param T The implementation of AbstractCameraQueue to use.
  */
-template <class T>
+template<class T>
 class TrackingQueue {
 public:
 	TrackingQueue();
@@ -24,6 +24,7 @@ public:
 	void enqueue(CameraData data);
 
 	size_t getSize();
+
 	std::vector<CameraData> dequeue();
 	bool dataAvailable();
 
@@ -37,7 +38,7 @@ private:
 /**
  * Creates a new empty TrackingQueue.
  */
-template <class T>
+template<class T>
 TrackingQueue<T>::TrackingQueue()
 {
 	size = 0;
@@ -47,7 +48,7 @@ TrackingQueue<T>::TrackingQueue()
 /**
  * Deletes the TrackingQueue.
  */
-template <class T>
+template<class T>
 TrackingQueue<T>::~TrackingQueue()
 {
 	for (std::map<int, AbstractCameraQueue*>::iterator it = queues.begin(); it != queues.end(); it++) {
@@ -60,7 +61,7 @@ TrackingQueue<T>::~TrackingQueue()
  *
  * @param data A vector containing CameraData.
  */
-template <class T>
+template<class T>
 void TrackingQueue<T>::enqueue(std::vector<CameraData> data)
 {
 	for (std::vector<CameraData>::iterator it = data.begin(); it != data.end(); it++) {
@@ -73,16 +74,16 @@ void TrackingQueue<T>::enqueue(std::vector<CameraData> data)
  *
  * @param data The CameraData.
  */
-template <class T>
+template<class T>
 void TrackingQueue<T>::enqueue(CameraData data)
 {
 	if (queues.count(data.quadcopterId) == 0) {
 		// Since the RRCameraQueue is missing this constructor, this part has to be
 		// edited if it should be used.
 		queues[data.quadcopterId] = new T(15L * 100 * 1000 * 1000 / 30,
-										  2L * 1000 * 1000 * 1000 / 30,
-										  2L * 1000 * 1000 * 1000 / 30,
-										  true);
+		                                  2L * 1000 * 1000 * 1000 / 30,
+		                                  2L * 1000 * 1000 * 1000 / 30,
+		                                  true);
 		ids.push_back(data.quadcopterId);
 	}
 
@@ -95,7 +96,7 @@ void TrackingQueue<T>::enqueue(CameraData data)
  *
  * @return The current size of the queue.
  */
-template <class T>
+template<class T>
 size_t TrackingQueue<T>::getSize()
 {
 	return size;
@@ -108,7 +109,7 @@ size_t TrackingQueue<T>::getSize()
  *
  * @return A set of CameraData to be evaluated.
  */
-template <class T>
+template<class T>
 std::vector<CameraData> TrackingQueue<T>::dequeue()
 {
 	if (size == 0) {
@@ -144,7 +145,7 @@ std::vector<CameraData> TrackingQueue<T>::dequeue()
  *
  * @return True, if one of the underlying camera queues has data available.
  */
-template <class T>
+template<class T>
 bool TrackingQueue<T>::dataAvailable()
 {
 	for (std::map<int, AbstractCameraQueue*>::iterator it = queues.begin(); it != queues.end(); it++) {
@@ -155,3 +156,4 @@ bool TrackingQueue<T>::dataAvailable()
 
 	return false;
 }
+

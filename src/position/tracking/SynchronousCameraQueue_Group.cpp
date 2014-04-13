@@ -31,7 +31,9 @@ SynchronousCameraQueue::Group::Group()
  * @param ensureCam0 The ensureCam0 parameter of the SynchronousCameraQueue.
  * @see SynchronousCameraQueue
  */
-SynchronousCameraQueue::Group::Group(std::list<Bucket>::iterator it, long int currentTime, long int arrivalDelay, long int maxDelay, long int maxGroupInterval, long int cameraCount, bool ensureCam0)
+SynchronousCameraQueue::Group::Group(std::list<Bucket>::iterator it, long int currentTime, long int arrivalDelay,
+                                     long int maxDelay, long int maxGroupInterval, long int cameraCount,
+                                     bool ensureCam0)
 {
 	this->currentTime = currentTime;
 	this->arrivalDelay = arrivalDelay;
@@ -63,7 +65,6 @@ void SynchronousCameraQueue::Group::calculateValue()
 	// First, define base value by interval length times camera count
 	long int value = 2 * maxGroupInterval - (maxTime - minTime);
 	value *= data.size();
-	//value += maxGroupInterval;
 
 	// Calculate another value defined by the age of the oldest CameraData.
 	// This makes older groups less valuable.

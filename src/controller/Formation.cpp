@@ -1,16 +1,15 @@
-
 #include "Formation.hpp"
 #include <stdlib.h>
 
 /*
- * Constructor for formation with distance, number of crazyflies and structure of the crazyflies
+ * Constructor for formation with distance, number of crazyflies and structure
+ * of the crazyflies
  */
-Formation::Formation(int distance, int amount, Position6DOF * position)
+Formation::Formation(int distance, int amount, Position6DOF *position)
 {
 	this->distance = distance;
 	this->amount = amount;
-	for(int i = 0; i < amount; i++)
-	{
+	for (int i = 0; i < amount; i++) {
 		this->position[i].setPosition(position[i].getPosition());
 		this->position[i].setOrientation(position[i].getOrientation());
 	}
@@ -44,12 +43,10 @@ void Formation::setAmount(int amount)
 /*
  * Setter of Formation Positions/Structure
  */
-void Formation::setFormationPosition(Position6DOF * position)
+void Formation::setFormationPosition(Position6DOF *position)
 {
-	if(amount > 0)
-	{
-		for(int i=0; i < amount; i++)
-		{
+	if (amount > 0) {
+		for (int i = 0; i < amount; i++) {
 			this->position[i].setPosition(position[i].getPosition());
 			this->position[i].setOrientation(position[i].getOrientation());
 		}
@@ -75,11 +72,11 @@ int Formation::getAmount()
 /*
  * Getter of Formation Positions/Structure
  */
-Position6DOF * Formation::getFormationPosition()
+Position6DOF* Formation::getFormationPosition()
 {
-	if(amount > 0)
-	{
+	if (amount > 0) {
 		return this->position;
 	}
 	return NULL;
 }
+

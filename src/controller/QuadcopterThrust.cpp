@@ -16,86 +16,71 @@ void QuadcopterThrust::init()
 	this->offset = 32000;
 }
 
-bool QuadcopterThrust::checkAndSetBatteryValue( float battery )
+bool QuadcopterThrust::checkAndSetBatteryValue(float battery)
 {
-	if( battery > BATTERY_MAX )
-	{
+	if (battery > BATTERY_MAX) {
 		ROS_ERROR("checkAndSet +");
 		return false;
-	} 
-	else if( battery < BATTERY_MIN )
-	{
+	} else if (battery < BATTERY_MIN)   {
 		ROS_ERROR("checkAndSet -");
 		return false;
 	}
 	// ROS_DEBUG("checkAndSet working");
-	setThrust( battery );
+	setThrust(battery);
 	this->setThrustCalled = true;
 	return true;
 }
 
-unsigned int QuadcopterThrust::checkAndFix( unsigned int thrust )
+unsigned int QuadcopterThrust::checkAndFix(unsigned int thrust)
 {
-	if( thrust > this->max )
-	{
+	if (thrust > this->max) {
 		return this->max;
-	}
-	else if( thrust < this->min )
-	{
+	} else if (thrust < this->min)   {
 		return this->min;
+	} else   {return thrust;
 	}
-	else return thrust;
 }
 
-unsigned int QuadcopterThrust::checkAndFix( double thrust )
+unsigned int QuadcopterThrust::checkAndFix(double thrust)
 {
-	if( thrust > this->max )
-	{
+	if (thrust > this->max) {
 		return this->max;
-	}
-	else if( thrust < this->min )
-	{
+	} else if (thrust < this->min)   {
 		return this->min;
-	}
-	else
-	{
+	} else   {
 		unsigned int newThrust = thrust;
-		return checkAndFix( newThrust );
+		return checkAndFix(newThrust);
 	}
 }
 
 void QuadcopterThrust::setWithoutBatteryValue()
 {
-	if( !setThrustCalled )
-	{
+	if (!setThrustCalled) {
 		init();
 		this->setThrustCalled = true;
 	}
 }
 
-void QuadcopterThrust::setThrust( float battery )
+void QuadcopterThrust::setThrust(float battery)
 {
 	return;
-	if( battery > 4 )
-	{
+	if (battery > 4) {
 		return;
-	}
-	else if( battery > 3 )
-	{
-		this->min += ((unsigned int) ((4-battery) * QUADCOPTER_THRUST_RANGE));
-		this->max += ((unsigned int) ((4-battery) * QUADCOPTER_THRUST_RANGE));
-		this->start += ((unsigned int) ((4-battery) * QUADCOPTER_THRUST_RANGE));
-		this->startMax += ((unsigned int) ((4-battery) * QUADCOPTER_THRUST_RANGE));
-		//ROS_INFO("min %i, max %i, start %i, startMax %i", min, max, start, startMax);
+	} else if (battery > 3)   {
+		this->min += ((unsigned int) ((4 - battery) * QUADCOPTER_THRUST_RANGE));
+		this->max += ((unsigned int) ((4 - battery) * QUADCOPTER_THRUST_RANGE));
+		this->start += ((unsigned int) ((4 - battery) * QUADCOPTER_THRUST_RANGE));
+		this->startMax += ((unsigned int) ((4 - battery) * QUADCOPTER_THRUST_RANGE));
+		// ROS_INFO("min %i, max %i, start %i, startMax %i", min, max, start,
+		// startMax);
 		this->setThrustCalled = true;
-	}
-	else 
-	{
+	} else   {
 		this->min += QUADCOPTER_THRUST_RANGE;
 		this->max += QUADCOPTER_THRUST_RANGE;
 		this->start += QUADCOPTER_THRUST_RANGE;
 		this->startMax += QUADCOPTER_THRUST_RANGE;
-		//ROS_INFO("min %i, max %i, start %i, startMax %i", min, max, start, startMax);
+		// ROS_INFO("min %i, max %i, start %i, startMax %i", min, max, start,
+		// startMax);
 		this->setThrustCalled = true;
 	}
 }
@@ -105,7 +90,7 @@ bool QuadcopterThrust::initDone()
 	return this->setThrustCalled;
 }
 
-void QuadcopterThrust::setMin( unsigned int min )
+void QuadcopterThrust::setMin(unsigned int min)
 {
 	this->min = min;
 }
@@ -115,7 +100,7 @@ unsigned int QuadcopterThrust::getMin()
 	return min;
 }
 
-void QuadcopterThrust::setMax( unsigned int max )
+void QuadcopterThrust::setMax(unsigned int max)
 {
 	this->max = max;
 }
@@ -125,7 +110,7 @@ unsigned int QuadcopterThrust::getMax()
 	return max;
 }
 
-void QuadcopterThrust::setStartMax( unsigned int startMax )
+void QuadcopterThrust::setStartMax(unsigned int startMax)
 {
 	this->startMax = startMax;
 }
@@ -135,7 +120,7 @@ unsigned int QuadcopterThrust::getStartMax()
 	return startMax;
 }
 
-void QuadcopterThrust::setStart( unsigned int start )
+void QuadcopterThrust::setStart(unsigned int start)
 {
 	this->start = start;
 }
@@ -145,7 +130,7 @@ unsigned int QuadcopterThrust::getStart()
 	return start;
 }
 
-void QuadcopterThrust::setDecline( unsigned int decline )
+void QuadcopterThrust::setDecline(unsigned int decline)
 {
 	this->decline = decline;
 }
@@ -155,22 +140,19 @@ unsigned int QuadcopterThrust::getDecline()
 	return this->decline;
 }
 
-void QuadcopterThrust::setOffset( float battery )
+void QuadcopterThrust::setOffset(float battery)
 {
-	if( battery > 4.2 )
-	{
+	if (battery > 4.2) {
 		this->offset = THRUST_OFFSET_LOW;
-	}
-	else if( battery > 2.8 )
-	{
-		this->offset = THRUST_OFFSET_LOW + ((unsigned int) ((4.2-battery)*QUADCOPTER_THRUST_RANGE));
-	}
-	else
-	{
+	} else if (battery > 2.8)   {
+		this->offset = THRUST_OFFSET_LOW + ((unsigned int) ((4.2 - battery) * QUADCOPTER_THRUST_RANGE));
+	} else   {
 		this->offset = THRUST_OFFSET_LOW + QUADCOPTER_THRUST_RANGE;
 	}
 }
+
 unsigned int QuadcopterThrust::getOffset()
 {
 	return this->offset;
 }
+

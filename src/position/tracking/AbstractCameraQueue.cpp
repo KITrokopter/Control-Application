@@ -12,7 +12,7 @@ void AbstractCameraQueue::enqueue(std::vector<CameraData> data)
 void AbstractCameraQueue::enqueue(CameraData data)
 {
 	enqueueInternal(data);
-	
+
 	if (getSize() > 50) {
 		ROS_WARN("Camera queue running full. Quadcopter id: %d. Entries: %ld", data.quadcopterId, getSize());
 	}

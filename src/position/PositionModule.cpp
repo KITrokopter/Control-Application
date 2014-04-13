@@ -22,71 +22,70 @@
 
 /**
  * Sets up the ROS communications and requests an id from the API.
- * If the id requests failed, the isInitialized() method will always return false. Otherwise it will always return true.
- * 
+ * If the id requests failed, the isInitialized() method will always return
+ * false. Otherwise it will always return true.
+ *
  * @param receiver The object the position data should be sent to.
  */
-PositionModule::PositionModule(IPositionReceiver* receiver) : 
+PositionModule::PositionModule(IPositionReceiver *receiver) :
 	trackingWorker(receiver)
 {
 	ROS_DEBUG("Initializing PositionModule");
-	
+
 	_isInitialized = true;
 	isCalibrating = false;
 	isCalibrated = false;
 	isRunning = false;
-	
+
 	ros::NodeHandle n;
-	
-	this->pictureSendingActivationPublisher = n.advertise<camera_application::PictureSendingActivation>("PictureSendingActivation", 4);
+
+	this->pictureSendingActivationPublisher = n.advertise<camera_application::PictureSendingActivation>(
+	    "PictureSendingActivation", 4);
 	this->pingPublisher = n.advertise<api_application::Ping>("Ping", 4);
-	this->cameraCalibrationDataPublisher = n.advertise<camera_application::CameraCalibrationData>("CameraCalibrationData", 10);
-	
+	this->cameraCalibrationDataPublisher = n.advertise<camera_application::CameraCalibrationData>(
+	    "CameraCalibrationData", 10);
+
 	this->pictureSubscriber = n.subscribe("Picture", 12, &PositionModule::pictureCallback, this);
 	this->systemSubscriber = n.subscribe("System", 4, &PositionModule::systemCallback, this);
 	this->rawPositionSubscriber = n.subscribe("RawPosition", 32, &PositionModule::rawPositionCallback, this);
-	
-	this->startCalibrationService = n.advertiseService("StartCalibration", &PositionModule::startCalibrationCallback, this);
-	this->takeCalibrationPictureService = n.advertiseService("TakeCalibrationPicture", &PositionModule::takeCalibrationPictureCallback, this);
-	this->calculateCalibrationService = n.advertiseService("CalculateCalibration", &PositionModule::calculateCalibrationCallback, this);
-	
+
+	this->startCalibrationService = n.advertiseService("StartCalibration", &PositionModule::startCalibrationCallback,
+	                                                   this);
+	this->takeCalibrationPictureService = n.advertiseService("TakeCalibrationPicture",
+	                                                         &PositionModule::takeCalibrationPictureCallback, this);
+	this->calculateCalibrationService = n.advertiseService("CalculateCalibration",
+	                                                       &PositionModule::calculateCalibrationCallback, this);
+
 	// Advertise myself to API
 	ros::ServiceClient announceClient = n.serviceClient<api_application::Announce>("announce");
-	
+
 	api_application::Announce announce;
 	announce.request.type = 3; // 3 means position module
 	msg = 0;
-	if (announceClient.call(announce))
-	{
+	if (announceClient.call(announce)) {
 		rosId = announce.response.id;
-		
-		if (rosId == ~0 /* -1 */)
-		{
+
+		if (rosId == ~0 /* -1 */) {
 			ROS_ERROR("Error! Got id -1");
 			_isInitialized = false;
-		}
-		else
-		{
+		} else {
 			ROS_INFO("Position module successfully announced. Got id %d", rosId);
 			msg = new KitrokopterMessages(rosId);
 		}
-	}
-	else
-	{
+	} else {
 		ROS_ERROR("Error! Could not announce myself to API!");
 		_isInitialized = false;
 	}
-	
-	
-	if (_isInitialized)
-	{
+
+
+	if (_isInitialized) {
 		ROS_DEBUG("PositionModule initialized");
 	} else {
 		ROS_ERROR("Could not initialize PositionModule!");
 	}
-	
+
 	log.open("position_module.log");
-	
+
 	if (!log.is_open()) {
 		ROS_ERROR("Could not open log file!");
 	}
@@ -97,35 +96,35 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
  */
 PositionModule::~PositionModule()
 {
-	if(msg) {
+	if (msg) {
 		msg->~KitrokopterMessages();
 		delete msg;
 	}
-	
+
 	log.close();
-	
+
 	// TODO: Free picture cache.
-	
+
 	ROS_DEBUG("PositionModule destroyed");
 }
 
 /**
  * Service callback that starts the calibration process.
- * 
+ *
  * @param req The ros service request.
  * @param req The ros service response.
  * @return True if the calculation was successfully started, false otherwise.
  */
-bool PositionModule::startCalibrationCallback(control_application::StartCalibration::Request &req, control_application::StartCalibration::Response &res)
+bool PositionModule::startCalibrationCallback(control_application::StartCalibration::Request &req,
+                                              control_application::StartCalibration::Response &res)
 {
 	res.ok = !isCalibrating;
-	
-	if (!isCalibrating)
-	{
+
+	if (!isCalibrating) {
 		ROS_INFO("Starting multi camera calibration process");
-		
+
 		isCalibrated = false;
-		
+
 		// Delete old calibration data.
 		system("rm -rf /tmp/calibrationResult/*");
 		system("rm -rf /tmp/calibrationImages/*");
@@ -134,103 +133,102 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 		boardSize = cv::Size(req.chessboardWidth, req.chessboardHeight);
 		realSize = cv::Size(req.chessboardRealWidth, req.chessboardRealHeight);
 	}
-	
+
 	isCalibrating = true;
 	return true;
 }
 
 /**
- * Service callback to take a calibration picture. The picture is saved in a folder in /tmp for calibrating.
- * 
+ * Service callback to take a calibration picture. The picture is saved in a
+ * folder in /tmp for calibrating.
+ *
  * @param req The ros service request.
  * @param res The ros service response.
- * @return False if at least one good picture was taken, but could not be saved to disk.
+ * @return False if at least one good picture was taken, but could not be saved
+ * to disk.
  */
-bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req, control_application::TakeCalibrationPicture::Response &res)
+bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req,
+                                                    control_application::TakeCalibrationPicture::Response &res)
 {
 	ROS_DEBUG("Taking calibration picture. Have %d cameras.", idDict.size());
-	
+
 	if (!idDict.isTranslated()) {
 		idDict.translateIds();
 	}
-	
+
 	pictureCacheMutex.lock();
-	
+
 	std::map<int, cv::Mat*> pictureMap;
 	std::map<int, bool> pictureContainsChessboardMap;
 	int goodPictures = 0;
-	
-	for (std::map<int, cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++)
-	{
-		if (it->second != 0)
-		{
+
+	for (std::map<int, cv::Mat*>::iterator it = pictureCache.begin(); it != pictureCache.end(); it++) {
+		if (it->second != 0) {
 			std::vector<cv::Point2f> corners;
-			bool foundAllCorners = cv::findChessboardCorners(*(it->second), boardSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-			
-			if (!foundAllCorners)
-			{
+			bool foundAllCorners = cv::findChessboardCorners(*(it->second), boardSize, corners,
+			                                                 CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK |
+			                                                 CV_CALIB_CB_NORMALIZE_IMAGE);
+
+			if (!foundAllCorners) {
 				ROS_INFO("Took bad picture (id %d)", it->first);
 				pictureContainsChessboardMap[it->first] = false;
-			}
-			else
-			{
+			} else {
 				ROS_INFO("Took good picture (id %d)", it->first);
 				pictureContainsChessboardMap[it->first] = true;
 				goodPictures++;
 			}
-			
+
 			pictureMap[it->first] = it->second;
-			
+
 			// Remove image from image cache.
 			it->second = 0;
 		}
 	}
-	
+
 	ROS_DEBUG("Got %d good pictures.", goodPictures);
-	
+
 	pictureCacheMutex.unlock();
-	
+
 	if (goodPictures >= 1) {
 		// Create directory for images.
 		int error = mkdir("/tmp/calibrationImages", 0777);
-		
-		if (error != 0 && errno != EEXIST)
-		{
+
+		if (error != 0 && errno != EEXIST) {
 			ROS_ERROR("Could not create directory for calibration images (/tmp/calibrationImages): %d", errno);
-			
+
 			// Delete images.
 			for (std::map<int, cv::Mat*>::iterator it = pictureMap.begin(); it != pictureMap.end(); it++) {
 				delete it->second;
 			}
-			
+
 			return false;
 		}
-		
+
 		error = mkdir("/tmp/calibrationResult", 0777);
-		
-		if (error != 0 && errno != EEXIST)
-		{
+
+		if (error != 0 && errno != EEXIST) {
 			ROS_ERROR("Could not create directory for calibration images (/tmp/calibrationResult): %d", errno);
-			
+
 			// Delete images.
 			for (std::map<int, cv::Mat*>::iterator it = pictureMap.begin(); it != pictureMap.end(); it++) {
 				delete it->second;
 			}
-			
+
 			return false;
 		}
-		
+
 		for (std::map<int, cv::Mat*>::iterator it = pictureMap.begin(); it != pictureMap.end(); it++) {
 			std::stringstream ss;
-			ss << "/tmp/calibrationImages/cam" << idDict.getForward(it->first) << "_image" << calibrationPictureCount << ".png";
-			
+			ss << "/tmp/calibrationImages/cam" << idDict.getForward(it->first) << "_image" << calibrationPictureCount <<
+			".png";
+
 			// Save picture on disk for amcctoolbox.
 			std::cout << "Saving picture: " << cv::imwrite(ss.str(), *(it->second)) << std::endl;
 		}
-		
+
 		calibrationPictureCount++;
 	}
-	
+
 	// Send pictures and delete them after that.
 	for (std::map<int, cv::Mat*>::iterator it = pictureMap.begin(); it != pictureMap.end(); it++) {
 		sensor_msgs::Image img;
@@ -238,72 +236,75 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		img.height = 480;
 		img.step = 3 * 640;
 		img.data.reserve(img.step * img.height);
-		
-		for (int i = 0; i < 640 * 480 * 3; i++)	{
+
+		for (int i = 0; i < 640 * 480 * 3; i++) {
 			img.data.push_back(it->second->data[i]);
 		}
-		
+
 		res.images.push_back(img);
 		res.containsChessboard.push_back(pictureContainsChessboardMap[it->first]);
 		res.ids.push_back(it->first);
-		
+
 		delete it->second;
 	}
-	
+
 	return true;
 }
 
 /**
- * Service callback for calculating the calibration. The results are saved in a folder in /tmp.
- * 
+ * Service callback for calculating the calibration. The results are saved in a
+ * folder in /tmp.
+ *
  * @param req The ros service request.
  * @param res The ros service response.
  * @return True if the calibration was successfully calculated, false otherwise.
  */
-bool PositionModule::calculateCalibrationCallback(control_application::CalculateCalibration::Request &req, control_application::CalculateCalibration::Response &res)
+bool PositionModule::calculateCalibrationCallback(control_application::CalculateCalibration::Request &req,
+                                                  control_application::CalculateCalibration::Response &res)
 {
 	/*if (!isCalibrating) {
-		ROS_ERROR("Cannot calculate calibration! Start calibration first!");
-		return false;
-	}*/
+	 *     ROS_ERROR("Cannot calculate calibration! Start calibration first!");
+	 *     return false;
+	 *    }*/
 
 	if (!idDict.isTranslated()) {
 		ROS_WARN("Dictionary was not translated! Translating now.");
 		idDict.translateIds();
 	}
-	
+
 	if (idDict.size() < 2) {
 		ROS_ERROR("Have not enough cameras for calibration (Have %d)!", idDict.size());
 		isCalibrating = false;
 		return false;
 	}
-	
+
 	if (idDict.size() < 3) {
 		ROS_WARN("Have not enough cameras for a useful setup! Have %d, but should be at least 3.", idDict.size());
 	}
-	
+
 	ROS_INFO("Calculating multi camera calibration. This could take up to 2 hours");
-	//ChessboardData data(boardSize.width, boardSize.height, realSize.width, realSize.height);
+	// ChessboardData data(boardSize.width, boardSize.height, realSize.width,
+	// realSize.height);
 	ChessboardData data(7, 7, 57, 57);
-	
+
 	int camNumber = idDict.size();
 	bool ok = trackingWorker.calibrate(&data, camNumber);
-	
+
 	if (ok) {
 		ROS_INFO("Finished multi camera calibration");
 		isCalibrated = true;
 	} else {
 		ROS_ERROR("Calibration failed!");
 	}
-	
+
 	for (int i = 0; i < camNumber; i++) {
 		Vector position = trackingWorker.getCameraPosition(i);
 		res.cameraXPositions.push_back(position.getV1());
 		res.cameraYPositions.push_back(position.getV2());
 		res.cameraZPositions.push_back(position.getV3());
-		
+
 		Matrix rotationMatrix = trackingWorker.getRotationMatrix(i);
-		
+
 		res.cameraRotationMatrices.push_back(rotationMatrix.getM11());
 		res.cameraRotationMatrices.push_back(rotationMatrix.getM12());
 		res.cameraRotationMatrices.push_back(rotationMatrix.getM13());
@@ -313,112 +314,113 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 		res.cameraRotationMatrices.push_back(rotationMatrix.getM31());
 		res.cameraRotationMatrices.push_back(rotationMatrix.getM32());
 		res.cameraRotationMatrices.push_back(rotationMatrix.getM33());
-		
+
 		res.IDs.push_back(idDict.getBackward(i));
-		
+
 		// Send calibration data to cameras
 		intrinsicsMatrices[idDict.getBackward(i)] = trackingWorker.getIntrinsicsMatrix(i);
 		distortionCoefficients[idDict.getBackward(i)] = trackingWorker.getDistortionCoefficients(i);
-		
+
 		camera_application::CameraCalibrationData msg;
 		msg.ID = idDict.getBackward(i);
 		msg.createdByCamera = false;
-		
+
 		for (int j = 0; j < 9; j++) {
 			msg.intrinsics[j] = intrinsicsMatrices[idDict.getBackward(i)].at<double>(j);
 		}
-		
+
 		for (int j = 0; j < 4; j++) {
 			msg.distortion[j] = distortionCoefficients[idDict.getBackward(i)].at<double>(j);
 		}
-		
+
 		cameraCalibrationDataPublisher.publish(msg);
-		
+
 		// DEBUG: Show calibration results visually
 		std::stringstream ss;
 		ss << "Calib Results CamId " << idDict.getBackward(i);
 		windowNames[idDict.getBackward(i)] = ss.str();
 		imageDisplayed[idDict.getBackward(i)] = false;
-		
+
 		cv::startWindowThread();
 		cv::namedWindow(ss.str());
 	}
-	
+
 	trackingWorker.updateTrackingArea();
-	
+
 	isCalibrating = false;
-	
+
 	return ok;
 }
 
 /**
- * Topic callback to receive raw camera images. For every camera, the last image is cached.
- * 
+ * Topic callback to receive raw camera images. For every camera, the last image
+ * is cached.
+ *
  * @param msg The ros message.
  */
 void PositionModule::pictureCallback(const camera_application::Picture &msg)
 {
 	// Insert camera id, if not already there.
 	idDict.insert(msg.ID);
-	
+
 	// DEBUG: Show calibration results visually
 	if (imageDisplayed.count(msg.ID) && !imageDisplayed[msg.ID] && intrinsicsMatrices.count(msg.ID) > 0
-		&& distortionCoefficients.count(msg.ID) > 0 && windowNames.count(msg.ID) > 0) {
+	    && distortionCoefficients.count(msg.ID) > 0 && windowNames.count(msg.ID) > 0) {
 		cv::Mat image(cv::Size(640, 480), CV_8UC3);
-		
-		for (int i = 0; i < 640 * 480 * 3; i++)	{
+
+		for (int i = 0; i < 640 * 480 * 3; i++) {
 			image.data[i] = msg.image[i];
 		}
-		
+
 		cv::Mat undistorted(cv::Size(640, 480), CV_8UC3);
 		cv::undistort(image, undistorted, intrinsicsMatrices[msg.ID], distortionCoefficients[msg.ID]);
 		cv::imshow(windowNames[msg.ID], undistorted);
 		imageDisplayed[msg.ID] = true;
 	}
-	
+
 	pictureCacheMutex.lock();
-	
+
 	if (isCalibrating) {
 		if (pictureCache[msg.ID] != 0) {
 			delete pictureCache[msg.ID];
 			pictureCache[msg.ID] = 0;
 		}
-		
-		cv::Mat* image = new cv::Mat(cv::Size(640, 480), CV_8UC3);
-		
-		for (int i = 0; i < 640 * 480 * 3; i++)	{
+
+		cv::Mat *image = new cv::Mat(cv::Size(640, 480), CV_8UC3);
+
+		for (int i = 0; i < 640 * 480 * 3; i++) {
 			image->data[i] = msg.image[i];
 		}
-		
+
 		pictureCache[msg.ID] = image;
 		pictureTimes[msg.ID] = msg.timestamp;
 	}
-	
+
 	pictureCacheMutex.unlock();
 }
 
 /**
  * Topic callback to receive the start and stop signal.
- * 
+ *
  * @param msg The ros message.
  */
 void PositionModule::systemCallback(const api_application::System &msg)
 {
 	isRunning = msg.command == 1;
-	
+
 	if (isRunning) {
 		ROS_INFO("Tracking started");
 	} else {
 		ROS_INFO("Tracking stopped");
 	}
-	
+
 	if (!isRunning) {
 		int counter = 0;
-		
+
 		for (std::vector<long int>::iterator it = timeLog.begin(); it != timeLog.end(); it++) {
 			log << counter++ << ", " << *it << std::endl;
 		}
-		
+
 		cv::destroyAllWindows();
 		ros::shutdown();
 	}
@@ -426,7 +428,7 @@ void PositionModule::systemCallback(const api_application::System &msg)
 
 /**
  * Ros topic callback for receiving camera data.
- * 
+ *
  * @param msg The ros message.
  */
 void PositionModule::rawPositionCallback(const camera_application::RawPosition &msg)
@@ -434,38 +436,43 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
 	if (!isCalibrated) {
 		return;
 	}
-	
- 	// TODO: Calculate position in our coordinate system.
+
+	// TODO: Calculate position in our coordinate system.
 	// TODO: Is this coordinate change correct for amcctoolbox?
 	Vector cameraVector(msg.xPosition, msg.yPosition, 1);
-	// ROS_DEBUG("Received position: msg.ID: %d idDict.getForward(msg.ID): %d msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID), msg.quadcopterId);
-	
+	// ROS_DEBUG("Received position: msg.ID: %d idDict.getForward(msg.ID): %d
+	// msg.quadcopterId: %d", msg.ID, idDict.getForward(msg.ID),
+	// msg.quadcopterId);
+
 	trackingWorker.updatePosition(cameraVector, idDict.getForward(msg.ID), msg.quadcopterId, msg.timestamp);
-	
+
 	/*#ifdef QC_PROFILE
-	long int trackingClock = getNanoTime();
-	#endif
-	Vector result = tracker.updatePosition(cameraVector, netIdToCamNo[msg.ID], msg.quadcopterId);
-	#ifdef QC_PROFILE
-	timeLog.push_back(getNanoTime() - trackingClock);
-	#endif
-	
-	std::vector<Vector> positions;
-	std::vector<int> ids;
-	std::vector<int> updates;
-	positions.push_back(result);
-	ids.push_back(msg.quadcopterId);
-	updates.push_back(1);
-	
-	if (result.isValid()) {
-		receiver->updatePositions(positions, ids, updates);
-	} else {
-		ROS_DEBUG("Not enough information to get position of quadcopter %d", msg.quadcopterId);
-	}*/
+	 *    long int trackingClock = getNanoTime();
+	 * #endif
+	 *    Vector result = tracker.updatePosition(cameraVector,
+	 * netIdToCamNo[msg.ID], msg.quadcopterId);
+	 * #ifdef QC_PROFILE
+	 *    timeLog.push_back(getNanoTime() - trackingClock);
+	 * #endif
+	 *
+	 *    std::vector<Vector> positions;
+	 *    std::vector<int> ids;
+	 *    std::vector<int> updates;
+	 *    positions.push_back(result);
+	 *    ids.push_back(msg.quadcopterId);
+	 *    updates.push_back(1);
+	 *
+	 *    if (result.isValid()) {
+	 *     receiver->updatePositions(positions, ids, updates);
+	 *    } else {
+	 *     ROS_DEBUG("Not enough information to get position of quadcopter %d",
+	 * msg.quadcopterId);
+	 *    }*/
 }
 
 /**
- * Method to activate or deactivate the sending of pictures by the camera applications.
+ * Method to activate or deactivate the sending of pictures by the camera
+ * applications.
  */
 void PositionModule::setPictureSendingActivated(bool activated)
 {
@@ -473,7 +480,7 @@ void PositionModule::setPictureSendingActivated(bool activated)
 	msg.ID = 0;
 	msg.active = activated;
 	msg.all = true;
-	
+
 	pictureSendingActivationPublisher.publish(msg);
 }
 
@@ -488,11 +495,13 @@ void PositionModule::sendPing()
 }
 
 /**
- * Returns true if the module could successfully announce itself to the API and got an id, false otherwise.
- * 
+ * Returns true if the module could successfully announce itself to the API and
+ * got an id, false otherwise.
+ *
  * @return If the module was successfully initialized.
  */
 bool PositionModule::isInitialized()
 {
 	return _isInitialized;
 }
+

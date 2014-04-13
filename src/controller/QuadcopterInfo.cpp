@@ -7,11 +7,12 @@
 
 #include "QuadcopterInfo.hpp"
 
-QuadcopterInfo::QuadcopterInfo() {
+QuadcopterInfo::QuadcopterInfo()
+{
 	this->state = UNSTARTED;
-	//timeStarted;
-	//timeLastUpdated;
-	//timeShutdownStarted;
+	// timeStarted;
+	// timeLastUpdated;
+	// timeShutdownStarted;
 
 	x = 0.0;
 	y = 0.0;
@@ -25,29 +26,27 @@ short QuadcopterInfo::getState()
 	return this->state;
 }
 
-void QuadcopterInfo::setState( short newState )
+void QuadcopterInfo::setState(short newState)
 {
 	this->state = newState;
 }
-
 
 long int QuadcopterInfo::getStarted()
 {
 	return this->timeStarted;
 }
 
-void QuadcopterInfo::setStarted( long int newStarted )
+void QuadcopterInfo::setStarted(long int newStarted)
 {
 	this->timeStarted = newStarted;
 }
 
 long int QuadcopterInfo::getLastUpdated()
 {
-
 	return this->timeLastUpdated;
 }
 
-void QuadcopterInfo::setLastUpdated( long int newLastUpdated )
+void QuadcopterInfo::setLastUpdated(long int newLastUpdated)
 {
 	this->timeLastUpdated = newLastUpdated;
 }
@@ -57,45 +56,36 @@ long int QuadcopterInfo::getShutdownStarted()
 	return this->timeShutdownStarted;
 }
 
-void QuadcopterInfo::setShutdownStarted( long int newShutdownStarted )
+void QuadcopterInfo::setShutdownStarted(long int newShutdownStarted)
 {
 	this->timeShutdownStarted = newShutdownStarted;
 }
 
-float QuadcopterInfo::checkAndFixRoll( float roll )
+float QuadcopterInfo::checkAndFixRoll(float roll)
 {
-	if( roll < ROLL_MIN )
-	{
+	if (roll < ROLL_MIN) {
 		return ROLL_MIN;
-	}
-	else if( roll > ROLL_MAX )
-	{
+	} else if (roll > ROLL_MAX)   {
 		return ROLL_MAX;
 	}
-	return roll;	
+	return roll;
 }
 
-float QuadcopterInfo::checkAndFixPitch( float pitch )
+float QuadcopterInfo::checkAndFixPitch(float pitch)
 {
-	if( pitch < PITCH_MIN )
-	{
+	if (pitch < PITCH_MIN) {
 		return PITCH_MIN;
-	}
-	else if( pitch > PITCH_MAX )
-	{
+	} else if (pitch > PITCH_MAX)   {
 		return PITCH_MAX;
 	}
 	return pitch;
 }
 
-float QuadcopterInfo::checkAndFixYawrate( float yawrate )
+float QuadcopterInfo::checkAndFixYawrate(float yawrate)
 {
-	if( yawrate < YAWRATE_MIN )
-	{
+	if (yawrate < YAWRATE_MIN) {
 		return YAWRATE_MIN;
-	}
-	else if( yawrate > YAWRATE_MAX )
-	{
+	} else if (yawrate > YAWRATE_MAX)   {
 		return YAWRATE_MAX;
 	}
 	return yawrate;
@@ -116,17 +106,17 @@ double QuadcopterInfo::getRotation()
 	return this->rotation;
 }
 
-void QuadcopterInfo::setX( double newX )
+void QuadcopterInfo::setX(double newX)
 {
 	this->x = newX;
 }
 
-void QuadcopterInfo::setY( double newY )
+void QuadcopterInfo::setY(double newY)
 {
 	this->y = newY;
 }
 
-void QuadcopterInfo::setRotation( double newRotation )
+void QuadcopterInfo::setRotation(double newRotation)
 {
 	this->rotation = newRotation;
 }
@@ -136,6 +126,8 @@ bool QuadcopterInfo::isNegativeSign()
 	return negativeSign;
 }
 
-void QuadcopterInfo::setNegativeSign(bool negativeSign) {
+void QuadcopterInfo::setNegativeSign(bool negativeSign)
+{
 	this->negativeSign = negativeSign;
 }
+
