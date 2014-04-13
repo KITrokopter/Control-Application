@@ -15,7 +15,9 @@ SynchronousCameraQueue::Group::Group()
 	maxTime = 0;
 }
 
-SynchronousCameraQueue::Group::Group(std::list<Bucket>::iterator it, long int currentTime, long int arrivalDelay, long int maxDelay, long int maxGroupInterval, long int cameraCount, bool ensureCam0)
+SynchronousCameraQueue::Group::Group(std::list<Bucket>::iterator it, long int currentTime, long int arrivalDelay,
+                                     long int maxDelay, long int maxGroupInterval, long int cameraCount,
+                                     bool ensureCam0)
 {
 	this->currentTime = currentTime;
 	this->arrivalDelay = arrivalDelay;
@@ -26,7 +28,7 @@ SynchronousCameraQueue::Group::Group(std::list<Bucket>::iterator it, long int cu
 	youngest = it;
 	oldest = it;
 	data.push_back(it->data);
-	
+
 	value = 0;
 	canBeValid = true;
 	minTime = it->data.time;
@@ -38,16 +40,16 @@ void SynchronousCameraQueue::Group::calculateValue()
 	// First, define base value by interval length times camera count
 	long int value = 2 * maxGroupInterval - (maxTime - minTime);
 	value *= data.size();
-	//value += maxGroupInterval;
-	
+	// value += maxGroupInterval;
+
 	// Calculate another value defined by the age of the oldest CameraData
 	double timeValue = minTime - (currentTime - arrivalDelay);
 	timeValue /= maxDelay - arrivalDelay;
 	timeValue *= maxGroupInterval;
-	
+
 	// Combine base and time value
 	value += (long int) timeValue;
-	
+
 	// Update value of given group object
 	this->value = value;
 }
@@ -59,15 +61,15 @@ void SynchronousCameraQueue::Group::add(std::list<Bucket>::iterator it)
 	} else if (it->data.time > maxTime) {
 		maxTime = it->data.time;
 	}
-	
+
 	if (it->arrivalTime > youngest->arrivalTime) {
 		youngest = it;
 	}
-	
+
 	if (it->arrivalTime < oldest->arrivalTime) {
 		oldest = it;
 	}
-	
+
 	data.push_back(it->data);
 }
 
@@ -80,7 +82,7 @@ bool SynchronousCameraQueue::Group::isValid()
 			cam0Found = true;
 		}
 	}
-	
+
 	return canBeValid && data.size() >= 2 && (hasWaiting() || data.size() == cameraCount) && (cam0Found || !ensureCam0);
 }
 
@@ -114,7 +116,7 @@ bool SynchronousCameraQueue::Group::hasWaiting()
 	if (!canBeValid) {
 		return false;
 	}
-	
+
 	return currentTime - oldest->arrivalTime > arrivalDelay;
 }
 

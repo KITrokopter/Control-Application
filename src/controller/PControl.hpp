@@ -5,7 +5,6 @@
 
 
 class PControl : public Control {
-
 public:
 
 	/**
@@ -13,7 +12,7 @@ public:
 	 * @param pFactor proportional factor
 	 * @param offset Offset added to calculated variable
 	 */
-	PControl( double pFactor, double offset );
+	PControl(double pFactor, double offset);
 
 	/**
 	 * A P-Controller with two p-factors.
@@ -21,10 +20,10 @@ public:
 	 * @param pFactorNeg Factor used if error is < 0
 	 * @param offset Offset added to calculated variable
 	 */
-	PControl( double pFactorPos, double pFactorNeg, double offset );
+	PControl(double pFactorPos, double pFactorNeg, double offset);
 
-	double getManipulatedVariable( double errorSignal );
-	void setOffset( double offset );
+	double getManipulatedVariable(double errorSignal);
+	void setOffset(double offset);
 
 protected:
 
@@ -32,10 +31,10 @@ protected:
 	 * Set p-factor to pFactorPos if error is >= 0.
 	 * @param errorSignal Sign of errorSignal is used.
 	 */
-	void setPAmplification( double errorSignal );
-	
+	void setPAmplification(double errorSignal);
+
 private:
-	
+
 	double pAmplification;
 	double pAmplificationPos;
 	double pAmplificationNeg;

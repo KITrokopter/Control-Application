@@ -12,18 +12,17 @@
 /**
  * Class to use the message topic.
  * This allows to send status messages to the user.
- * 
+ *
  * @author Sebastian Schmidt
  */
-class KitrokopterMessages
-{
+class KitrokopterMessages {
 private:
 	int id;
 	ros::Publisher messagePublisher;
-	
+
 public:
 	KitrokopterMessages(int id);
-	
+
 	void message(std::string text);
 	void warning(std::string text);
 	void error(std::string text);

@@ -9,27 +9,34 @@
 
 class Position6DOF {
 public:
-	//both arrays of the return pointer have size three
+	// both arrays of the return pointer have size three
 	double* getPosition();
 	double* getOrientation();
-	void setPosition(double * position);
+	void setPosition(double *position);
 	void setPosition(Vector vector);
-	void setOrientation(double* orientation);
+	void setOrientation(double *orientation);
 	long int getTimestamp();
 	void setTimestamp(long int newTimestamp);
+
 	Position6DOF(double x, double y, double z, double xOrientation, double yOrientation, double zOrientation);
 	Position6DOF(double x, double y, double z);
 	Position6DOF(Vector vector);
-	Position6DOF(){};	// FIXME
+	Position6DOF()
+	{
+	};                  // FIXME
 
 	double getAbsoluteDistance();
-	double getAbsoluteDistance( Position6DOF otherPosition );
-	double getAbsoluteDistanceXY( Position6DOF otherPosition );
-	double getDistanceX( Position6DOF otherPosition ); // positive if "this" is to the left of "otherPosition"
-	double getDistanceY( Position6DOF otherPosition ); // positive if "this" is before "otherPosition"
-	double getDistanceZ( Position6DOF otherPosition ); // positive if "this" is below "otherPosition"
-	double getDistanceZ( Position6DOF otherPosition, double koeff );
-	void predictNextPosition( Position6DOF olderPosition, long int timeInFuture );
+	double getAbsoluteDistance(Position6DOF otherPosition);
+	double getAbsoluteDistanceXY(Position6DOF otherPosition);
+	double getDistanceX(Position6DOF otherPosition);   // positive if "this" is
+	                                                   // to the left of
+	                                                   // "otherPosition"
+	double getDistanceY(Position6DOF otherPosition);   // positive if "this" is
+	                                                   // before "otherPosition"
+	double getDistanceZ(Position6DOF otherPosition);   // positive if "this" is
+	                                                   // below "otherPosition"
+	double getDistanceZ(Position6DOF otherPosition, double koeff);
+	void predictNextPosition(Position6DOF olderPosition, long int timeInFuture);
 
 private:
 	double position[3];

@@ -27,7 +27,7 @@ public:
 	 * @param target
 	 * @return
 	 */
-	static Position6DOF prepareForRP( double rotation, Position6DOF pos, Position6DOF target );
+	static Position6DOF prepareForRP(double rotation, Position6DOF pos, Position6DOF target);
 };
 
 #endif /* MOVEMENTHELPER_HPP_ */

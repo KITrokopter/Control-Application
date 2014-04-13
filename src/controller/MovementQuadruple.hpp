@@ -5,41 +5,40 @@
 #include "ros/ros.h"
 #include "../matlab/profiling.hpp"
 
-class MovementQuadruple
-{	
-	public:
-		MovementQuadruple(unsigned int newThrust, float newRoll, float newPitch, float newYawrate);
-		MovementQuadruple(unsigned int newThrust, float newRoll, float newPitch, float newYawrate, long int newTimestamp);
+class MovementQuadruple {
+public:
+	MovementQuadruple(unsigned int newThrust, float newRoll, float newPitch, float newYawrate);
+	MovementQuadruple(unsigned int newThrust, float newRoll, float newPitch, float newYawrate, long int newTimestamp);
 
-		unsigned int getThrust();
-		void setThrust( unsigned int newThrust );
-		float getRoll();
-		float getPitch();
-		float getYawrate();
-		void setRollPitchYawrate(float newRoll, float newPitch, float newYawrate);
-		void setRollPitchYawrate( MovementQuadruple toCopy);
-		
-		long int getTimestamp();
-		void setTimestamp( long int newTimestamp );
+	unsigned int getThrust();
+	void setThrust(unsigned int newThrust);
+	float getRoll();
+	float getPitch();
+	float getYawrate();
+	void setRollPitchYawrate(float newRoll, float newPitch, float newYawrate);
+	void setRollPitchYawrate(MovementQuadruple toCopy);
+
+	long int getTimestamp();
+	void setTimestamp(long int newTimestamp);
 
 
-		/**
-		 *
-		 * @param maxThrust
-		 * @param maxRoll
-		 * @param maxPitch
-		 * @param maxYawrate
-		 * @return
-		 */
-		bool checkQuadruple( int maxThrust, float maxRoll, float maxPitch, float maxYawrate );
+	/**
+	 *
+	 * @param maxThrust
+	 * @param maxRoll
+	 * @param maxPitch
+	 * @param maxYawrate
+	 * @return
+	 */
+	bool checkQuadruple(int maxThrust, float maxRoll, float maxPitch, float maxYawrate);
 
-		void invertRollPitchYawrate( float factorThrust, float factorRPY );	// FIXME
-		
-	private:
-		unsigned int thrust;
-		float roll, pitch, yawrate;
-		long int timestamp;
+	void invertRollPitchYawrate(float factorThrust, float factorRPY);       //
+	                                                                        // FIXME
 
+private:
+	unsigned int thrust;
+	float roll, pitch, yawrate;
+	long int timestamp;
 };
 
 #endif // MOVEMENT_QUADRUPLE_HPP

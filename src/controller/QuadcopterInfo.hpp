@@ -35,25 +35,25 @@ public:
 
 	/* Getter and Setter */
 	short getState();
-	void setState( short newState );
+	void setState(short newState);
 
 	long int getStarted();
-	void setStarted( long int newStarted );
+	void setStarted(long int newStarted);
 	long int getLastUpdated();
-	void setLastUpdated( long int newLastUpdated );
+	void setLastUpdated(long int newLastUpdated);
 	long int getShutdownStarted();
-	void setShutdownStarted( long int newShutdownStarted );
+	void setShutdownStarted(long int newShutdownStarted);
 
-	float checkAndFixRoll( float roll );
-	float checkAndFixPitch( float pitch );
-	float checkAndFixYawrate( float yawrate );
+	float checkAndFixRoll(float roll);
+	float checkAndFixPitch(float pitch);
+	float checkAndFixYawrate(float yawrate);
 
 	double getX();
 	double getY();
 	double getRotation();
-	void setX( double newX );
-	void setY( double newY );
-	void setRotation( double newRotation );
+	void setX(double newX);
+	void setY(double newY);
+	void setRotation(double newRotation);
 	bool isNegativeSign();
 	void setNegativeSign(bool negativeSign);
 
@@ -78,12 +78,14 @@ private:
 	short state;
 
 	long int timeStarted;
-	long int timeLastUpdated;	// used in latest state "DONE", before only "started" is relevant
+	long int timeLastUpdated;   // used in latest state "DONE", before only
+	                            // "started" is relevant
 	long int timeShutdownStarted;
 
-	double x;		// 0-x-roll, 1-y-pitch
+	double x;       // 0-x-roll, 1-y-pitch
 	double y;
-	double rotation;	// in rad; compared to "North" (pitch=1), counterclockwise
+	double rotation;    // in rad; compared to "North" (pitch=1),
+	                    // counterclockwise
 	bool negativeSign;
 };
 

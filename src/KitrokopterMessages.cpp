@@ -4,20 +4,20 @@
 
 /**
  * Initializes the object to send messages from the specified sender id.
- * 
+ *
  * @param id The sender id.
  */
 KitrokopterMessages::KitrokopterMessages(int id)
 {
 	this->id = id;
-	
+
 	ros::NodeHandle n;
 	this->messagePublisher = n.advertise<api_application::Message>("Message", 16);
 }
 
 /**
  * Sends an information message.
- * 
+ *
  * @param text The message.
  */
 void KitrokopterMessages::message(std::string text)
@@ -27,7 +27,7 @@ void KitrokopterMessages::message(std::string text)
 
 /**
  * Sends a warning message.
- * 
+ *
  * @param text The message.
  */
 void KitrokopterMessages::warning(std::string text)
@@ -37,7 +37,7 @@ void KitrokopterMessages::warning(std::string text)
 
 /**
  * Sends an error message.
- * 
+ *
  * @param text The message.
  */
 void KitrokopterMessages::error(std::string text)
@@ -47,7 +47,7 @@ void KitrokopterMessages::error(std::string text)
 
 /**
  * Sends a message of the given type.
- * 
+ *
  * @param text The message.
  * @param type The message type. Info = 1, Warning = 2, Error = 3.
  */

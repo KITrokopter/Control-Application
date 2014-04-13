@@ -7,44 +7,43 @@
 
 #include "MovementHelper.hpp"
 
-MovementHelper::MovementHelper() {
-
+MovementHelper::MovementHelper()
+{
 }
 
-Position6DOF MovementHelper::prepareForRP( double rotation, Position6DOF pos, Position6DOF target )
+Position6DOF MovementHelper::prepareForRP(double rotation, Position6DOF pos, Position6DOF target)
 {
 	/* values of the Matrix, mij is value of i. line and j. column  */
-	double m11 = cos( rotation );
-	double m12 = -sin( rotation );
-	double m21 = sin( rotation );
-	double m22 = cos( rotation );
+	double m11 = cos(rotation);
+	double m12 = -sin(rotation);
+	double m21 = sin(rotation);
+	double m22 = cos(rotation);
 	double *currentPos = pos.getPosition();
 	double *targetPos = target.getPosition();
 	double newPosition[3];
-	for( int i = 0; i < 3; i++ )
-	{
+	for (int i = 0; i < 3; i++) {
 		currentPos[i] = currentPos[i] - targetPos[i];
 	}
 	newPosition[0] = m11 * currentPos[0] + m12 * currentPos[1];
 	newPosition[1] = m21 * currentPos[0] + m22 * currentPos[1];
 	newPosition[2] = currentPos[2];
-	for( int i = 0; i < 3; i++ )
-	{
+	for (int i = 0; i < 3; i++) {
 		currentPos[i] = currentPos[i] + targetPos[i];
 	}
 
-	pos.setPosition( newPosition );
+	pos.setPosition(newPosition);
 	return pos;
 }
 
-//double getHeightDiff( std::list<Position6DOF> listPositions )
-//{
+// double getHeightDiff( std::list<Position6DOF> listPositions )
+// {
 //	double heightLatest = listPositions.front().getThrust();
 //	double heightPast;
 //
 //	std::list<Position6DOF>::iterator it;
 //	int counter = 0;
-//	for( it=listPositions.begin(); (it!=listPositions.end()) && (counter<2); ++it )
+//	for( it=listPositions.begin(); (it!=listPositions.end()) && (counter<2);
+// ++it )
 //	{
 //		if( counter == 1 )
 //		{
@@ -59,7 +58,8 @@ Position6DOF MovementHelper::prepareForRP( double rotation, Position6DOF pos, Po
 ////
 ////	std::list<Position6DOF>::iterator it;
 ////	int counter = 0;
-////	for( it=listPositions.begin(); (it!=listPositions.end()) && (counter<2); ++it )
+////	for( it=listPositions.begin(); (it!=listPositions.end()) && (counter<2);
+// ++it )
 ////	{
 ////		if( counter == 1 )
 ////		{
@@ -69,17 +69,19 @@ Position6DOF MovementHelper::prepareForRP( double rotation, Position6DOF pos, Po
 ////		}
 ////		counter++;
 ////	}
-//}
+// }
 //
-//double getHeightDiffReverse( std::list<Position6DOF> listPositions )
-//{
+// double getHeightDiffReverse( std::list<Position6DOF> listPositions )
+// {
 //	double heightLatest = listPositions;
-//	Position6DOF positionNow = listPositions.back();	// positionPast is older than positionNow
+//	Position6DOF positionNow = listPositions.back();	// positionPast is older
+// than positionNow
 //	Position6DOF positionPast;
 //
 //	std::list<Position6DOF>::reverse_iterator rit;
 //	int counter = 0;
-//	for( rit=listPositions.rbegin(); (rit!=listPositions.rend()) && (counter<2); ++rit )
+//	for( rit=listPositions.rbegin(); (rit!=listPositions.rend()) && (counter<2);
+// ++rit )
 //	{
 //		if( counter == 1 )
 //		{
@@ -89,4 +91,4 @@ Position6DOF MovementHelper::prepareForRP( double rotation, Position6DOF pos, Po
 //		}
 //		counter++;
 //	}
-//}
+// }

@@ -26,15 +26,16 @@
 
 /**
  * The main class of the position module.
- * Connects to the other relevant modules via ROS and passes commands and data that is received to the tracking system.
- * 
+ * Connects to the other relevant modules via ROS and passes commands and data
+ * that is received to the tracking system.
+ *
  * @author Sebastian Schmidt
  */
 class PositionModule {
 private:
 	bool _isInitialized;
 	bool isRunning;
-	
+
 	// Calibration
 	bool isCalibrating;
 	bool isCalibrated;
@@ -44,54 +45,57 @@ private:
 	Mutex pictureCacheMutex;
 	std::map<int, cv::Mat*> pictureCache;
 	std::map<int, uint64_t> pictureTimes;
-	
+
 	std::map<int, cv::Mat> intrinsicsMatrices;
 	std::map<int, cv::Mat> distortionCoefficients;
 	std::map<int, std::string> windowNames;
 	std::map<int, bool> imageDisplayed;
-	
+
 	// Tracking
 	TrackingWorker trackingWorker;
 	/// Maps network ids to camera numbers for the tracker.
 	IdDictionary idDict;
-	
+
 	// ROS network
 	ros::ServiceServer startCalibrationService;
 	ros::ServiceServer takeCalibrationPictureService;
 	ros::ServiceServer calculateCalibrationService;
-	
+
 	ros::Publisher pictureSendingActivationPublisher;
 	ros::Publisher pingPublisher;
 	ros::Publisher cameraCalibrationDataPublisher;
-	
+
 	ros::Subscriber pictureSubscriber;
 	ros::Subscriber systemSubscriber;
 	ros::Subscriber rawPositionSubscriber;
-	
+
 	int rosId;
-	KitrokopterMessages* msg;
-	
+	KitrokopterMessages *msg;
+
 	// ROS callbacks
-	bool startCalibrationCallback(control_application::StartCalibration::Request &req, control_application::StartCalibration::Response &res);
-	bool takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req, control_application::TakeCalibrationPicture::Response &res);
-	bool calculateCalibrationCallback(control_application::CalculateCalibration::Request &req, control_application::CalculateCalibration::Response &res);
-	
+	bool startCalibrationCallback(control_application::StartCalibration::Request &req,
+	                              control_application::StartCalibration::Response &res);
+	bool takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req,
+	                                    control_application::TakeCalibrationPicture::Response &res);
+	bool calculateCalibrationCallback(control_application::CalculateCalibration::Request &req,
+	                                  control_application::CalculateCalibration::Response &res);
+
 	void pictureCallback(const camera_application::Picture &msg);
 	void systemCallback(const api_application::System &msg);
 	void rawPositionCallback(const camera_application::RawPosition &msg);
-	
+
 	// ROS wrappers
 	void setPictureSendingActivated(bool activated);
 	void sendPing();
-	
+
 	// Logging
 	std::ofstream log;
 	std::vector<long int> timeLog;
-	
+
 	bool calculateCameraNumbers();
-	
+
 public:
-	PositionModule(IPositionReceiver* receiver);
+	PositionModule(IPositionReceiver *receiver);
 	~PositionModule();
 	bool isInitialized();
 };

@@ -5,7 +5,7 @@ static long int _time = 0;
 
 /**
  * Set the current time to the given value.
- * 
+ *
  * @param time The time to set.
  */
 void setNanoTime(long int time)
@@ -14,8 +14,9 @@ void setNanoTime(long int time)
 }
 
 /**
- * Returns the time that was set by setNanoTime, or 0 if setNanoTime was never called.
- * 
+ * Returns the time that was set by setNanoTime, or 0 if setNanoTime was never
+ * called.
+ *
  * @return The time set by setNanoTime, or 0 if setNanoTime was never called.
  */
 long int getNanoTime()

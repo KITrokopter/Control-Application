@@ -6,3 +6,4 @@ long int getNanoTime()
 	clock_gettime(CLOCK_REALTIME, &ts);
 	return 1000000000 * ts.tv_sec + ts.tv_nsec;
 }
+

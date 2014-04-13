@@ -5,22 +5,22 @@
 #include <string>
 #include <map>
 
-class Graph
-{
+class Graph {
 public:
-	
-// 	Graph(int maxValue, std::string windowName, std::map<int, cv::Scalar> colors);
+
+//  Graph(int maxValue, std::string windowName, std::map<int, cv::Scalar>
+// colors);
 	Graph(int maxValue, std::string windowName);
 	~Graph();
-	
+
 	void nextPoint(double value, int id);
 	void setColors(std::map<int, cv::Scalar> colors);
-	
+
 private:
-	
+
 	void drawMetadata();
 	uchar* getPixel(cv::Mat mat, int x, int y);
-	
+
 	cv::Mat image;
 	std::string windowName;
 	std::map<int, cv::Scalar> colors;
@@ -31,5 +31,4 @@ private:
 	int currentPosition;
 	int *graph;
 	bool *graphInitialized;
-	
 };

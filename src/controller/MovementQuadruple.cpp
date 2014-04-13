@@ -1,24 +1,25 @@
 #include "MovementQuadruple.hpp"
 
-MovementQuadruple::MovementQuadruple( unsigned int newThrust, float newRoll, float newPitch, float newYawrate)
+MovementQuadruple::MovementQuadruple(unsigned int newThrust, float newRoll, float newPitch, float newYawrate)
 {
 	this->thrust = newThrust;
 	this->roll = newRoll;
 	this->pitch = newPitch;
-	this->yawrate = newYawrate;	
-	this->timestamp = getNanoTime();	
+	this->yawrate = newYawrate;
+	this->timestamp = getNanoTime();
 }
 
-MovementQuadruple::MovementQuadruple( unsigned int newThrust, float newRoll, float newPitch, float newYawrate, long int newTimestamp)
+MovementQuadruple::MovementQuadruple(unsigned int newThrust, float newRoll, float newPitch, float newYawrate,
+                                     long int newTimestamp)
 {
 	this->thrust = newThrust;
 	this->roll = newRoll;
 	this->pitch = newPitch;
-	this->yawrate = newYawrate;	
-	this->timestamp = newTimestamp;		
+	this->yawrate = newYawrate;
+	this->timestamp = newTimestamp;
 }
 
-void MovementQuadruple::setThrust( unsigned int newThrust )
+void MovementQuadruple::setThrust(unsigned int newThrust)
 {
 	this->thrust = newThrust;
 }
@@ -27,10 +28,10 @@ void MovementQuadruple::setRollPitchYawrate(float newRoll, float newPitch, float
 {
 	this->roll = newRoll;
 	this->pitch = newPitch;
-	this->yawrate = newYawrate;	
+	this->yawrate = newYawrate;
 }
 
-void MovementQuadruple::setRollPitchYawrate( MovementQuadruple toCopy)
+void MovementQuadruple::setRollPitchYawrate(MovementQuadruple toCopy)
 {
 	this->roll = toCopy.getRoll();
 	this->pitch = toCopy.getPitch();
@@ -57,47 +58,40 @@ float MovementQuadruple::getYawrate()
 	return this->yawrate;
 }
 
-bool MovementQuadruple::checkQuadruple( int maxThrust, float maxRoll, float maxPitch, float maxYawrate )
+bool MovementQuadruple::checkQuadruple(int maxThrust, float maxRoll, float maxPitch, float maxYawrate)
 {
 	bool below = true;
-	if( this->thrust > maxThrust )
-	{
+	if (this->thrust > maxThrust) {
 		ROS_INFO("Thrust to high, resetting.");
 		this->thrust = maxThrust;
 		below = false;
 	}
-	if( this->roll > maxRoll )
-	{
+	if (this->roll > maxRoll) {
 		ROS_INFO("Roll to high, resetting.");
 		this->roll = maxRoll;
 		below = false;
 	}
-	if( this->roll < -maxRoll )
-	{
+	if (this->roll < -maxRoll) {
 		ROS_INFO("Roll to low, resetting.");
 		this->roll = -maxRoll;
 		below = false;
 	}
-	if( this->pitch > maxPitch )
-	{
+	if (this->pitch > maxPitch) {
 		ROS_INFO("Pitch to high, resetting.");
 		this->pitch = maxPitch;
 		below = false;
 	}
-	if( this->pitch < -maxPitch )
-	{
+	if (this->pitch < -maxPitch) {
 		ROS_INFO("Pitch to low, resetting.");
 		this->pitch = -maxPitch;
 		below = false;
 	}
-	if( this->yawrate > maxYawrate )
-	{
+	if (this->yawrate > maxYawrate) {
 		ROS_INFO("Yawrate to high, resetting.");
 		this->yawrate = maxYawrate;
 		below = false;
 	}
-	if( this->yawrate < -maxYawrate )
-	{
+	if (this->yawrate < -maxYawrate) {
 		ROS_INFO("Yawrate to low, resetting.");
 		this->yawrate = -maxYawrate;
 		below = false;
@@ -105,7 +99,7 @@ bool MovementQuadruple::checkQuadruple( int maxThrust, float maxRoll, float maxP
 	return below;
 }
 
-void MovementQuadruple::invertRollPitchYawrate( float factorThrust, float factorRPY ) 
+void MovementQuadruple::invertRollPitchYawrate(float factorThrust, float factorRPY)
 {
 	this->thrust = this->thrust * factorThrust;
 	this->roll = (-this->roll) * factorRPY;
@@ -118,7 +112,8 @@ long int MovementQuadruple::getTimestamp()
 	return this->timestamp;
 }
 
-void MovementQuadruple::setTimestamp(long int newTimestamp) 
+void MovementQuadruple::setTimestamp(long int newTimestamp)
 {
 	this->timestamp = newTimestamp;
 }
+
