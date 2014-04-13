@@ -1,6 +1,8 @@
-/*
+/**
  * TrackingMath.h
- *
+ * Matlab.h
+ *  
+ *  Mathematical function class, calculating perpendicular foot points
  *  Created on: 13.01.2014
  *      Author: daniela
  */
@@ -15,7 +17,7 @@ class TrackingMath {
 private:
 
     /**
-     * error is average distance of perpendicular foot points to interpolated point
+     * error is average distance of perpendicular foot points to interpolated point of the last calculation
      */
     double error;
 

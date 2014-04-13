@@ -1,5 +1,5 @@
 /*
- * Vector.cpp
+ * TrackingArea.cpp
  *
  *  Created on: 18.01.2014
  *      Author: daniela

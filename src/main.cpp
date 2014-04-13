@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 
 #include "position/IPositionReceiver.hpp"
-#include "position/DummyPositionReceiver.hpp"
 #include "position/PositionModule.hpp"
 #include "controller/Controller.hpp"
 #include <stdlib.h>
@@ -15,20 +14,28 @@ int main(int argc, char **argv)
 		ros::console::notifyLoggerLevelsChanged();
 	}
 	
-	IPositionReceiver* receiver = new Controller();
-	PositionModule p(receiver);
+	Controller receiver;
+	PositionModule p(&receiver);
 	
 	if (p.isInitialized()) {
 		// DO STUFF
+		ROS_DEBUG("p.isInitialized true");
 		ros::spin();
+		for(int i = 0; i < 100; i++)
+		{
+		  if(ros::ok())
+		  {
+			  break;
+		  }
+		  usleep(10000);
+		}
 	} else {
 		ros::shutdown();
 	}
-	
+		
 	while (ros::ok())
 	{
 		usleep(10000);
 	}
-	
-	delete receiver;
+	ROS_ERROR("End of main");
 }

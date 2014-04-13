@@ -1,6 +1,5 @@
 #ifndef CONTROLLER_HPP
 #define CONTROLLER_HPP
-//#include "CalculatorMoveUp.hpp"
 #include "Control.hpp"
 #include "PControl.hpp"
 #include "PDIControl.hpp"
@@ -29,6 +28,7 @@
 #include "../matlab/Vector.h"
 #include "../matlab/TrackingArea.h"
 #include "../matlab/Matrix2x2.h"
+#include "../matlab/Matrix.h"
 #include <boost/bind.hpp>
 #include <cmath>
 #include <list>
@@ -39,30 +39,36 @@
 #include <string>
 #include <unistd.h>
 #include <vector>
-//Ros messages/services
 
 #define INVALID -1
 
 #define USE_BATTERY_INPUT 1
 
-#define AMPLIFICATION_THRUST_P_POS 12
-#define AMPLIFICATION_THRUST_P_NEG 5
-#define AMPLIFICATION_THRUST_D 5
-#define AMPLIFICATION_THRUST_I 0.1
-#define THRUST_OFFSET 31000
-#define AMPLIFICATION_RP 0.018
+#define BARO_OFFSET 0.8
+
+#define ID 4
+
+#define AMPLIFICATION_THRUST_P_POS 15
+#define AMPLIFICATION_THRUST_P_NEG 12
+#define AMPLIFICATION_THRUST_D 10
+#define AMPLIFICATION_THRUST_I 0.0
+#define THRUST_OFFSET 40000
+//#define AMPLIFICATION_RP 0.018
+#define AMPLIFICATION_P 0.25
+#define AMPLIFICATION_R 0.25
 #define RP_OFFSET 0
-#define AMPLIFICATION_Y (-0.28)
+#define AMPLIFICATION_Y 4
 #define Y_OFFSET 0
 
-#define TIME_UPDATED_END 3000*1000*1000	// in ns
+#define TIME_UPDATED_END 2000*1000*1000	// in ns
 #define TIME_UPDATED_CRITICAL 250*1000*1000	// in ns
 #define TIME_WAIT_FOR_DATA 8000
 #define TIME_WAIT_FOR_TRACKED 3000
 #define TIME_WAIT_FOR_LANDING 10000
 #define TIME_ROTATE_CIRCLE 12000000000	// 12s for one whole rotation
 #define TIME_WAIT_AT_LANDING 10*1000*1000 // in microseconds
-#define LOOPS_PER_SECOND 30
+#define TIME_WAIT_FOR_QUADCOPTERS 8000 // in microseconds
+#define LOOPS_PER_SECOND 10
 
 #define DISTANCE_ROTATE_TO_CENTER 100
 
@@ -74,7 +80,7 @@
 #define CALCULATE_HOLD 4	// Stabilize with more available data, error-handling
 #define CALCULATE_LAND 5 //Shutdown quadcopter
 #define CALCULATE_STABILIZE_STEP 500	// time in ms after next value should be calculated
-#define DECLINE_SHUTDOWN_STEP 700
+#define DECLINE_SHUTDOWN_STEP 900
 #define DECLINE_NOT_TRACKED_STEP 100
 
 #define HOLD_SKIP 1
@@ -82,7 +88,7 @@
 #define HOLD_FACTOR_THRUST 0.7
 #define HOLD_FACTOR_RPY 0.5
 
-#define MAX_NUMBER_QUADCOPTER 10 /* Used for lists */
+#define MAX_NUMBER_QUADCOPTER 10	// Used for lists
 #define MAX_SAVED_SENT_QUADRUPLES 8
 
 class Formation;
@@ -96,7 +102,6 @@ public:
 	void setTrackingArea(TrackingArea area);
 
 	/* Movement and Positioning */
-	//Position6DOF* getTargetPosition();
 	void setTargetPosition();
 	void updatePositions(std::vector<Vector> positions, std::vector<int> ids, std::vector<int> updates);
 	void sendMovementAll();
@@ -127,10 +132,10 @@ public:
     
 protected:
 	//Callbacks for Ros subscriber
-	void MoveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
-	void SetFormationCallback(const api_application::SetFormation::ConstPtr& msg);
-	void QuadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
-	void SystemCallback(const api_application::System::ConstPtr& msg);
+	void moveFormationCallback(const api_application::MoveFormation::ConstPtr& msg);
+	void setFormationCallback(const api_application::SetFormation::ConstPtr& msg);
+	void quadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr& msg, int topicNr);
+	void systemCallback(const api_application::System::ConstPtr& msg);
 	
 	void dontMove( int internId);
 	void moveUp( int internId );
@@ -139,7 +144,6 @@ protected:
 	void hold( int internId );
 
 	/* Helper functions */
-//	bool isStable( int internId );
 
 private:
 	
@@ -164,13 +168,17 @@ private:
 	std::vector<std::list<MovementQuadruple> > listSentQuadruples; //last send Movement at the end of the list
 	std::vector<MovementQuadruple> currentMovement;
 
-	/* Received data */ 
-	//Arrays for quadcopters sorted by intern id
+	/*
+	 * Received data 
+	 * Arrays for quadcopters sorted by intern id.
+	 */ 
 	float pitch_stab[MAX_NUMBER_QUADCOPTER];
 	float roll_stab[MAX_NUMBER_QUADCOPTER];
-	float yaw_stab[MAX_NUMBER_QUADCOPTER];
+	float yaw_stab[MAX_NUMBER_QUADCOPTER]; //in degree
 	unsigned int thrust_stab[MAX_NUMBER_QUADCOPTER];
 	float battery_status[MAX_NUMBER_QUADCOPTER];
+	float baro[MAX_NUMBER_QUADCOPTER];
+	float baroTarget[MAX_NUMBER_QUADCOPTER];
 	std::list<std::vector<float> > formationMovement;
 
 	/* Control */
@@ -186,6 +194,7 @@ private:
 	bool receivedFormation;
 	bool receivedQuadStatus[MAX_NUMBER_QUADCOPTER];
 	bool buildFormationFinished;
+	bool buildFormationStarted;
 	bool receivedTrackingArea;
 	bool shutdownStarted;
 	bool emergencyShutdown[MAX_NUMBER_QUADCOPTER];
@@ -194,6 +203,9 @@ private:
 	long int timeLastFormationMovement;
 	long int timeLastCurrent[MAX_NUMBER_QUADCOPTER];
 	int thrustHelp[MAX_NUMBER_QUADCOPTER];
+	int batteryStatusCounter[MAX_NUMBER_QUADCOPTER];
+	float batteryStatusSum[MAX_NUMBER_QUADCOPTER];
+	bool constructionDone;
 	
 	/* Mutex */
 	Mutex formationMovementMutex;
@@ -218,15 +230,15 @@ private:
 	/* Subscriber */	
 	ros::Subscriber MoveFormation_sub;	//Subscriber for the MoveFormation data	
 	ros::Subscriber SetFormation_sub;	//Subscriber for Formation data from API
-	ros::Subscriber QuadStatus_sub[10];
+	ros::Subscriber QuadStatus_sub[MAX_NUMBER_QUADCOPTER];
 	ros::Subscriber System_sub;	//Subscriber to System topic (Sends the start and end of the system)
 	//ros::Subscriber QuadStatus_sub;	//Subscriber for Quadcopter data from QuadcopterModul
 
 	/* Publisher */
 	//Publisher for the Movement data of the Quadcopts (1000 is the max. buffered messages)
-	ros::Publisher Movement_pub[10];	//ros::Publisher Movement_pub;
+	ros::Publisher Movement_pub[MAX_NUMBER_QUADCOPTER];	//ros::Publisher Movement_pub;
 	ros::Publisher Message_pub;	//Publisher for Message to API
-	ros::Publisher Tracked_pub[10];
+	ros::Publisher Tracked_pub[MAX_NUMBER_QUADCOPTER];
 
 	/* Services */
 

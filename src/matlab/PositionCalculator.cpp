@@ -158,7 +158,7 @@ bool PositionCalculator::calibrate(ChessboardData *chessboardData, int numberCam
         ROS_DEBUG("Distance between camera 0 and 2 is %.2f", v0.add(v2.mult(-1)).getLength());
         ROS_DEBUG("Distance between camera 1 and 2 is %.2f", v1.add(v2.mult(-1)).getLength());
 
-        setTrackingArea(2300);
+        setTrackingArea(2600);
         tracking.printTrackingArea();
     }
 

@@ -1,8 +1,7 @@
 #include <ros/ros.h>
 
-#include "IPositionReceiver.hpp"
-#include "DummyPositionReceiver.hpp"
-#include "PositionModule.hpp"
+#include "helpers/DummyPositionReceiver.hpp"
+#include "../src/position/PositionModule.hpp"
 
 int main(int argc, char** argv)
 {

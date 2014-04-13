@@ -20,6 +20,12 @@
 #include "../matlab/Vector.h"
 #include "../matlab/profiling.hpp"
 
+/**
+ * Sets up the ROS communications and requests an id from the API.
+ * If the id requests failed, the isInitialized() method will always return false. Otherwise it will always return true.
+ * 
+ * @param receiver The object the position data should be sent to.
+ */
 PositionModule::PositionModule(IPositionReceiver* receiver) : 
 	trackingWorker(receiver)
 {
@@ -49,7 +55,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	
 	api_application::Announce announce;
 	announce.request.type = 3; // 3 means position module
-	
+	msg = 0;
 	if (announceClient.call(announce))
 	{
 		rosId = announce.response.id;
@@ -62,6 +68,7 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 		else
 		{
 			ROS_INFO("Position module successfully announced. Got id %d", rosId);
+			msg = new KitrokopterMessages(rosId);
 		}
 	}
 	else
@@ -70,7 +77,6 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 		_isInitialized = false;
 	}
 	
-	msg = new KitrokopterMessages(rosId);
 	
 	if (_isInitialized)
 	{
@@ -86,9 +92,16 @@ PositionModule::PositionModule(IPositionReceiver* receiver) :
 	}
 }
 
+/**
+ * Destroys the position module.
+ */
 PositionModule::~PositionModule()
 {
-	msg->~KitrokopterMessages();
+	if(msg) {
+		msg->~KitrokopterMessages();
+		delete msg;
+	}
+	
 	log.close();
 	
 	// TODO: Free picture cache.
@@ -96,7 +109,13 @@ PositionModule::~PositionModule()
 	ROS_DEBUG("PositionModule destroyed");
 }
 
-// Service
+/**
+ * Service callback that starts the calibration process.
+ * 
+ * @param req The ros service request.
+ * @param req The ros service response.
+ * @return True if the calculation was successfully started, false otherwise.
+ */
 bool PositionModule::startCalibrationCallback(control_application::StartCalibration::Request &req, control_application::StartCalibration::Response &res)
 {
 	res.ok = !isCalibrating;
@@ -120,7 +139,13 @@ bool PositionModule::startCalibrationCallback(control_application::StartCalibrat
 	return true;
 }
 
-// Service
+/**
+ * Service callback to take a calibration picture. The picture is saved in a folder in /tmp for calibrating.
+ * 
+ * @param req The ros service request.
+ * @param res The ros service response.
+ * @return False if at least one good picture was taken, but could not be saved to disk.
+ */
 bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCalibrationPicture::Request &req, control_application::TakeCalibrationPicture::Response &res)
 {
 	ROS_DEBUG("Taking calibration picture. Have %d cameras.", idDict.size());
@@ -215,7 +240,7 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 		img.data.reserve(img.step * img.height);
 		
 		for (int i = 0; i < 640 * 480 * 3; i++)	{
-			img.data[i] = it->second->data[i];
+			img.data.push_back(it->second->data[i]);
 		}
 		
 		res.images.push_back(img);
@@ -228,7 +253,13 @@ bool PositionModule::takeCalibrationPictureCallback(control_application::TakeCal
 	return true;
 }
 
-// Service
+/**
+ * Service callback for calculating the calibration. The results are saved in a folder in /tmp.
+ * 
+ * @param req The ros service request.
+ * @param res The ros service response.
+ * @return True if the calibration was successfully calculated, false otherwise.
+ */
 bool PositionModule::calculateCalibrationCallback(control_application::CalculateCalibration::Request &req, control_application::CalculateCalibration::Response &res)
 {
 	/*if (!isCalibrating) {
@@ -320,7 +351,11 @@ bool PositionModule::calculateCalibrationCallback(control_application::Calculate
 	return ok;
 }
 
-// Topic
+/**
+ * Topic callback to receive raw camera images. For every camera, the last image is cached.
+ * 
+ * @param msg The ros message.
+ */
 void PositionModule::pictureCallback(const camera_application::Picture &msg)
 {
 	// Insert camera id, if not already there.
@@ -362,7 +397,11 @@ void PositionModule::pictureCallback(const camera_application::Picture &msg)
 	pictureCacheMutex.unlock();
 }
 
-// Topic
+/**
+ * Topic callback to receive the start and stop signal.
+ * 
+ * @param msg The ros message.
+ */
 void PositionModule::systemCallback(const api_application::System &msg)
 {
 	isRunning = msg.command == 1;
@@ -385,7 +424,11 @@ void PositionModule::systemCallback(const api_application::System &msg)
 	}
 }
 
-// Topic
+/**
+ * Ros topic callback for receiving camera data.
+ * 
+ * @param msg The ros message.
+ */
 void PositionModule::rawPositionCallback(const camera_application::RawPosition &msg)
 {
 	if (!isCalibrated) {
@@ -421,6 +464,9 @@ void PositionModule::rawPositionCallback(const camera_application::RawPosition &
 	}*/
 }
 
+/**
+ * Method to activate or deactivate the sending of pictures by the camera applications.
+ */
 void PositionModule::setPictureSendingActivated(bool activated)
 {
 	camera_application::PictureSendingActivation msg;
@@ -431,6 +477,9 @@ void PositionModule::setPictureSendingActivated(bool activated)
 	pictureSendingActivationPublisher.publish(msg);
 }
 
+/**
+ * Sends a ping. Unused.
+ */
 void PositionModule::sendPing()
 {
 	api_application::Ping msg;
@@ -438,6 +487,11 @@ void PositionModule::sendPing()
 	pingPublisher.publish(msg);
 }
 
+/**
+ * Returns true if the module could successfully announce itself to the API and got an id, false otherwise.
+ * 
+ * @return If the module was successfully initialized.
+ */
 bool PositionModule::isInitialized()
 {
 	return _isInitialized;

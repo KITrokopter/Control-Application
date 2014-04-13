@@ -23,9 +23,9 @@ double PControl::getManipulatedVariable(double errorSignal)
 	return y;
 }
 
-double PControl::getAmplification()
+void PControl::setOffset( double offset )
 {
-	return this->pAmplification;
+	this->offset = offset;
 }
 
 void PControl::setPAmplification( double errorSignal )

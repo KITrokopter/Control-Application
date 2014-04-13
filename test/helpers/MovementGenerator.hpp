@@ -5,6 +5,11 @@
 #include <inttypes.h>
 #include <vector>
 
+/**
+ * A test helper that generates a linear movement over time.
+ * 
+ * @author Sebastian Schmidt
+ */
 class MovementGenerator {
 private:
 	IPositionReceiver *receiver;
@@ -19,25 +24,46 @@ private:
 	int steps;
 	double stepsPerSecond;
 	
-	/// Interpolates between a and b with a linear function using alpha as parameter.
+	/**
+	 * Interpolates between a and b with a linear function using alpha as parameter.
+	 * 
+	 * @param a The first value for interpolation, if alpha = 0, this value is returned.
+	 * @param b The second value for interpolation, if alpha = 1, this value is returned.
+	 * @param alpha The interpolation parameter.
+	 * @return The interpolated value.
+	 */
 	double interpolate(double a, double b, double alpha);
 	
-	/// Generates a random number between 0 and 1.
+	/**
+	 * Generates a random number between 0 and 1.
+	 * 
+	 * @return A random number between 0 and 1.
+	 */
 	double random();
 	
-	/// Generates a random number between -size and size
+	/**
+	 * Generates a random number between -size and size.
+	 * 
+	 * @param size The intervall size for the random number.
+	 * @return A random number between -size and size.
+	 */
 	double randomError(double size);
 	
-	/// Returns the current time in microseconds
+	/**
+	 * Returns the current time in nanoseconds.
+	 * 
+	 * @return The current time in nanoseconds.
+	 */
 	int64_t getNanoseconds();
 	
-	/// Sleeps for the given amount of nanoseconds
+	/**
+	 * Sleeps for the given amount of nanoseconds.
+	 * 
+	 * @param nanos The time to sleep.
+	 */
 	void sleep(int64_t nanos);
 	
 public:
-	/// Dumb constructor, would need setter to be useful.
-	MovementGenerator(IPositionReceiver *receiver);
-	
 	/**
 	 * Creates a new MovementGenerator object.
 	 * The quadcopters in the from and to vectors have the position in the vector as id.<br />
@@ -57,6 +83,8 @@ public:
 	 */
 	MovementGenerator(IPositionReceiver *receiver, std::vector<Vector> from, std::vector<Vector> to, double errorRate, double errorSize, double defaultErrorSize, int steps, double stepsPerSecond);
 	
-	/// Runs the generator synchronous. This method blocks until it finished.
+	/**
+	 * Runs the generator synchronous. This method blocks until it finished.
+	 */
 	void run();
 };

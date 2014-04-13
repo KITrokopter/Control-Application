@@ -5,27 +5,59 @@
 #include <map>
 #include "ros/ros.h"
 
-#define BATTERY_MAX 8
-#define BATTERY_MIN 1
+#define BATTERY_MAX 5
+#define BATTERY_MIN 3
 
 #define BATTERY_LOW 3.0//In V
 
-#define THRUST_GLOBAL_MAX 60000
+#define THRUST_GLOBAL_MAX 50000
 #define THRUST_GLOBAL_MIN 10001
 #define THRUST_OFF 0
+#define THRUST_OFFSET_LOW 32000
 
-#define QUADCOPTER_THRUST_RANGE 13000
+#define QUADCOPTER_THRUST_RANGE 18000
 
 
 class QuadcopterThrust
 {	
 	public:
 		QuadcopterThrust();
+
+		/**
+		 *
+		 */
 		void init();
+
+		/**
+		 *
+		 * @return
+		 */
 		bool initDone();
+
+		/**
+		 *
+		 * @param battery
+		 * @return
+		 */
 		bool checkAndSetBatteryValue( float battery );	
+
+		/**
+		 *
+		 */
 		void setWithoutBatteryValue();
+
+		/**
+		 *
+		 * @param thrust
+		 * @return
+		 */
 		unsigned int checkAndFix( unsigned int thrust );
+
+		/**
+		 *
+		 * @param thrust
+		 * @return
+		 */
 		unsigned int checkAndFix( double thrust);
 
 		void setMin( unsigned int min );
@@ -38,6 +70,9 @@ class QuadcopterThrust
 		unsigned int getStart();
 		void setDecline( unsigned int decline );
 		unsigned int getDecline();
+
+		void setOffset( float battery );
+		unsigned int getOffset();
 
 	protected:		
 		void setThrust( float battery );
@@ -52,6 +87,8 @@ class QuadcopterThrust
 		unsigned int startMax;
 		unsigned int start;
 		unsigned int decline;
+
+		unsigned int offset;
 
 		bool setThrustCalled;
 };

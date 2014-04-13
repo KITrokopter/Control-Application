@@ -1,5 +1,14 @@
+/**
+ * PositionCalculator.h
+ * 
+ * calculating current position of quadcopter
+ * Created on: 23.02.2014
+ *      Author: daniela
+ */
+
 #ifndef POSITION_CALCULATOR_H
 #define POSITION_CALCULATOR_H
+
 #include "engine.h"
 #include "AmccCalibration.h"
 #include "../position/ChessboardData.hpp"

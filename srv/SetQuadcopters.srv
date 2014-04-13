@@ -1,4 +1,4 @@
 Header header
-uint64[] quadcoptersId
+uint32[] quadcopterIds
 uint16 amount
 ---

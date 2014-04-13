@@ -1,7 +1,7 @@
 #ifndef DUMMY_POSITION_RECEIVER_HPP
 #define DUMMY_POSITION_RECEIVER_HPP
 
-#include "IPositionReceiver.hpp"
+#include "../../src/position/IPositionReceiver.hpp"
 
 class DummyPositionReceiver : public IPositionReceiver
 {
