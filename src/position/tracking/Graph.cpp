@@ -5,6 +5,14 @@
 
 #include <sstream>
 
+/**
+ * Creates a new empty graph window.
+ *
+ * @param maxValue The maximum value of the graph scale. The minimum
+ * value is always 0.
+ * @param windowName The title of the window the graph will be
+ * displayed in.
+ */
 Graph::Graph(int maxValue, std::string windowName)
 {
 	this->maxValue = maxValue;
@@ -30,13 +38,22 @@ Graph::Graph(int maxValue, std::string windowName)
 
 	cv::startWindowThread();
 	cv::namedWindow(windowName);
+	cv::imshow(windowName, image);
 }
 
+/**
+ * Sets the id -> color map for the graph.
+ *
+ * @param colors The color map.
+ */
 void Graph::setColors(std::map<int, cv::Scalar> colors)
 {
 	this->colors = colors;
 }
 
+/**
+ * Draws the surroundings of the graph.
+ */
 void Graph::drawMetadata()
 {
 	std::stringstream ssMaxValue;
@@ -55,11 +72,24 @@ void Graph::drawMetadata()
 	                        imageHeight - graphAreaVerticalOffset + 1), cv::Scalar(150, 150, 150));
 }
 
-uchar* Graph::getPixel(cv::Mat mat, int x, int y)
+/**
+ * Returns a pointer to the pixel at the gixen coordinates.
+ *
+ * @param mat The image that contains the pixel.
+ * @param x The x coordinate of the pixel.
+ * @param y The y coordinate of the pixel.
+ */
+uchar* Graph::getPixel(cv::Mat &mat, int x, int y)
 {
 	return mat.data + mat.step[0] * y + mat.step[1] * x;
 }
 
+/**
+ * Draws the given point to the graph.
+ *
+ * @param value The y value.
+ * @param id The id to select the color using the color map.
+ */
 void Graph::nextPoint(double value, int id)
 {
 	if (!colors.count(id)) {
@@ -99,6 +129,9 @@ void Graph::nextPoint(double value, int id)
 	cv::imshow(windowName, image);
 }
 
+/**
+ * Destroys the graph and the graph window.
+ */
 Graph::~Graph()
 {
 	cv::destroyWindow(windowName);

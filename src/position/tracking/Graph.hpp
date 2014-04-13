@@ -5,11 +5,14 @@
 #include <string>
 #include <map>
 
+/**
+ * A class to display a graph using OpenCV.
+ *
+ * @author Sebastian Schmidt
+ */
 class Graph {
 public:
 
-//  Graph(int maxValue, std::string windowName, std::map<int, cv::Scalar>
-// colors);
 	Graph(int maxValue, std::string windowName);
 	~Graph();
 
@@ -19,7 +22,7 @@ public:
 private:
 
 	void drawMetadata();
-	uchar* getPixel(cv::Mat mat, int x, int y);
+	uchar* getPixel(cv::Mat &mat, int x, int y);
 
 	cv::Mat image;
 	std::string windowName;

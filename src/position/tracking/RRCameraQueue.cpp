@@ -2,6 +2,11 @@
 
 #include <ros/console.h>
 
+/**
+ * Creates a new RRCameraQueue. The queue will display the
+ * size of the per camera queues using a graph with
+ * different colors.
+ */
 RRCameraQueue::RRCameraQueue() : graph(10, "Queue sizes")
 {
 	rrIndex = 0;
@@ -55,6 +60,12 @@ std::vector<CameraData> RRCameraQueue::dequeue()
 	}
 }
 
+/**
+ * Returns true if there is data to return by the
+ * {@link #dequeue()} function, false otherwise.
+ *
+ * @return True if there is data to be dequeued, false otherwise.
+ */
 bool RRCameraQueue::dataAvailable()
 {
 	static int counter = 0;

@@ -2,6 +2,11 @@
 
 #include <ros/console.h>
 
+/**
+ * Enqueues the content of the given vector of CameraData.
+ *
+ * @param data A vector of CameraData.
+ */
 void AbstractCameraQueue::enqueue(std::vector<CameraData> data)
 {
 	for (std::vector<CameraData>::iterator it = data.begin(); it != data.end(); it++) {
@@ -9,6 +14,11 @@ void AbstractCameraQueue::enqueue(std::vector<CameraData> data)
 	}
 }
 
+/**
+ * Enqueues the given CameraData.
+ *
+ * @param data The CameraData.
+ */
 void AbstractCameraQueue::enqueue(CameraData data)
 {
 	enqueueInternal(data);
@@ -18,6 +28,12 @@ void AbstractCameraQueue::enqueue(CameraData data)
 	}
 }
 
+/**
+ * Returns a vector containing the given CameraData.
+ *
+ * @param data The CameraData.
+ * @return A vector containing {@code data}.
+ */
 std::vector<CameraData> AbstractCameraQueue::toVector(CameraData data)
 {
 	std::vector<CameraData> result;
