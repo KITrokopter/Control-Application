@@ -1,10 +1,10 @@
-/*
+/**
  * Vector.h
  *
  * vector consisting of x-, y- and z-value
- *  Created on: 18.01.2014
- *      Author: daniela
- */
+ *
+ * @author: Daniela Grimm
+ **/
 
 #ifndef VECTOR_H_
 #define VECTOR_H_

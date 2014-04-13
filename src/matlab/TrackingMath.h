@@ -1,11 +1,10 @@
 /**
  * TrackingMath.h
- * Matlab.h
  *  
  *  Mathematical function class, calculating perpendicular foot points
- *  Created on: 13.01.2014
- *      Author: daniela
- */
+ *
+ * @author: Daniela Grimm
+ **/
 
 #ifndef TRACKING_MATH_H_
 #define TRACKING_MATH_H_

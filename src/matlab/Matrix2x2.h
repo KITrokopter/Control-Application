@@ -1,9 +1,9 @@
-/*
+/**
  * Matrix2x2.h
+ * 2x2 matrix class
  *
- *  Created on: 22.03.2014
- *      Author: daniela
- */
+ * @author: Daniela Grimm
+ **/
 
 #ifndef MATRIX2x2_H_
 #define MATRIX2x2_H_

@@ -2,8 +2,7 @@
  * TrackingArea.h
  * tracking area is in form of two pyramides, one upside down, one normal. The ground plain of the two pyramides is the same.
  *
- *  Created on: 18.01.2014
- *      Author: daniela
+ * @author: Daniela Grimm
  */
 
 #ifndef TRACKINGAREA_H_

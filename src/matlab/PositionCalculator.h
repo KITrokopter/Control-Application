@@ -2,9 +2,9 @@
  * PositionCalculator.h
  * 
  * calculating current position of quadcopter
- * Created on: 23.02.2014
- *      Author: daniela
- */
+ *
+ * @author: Daniela Grimm
+ **/
 
 #ifndef POSITION_CALCULATOR_H
 #define POSITION_CALCULATOR_H

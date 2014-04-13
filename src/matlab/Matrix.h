@@ -1,9 +1,9 @@
-/*
+/**
  * Matrix.h
+ * 3x3 matrix class
  *
- *  Created on: 18.01.2014
- *      Author: daniela
- */
+ * @author: Daniela Grimm
+ **/
 
 #ifndef MATRIX_H_
 #define MATRIX_H_
