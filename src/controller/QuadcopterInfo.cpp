@@ -1,10 +1,3 @@
-/*
- * QuadcopterInfo.cpp
- *
- *  Created on: 30.03.2014
- *      Author: dwx
- */
-
 #include "QuadcopterInfo.hpp"
 
 QuadcopterInfo::QuadcopterInfo()
@@ -13,14 +6,13 @@ QuadcopterInfo::QuadcopterInfo()
 	// timeStarted;
 	// timeLastUpdated;
 	// timeShutdownStarted;
-
 	x = 0.0;
 	y = 0.0;
 	rotation = 0.0;
 	negativeSign = false;
 }
 
-/* Getter and Setter */
+/** Getter and Setter */
 short QuadcopterInfo::getState()
 {
 	return this->state;

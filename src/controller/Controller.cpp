@@ -7,7 +7,7 @@ void* startThreadShutdown(void *something);
 void* startThreadRotation(void *something);
 static bool closeToTarget(Position6DOF position1, Position6DOF position2, double range);
 
-/*
+/**
  * Constructor of Controller.
  * Sets all control variable on false, sets up all the Ros functions, and
  * initializes helper variables.
@@ -101,7 +101,7 @@ Controller::Controller()
 	this->constructionDone = true;
 }
 
-/*
+/**
  * Initialization after the system has been started globally.
  * Controller announces itself to API to get a global ID.
  */
@@ -115,7 +115,7 @@ void Controller::initialize()
 	ROS_INFO("CONTROLLER: Initialize done");
 }
 
-/*
+/**
  * Setter for the Tracking Area.
  * Executed by matlab modul.
  */
@@ -125,7 +125,7 @@ void Controller::setTrackingArea(TrackingArea area)
 	this->receivedTrackingArea = true;
 }
 
-/*
+/**
  * Calculates the new Targets considering the previous targets and the formation
  * movement vector (without orientation right now)
  */
@@ -174,7 +174,7 @@ void Controller::setTargetPosition()
 	}
 }
 
-/*
+/**
  * Updating the current Position of the crazyflies.
  * Calles by the position modul with new/current position data.
  * Number of new positions can vary accordingly to the newly calculated
@@ -252,7 +252,7 @@ void Controller::updatePositions(std::vector<Vector> positions, std::vector<int>
 	}
 }
 
-/*
+/**
  * Creates all the Ros messages for the movement of each quadcopter and sends
  * this
  * to the quadcopter modul
@@ -304,7 +304,7 @@ void Controller::sendMovementAll()
 	// ROS_DEBUG("Send Movement all");
 }
 
-/*
+/**
  * Creates all the Ros messages for the movement of each quadcopter and sends
  * this
  * to the quadcopter modul
@@ -340,7 +340,7 @@ void Controller::sendMovement(int internId)
 	this->listSentQuadruples[internId].push_back(this->currentMovement[internId]);
 }
 
-/*
+/**
  * Controlls the behaviour of the quadcopters. Each quadcopter has a status
  * according to which different functions are
  * called to set/calculate the movement data considering different situations of
@@ -374,8 +374,6 @@ void Controller::calculateMovement()
 		 * quadcopters
 		 * in the formation, the land process is finished.
 		 */
-		// ROS_ERROR("Formation amount %i", this->formation->getAmount());
-		// amount = this->formation->getAmount();
 		amount = 1; // FIXME
 		// end = numberOfLanded >= this->formation->getAmount();
 		end = numberOfLanded >= 1;
@@ -390,7 +388,6 @@ void Controller::calculateMovement()
 		calculateMovementStarted = getNanoTime();
 		// Iterate over the total number of quadcopters as long as the land
 		// process isn't finished
-		// ROS_INFO("Calculate");
 		for (int i = 0; (i < amount) && (!end); i++) {
 			// Check if there is enough data to check input for correct data.
 			bool enoughData = this->receivedFormation && this->receivedQuadcopters;
@@ -423,7 +420,7 @@ void Controller::calculateMovement()
 				break;
 			case CALCULATE_MOVE:
 				/* TODO */
-				// ROS_INFO("Move %i", i);
+				ROS_INFO("Move %i", i);
 				break;
 			case CALCULATE_LAND:
 				if (numberOfLanded > 1 && i == 0) {
@@ -468,10 +465,10 @@ void Controller::calculateMovement()
 			loopCounterTime = getNanoTime();
 		}
 	}
-	ROS_ERROR("CONTROLLER: Calculate Movement terminadeted/n/n/n!!");
+	ROS_ERROR("CONTROLLER: Calculate Movement terminated/n/n!");
 }
 
-/*
+/**
  * Builds Formation by starting one quadcopter after another, finding the right
  * position and then
  * inclining a little to avoid collisions. So there is a "being tracked" and
@@ -637,7 +634,7 @@ void Controller::buildFormation()
 	this->buildFormationFinished = true;
 }
 
-/*
+/**
  * Service to rotate formation
  */
 bool Controller::rotateFormation(control_application::Rotation::Request  &req,
@@ -655,7 +652,7 @@ bool Controller::rotateFormation(control_application::Rotation::Request  &req,
 	return true;
 }
 
-/*
+/**
  * Rotation of the formation around the center of the tracking Area or a certain
  * point.
  */
@@ -748,7 +745,7 @@ void Controller::rotate()
 	this->rotationInProcess = false;
 }
 
-/*
+/**
  * Service to start build formation process
  */
 bool Controller::startBuildFormation(control_application::BuildFormation::Request  &req,
@@ -765,7 +762,7 @@ bool Controller::startBuildFormation(control_application::BuildFormation::Reques
 	return true;
 }
 
-/*
+/**
  * Service to set Quadcopter IDs. Also initialize dynamic arrays according to
  * the given amount of qc and set starting target.
  * Also initialize multiple publisher
@@ -856,7 +853,7 @@ bool Controller::setQuadcopters(control_application::SetQuadcopters::Request  &r
 	return true;
 }
 
-/*
+/**
  * Shutdown Service which starts a new thread for shutdownFormation
  */
 bool Controller::shutdown(control_application::Shutdown::Request  &req, control_application::Shutdown::Response &res)
@@ -871,7 +868,7 @@ bool Controller::shutdown(control_application::Shutdown::Request  &req, control_
 	return true;
 }
 
-/*
+/**
  * Shutdown Formation. Sets all Quadcopters on Land to start the landing
  * process. Then wait for them to all land.
  */
@@ -898,16 +895,14 @@ void Controller::shutdownFormation()
 		usleep(TIME_WAIT_FOR_LANDING);
 	}
 	ROS_INFO("CONTROLLER: Join threads");
-	// void *resultCalc;
 	pthread_join(tCalculateMovement, 0);
-	// void *resultBuild;
 	if (buildFormationStarted) {
 		pthread_join(tBuildFormation, 0);
 	}
 	ROS_INFO("CONTROLLER: Shutdown function finished");
 }
 
-/*
+/**
  * Simple helper function to search for globalId in our mapping array and
  * returns the fitting localId
  */
@@ -921,7 +916,7 @@ int Controller::getLocalId(int globalId)    // TODO testme
 	return INVALID;
 }
 
-/*
+/**
  * Checks if formation movement data and quadcopter positions have been received
  * lately and if the battery status is sufficient.
  * Otherwise calls emergencyroutine or simply send an error message.
@@ -970,10 +965,8 @@ bool Controller::checkInput(int internId)
 		Tracked_pub[internId].publish(msg);
 		return false;
 	}
-	// ROS_INFO("Critical");
 	if (currentTime - lastCur > TIME_UPDATED_CRITICAL && quadStatus != CALCULATE_NONE && quadStatus !=
 	    CALCULATE_START) {
-		// ROS_INFO("tracked false");
 		std::string message = "No new quadcopter position data has been received";
 		ROS_ERROR("CONTROLLER: Left trackin area");
 		if (this->shutdownStarted == false) {
@@ -990,7 +983,7 @@ bool Controller::checkInput(int internId)
 	return true;
 }
 
-/*
+/**
  * Emergency Routine. Gets started e.g. low battery status. Sends warning via
  * Ros and then starts the landing process for this qc.
  * If qc enters the tracking area again it will switch back to stabilizing.
@@ -1009,7 +1002,7 @@ void Controller::emergencyRoutine(std::string message, int internId)
 	}
 }
 
-/*
+/**
  * Emergency Shutdown routine. Calls the Shutdown service to create a thread for
  * shutdownFormation.
  */
@@ -1032,7 +1025,7 @@ void Controller::emergencyShutdownRoutine(std::string message)
 	}
 }
 
-/*
+/**
  * Callback for Ros Subscriber of Formation Movement
  */
 void Controller::moveFormationCallback(const api_application::MoveFormation::ConstPtr &msg)
@@ -1058,7 +1051,7 @@ void Controller::moveFormationCallback(const api_application::MoveFormation::Con
 	}
 }
 
-/*
+/**
  * Callback for Ros Subscriber of set Formation
  */
 void Controller::setFormationCallback(const api_application::SetFormation::ConstPtr &msg)
@@ -1091,7 +1084,7 @@ void Controller::setFormationCallback(const api_application::SetFormation::Const
 	return;
 }
 
-/*
+/**
  * Callback for Ros Subscriber of quadcopter status
  */
 void Controller::quadStatusCallback(const quadcopter_application::quadcopter_status::ConstPtr &msg, int topicNr)
@@ -1148,12 +1141,10 @@ void Controller::quadStatusCallback(const quadcopter_application::quadcopter_sta
 		this->quadcopterStatus[localQuadcopterId].setQuadcopterThrust(qcThrust);
 		this->batteryStatusCounter[localQuadcopterId] = 0;
 		this->batteryStatusSum[localQuadcopterId] = 0;
-		// ROS_DEBUG("batteryCounter >= 5 %i",
-		// quadcopterStatus[localQuadcopterId].getQuadcopterThrust().getOffset());
 	}
 }
 
-/*
+/**
  * Callback for Ros Subscriber of system status. 1 = start, 2 = end
  */
 void Controller::systemCallback(const api_application::System::ConstPtr &msg)
@@ -1175,7 +1166,7 @@ void Controller::systemCallback(const api_application::System::ConstPtr &msg)
 	}
 }
 
-/*
+/**
  * Helper function for qc that are not supposed to move. Set all values to zero.
  */
 void Controller::dontMove(int internId)
@@ -1186,7 +1177,7 @@ void Controller::dontMove(int internId)
 	this->currentMovement[internId] = newMovement;
 }
 
-/*
+/**
  * Helper function to increase thrust stepwise to start incremental.
  */
 void Controller::moveUp(int internId)
@@ -1220,13 +1211,12 @@ void Controller::moveUp(int internId)
 	}
 }
 
-/*
+/**
  * Helper function to stabilize qc with help of the pid controller. Calculates
  * different differences between x, y and z and controls qc.
  */
 void Controller::stabilize(int internId)
 {
-	// ROS_ERROR("Stabilize");
 	float rotationAngle = (this->yaw_stab[internId] / (float) 360) * (float) 2 * M_PI;
 	// Matrix2x2 rotationMatrix = Matrix2x2(cos(rotationAngle),
 	// -sin(rotationAngle), sin(rotationAngle), cos(rotationAngle));
@@ -1238,11 +1228,7 @@ void Controller::stabilize(int internId)
 	this->listPositionsMutex.unlock();
 	double *position = latestPosition.getPosition();
 	Vector vectorPos = Vector(position[0], position[1], position[2]);
-	// ROS_INFO("Before Vector %f,%f,%f", vectorPos.getV1(), vectorPos.getV2(),
-	// vectorPos.getV3());
-	// vectorPos = rotationMatrix.multiplicate(vectorPos);
 	vectorPos = vectorPos.aftermult(rotationMatrix);
-	// vectorPos.setV3(position[2]);
 	latestPosition.setPosition(vectorPos);
 	// ROS_INFO("Vector %f,%f,%f", vectorPos.getV1(), vectorPos.getV2(),
 	// vectorPos.getV3());
@@ -1303,13 +1289,12 @@ void Controller::stabilize(int internId)
 	this->currentMovement[internId] = newMovement;
 }
 
-/*
- * Helper function. No useful function right now. Might be used for behavious
- * directly before land.
+/**
+ * Helper function. No useful function right now. Might be used for reactive behavior
+ * before landing.
  */
 void Controller::hold(int internId)
 {
-	// FIXME
 	ROS_INFO("CONTROLLER: %i now land", internId);
 	if (HOLD_SKIP) {
 		quadcopterMovementStatus[internId] = CALCULATE_LAND;
@@ -1317,7 +1302,7 @@ void Controller::hold(int internId)
 	}
 }
 
-/*
+/**
  * Helper function to control the landing process. First decrease constantly
  * till qc left tracking area
  * and the decrease stepwise till zero.
@@ -1350,7 +1335,6 @@ void Controller::land(int internId, int *nrLand)
 			}
 			this->timeOffsetChangeThrust = getNanoTime();
 		}
-		// ROS_INFO("min");
 		int step = 0;
 		if (this->shutdownStarted) {
 			step = DECLINE_SHUTDOWN_STEP;
@@ -1377,22 +1361,20 @@ void Controller::land(int internId, int *nrLand)
 	}
 }
 
-/*
+/**
  * Helper function to check if two positions are close/ in a specific range to
  * each other.
  */
 static bool closeToTarget(Position6DOF position1, Position6DOF position2, double range)
 {
-	double distance = position1.getAbsoluteDistance(position2);   // TODO need
-	                                                              // to abs
-	                                                              // range too?
+	double distance = position1.getAbsoluteDistance(position2);
 	if (distance < range) {
 		return true;
 	}
 	return false;
 }
 
-/*
+/**
  * Helper function to search for a close neighbor of target quadcopter and
  * return the wanted id.
  */
@@ -1420,9 +1402,8 @@ int Controller::searchNeighbor(double *target, bool *ids)
 	return neighborId;
 }
 
-/*
+/**
  * Helper function to start a new thread for movement calculation
- *
  */
 void* startThreadCalculateMovement(void *something)
 {
@@ -1430,9 +1411,8 @@ void* startThreadCalculateMovement(void *something)
 	someOther->calculateMovement();
 }
 
-/*
+/**
  * Helper function to start a new thread for formation building
- *
  */
 void* startThreadBuildFormation(void *something)
 {
@@ -1440,9 +1420,8 @@ void* startThreadBuildFormation(void *something)
 	someOther->buildFormation();
 }
 
-/*
+/**
  * Helper function to start a new thread for formation shutdown
- *
  */
 void* startThreadShutdown(void *something)
 {
@@ -1450,13 +1429,11 @@ void* startThreadShutdown(void *something)
 	someOther->shutdownFormation();
 }
 
-/*
+/**
  * Helper function to start a new thread for formation rotation
- *
  */
 void* startThreadRotation(void *something)
 {
 	Controller *someOther = (Controller*) something;
 	someOther->rotate();
 }
-

@@ -7,6 +7,10 @@
 #include "../matlab/profiling.hpp"
 #include "../matlab/Vector.h"
 
+/**
+ * Class used for storing position and orientation (3+3 = 6 DOF) of a quadrocopter.
+ * The used timestamp may be created at initialization or after/ before calculated, depending on context.
+ */
 class Position6DOF {
 public:
 	// both arrays of the return pointer have size three
@@ -21,9 +25,7 @@ public:
 	Position6DOF(double x, double y, double z, double xOrientation, double yOrientation, double zOrientation);
 	Position6DOF(double x, double y, double z);
 	Position6DOF(Vector vector);
-	Position6DOF()
-	{
-	};                  // FIXME
+	Position6DOF() {};
 
 	double getAbsoluteDistance();
 	double getAbsoluteDistance(Position6DOF otherPosition);
@@ -43,7 +45,5 @@ private:
 	double orientation[3];
 	long int timestamp;
 };
-
-
 
 #endif // POSITION6DOF_HPP

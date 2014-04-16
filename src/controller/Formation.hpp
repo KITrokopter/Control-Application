@@ -4,6 +4,11 @@
 #include "ros/ros.h"
 #include <vector>
 
+/**
+ * Class used for handling formation-movement.
+ *
+ * @author Carina Kübler, Dominik Kiefer
+ */
 class Formation {
 public:
 	Formation(int distance, int amount, Position6DOF *position);

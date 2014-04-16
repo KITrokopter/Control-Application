@@ -5,6 +5,10 @@
 #include "ros/ros.h"
 #include "../matlab/profiling.hpp"
 
+/**
+ * A movement quadruple contains four values: thrust, roll, pitch and yawrate.
+ * It is used to save sent data, data to send and received data.
+ */
 class MovementQuadruple {
 public:
 	MovementQuadruple(unsigned int newThrust, float newRoll, float newPitch, float newYawrate);
@@ -21,19 +25,7 @@ public:
 	long int getTimestamp();
 	void setTimestamp(long int newTimestamp);
 
-
-	/**
-	 *
-	 * @param maxThrust
-	 * @param maxRoll
-	 * @param maxPitch
-	 * @param maxYawrate
-	 * @return
-	 */
 	bool checkQuadruple(int maxThrust, float maxRoll, float maxPitch, float maxYawrate);
-
-	void invertRollPitchYawrate(float factorThrust, float factorRPY);       //
-	                                                                        // FIXME
 
 private:
 	unsigned int thrust;

@@ -95,6 +95,13 @@
 #define MAX_SAVED_SENT_QUADRUPLES 8
 
 class Formation;
+/**
+ * Central class for controlling Quadcopter.
+ * Receiving, calculating and sending data.
+ *
+ * @author Carina Kübler
+ * @author Dominik Kiefer
+ */
 class Controller : public IPositionReceiver {
 public:
 	Controller();
@@ -165,17 +172,14 @@ private:
 	long int timeOffsetChangeThrust;
 
 	/* Position */
-	std::vector<std::list<Position6DOF> > listPositions; // newest Position at
-	                                                     // the end of the list
-	std::vector<std::list<Position6DOF> > listTargets; // newest Position at the
-	                                                   // end of the list
+	/// newest Position at the end of the list
+	std::vector<std::list<Position6DOF> > listPositions;
+	/// newest Position at the end of the list
+	std::vector<std::list<Position6DOF> > listTargets;
 
-	/* Set data */
-	std::vector<std::list<MovementQuadruple> > listSentQuadruples; // last send
-	                                                               // Movement
-	                                                               // at the end
-	                                                               // of the
-	                                                               // list
+	/* Set data */last send
+    /// Movement at the end of the list
+	std::vector<std::list<MovementQuadruple> > listSentQuadruples;
 	std::vector<MovementQuadruple> currentMovement;
 
 	/*

@@ -1,6 +1,10 @@
 #ifndef CONTROL_HPP_
 #define CONTROL_HPP_
 
+/**
+ * A virtual parent class for standard controller:
+ * P-, PD-, PDI-Controller.
+ */
 class Control {
 public:
 

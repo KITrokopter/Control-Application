@@ -58,6 +58,16 @@ float MovementQuadruple::getYawrate()
 	return this->yawrate;
 }
 
+/**
+ * Checking a quadruple with given boundaries.
+ * Thrust is only checked for a given maximum, other values for their
+ * positive and negated value.
+ * @param maxThrust Set to maxThrust if too high
+ * @param maxRoll Set to (+/-) maxRoll if too high/low
+ * @param maxPitch Set to (+/-) maxPitch if too high/low
+ * @param maxYawrate Set to (+/-) maxYawrate if too high/low
+ * @return true if nothing changed, usually unused return value
+ */
 bool MovementQuadruple::checkQuadruple(int maxThrust, float maxRoll, float maxPitch, float maxYawrate)
 {
 	bool below = true;
@@ -97,14 +107,6 @@ bool MovementQuadruple::checkQuadruple(int maxThrust, float maxRoll, float maxPi
 		below = false;
 	}
 	return below;
-}
-
-void MovementQuadruple::invertRollPitchYawrate(float factorThrust, float factorRPY)
-{
-	this->thrust = this->thrust * factorThrust;
-	this->roll = (-this->roll) * factorRPY;
-	this->pitch = (-this->pitch) * factorRPY;
-	this->yawrate = (-this->yawrate) * factorRPY;
 }
 
 long int MovementQuadruple::getTimestamp()

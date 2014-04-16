@@ -1,11 +1,18 @@
 #include "QuadcopterThrust.hpp"
 
+/**
+ * Constructor with calling init() at start.
+ */
 QuadcopterThrust::QuadcopterThrust()
 {
 	init();
 	this->setThrustCalled = false;
 }
 
+/**
+ * Initializing with random values, that seemed to be working for a fully charged quadcopter.
+ * setThrustCalled is not changed here.
+ */
 void QuadcopterThrust::init()
 {
 	this->min = THRUST_GLOBAL_MIN;
@@ -16,6 +23,11 @@ void QuadcopterThrust::init()
 	this->offset = 32000;
 }
 
+/**
+ * Check if received value seems to be realistic. Set if is.
+ * @param battery Value to check
+ * @return True if setThrust(_) was called.
+ */
 bool QuadcopterThrust::checkAndSetBatteryValue(float battery)
 {
 	if (battery > BATTERY_MAX) {
@@ -25,7 +37,6 @@ bool QuadcopterThrust::checkAndSetBatteryValue(float battery)
 		ROS_ERROR("checkAndSet -");
 		return false;
 	}
-	// ROS_DEBUG("checkAndSet working");
 	setThrust(battery);
 	this->setThrustCalled = true;
 	return true;
@@ -61,9 +72,12 @@ void QuadcopterThrust::setWithoutBatteryValue()
 	}
 }
 
+/**
+ * It currently can be set more than once.
+ * @param battery Set thrustvalues battery-dependent.
+ */
 void QuadcopterThrust::setThrust(float battery)
 {
-	return;
 	if (battery > 4) {
 		return;
 	} else if (battery > 3)   {

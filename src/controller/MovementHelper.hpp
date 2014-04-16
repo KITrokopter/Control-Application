@@ -13,20 +13,15 @@
 
 #include "Position6DOF.hpp"
 
+/**
+ * Class MovementHelper, currently unused.
+ * It's intention was to prepare given position (through cameras) with
+ * given rotation (through yawrate-sensor) to react with reasonable roll-/pitch-values.
+ */
 class MovementHelper {
 public:
 	MovementHelper();
-//	double getHeightDiff( std::list<Position6DOF> listPositions );
-//	double getHeightDiffReverse( std::list<Position6DOF> listPositions );
 
-
-	/**
-	 *
-	 * @param rotation
-	 * @param pos
-	 * @param target
-	 * @return
-	 */
 	static Position6DOF prepareForRP(double rotation, Position6DOF pos, Position6DOF target);
 };
 

@@ -1,10 +1,3 @@
-/*
- * QuadcopterControl.hpp
- *
- *  Created on: 30.03.2014
- *      Author: dwx
- */
-
 #ifndef QUADCOPTERCONTROL_HPP_
 #define QUADCOPTERCONTROL_HPP_
 
@@ -14,33 +7,18 @@
 #include <map>
 #include "ros/ros.h"
 
-
+/**
+ * Parent class for storing quadcopter-spedific values.
+ *
+ * @author Dominik Kiefer
+ */
 class QuadcopterControl {
 public:
 	QuadcopterControl();
 
-	/**
-	 *
-	 * @return
-	 */
 	QuadcopterInfo getInfo();
-
-	/**
-	 *
-	 * @param newInfo
-	 */
 	void setInfo(QuadcopterInfo newInfo);
-
-	/**
-	 *
-	 * @return
-	 */
 	QuadcopterThrust getQuadcopterThrust();
-
-	/**
-	 *
-	 * @param newQuadcopterThrust
-	 */
 	void setQuadcopterThrust(QuadcopterThrust newQuadcopterThrust);
 
 protected:
@@ -48,10 +26,6 @@ protected:
 private:
 	QuadcopterInfo info;
 	QuadcopterThrust quadcopterThrust;
-
-protected:
-
-private:
 };
 
 #endif /* QUADCOPTERCONTROL_HPP_ */

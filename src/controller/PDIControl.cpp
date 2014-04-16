@@ -1,5 +1,11 @@
 #include "PDIControl.hpp"
 
+/**
+ * A PD-Controller with i-factor set to zero.
+ * @param pFactor Proportional factor in Controller
+ * @param dFactor Differential factor in Controller
+ * @param offset Offset added to calculated variable
+ */
 PDIControl::PDIControl(double pFactor, double dFactor, double offset)
 {
 	this->pAmplification = pFactor;
@@ -12,6 +18,13 @@ PDIControl::PDIControl(double pFactor, double dFactor, double offset)
 	this->integrator = 0.0;
 }
 
+/**
+ * A PD-Controller with i-factor set to zero and two p-factors.
+ * @param pFactorPos Factor used if error is >= 0
+ * @param pFactorNeg Factor used if error is < 0
+ * @param dFactor Differential factor in Controller
+ * @param offset Offset added to calculated variable
+ */
 PDIControl::PDIControl(double pFactorPos, double pFactorNeg, double dFactor, double offset)
 {
 	this->pAmplification = pFactorPos;
@@ -24,6 +37,14 @@ PDIControl::PDIControl(double pFactorPos, double pFactorNeg, double dFactor, dou
 	this->integrator = 0.0;
 }
 
+/**
+ * A PDI-Controller with two p-factors.
+ * @param pFactorPos Factor used if error is >= 0
+ * @param pFactorNeg Factor used if error is < 0
+ * @param dFactor Differential factor in Controller
+ * @param iFactor Integrating factor in Controller
+ * @param offset Offset added to calculated variable
+ */
 PDIControl::PDIControl(double pFactorPos, double pFactorNeg, double dFactor, double iFactor, double offset)
 {
 	this->pAmplification = pFactorPos;
@@ -56,6 +77,10 @@ void PDIControl::setOffset(double offset)
 	this->offset = offset;
 }
 
+/**
+ * Set p-factor to pFactorPos if error is >= 0.
+ * @param errorSignal Sign of errorSignal is used.
+ */
 void PDIControl::setPAmplification(double errorSignal)
 {
 	if (errorSignal >= 0.0) {

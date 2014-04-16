@@ -1,6 +1,6 @@
 #include "Position6DOF.hpp"
 
-/*
+/**
  * Constructor for Position6DOF with all position and orientation data
  */
 Position6DOF::Position6DOF(double x, double y, double z,  double xOrientation,  double yOrientation,
@@ -15,7 +15,7 @@ Position6DOF::Position6DOF(double x, double y, double z,  double xOrientation,  
 	this->timestamp = getNanoTime();
 }
 
-/*
+/**
  * Constructor for Position6DOF with all position data
  */
 Position6DOF::Position6DOF(double x, double y, double z)
@@ -29,7 +29,7 @@ Position6DOF::Position6DOF(double x, double y, double z)
 	this->timestamp = getNanoTime();
 }
 
-/*
+/**
  * Constructor for Position6DOF with a vector for position
  */
 Position6DOF::Position6DOF(Vector vector)
@@ -40,7 +40,7 @@ Position6DOF::Position6DOF(Vector vector)
 	this->timestamp = getNanoTime();
 }
 
-/*
+/**
  * Getter for Position
  */
 double* Position6DOF::getPosition()
@@ -48,7 +48,7 @@ double* Position6DOF::getPosition()
 	return this->position;
 }
 
-/*
+/**
  * Getter for Orientation
  */
 double* Position6DOF::getOrientation()
@@ -56,7 +56,7 @@ double* Position6DOF::getOrientation()
 	return this->orientation;
 }
 
-/*
+/**
  * Setter for Position
  */
 void Position6DOF::setPosition(double *position)
@@ -66,7 +66,7 @@ void Position6DOF::setPosition(double *position)
 	}
 }
 
-/*
+/**
  * Setter for Position
  */
 void Position6DOF::setPosition(Vector vector)
@@ -76,7 +76,7 @@ void Position6DOF::setPosition(Vector vector)
 	this->position[2] = vector.getV3();
 }
 
-/*
+/**
  * Setter for orientation
  */
 void Position6DOF::setOrientation(double *orientation)
@@ -86,7 +86,7 @@ void Position6DOF::setOrientation(double *orientation)
 	}
 }
 
-/*
+/**
  * Getter for timestamp
  */
 long int Position6DOF::getTimestamp()
@@ -94,7 +94,7 @@ long int Position6DOF::getTimestamp()
 	return this->timestamp;
 }
 
-/*
+/**
  * Setter for timestamp
  */
 void Position6DOF::setTimestamp(long int newTimestamp)
@@ -102,7 +102,7 @@ void Position6DOF::setTimestamp(long int newTimestamp)
 	this->timestamp = newTimestamp;
 }
 
-/*
+/**
  * Calculates Absolute Distance
  */
 double Position6DOF::getAbsoluteDistance()
@@ -114,7 +114,7 @@ double Position6DOF::getAbsoluteDistance()
 	return sqrt(sum);
 }
 
-/*
+/**
  * Calculates Absolute Distance between this position and the position given
  * as an argument.
  */
@@ -130,7 +130,7 @@ double Position6DOF::getAbsoluteDistance(Position6DOF otherPosition)
 	return sqrt(sum);
 }
 
-/*
+/**
  * Calculates Absolute Distance between this position and the position given
  * as an argument.
  */

@@ -1,9 +1,3 @@
-/*
- * QuadcopterInfo.hpp
- *
- *  Created on: 30.03.2014
- *      Author: dwx
- */
 #ifndef QUADCOPTERINFO_HPP_
 #define QUADCOPTERINFO_HPP_
 
@@ -29,6 +23,11 @@
 #define YAWRATE_MAX 12.0
 #define YAWRATE_START 0.0
 
+/**
+ * A class using central global values for roll, pitch and yawrate.
+ * Its functions are currently unused besides checkAndFix_() due to the development of this project.
+ * The set global values are the given boundary to prevent from unuseful correctional movement (e.g. a loop).
+ */
 class QuadcopterInfo {
 public:
 	QuadcopterInfo();
@@ -61,19 +60,14 @@ protected:
 
 private:
 
-	/*
+	/**
 	 * States
 	 * 0 not started
 	 * 1 started
-	 * 2
-	 * 3
+	 * 2 ?
+	 * 3 ?
 	 * 4 hold (before shutdown), "smart" shutdown
 	 * 5 shutdown (turn off)
-	 */
-
-
-	/**
-	 *
 	 */
 	short state;
 

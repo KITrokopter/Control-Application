@@ -1,5 +1,10 @@
 #include "PControl.hpp"
 
+/**
+ * Can be used as normal P-Controller with offset.
+ * @param pFactor proportional factor
+ * @param offset Offset added to calculated variable
+ */
 PControl::PControl(double pFactor, double offset)
 {
 	this->pAmplification = pFactor;
@@ -8,6 +13,12 @@ PControl::PControl(double pFactor, double offset)
 	this->offset = offset;
 }
 
+/**
+ * A P-Controller with two p-factors.
+ * @param pFactorPos Factor used if error is >= 0
+ * @param pFactorNeg Factor used if error is < 0
+ * @param offset Offset added to calculated variable
+ */
 PControl::PControl(double pFactorPos, double pFactorNeg, double offset)
 {
 	this->pAmplification = pFactorPos;
@@ -28,6 +39,10 @@ void PControl::setOffset(double offset)
 	this->offset = offset;
 }
 
+/**
+ * Set p-factor to pFactorPos if error is >= 0.
+ * @param errorSignal sign of parameter is deciding
+ */
 void PControl::setPAmplification(double errorSignal)
 {
 	if (errorSignal >= 0.0) {
